@@ -1,0 +1,120 @@
+name: Deploy UI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Get Event Data
+        run: |
+          echo "Event type: ${{ github.event_name }}"
+          if [[ ${{ github.event_name }} == "pull_request" ]]
+          then
+            echo "Source Branch: ${{ github.head_ref }}"
+            echo "Target Branch: ${{ github.base_ref }}"
+          else
+            echo "Triggered by branch/tag: ${{ github.ref }}"
+          fi
+          echo "Commit Sha: ${{ github.sha }}"
+          echo "Event Actor: ${{ github.actor }}"
+
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+
+  buildLintTest:
+    environment: pwc
+    name: Build, Lint and Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [ setup ]
+
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: read
+      security-events: write
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ...
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: |
+          node -v
+          npm ci
+          npm install @microsoft/eslint-formatter-sarif --save-dev
+
+      - name: NPM Build Project
+        run: export REACT_APP_API_BASE_URL=${{ vars.REACT_APP_API_BASE_URL }}; npm run build --if-present
+
+      - name: Coding Standards Check
+        run: npm run lint -- -f @microsoft/eslint-formatter-sarif -o results.sarif
+
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
+
+      - name: NPM Test
+        run: npm run test
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: complaints-qms-ui
+          path: build
+
+  deploy_ui:
+    environment: pwc
+    permissions:
+      id-token: write # This is required for requesting the JWT
+      contents: read # This is required for actions/checkout
+    name: Deploy UI
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [ buildLintTest ]
+    steps:
+      - uses: actions/download-artifact@master
+        with:
+          name: complaints-qms-ui
+          path: build
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE }}
+          role-session-name: upload-narrative-rolesession
+          aws-region: us-east-2
+      - run: aws s3 sync --delete ./build/ s3://${{ vars.S3_BUCKET }}/
+      - run: aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DISTRO }} --paths "/*"

@@ -1,0 +1,157 @@
+Parameters:
+  ModelsBucket:
+    Description: Bucket name where models are stored.
+    Type: String
+  MounjaroCategoryPath:
+    Description: Path on bucket where Mounjaro category model is located.
+    Type: String
+  MounjaroCategoryVersion:
+    Description: Version for Mounjaro category model.
+    Type: String
+  MounjaroLevelPath:
+    Description: Path on bucket where Mounjaro level model is located.
+    Type: String
+  MounjaroLevelVersion:
+    Description: Version for Mounjaro level model.
+    Type: String
+  TrulicityCategoryPath:
+    Description: Path on bucket where Trulicity category model is located.
+    Type: String
+  TrulicityCategoryVersion:
+    Description: Version for Trulicity category model.
+    Type: String
+  TrulicityLevelPath:
+    Description: Path on bucket where Trulicity level model is located.
+    Type: String
+  TrulicityLevelVersion:
+    Description: Version for Trulicity level model.
+    Type: String
+
+Resources:
+  RobertaCategoryModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      PrimaryContainer:
+        Image: !Sub 763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04
+        Mode: SingleModel
+        ModelDataUrl: !Sub s3://${ModelsBucket}/${MounjaroCategoryPath}
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      ModelName: !Sub roberta-mounjaro-category-12-model-v${MounjaroCategoryVersion}
+  RobertaCategoryEndpointConfig:
+    Type: AWS::SageMaker::EndpointConfig
+    Properties:
+      EndpointConfigName: roberta-category-model-config
+      ProductionVariants:
+        - ModelName: !GetAtt RobertaCategoryModel.ModelName
+          InitialInstanceCount: 1
+          InstanceType: ml.g4dn.xlarge
+          VariantName: AllTraffic
+  
+  RobertaCategoryEndpoint:
+    Type: AWS::SageMaker::Endpoint
+    Properties:
+      EndpointName: !GetAtt RobertaCategoryModel.ModelName
+      EndpointConfigName: !GetAtt RobertaCategoryEndpointConfig.EndpointConfigName
+
+  RobertaLevelModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      PrimaryContainer:
+        Image: !Sub 763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04
+        Mode: SingleModel
+        ModelDataUrl: !Sub s3://${ModelsBucket}/${MounjaroLevelPath}
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      ModelName: !Sub roberta-level-model-v${MounjaroLevelVersion}
+
+  RobertaLevelEndpointConfig:
+    Type: AWS::SageMaker::EndpointConfig
+    Properties:
+      EndpointConfigName: roberta-level-model-config
+      ProductionVariants:
+        - ModelName: !GetAtt RobertaLevelModel.ModelName
+          InitialInstanceCount: 1
+          InstanceType: ml.g4dn.xlarge
+          VariantName: AllTraffic
+  
+  RobertaLevelEndpoint:
+    Type: AWS::SageMaker::Endpoint
+    Properties:
+      EndpointName: !GetAtt RobertaLevelModel.ModelName
+      EndpointConfigName: !GetAtt RobertaLevelEndpointConfig.EndpointConfigName
+
+  TrulicityCategoryModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      PrimaryContainer:
+        Image: !Sub 763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04
+        Mode: SingleModel
+        ModelDataUrl: !Sub s3://${ModelsBucket}/${TrulicityCategoryPath}
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      ModelName: !Sub roberta-trulicity-category-12-model-v${TrulicityCategoryVersion}
+  TrulicityCategoryEndpointConfig:
+    Type: AWS::SageMaker::EndpointConfig
+    Properties:
+      EndpointConfigName: roberta-tr-category-model-config
+      ProductionVariants:
+        - ModelName: !GetAtt TrulicityCategoryModel.ModelName
+          InitialInstanceCount: 1
+          InstanceType: ml.g4dn.xlarge
+          VariantName: AllTraffic
+  
+  TrulicityCategoryEndpoint:
+    Type: AWS::SageMaker::Endpoint
+    Properties:
+      EndpointName: !GetAtt TrulicityCategoryModel.ModelName
+      EndpointConfigName: !GetAtt TrulicityCategoryEndpointConfig.EndpointConfigName
+
+  TrulicityLevelModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      PrimaryContainer:
+        Image: !Sub 763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04
+        Mode: SingleModel
+        ModelDataUrl: !Sub s3://${ModelsBucket}/${TrulicityLevelPath}
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      ModelName: !Sub roberta-tr-level-model-v${TrulicityLevelVersion}
+
+  TrulicityLevelEndpointConfig:
+    Type: AWS::SageMaker::EndpointConfig
+    Properties:
+      EndpointConfigName: roberta-tr-level-model-config
+      ProductionVariants:
+        - ModelName: !GetAtt TrulicityLevelModel.ModelName
+          InitialInstanceCount: 1
+          InstanceType: ml.g4dn.xlarge
+          VariantName: AllTraffic
+  
+  TrulicityLevelEndpoint:
+    Type: AWS::SageMaker::Endpoint
+    Properties:
+      EndpointName: !GetAtt TrulicityLevelModel.ModelName
+      EndpointConfigName: !GetAtt TrulicityLevelEndpointConfig.EndpointConfigName
+
+
+  ExecutionRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "sagemaker.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies: 
+        - 
+          PolicyName: "root"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement: 
+              - 
+                Effect: "Allow"
+                Action: "*"
+                Resource: "*"

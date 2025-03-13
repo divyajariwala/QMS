@@ -1,0 +1,49 @@
+version: 0.2
+
+# env:
+#   parameter-store:
+#     # API_URL: "your api url here"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - echo "Starting install - $(date)"
+
+      - echo "Installing Node dependencies"
+      - npm install
+
+      - echo "Completed install - $(date)"
+  pre_build:
+    commands:
+      - echo "Starting pre_build - $(date)"
+
+      - echo "Linting Node source code"
+      - npm run lint
+
+      - echo "Testing Node source code"
+      - npm test
+
+      - echo "Completed pre_build - $(date)"
+  build:
+    commands:
+      - echo "Starting build - $(date)"
+
+      - npm run build
+
+      - echo "Completed build - $(date)"
+  post_build:
+    commands:
+      - echo "Starting post_build - $(date)"
+
+      - export S3_BUCKET=$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query "Stacks[*].Outputs[?OutputKey=='WebBucket'].OutputValue" --output text)
+      - bucket_path="s3://${S3_BUCKET}"
+      - echo "bucket path - ${bucket_path}"
+      - list_of_synced_files="files_synced.txt"
+      - aws s3 sync dist ${bucket_path} --delete --sse AES256 > ${list_of_synced_files}
+
+      - export CLOUD_FRONT_ID=$(aws cloudformation describe-stacks --stack-name ${STACK_NAME} --query "Stacks[*].Outputs[?OutputKey=='CloudFrontId'].OutputValue" --output text)
+      - aws cloudfront create-invalidation --distribution-id ${CLOUD_FRONT_ID} --paths "/*"
+
+      - echo "Completed post_build - $(date)"

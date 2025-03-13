@@ -1,0 +1,287 @@
+.complaintsDashboard {
+  display: flex;
+  flex-direction: row;
+  gap: $gap;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: $gap-xl;
+  height: 100%;
+  background: $color-light-grey;
+
+  .sectionTitle {
+    margin: 0 0 $gap-lg 0;
+    font-size: $font-title;
+
+    &.center {
+      text-align: center;
+    }
+  }
+
+  button {
+    @include Button;
+    white-space: nowrap;
+  }
+
+  // --------
+  // Sections
+  // --------
+
+  .narrativeBox {
+    width: 50%;
+    flex: 1;
+    padding: $gap-lg;
+    border-radius: $radius;
+    box-shadow: $shadow;
+    background: $color-white;
+
+    .qaSection {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .drugNameSelector {
+        margin-bottom: $gap-lg;
+
+        .drugNameSelectorControl {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: $gap-xl;
+
+          label span {
+            color: $color-red;
+            font-weight: bold;
+          }
+
+          .drugNameSelect {
+            flex: 1;
+          }
+        }
+      }
+
+      .narrativeBoxContent {
+        flex: 1;
+        margin-bottom: $gap;
+
+        .MuiFormControl-root {
+
+          .MuiInputBase-root {
+            background-color: $color-alt-white;
+          }
+        }
+      }
+
+      .staticNarrativeBoxContent {
+        flex: 1;
+        margin-bottom: $gap;
+        min-height: 300px;
+        max-height: 600px;
+        overflow-y: scroll;
+        line-height: 1.35em;
+      }
+
+      .actionButtons {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: flex-end;
+        gap: $gap-sm;
+      }
+    }
+  }
+
+  .complaintsCategoriesBox {
+    width: 50%;
+    flex: 1;
+    padding: $gap-lg;
+    border-radius: $radius;
+    box-shadow: $shadow;
+    background: $color-white;
+    overflow: hidden;
+
+    .complaintsCategories {
+      height: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      .complaint-items {
+        display: flex;
+        flex-direction: column;
+        gap: $gap;
+        margin-bottom: $gap;
+      }
+
+      .hr-custom-line {
+        border: none;
+        border-top: 1px solid $color-medium-grey;
+        width: 100%;
+        margin-bottom: 40px;
+        margin-top: 20px; 
+      }
+
+      .priority {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 0px 0px 10px 0px;
+        white-space: nowrap;
+
+        .title {
+          font-weight: normal;
+          margin-right: 20px;
+        }
+
+        .priority-select {
+          width: 100%;
+          flex-grow: 1;
+
+          .MuiOutlinedInput-root {
+            border-width: 1px;
+            outline: none;
+            background-color: #ffffff;
+          }
+
+          .MuiSelect-select {
+            background-color: #ffffff;
+          }
+
+          .MuiOutlinedInput-notchedOutline {
+            border-color: #ccc;
+          }
+
+          .Mui-disabled {
+            border-color: #ccc;
+            background-color: #ffffff;
+          }
+        }
+      }
+
+      .summary {
+
+        > div {
+          padding: $gap;
+          border-radius: $radius;
+          background-color: $color-light-grey;
+          margin-bottom: 20px;
+          .title {
+            font-weight: $font-weight-bold;
+          }
+
+          // .text {}
+        }
+      }
+
+      .disclamer {
+
+        > div {
+          padding: $gap;
+          margin-bottom: 20px;
+          font-style: italic;
+          border-radius: $radius;
+          background-color: $color-light-grey;
+
+          .title {
+            font-weight: $font-weight-bold;
+          }
+
+          // .text {}
+        }
+      }
+
+      .image-upload {
+        margin-bottom: 20px;
+        height: 300px;
+        max-height: 300px;
+        overflow: auto;
+        width: 100%;
+        border: 1px dashed $color-medium-grey;
+        border-radius: $radius;
+
+        .image-placeholderimg {
+          max-height: 100%;
+          max-width: 100%;
+        }
+      }
+
+      .actionButtonDiv {
+        margin-top: auto;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: $gap-sm;
+
+        .validation-error {
+          flex: 1;
+          color: $color-error;
+        }
+      }
+    }
+  }
+}
+
+.loaderWrapper {
+  padding: $gap-xl;
+  height: 100%;
+  background: $color-light-grey;
+}
+
+@media (min-width: 768px) {
+  .complaintsDashbaord {
+    flex-direction: row;
+
+    .narrativeBox {
+      flex: 1;
+    }
+
+    .complaintsCategoriesBox {
+      flex: 1;
+      margin-left: 20px;
+
+      .checkboxContainer {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .info-item {
+    flex-basis: 50%;
+    /* Two items per row on smaller screens */
+  }
+}
+
+@media (max-width: 600px) {
+  .complaintsDashbaord {
+    .narrativeBox {
+      .actionButtonDiv {
+        flex-direction: column;
+
+        button {
+          width: 100%;
+        }
+
+        button:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    .complaintsCategoriesBox {
+      margin-top: 10px;
+
+      .complaintsCategories {
+        .MuiBox-root {
+          .MuiTypography-root {
+            line-height: normal !important;
+          }
+        }
+      }
+    }
+  }
+}
