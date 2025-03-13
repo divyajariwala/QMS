@@ -26,13 +26,13 @@ jobs:
           aws-region: us-east-1
 
       - name: Copy files to bucket
-        run: aws s3 sync ./cloudformation/ s3://pwc-complaints-cloudformation-template-files-dev/
+        run: aws s3 sync ./complaints-infra/cloudformation s3://pwc-complaints-cloudformation-template-files-dev/
 
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: ComplaintsStack
-          template: cloudformation/nested-stack.yaml
+          template: complaints-infra/cloudformation/nested-stack.yaml
           parameter-overrides: "Environment=dev"
           capabilities: "CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM,CAPABILITY_NAMED_IAM"
           no-fail-on-empty-changeset: "1"
