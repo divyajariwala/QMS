@@ -1,4 +1,7 @@
 Parameters:
+  SagemakerRole:
+    Description: IAM Role for SagemakerRole
+    Type: String
   ModelsBucket:
     Description: Bucket name where models are stored.
     Type: String
@@ -35,7 +38,7 @@ Resources:
         Image: !Sub 763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04
         Mode: SingleModel
         ModelDataUrl: !Sub s3://${ModelsBucket}/${MounjaroCategoryPath}
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      ExecutionRoleArn: !Sub '${SagemakerRole}'
       ModelName: !Sub roberta-mounjaro-category-12-model-v${MounjaroCategoryVersion}
   RobertaCategoryEndpointConfig:
     Type: AWS::SageMaker::EndpointConfig
@@ -60,7 +63,7 @@ Resources:
         Image: !Sub 763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04
         Mode: SingleModel
         ModelDataUrl: !Sub s3://${ModelsBucket}/${MounjaroLevelPath}
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      ExecutionRoleArn: !Sub '${SagemakerRole}'
       ModelName: !Sub roberta-level-model-v${MounjaroLevelVersion}
 
   RobertaLevelEndpointConfig:
@@ -86,7 +89,7 @@ Resources:
         Image: !Sub 763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04
         Mode: SingleModel
         ModelDataUrl: !Sub s3://${ModelsBucket}/${TrulicityCategoryPath}
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      ExecutionRoleArn: !Sub '${SagemakerRole}'
       ModelName: !Sub roberta-trulicity-category-12-model-v${TrulicityCategoryVersion}
   TrulicityCategoryEndpointConfig:
     Type: AWS::SageMaker::EndpointConfig
@@ -111,7 +114,7 @@ Resources:
         Image: !Sub 763104351884.dkr.ecr.${AWS::Region}.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04
         Mode: SingleModel
         ModelDataUrl: !Sub s3://${ModelsBucket}/${TrulicityLevelPath}
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      ExecutionRoleArn: !Sub '${SagemakerRole}'
       ModelName: !Sub roberta-tr-level-model-v${TrulicityLevelVersion}
 
   TrulicityLevelEndpointConfig:
@@ -129,29 +132,3 @@ Resources:
     Properties:
       EndpointName: !GetAtt TrulicityLevelModel.ModelName
       EndpointConfigName: !GetAtt TrulicityLevelEndpointConfig.EndpointConfigName
-
-
-  ExecutionRole: 
-    Type: "AWS::IAM::Role"
-    Properties: 
-      AssumeRolePolicyDocument: 
-        Version: "2012-10-17"
-        Statement: 
-          - 
-            Effect: "Allow"
-            Principal: 
-              Service: 
-                - "sagemaker.amazonaws.com"
-            Action: 
-              - "sts:AssumeRole"
-      Path: "/"
-      Policies: 
-        - 
-          PolicyName: "root"
-          PolicyDocument: 
-            Version: "2012-10-17"
-            Statement: 
-              - 
-                Effect: "Allow"
-                Action: "*"
-                Resource: "*"

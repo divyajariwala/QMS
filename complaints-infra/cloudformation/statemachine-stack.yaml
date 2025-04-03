@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Lambda state machine."
 Parameters:
+  StepFunctionRole:
+    Description: IAM Role for StepFunctionRole
+    Type: String
   Environment:
     Description: Environment for the bucket
     Type: String
@@ -10,28 +13,6 @@ Parameters:
       - 'prod'
 
 Resources:
-  StatesExecutionRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              Service:
-                - !Sub states.${AWS::Region}.amazonaws.com
-            Action: "sts:AssumeRole"
-      Path: "/"
-      Policies:
-        - PolicyName: StatesExecutionPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "lambda:InvokeFunction"
-                Resource: "*"
-
   StateMachine:
     Type: "AWS::StepFunctions::StateMachine"
     Properties:
@@ -79,4 +60,4 @@ Resources:
               },
               "TimeoutSeconds": 100
             }
-      RoleArn: !GetAtt [ StatesExecutionRole, Arn ]
+      RoleArn: !Sub '${StepFunctionRole}'

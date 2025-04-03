@@ -1,5 +1,10 @@
 
 Parameters:
+
+  LambdaRole:
+    Description: IAM Role for LambdaRole
+    Type: String
+
   SQSQueueArn:
     Description: SQS Queue Arn.
     Type: String
@@ -35,7 +40,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-bulk-insert-dynamodb-data'
       Timeout: 120
       Code:
@@ -48,7 +53,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-level-${Environment}'
       Timeout: 120
       Environment:
@@ -67,7 +72,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-subcategory-${Environment}'
       Timeout: 120
       Environment:
@@ -86,7 +91,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-crl-mapping-${Environment}'
       Timeout: 120
       Environment:
@@ -105,7 +110,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-priority-${Environment}'
       Timeout: 120
       Environment:
@@ -125,7 +130,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-errorness-check-${Environment}'
       Timeout: 120
       MemorySize: 10240
@@ -136,8 +141,6 @@ Resources:
           aws_region_name: us-east-1
           secrets_name: !Sub ${Environment}/complaints_errorness_check_secrets
           audit_table_name: !Sub complaints-errorness-check-audit-log-${Environment}
-      Layers:
-        - !Sub arn:aws:lambda:us-east-1:${AWS::AccountId}:layer:requests:2
       Code:
         ZipFile: |
           def lambda_handler(event, context):
@@ -161,7 +164,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-mq-qms-inference-${Environment}'
       Timeout: 15
       Environment:
@@ -194,7 +197,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-preload-narrative-${Environment}'
       Timeout: 120
       Environment:
@@ -202,15 +205,6 @@ Resources:
           audit_table_name: !Sub mq-qms-complaints-audit-log-${Environment}
           aws_region_name: us-east-1
           secrets_name: !Sub ${Environment}/complaints_ai_toolkit
-      VpcConfig:
-        SecurityGroupIds:
-          - "sg-0ab1ad2ab29bf5b47"
-          - "sg-0f323f85284dc5692"
-        SubnetIds:
-          - "subnet-0f38324d8a53f81df"
-        Ipv6AllowedForDualStack: false
-      Layers:
-        - !Sub arn:aws:lambda:us-east-1:${AWS::AccountId}:layer:requests:2
       Code:
         ZipFile: |
           def lambda_handler(event, context):
@@ -231,7 +225,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-queue-narrative-${Environment}'
       Timeout: 120
       Environment:
@@ -259,7 +253,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-fetch-results-${Environment}'
       Timeout: 120
       Environment:
@@ -270,8 +264,6 @@ Resources:
           inference_results_table_name: !Sub mq-qms-inference-results-${Environment}
           lookup_table_name: !Sub mq-qms-complaints-unified-lookups-${Environment}
           priority_results_table_name: !Sub mq-qms-priority-results-${Environment}
-      Layers:
-        - !Sub arn:aws:lambda:us-east-1:${AWS::AccountId}:layer:requests:2
       Code:
         ZipFile: |
           def lambda_handler(event, context):
@@ -292,7 +284,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-upload-narrative-${Environment}'
       Timeout: 120
       Environment:
@@ -320,7 +312,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.11
-      Role: !GetAtt LambdaFunctionRole.Arn
+      Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-upload-final-results-${Environment}'
       Timeout: 120
       Environment:
@@ -331,15 +323,6 @@ Resources:
           aws_region_name: us-east-1
           secrets_name: !Sub ${Environment}/complaints_ai_toolkit
           lookup_table_name: !Sub mq-qms-complaints-unified-lookups-${Environment}
-      VpcConfig:
-        SecurityGroupIds:
-          - "sg-0ab1ad2ab29bf5b47"
-          - "sg-0f323f85284dc5692"
-        SubnetIds:
-          - "subnet-0f38324d8a53f81df"
-        Ipv6AllowedForDualStack: false
-      Layers:
-        - !Sub arn:aws:lambda:us-east-1:${AWS::AccountId}:layer:requests:2
       Code:
         ZipFile: |
           def lambda_handler(event, context):
@@ -354,72 +337,3 @@ Resources:
       SourceArn: !Sub
         - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/uiresults
         - ApiId: !Ref apiGatewayId
-
-  LambdaFunctionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-          Action:
-          - sts:AssumeRole
-      Path: "/"
-      Policies:
-      - PolicyName: LambdaFunctionRolePolicy
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-            - bedrock:*
-            - s3:*
-            - sagemaker:*
-            - ec2:DescribeNetworkInterfaces
-            - ec2:CreateNetworkInterface
-            - ec2:DeleteNetworkInterface
-            - ec2:DescribeInstances
-            - ec2:AttachNetworkInterface
-            - dynamodb:BatchGetItem
-            - dynamodb:BatchWriteItem
-            - dynamodb:PutItem
-            - dynamodb:Scan
-            - dynamodb:Query
-            - dynamodb:UpdateItem
-            - dynamodb:CreateTable
-            - dynamodb:GetItem
-            - dynamodb:DescribeTable
-            - sqs:DeleteMessage
-            - sqs:ReceiveMessage
-            - sqs:SendMessage
-            - sqs:GetQueueAttributes
-            - states:ListExecutions
-            - states:StartSyncExecution
-            - states:StartExecution
-            Resource: "*"
-          - Effect: Allow
-            Action:
-            - sqs:ReceiveMessage
-            - sqs:DeleteMessage
-            - sqs:GetQueueAttributes
-            Resource: !Ref SQSQueueArn
-          - Effect: Allow
-            Action:
-            - secretsmanager:GetResourcePolicy
-            - secretsmanager:GetSecretValue
-            - secretsmanager:DescribeSecret
-            - secretsmanager:ListSecretVersionIds
-            Resource: arn:aws:secretsmanager:us-east-1:...:secret:dev/complaints_errorness_check_secrets
-          - Effect: Allow
-            Action:
-            - secretsmanager:GetResourcePolicy
-            - secretsmanager:GetSecretValue
-            - secretsmanager:DescribeSecret
-            - secretsmanager:ListSecretVersionIds
-            Resource: arn:aws:secretsmanager:us-east-1:...:secret:dev/complaints_ai_toolkit

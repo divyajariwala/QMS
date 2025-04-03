@@ -1,6 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Complaints Nested stack
 Parameters:
+  LambdaRole:
+    Description: IAM Role for LambdaRole
+    Type: String
+  StepFunctionRole:
+    Description: IAM Role for StepFunctionRole
+    Type: String
+  SagemakerRole:
+    Description: IAM Role for SagemakerRole
+    Type: String
   Environment:
     Description: Environment
     Type: String
@@ -16,7 +25,7 @@ Resources:
       TimeoutInMinutes: 5
       Parameters:
         Environment: !Sub '${Environment}'
-        DomainName: 'lly-qms-complaints-ui'
+        DomainName: 'pwc-qms-complaints-ui'
 
   SQSStack:
     Type: AWS::CloudFormation::Stack
@@ -46,6 +55,7 @@ Resources:
       TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/lambda-stack.yaml
       TimeoutInMinutes: 5
       Parameters:
+        LambdaRole: !Sub '${LambdaRole}'
         Environment: !Sub '${Environment}'
         apiGatewayId: !GetAtt 'APIGatewayStack.Outputs.APIGatewayId'
         SQSQueueName: !GetAtt 'SQSStack.Outputs.SQSQueueName'
@@ -58,6 +68,7 @@ Resources:
       TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/statemachine-stack.yaml
       TimeoutInMinutes: 5
       Parameters:
+        StepFunctionRole: !Sub '${StepFunctionRole}'
         Environment: !Sub '${Environment}'
 #  GithubActionRoleStack:
 #    Type: AWS::CloudFormation::Stack
@@ -70,6 +81,7 @@ Resources:
       TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/sagemaker-stack.yaml
       TimeoutInMinutes: 30
       Parameters:
+        SagemakerRole: !Sub '${SagemakerRole}'
         ModelsBucket: lly-complaints-models-qa
         MounjaroCategoryPath: Mounjaro/mounjaro-12-category-model-v1.tar
         MounjaroCategoryVersion: 1
