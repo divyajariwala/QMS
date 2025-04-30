@@ -48,6 +48,7 @@ jobs:
       contents: read
       pull-requests: read
       security-events: write
+      id-token: write
 
     steps:
       - name: Checkout Repo
