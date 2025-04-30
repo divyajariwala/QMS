@@ -79,10 +79,13 @@ jobs:
       - name: NPM Build Project
         run: export REACT_APP_API_BASE_URL=https://v6o5y5nu0g.execute-api.us-east-1.amazonaws.com/dev/; npm run build --if-present
 
+      - name: LS
+        run: ls -la
+
       - uses: actions/upload-artifact@master
         with:
           name: complaints-qms-ui
-          path: build
+          path: ./build
 
   deploy_ui:
     environment: pwc
