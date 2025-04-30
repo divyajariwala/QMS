@@ -33,9 +33,9 @@ jobs:
           echo "Commit Sha: ${{ github.sha }}"
           echo "Event Actor: ${{ github.actor }}"
 
-  buildLintTest:
+  buildDeploy:
     environment: pwc
-    name: Build, Lint and Test
+    name: Build and Deploy
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -79,34 +79,10 @@ jobs:
       - name: NPM Build Project
         run: export REACT_APP_API_BASE_URL=https://v6o5y5nu0g.execute-api.us-east-1.amazonaws.com/dev/; npm run build --if-present
 
-      - name: LS
-        run: ls -la
-
-      - uses: actions/upload-artifact@master
-        with:
-          name: complaints-qms-ui
-          path: ./build
-
-  deploy_ui:
-    environment: pwc
-    permissions:
-      id-token: write # This is required for requesting the JWT
-      contents: read # This is required for actions/checkout
-    name: Deploy UI
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./complaints-qms-ui
-    timeout-minutes: 5
-    needs: [ buildLintTest ]
-    steps:
-      - uses: actions/download-artifact@master
-        with:
-          name: complaints-qms-ui
-          path: build
       - uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::120569648189:role/qms-app-github-role
           role-session-name: rolesession
           aws-region: us-east-1
       - run: aws s3 sync --delete ./build/ s3://pwc-qms-complaints-ui-dev/
+
