@@ -70,24 +70,20 @@ Resources:
       Parameters:
         StepFunctionRole: !Sub '${StepFunctionRole}'
         Environment: !Sub '${Environment}'
-#  GithubActionRoleStack:
+
+#  SageMakerStack:
 #    Type: AWS::CloudFormation::Stack
 #    Properties:
-#      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/github-action.yaml
-#      TimeoutInMinutes: 5
-  SageMakerStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/sagemaker-stack.yaml
-      TimeoutInMinutes: 30
-      Parameters:
-        SagemakerRole: !Sub '${SagemakerRole}'
-        ModelsBucket: lly-complaints-models-qa
-        MounjaroCategoryPath: Mounjaro/mounjaro-12-category-model-v1.tar
-        MounjaroCategoryVersion: 1
-        MounjaroLevelPath: Mounjaro/mounjaro-level-model-v4.tar
-        MounjaroLevelVersion: 4
-        TrulicityCategoryPath: Trulicity/trulicity-12-category-model-v1.tar
-        TrulicityCategoryVersion: 1
-        TrulicityLevelPath: Trulicity/tr-level-model-v1.tar
-        TrulicityLevelVersion: 1
+#      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/sagemaker-stack.yaml
+#      TimeoutInMinutes: 30
+#      Parameters:
+#        SagemakerRole: !Sub '${SagemakerRole}'
+#        ModelsBucket: dev-qms-product-complaints-ai-model-bucket
+#        MounjaroCategoryPath: Mounjaro/mounjaro-12-category-model-v1.tar
+#        MounjaroCategoryVersion: 1
+#        MounjaroLevelPath: Mounjaro/mounjaro-level-model-v4.tar
+#        MounjaroLevelVersion: 4
+#        TrulicityCategoryPath: Trulicity/trulicity-12-category-model-v1.tar
+#        TrulicityCategoryVersion: 1
+#       TrulicityLevelPath: Trulicity/tr-level-model-v1.tar
+#       TrulicityLevelVersion: 1
