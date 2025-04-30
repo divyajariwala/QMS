@@ -33,11 +33,6 @@ jobs:
           echo "Commit Sha: ${{ github.sha }}"
           echo "Event Actor: ${{ github.actor }}"
 
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ github.token }}
-
   buildLintTest:
     environment: pwc
     name: Build, Lint and Test
