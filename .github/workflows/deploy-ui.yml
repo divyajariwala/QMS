@@ -79,7 +79,7 @@ jobs:
           npm install @microsoft/eslint-formatter-sarif --save-dev
 
       - name: NPM Build Project
-        run: export REACT_APP_API_BASE_URL=${{ vars.REACT_APP_API_BASE_URL }}; npm run build --if-present
+        run: export REACT_APP_API_BASE_URL=https://v6o5y5nu0g.execute-api.us-east-1.amazonaws.com/dev/; npm run build --if-present
 
       - name: Coding Standards Check
         run: npm run lint -- -f @microsoft/eslint-formatter-sarif -o results.sarif
@@ -113,8 +113,7 @@ jobs:
           path: build
       - uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ vars.AWS_ROLE }}
-          role-session-name: upload-narrative-rolesession
-          aws-region: us-east-2
-      - run: aws s3 sync --delete ./build/ s3://${{ vars.S3_BUCKET }}/
-      - run: aws cloudfront create-invalidation --distribution-id ${{ vars.CLOUDFRONT_DISTRO }} --paths "/*"
+          role-to-assume: arn:aws:iam::120569648189:role/qms-app-github-role
+          role-session-name: rolesession
+          aws-region: us-east-1
+      - run: aws s3 sync --delete ./build/ s3://pwc-qms-complaints-ui-dev/
