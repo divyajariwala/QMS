@@ -21,7 +21,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Retain
     Properties:
-      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/cloudfront-stack.yaml
+      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-1.amazonaws.com/cloudfront-stack.yaml
       TimeoutInMinutes: 5
       Parameters:
         Environment: !Sub '${Environment}'
@@ -30,21 +30,21 @@ Resources:
   SQSStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/sqs-stack.yaml
+      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-1.amazonaws.com/sqs-stack.yaml
       TimeoutInMinutes: 5
       Parameters:
         Environment: !Sub '${Environment}'
   DynamoDBStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/dynamodb-stack.yaml
+      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-1.amazonaws.com/dynamodb-stack.yaml
       TimeoutInMinutes: 5
       Parameters:
         Environment: !Sub '${Environment}'
   APIGatewayStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/apigateway-stack.yaml
+      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-1.amazonaws.com/apigateway-stack.yaml
       TimeoutInMinutes: 10
       Parameters:
         Environment: !Sub '${Environment}'
@@ -52,7 +52,7 @@ Resources:
   LambdaStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/lambda-stack.yaml
+      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-1.amazonaws.com/lambda-stack.yaml
       TimeoutInMinutes: 5
       Parameters:
         LambdaRole: !Sub '${LambdaRole}'
@@ -65,7 +65,7 @@ Resources:
   StateMachineStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/statemachine-stack.yaml
+      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-1.amazonaws.com/statemachine-stack.yaml
       TimeoutInMinutes: 5
       Parameters:
         StepFunctionRole: !Sub '${StepFunctionRole}'
@@ -74,7 +74,7 @@ Resources:
 #  SageMakerStack:
 #    Type: AWS::CloudFormation::Stack
 #    Properties:
-#      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-2.amazonaws.com/sagemaker-stack.yaml
+#      TemplateURL: https://pwc-complaints-cloudformation-template-files-dev.s3.us-east-1.amazonaws.com/sagemaker-stack.yaml
 #      TimeoutInMinutes: 30
 #      Parameters:
 #        SagemakerRole: !Sub '${SagemakerRole}'
