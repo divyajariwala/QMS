@@ -37,6 +37,9 @@ jobs:
     environment: pwc
     name: Build, Lint and Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./complaints-qms-ui
     timeout-minutes: 5
     needs: [ setup ]
 
@@ -99,6 +102,9 @@ jobs:
       contents: read # This is required for actions/checkout
     name: Deploy UI
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./complaints-qms-ui
     timeout-minutes: 5
     needs: [ buildLintTest ]
     steps:
