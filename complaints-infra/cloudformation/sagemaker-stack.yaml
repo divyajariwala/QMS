@@ -47,7 +47,7 @@ Resources:
       ProductionVariants:
         - ModelName: !GetAtt RobertaCategoryModel.ModelName
           InitialInstanceCount: 1
-          InstanceType: ml.g4dn.xlarge
+          InstanceType: ml.t2.medium
           VariantName: AllTraffic
   
   RobertaCategoryEndpoint:
@@ -73,7 +73,7 @@ Resources:
       ProductionVariants:
         - ModelName: !GetAtt RobertaLevelModel.ModelName
           InitialInstanceCount: 1
-          InstanceType: ml.g4dn.xlarge
+          InstanceType: ml.t2.medium
           VariantName: AllTraffic
   
   RobertaLevelEndpoint:
@@ -98,7 +98,7 @@ Resources:
       ProductionVariants:
         - ModelName: !GetAtt TrulicityCategoryModel.ModelName
           InitialInstanceCount: 1
-          InstanceType: ml.g4dn.xlarge
+          InstanceType: ml.t2.medium
           VariantName: AllTraffic
   
   TrulicityCategoryEndpoint:
@@ -124,7 +124,7 @@ Resources:
       ProductionVariants:
         - ModelName: !GetAtt TrulicityLevelModel.ModelName
           InitialInstanceCount: 1
-          InstanceType: ml.g4dn.xlarge
+          InstanceType: ml.t2.medium
           VariantName: AllTraffic
   
   TrulicityLevelEndpoint:
