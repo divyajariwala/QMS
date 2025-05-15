@@ -20,7 +20,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }} 
       - uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ...
+          role-to-assume: arn:aws:iam::120569648189:role/qms-app-github-role
           role-session-name: samplerolesession
           aws-region: us-east-1
 
