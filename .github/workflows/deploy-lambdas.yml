@@ -26,7 +26,7 @@ jobs:
 
       - name: Deploy lambdas (zip & update function code)
         run: >-
-          for dir in complaints-crl-mapping complaints-errorness-check complaints-fetch-results complaints-inference complaints-level complaints-preload-narrative complaints-priority complaints-queue-narrative complaints-subcategory complaints-upload-final-results complaints-upload-narrative;
+          for dir in complaints-crl-mapping-dev complaints-errorness-check-dev complaints-fetch-results-dev complaints-inference-dev complaints-level-dev complaints-preload-narrative-dev complaints-priority-dev complaints-queue-narrative-dev complaints-subcategory-dev complaints-upload-final-results-dev complaints-upload-narrative-dev;
           do
             echo "########## Deploying ${dir}... ##########"
             cd ${dir}
