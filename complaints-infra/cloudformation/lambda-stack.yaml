@@ -200,6 +200,8 @@ Resources:
       Role: !Sub '${LambdaRole}'
       FunctionName: !Sub 'complaints-preload-narrative-${Environment}'
       Timeout: 120
+      Layers:
+       - "arn:aws:lambda:us-east-1:120569648189:layer:requests:1"
       Environment:
         Variables:
           audit_table_name: !Sub mq-qms-complaints-audit-log-${Environment}
