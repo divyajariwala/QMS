@@ -51,19 +51,22 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
         # Retrieve secrets and generate an authentication token
         secrets = get_secret(secrets_name, aws_region_name)
-        token = generate_token(secrets)
-        logger.info("Generated token: %s", token)
+        # token = generate_token(secrets)
+        # logger.info("Generated token: %s", token)
 
         # Fetch record using the token and secrets
-        record = get_record(complaint_id, token, secrets)
+        # record = get_record(complaint_id, token, secrets)
+        record = {
+            "complaintId": complaint_id,
+        }
         logger.info("Fetched record: %s", json.dumps(record, indent=2))
 
         # Return a success response with the fetched record
         return generate_success_response(
             {
-                "complaint_id": record.get("complaintId"),
-                "complaint_narrative": record.get("complaintNarrative"),
-                "drugname": record.get("drugName"),
+                "complaint_id": record.get("complaintId", None),
+                "complaint_narrative": record.get("complaintNarrative", None),
+                "drugname": record.get("drugName", None),
                 "session_id": session_id,
                 "user_name": user_name,
             }
