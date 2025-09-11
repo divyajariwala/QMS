@@ -70,6 +70,10 @@ variable "subnet5" {
   type = string
 }
 
+variable "security_group_id" {
+  type = string
+}
+
 variable "lambda_configs" {
   type = list(object({
     function_name = string
@@ -113,4 +117,5 @@ variable "dynamodb_configs" {
       key_type = string  
     }))  
   }))  
+
 } 
