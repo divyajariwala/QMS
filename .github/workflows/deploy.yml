@@ -20,13 +20,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS creds (access keys)
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token:     ${{ secrets.AWS_SESSION_TOKEN }} # optional (only if your keys are temporary)
-          aws-region: "us-east-1"
+          role-to-assume: arn:aws:iam::120569648189:role/qms-app-github-role
+          role-session-name: GitHub_Deployer
+          aws-region: us-east-1
 
       - uses: hashicorp/setup-terraform@v3
         with:
