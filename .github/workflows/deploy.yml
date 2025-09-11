@@ -1,7 +1,9 @@
 name: QMS Infrastructure Deploy
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ terraform ]
+  workflow_dispatch: {}
 
 jobs:
   deploy:
