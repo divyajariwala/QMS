@@ -5,6 +5,10 @@ on:
     branches: [ terraform ]
   workflow_dispatch: {}
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     name: Deploy QMS Infra & App
