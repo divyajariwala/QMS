@@ -1,4 +1,4 @@
-name: QMS Infrastructure Deploy
+name: QMS-AI Deployment Pipeline
 
 on:
   push:
@@ -11,13 +11,12 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy QMS Infra & App
+    name: Deploy QMS-AI
     runs-on: ubuntu-latest
 
     env:
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
-      AWS_REGION: "us-east-1"
       TFVARS_PATH: conf/dev/terraform.tfvars
 
     steps:
