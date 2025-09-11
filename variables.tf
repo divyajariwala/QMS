@@ -14,10 +14,6 @@ variable "short_name" {
   type = string
 }
 
-variable "component" {
-  type = string
-}
-
 variable "owner" {
   type = string
 }
