@@ -56,16 +56,6 @@ resource "aws_ecs_task_definition" "api_task_definition" {
           name = "${var.short_name}-api"
         }
       ]
-      environment = [
-        {
-          name = "S3_BUCKET"
-          value = "${module.all_s3_buckets[1].s3_bucket_name}"
-        },
-        {
-          name = "BACKUP_INTERVAL_SECONDS"
-          value = "86400"
-        }
-      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -102,4 +92,5 @@ resource "aws_ecs_service" "ecs_service" {
 resource "aws_cloudwatch_log_group" "ecs_log_group" {
   name = "/ecs/${var.short_name}-${var.environment}-api"
   retention_in_days = 30
+
 }
