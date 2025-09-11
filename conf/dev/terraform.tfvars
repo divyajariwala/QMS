@@ -10,6 +10,7 @@ subnet3 = ""
 subnet4 = ""
 subnet5 = ""
 security_group_id = ""
+api_image_uri = "120569648189.dkr.ecr.us-east-1.amazonaws.com/qms-ai-model"
 s3_buckets_list = []
 static_website = ""
 lambda_execution_role_arn = "arn:aws:iam::120569648189:role/qms-dev-lambda-role"
@@ -19,3 +20,4 @@ event_bridge_role_arn = "arn:aws:iam::120569648189:role/qms-dev-events-role"
 step_function_configs = []
 dynamodb_configs = []
 lambda_configs = []
+
