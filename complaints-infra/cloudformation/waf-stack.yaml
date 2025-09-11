@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "WAF resources for complaints cloudfront distribution. MUST BE CREATED IN US-EAST-1 AS PER THE CLOUDFORMATION DOCUMENTATION"
+
+Resources:
+  ComplaintsIPsWebACL:
+    Type: "AWS::WAFv2::WebACL"
+    Properties:
+      Description: "Complaints Web ACL"
+      DefaultAction:
+        Block:
+          CustomResponse:
+            ResponseCode: 401
+      Scope: "CLOUDFRONT"
+      Rules:
+        - Name: "AWSManagedRulesCommonRuleSet"
+          Priority: 1
+          OverrideAction:
+            None: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: "AWSManagedRulesCommonRuleSet"
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: "AWS"
+              Name: "AWSManagedRulesCommonRuleSet"
+        - Name: "AWSManagedRulesAmazonIpReputationList"
+          Priority: 2
+          OverrideAction:
+            None: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: "IPReputationList"
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: "AWS"
+              Name: "AWSManagedRulesAmazonIpReputationList"
+        - Name: "AWSManagedRulesBotControlRuleSet"
+          Priority: 3
+          OverrideAction:
+            None: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: "BotControl"
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: "AWS"
+              Name: "AWSManagedRulesBotControlRuleSet"
+        - Name: "RateLimit100ReqPer5Min"
+          Priority: 4
+          Action:
+            Block: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: "RateLimit100ReqPer5Min"
+          Statement:
+            RateBasedStatement:
+              Limit: 1200
+              AggregateKeyType: IP
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        MetricName: "ComplaintsCloudfrontWebACL"
+        CloudWatchMetricsEnabled: true
+      Name: "ComplaintsCloudfrontWebACL"
+
+  WAFLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: aws-waf-logs-log-group-complaints
+
+  WAFLoggingConfiguration:
+    Type: "AWS::WAFv2::LoggingConfiguration"
+    DependsOn: "WAFLogGroup"
+    Properties:
+      ResourceArn: !GetAtt ComplaintsIPsWebACL.Arn
+      LogDestinationConfigs:
+        - !GetAtt WAFLogGroup.Arn
+      RedactedFields:
+        - SingleHeader:
+            Name: "Authorization"

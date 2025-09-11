@@ -1,0 +1,4 @@
+"PK","SK","crlCode","crlValue","cscValue","drugName","drugNames","modelCategoryEndpoint","modelLevelEndpoint"
+"LOOKUP#ModelRouting","DRUG#DEVICE MOUNJARO","","","","DEVICE MOUNJARO","","roberta-mounjaro-category-12-model-v1","roberta-level-model-v4"
+"LOOKUP#ModelRouting","DRUG#DEVICE TRULICITY","","","","DEVICE TRULICITY","","roberta-trulicity-category-12-model-v1","roberta-tr-level-model-v1"
+"LOOKUP#ModelRouting","DRUG#DEVICE ZEPBOUND","","","","DEVICE ZEPBOUND","","roberta-mounjaro-category-12-model-v1","roberta-level-model-v4"

@@ -1,0 +1,39 @@
+# name: Deploy Infra
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# permissions:
+#   id-token: write # This is required for requesting the JWT
+#   contents: read # This is required for actions/checkout
+# jobs:
+#   build:
+#     # ensure run only once, when repo generated
+#     runs-on: ubuntu-latest
+#     steps:
+#       # get main branch repo contents
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+#         env:
+#           GITHUB_TOKEN: ${{ github.token }} 
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           role-to-assume: arn:aws:iam::120569648189:role/qms-app-github-role
+#           role-session-name: InfrastructureGitHubDeployRole
+#           aws-region: us-east-1
+
+#       - name: Copy files to bucket
+#         run: aws s3 sync ./complaints-infra/cloudformation s3://pwc-complaints-cloudformation-template-files-dev/
+
+#       - name: Deploy to AWS CloudFormation
+#         uses: aws-actions/aws-cloudformation-github-deploy@v1
+#         with:
+#           name: qms-app-dev
+#           template: complaints-infra/cloudformation/nested-stack.yaml
+#           parameter-overrides: "Environment=dev,LambdaRole=arn:aws:iam::120569648189:role/qms-app-lambdas-function-role,StepFunctionRole=arn:aws:iam::120569648189:role/qms-app-stepfunctions-role,SagemakerRole=arn:aws:iam::120569648189:role/qms-app-sagemaker-role"
+#           capabilities: "CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM,CAPABILITY_NAMED_IAM"
+#           no-fail-on-empty-changeset: "1"
+          

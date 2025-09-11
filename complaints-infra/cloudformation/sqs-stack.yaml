@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: SQS Queue config
+
+Parameters:
+  Environment:
+    Description: Environment for the bucket
+    Type: String
+    AllowedValues:
+      - 'dev'
+      - 'qa'
+      - 'prod'
+
+Resources:
+  SQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 345600
+      QueueName: !Sub 'complaints-mq-qms-${Environment}'
+      ReceiveMessageWaitTimeSeconds: 0
+      VisibilityTimeout: 15
+  
+  # Make sure that there are no packets of dropped connectivity
+  SQSQueueErrornessInput:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 345600
+      QueueName: !Sub 'complaints-errorness-check-input-${Environment}.fifo'
+      FifoQueue: true
+      ReceiveMessageWaitTimeSeconds: 0
+      VisibilityTimeout: 900
+
+  SQSQueueErrornessResults:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 345600
+      QueueName: !Sub 'complaints-errorness-check-results-${Environment}'
+      ReceiveMessageWaitTimeSeconds: 0
+      VisibilityTimeout: 15
+
+Outputs:
+  SQSQueueName:
+    Value: !GetAtt SQSQueue.QueueName
+  SQSQueueArn:
+    Value: !GetAtt SQSQueue.Arn
+  SQSQueueErrornessResultsName:
+    Value: !GetAtt SQSQueueErrornessResults.QueueName
+  SQSQueueErrornessResultsArn:
+    Value: !GetAtt SQSQueueErrornessResults.Arn
+  SQSQueueErrornessInputName:
+    Value: !GetAtt SQSQueueErrornessInput.QueueName
+  SQSQueueErrornessInputArn:
+    Value: !GetAtt SQSQueueErrornessInput.Arn

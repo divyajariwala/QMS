@@ -1,0 +1,80 @@
+name: React Next.js Starter Deployment Reference
+
+on: 
+  push:
+    branches:
+      - dev
+    
+jobs:
+   cloudformation-deploy:
+    name: Deploy Cloudformation
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    
+    - name: cfn-lint-action
+      uses: ScottBrenner/cfn-lint-action@v2.2.9
+    
+    - name: Print the Cloud Formation Linter Version & run Linter.
+      run: |
+        cfn-lint --version
+        cfn-lint --ignore-check W3011,W3002 -t ./template.yml
+
+    - name: Set env BRANCH
+      run: echo "BRANCH=$(echo $GITHUB_REF | cut -d'/' -f 3)" >> $GITHUB_ENV
+    
+    - name: Set env DEPLOYMENT_ENV and DEPLOYMENT_ROLE_ARN and S3_BUCKET
+      env:
+        DEV_DEPLOYMENT_ROLE: ${{ secrets.DEV_DEPLOYMENT_ROLE }}
+        DEV_S3_BUCKET: ${{ secrets.DEV_S3_BUCKET }}
+      run: |
+         if [[ $BRANCH == 'dev' ]]; then
+          echo "DEPLOYMENT_ENV=dev" >> "$GITHUB_ENV"
+          echo "DEPLOYMENT_ROLE_ARN=$DEV_DEPLOYMENT_ROLE" >> "$GITHUB_ENV" 
+          echo "S3_BUCKET=$DEV_S3_BUCKET" >> "$GITHUB_ENV"
+         fi
+    - name: Configure credentials from AWS account using OIDC integration
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{env.DEPLOYMENT_ROLE_ARN}}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    # - name: Print all the variable parameters
+    #   run: |
+    #       echo "Role ARN: ${{ env.DEPLOYMENT_ROLE_ARN }}"
+    #       echo "Deployment Environment: ${{ env.DEPLOYMENT_ENV }}"
+    #       echo "S3 Bucket arn : ${{ env.S3_BUCKET }}"
+    #       echo "AWS Region : ${{ secrets.AWS_REGION }}"
+          # aws s3 cp s3://lly-templates/aws-authenticators/cloudformation/prod.yaml $GITHUB_WORKSPACE/codebuild-api-authenticators/authenticators.yaml
+
+    - name: Run AWS SAM Build
+      run: sam build --parallel --use-container --skip-pull-image --template-file template.yml
+
+    - name: Run AWS SAM Package for CF deployment
+      run: sam package --template-file .aws-sam/build/template.yaml --kms-key-id alias/aws/s3 --s3-bucket ${{ env.S3_BUCKET }} --output-template-file template.yaml
+
+    - name: Deploy to AWS Cloudformation
+      uses: aws-actions/aws-cloudformation-github-deploy@v1
+      with: 
+        name: react-starter-kit
+        template: template.yaml
+        parameter-overrides: file://${{ github.workspace }}/params.${{ env.DEPLOYMENT_ENV }}.json
+        capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND, CAPABILITY_NAMED_IAM
+        no-fail-on-empty-changeset: "1"
+    
+        # copy code to AWS S3 bucket
+    - name: Copy Code to AWS Bucket
+      run: |
+        npm install
+        npm run build
+        npm run export
+        echo "build done"
+        export S3_BUCKET=$(aws cloudformation describe-stacks --stack-name react-starter-kit --query "Stacks[*].Outputs[?OutputKey=='WebBucket'].OutputValue" --output text)
+        bucket_path="s3://${S3_BUCKET}"
+        list_of_synced_files="files_synced.txt"
+        aws s3 sync out ${bucket_path} --delete --sse AES256 > ${list_of_synced_files}

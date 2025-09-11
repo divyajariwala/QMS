@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Lambda state machine."
+Parameters:
+  StepFunctionRole:
+    Description: IAM Role for StepFunctionRole
+    Type: String
+  Environment:
+    Description: Environment for the bucket
+    Type: String
+    AllowedValues:
+      - 'dev'
+      - 'qa'
+      - 'prod'
+
+Resources:
+  StateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      StateMachineName: !Sub complaints-${Environment}
+      DefinitionString: !Sub |-
+            {
+              "StartAt": "execution",
+              "States": {
+                "execution": {
+                  "Type": "Parallel",
+                  "Branches": [
+                    {
+                      "StartAt": "Level",
+                      "States": {
+                        "Level": {
+                          "Type": "Task",
+                          "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:complaints-level-${Environment}",
+                          "End": true
+                        }
+                      }
+                    },
+                    {
+                      "StartAt": "sub-category",
+                      "States": {
+                        "sub-category": {
+                          "Type": "Task",
+                          "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:complaints-subcategory-${Environment}",
+                          "End": true
+                        }
+                      }
+                    }
+                  ],
+                  "Next": "CRL"
+                },
+                "CRL": {
+                  "Type": "Task",
+                  "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:complaints-crl-mapping-${Environment}",
+                  "Next": "Priority"
+                },
+                "Priority": {
+                  "Type": "Task",
+                  "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:complaints-priority-${Environment}",
+                  "End": true
+                }
+              },
+              "TimeoutSeconds": 100
+            }
+      RoleArn: !Sub '${StepFunctionRole}'

@@ -1,0 +1,192 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: react-nextjs-starter
+  title: React Next JS Starter
+  description: Provides a template with all the necessary code, files, and configurations for a team to start a React & Next.js frontend project. It includes features such as authentication, routing, linting, and a custom library of components, and it integrates with the Lilly Design System (LDS) for styles and components.
+  businessArea: spe
+  dataClassification: green
+  supportLevel: none
+  systemCustodian: user:johnson_christopher_colton@lilly.com
+  primaryITContact: user:agarwal_namit@lilly.com
+  tags:
+    - react
+    - nextjs
+spec:
+  type: website
+  owner: user:agarwal_namit@lilly.com
+  parameters:
+    - title: Repository General Information
+      required:
+        - repoName
+      properties:
+        repoName:
+          description: Provide a Name for Your Repository, Following the Lilly Repository
+            Naming Convention (aads-edb-<<component_name>> for EDB repos, for
+            other projects follow your application naming conventions)
+          title: Repository Name
+          type: string
+          ui:field: EntityNamePicker
+          ui:options: {}
+        displayName:
+          description: Provide Backstage display name.  May contain uppercase, lowercase, spaces, numeric, and some special characters.  The Length is suggested to be kept reasonably short. (e.g. My New Website - Version 1.0)
+          title: Backstage Display Name
+          type: string
+        description:
+          title: Repository Description
+          type: string
+          description: Add a description for Your Repository
+    - title: Choose a GitHub Admin Group for Your Repository
+      required:
+        - repoAdmin
+      properties:
+        repoAdmin:
+          title: GitHub Repository Admin Team or User
+          type: string
+          description: Enter the username of the GitHub Admin Team (e.g.
+            EliLillyCo/mygroupname) or User (e.g. myusername) for this repository.
+    - title: Repository Support and Contact Information
+      required:
+        - businessArea
+        - systemOwner
+        - systemCustodian
+        - primaryITContact
+      properties:
+        systemOwner:
+          type: string
+          title: System Owner
+          description: Provide the System Owner for the Website.
+          ui:field: CustomEntityPicker
+          ui:options:
+            allowedKinds: ["User"]
+            minCharsForAPICall: 4
+        systemCustodian:
+          type: string
+          title: System Custodian
+          description: Provide the System Custodian for the Website.
+          ui:field: CustomEntityPicker
+          ui:options:
+            allowedEntities: ["User"]
+            minCharsForAPICall: 4
+        primaryITContact:
+          type: string
+          title: Primary IT Contact
+          description: Provide the Primary IT Contact for the Website.
+          ui:field: CustomEntityPicker
+          ui:options:
+            allowedEntities: ["User"]
+            minCharsForAPICall: 4
+        businessArea:
+          title: Business Area
+          type: string
+          description: Select the Business Area for the Respository.
+          default: mq
+          ui:field: CustomMetaDataPicker
+          ui:options:
+            metadataKey: businessArea
+        dataClassification:
+          title: Data Classification
+          type: string
+          description: Select the Data Classification for the Respository.
+          default: green
+          ui:field: CustomMetaDataPicker
+          ui:options:
+            metadataKey: dataClassification
+        supportLevel:
+          title: Support Level
+          type: string
+          description: Select the Support Level for the Respository.
+          default: "none"
+          ui:field: CustomMetaDataPicker
+          ui:options:
+            metadataKey: supportLevel
+        servicenowTeam:
+          title: Change Coordinator Assignment Group from ServiceNow
+          type: string
+          description: Provide the Change Coordinator Assignment Group in ServiceNow for
+            support requests. (e.g. PLATFORM-BACKSTAGE-GLB)
+        applicationCI:
+          title: Application CI in ServiceNow
+          type: string
+          description: Provide the Application Configuration Item from ServiceNow (e.g.
+            CI12345678901234)
+  steps:
+    - action: lilly:config:read
+      id: lilly-config-read
+      name: Read Lilly Configuration Parameters
+      input:
+        defaults:
+          topic: lilly-backstage
+          branch: main
+    - action: github:info:validate
+      id: github-info-validate
+      name: Validate GitHub user id or team value.
+      input:
+        teamOrUserId: ${{ parameters.repoAdmin }}
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:plain
+      input:
+        url: https://github.com/EliLillyCo/react-nextjs-starter-jacob0-test/tree/master
+    - action: lilly:catalog:write
+      id: create-lilly-catalog-info
+      name: Create catalog file
+      input:
+        entity:
+          apiVersion: backstage.io/v1alpha1
+          kind: Component
+          metadata:
+            name: ${{ parameters.repoName }}
+            title: ${{ parameters.displayName }}
+            description: ${{ parameters.description }}
+            businessArea: ${{ parameters.businessArea }}
+            dataClassification: ${{ parameters.dataClassification }}
+            supportLevel: ${{ parameters.supportLevel }}
+            systemCustodian: ${{ parameters.systemCustodian }}
+            primaryITContact: ${{ parameters.primaryITContact }}
+            servicenowTeam: ${{ parameters.servicenowTeam }}
+            applicationCI: ${{ parameters.applicationCI }}
+            tags:
+              - react
+              - nextjs
+          spec:
+            type: website
+            lifecycle: experimental
+            owner: ${{ parameters.systemOwner }}
+    - id: publish
+      name: Publish on Github
+      action: publish:github
+      input:
+        allowedHosts:
+          - github.com
+        description: This is the ${{ parameters.name }} Website built with React and NextJS with a
+          template from Backstage.
+        repoUrl: github.com?owner=EliLillyCo&repo=${{ parameters.repoName }}
+        defaultBranch: ${{steps['lilly-config-read'].output.branch}}
+        repoVisibility: internal
+        access: ${{ parameters.repoAdmin }}
+        topics:
+          - ${{ steps['lilly-config-read'].output.topic }}
+    - action: metrics:capture
+      id: metrics-capture
+      name: Metrics Capture
+      input:
+        key: react-nextjs-starter
+        subkey: repository::created::${{ parameters.businessArea }}
+        datatype: Integer
+        uom: repository
+        value: 1
+    - id: register
+      name: Register to Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+  output:
+    links:
+      - title: Open Repository
+        icon: github
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open Catalog Entry
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

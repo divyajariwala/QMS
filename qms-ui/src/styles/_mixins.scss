@@ -1,0 +1,36 @@
+@mixin Button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  font-size: $font-size;
+  color: $color-white;
+  background: $color-blue;
+  cursor: pointer;
+
+  &:disabled {
+      border-color: $color-medium-grey;
+      background: $color-medium-grey;
+      cursor: not-allowed;
+  }
+
+  &.outline {
+      border-color: $color-blue;
+      color: $color-blue;
+      background-color: transparent;
+
+      &:disabled {
+          color: $color-medium-grey;
+          border-color: $color-medium-grey;
+      }
+  }
+}
+
+@mixin DisableButton {
+  font-size: 15px;
+  font-family: 'Helvetica Neue';
+  float: right;
+  border-radius: 4px;
+  text-transform: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}

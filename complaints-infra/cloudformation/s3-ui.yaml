@@ -1,0 +1,375 @@
+Description: This stacks deploys Lilly Standard S3 Bucket with bucket access role and policy
+
+Parameters:
+  p1S3Bucket:
+    Description: S3 Bucket name.
+    Type: String
+    Default: ''
+  p2Environment:
+     Description: Environment for the bucket
+     Type: String
+     AllowedValues:
+       - 'Dev'
+       - 'Qa'
+       - 'Prod'
+  p3ProjectName:
+     Description: Name for project
+     Type: String
+     Default: ''
+  p4ProjectCode:
+    Description: Code for project
+    Type: String
+    Default: ''
+  p5CostCenter:
+    Description: Cost Center for the bucket
+    Type: String
+    Default: ''
+  p6CostCenterApprover:
+     Description: Cost Center approver for the bucket
+     Type: String
+     Default: ''
+  p7SystemOwner:
+     Description: System Owner
+     Type: String
+     Default: ''
+  p8SystemCustodian:
+    Description: System Custodian
+    Type: String
+    Default: ''
+  p9PrimaryItContact:
+    Description: Primary IT Contact
+    Type: String
+    Default: ''
+  p91Level1BusinessArea:
+     Description: Level1 Business Area
+     Type: String
+     Default: ''
+  p92DataClassification:
+     Description: Data Classification
+     Type: String
+     Default: 'Green'
+     AllowedValues:
+       - 'Red'
+       - 'Orange'
+       - 'Yellow'
+       - 'Green'
+  p93Hipaa:
+    Description: Hipaa Yes or No
+    Type: String
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+    Default: 'No'
+  p94SnowRequestId:
+     Description: Service Now reference
+     Type: String
+     Default: ''
+  p95ApplicationCi:
+     Description: Application Ci
+     Type: String
+     Default: ''
+  pz0DoYouNeedIAMUser:
+    Description: Please confirm do you IAM Users and InfoSec approvals are in place.
+    Type: String
+    Default: 'No'
+    AllowedValues:
+      - 'No'
+  pz1IamUserName:
+    Type: String
+    Description: OPTIONAL. Insert Value only when pz0DoYouNeedIAMUser parameter is Yes.
+    Default: ''
+  pz2USerIDfromCloudTrail:
+    Description: OPTIONAL. Insert Value only when pz0DoYouNeedIAMUser parameter is Yes.
+    Type: String
+    Default: "*:*"
+  px1DoYouNeedClientIDMethod:
+    Description: Please confirm do you need ClientID methos to access the bucket.
+    Type: String
+    Default: 'No'
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+  pxClientID:
+    Type: String
+    Description: OPTIONAL. Insert Value only when px1DoYouNeedClientIDMethod parameter is Yes.
+    Default: ''
+  pxIsClientIDRoleExist:
+    Description: Please confirm if you already have this ClientID role created in the account ?
+    Type: String
+    Default: 'No'
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+  pyDoYouNeedServiceAcocuntMethod:
+    Description: Please confirm do you need Service Account method is required using Lilly AD to access the bucket.
+    Type: String
+    Default: 'No'
+    AllowedValues:
+      - 'No'
+  pyIsServiceAccountRoleExist:
+    Description: Please confirm if you know gateway/service account role is already there in account ?
+    Type: String
+    Default: 'No'
+    AllowedValues:
+      - 'No'
+
+Conditions:
+  DoYouNeedClientID: !Equals [!Ref px1DoYouNeedClientIDMethod , 'Yes']
+  DataisRedCci: !Equals [!Ref p92DataClassification , 'Red']
+  DataisNotRedCci: !Not [!Equals [!Ref p92DataClassification , 'Red']]
+  DoClientIDRoleExist: !Equals [!Ref pxIsClientIDRoleExist , 'No']
+  CreateClientIDRole: !And [ !Condition DoYouNeedClientID, !Condition DoClientIDRoleExist]
+  YN: !And [ !Condition DoYouNeedClientID, !Condition CreateClientIDRole]
+  YY: !And [ !Condition DoYouNeedClientID, !Not [!Condition CreateClientIDRole]]
+
+Resources:
+  rBucket:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Ref p1S3Bucket
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LifecycleConfiguration:
+        Rules:
+        - Id: Delete Old Versions
+          Status: Enabled
+          Prefix: ''
+          NoncurrentVersionExpirationInDays: '35'
+        - Id: IntelligentTieringRule
+          Status: Enabled
+          Prefix: '' 
+          Transitions:
+            - TransitionInDays: '0'
+              StorageClass: INTELLIGENT_TIERING
+          NoncurrentVersionTransitions:
+            - TransitionInDays: '0'
+              StorageClass: INTELLIGENT_TIERING
+
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Environment
+          Value: !Ref p2Environment
+        - Key: ProjectName
+          Value: !Ref p3ProjectName
+        - Key: ProjectCode
+          Value: !Ref p4ProjectCode
+        - Key: CostCenter
+          Value: !Ref p5CostCenter
+        - Key: CostCenterApprover
+          Value: !Ref p6CostCenterApprover
+        - Key: SystemOwner
+          Value: !Ref p7SystemOwner
+        - Key: SystemCustodian
+          Value: !Ref p8SystemCustodian
+        - Key: PrimaryItContact
+          Value: !Ref p9PrimaryItContact
+        - Key: Level1BusinessArea
+          Value: !Ref p91Level1BusinessArea
+        - Key: DataClassification
+          Value: !Ref p92DataClassification
+        - Key: Hipaa
+          Value: !Ref p93Hipaa
+        - Key: SnowRequestId
+          Value: !Ref p94SnowRequestId
+        - Key: ApplicationCi
+          Value: !Ref p95ApplicationCi
+
+  rBucketPolicy: 
+    Type: "AWS::S3::BucketPolicy"
+    Condition: DataisNotRedCci
+    Properties: 
+      Bucket: 
+        !Ref rBucket
+      PolicyDocument: 
+        Statement: 
+          - Sid: SSL Transit
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !Sub "arn:aws:s3:::${p1S3Bucket}/*"
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'False'
+
+  rClientIDGwRole:
+    Type: AWS::IAM::Role
+    Condition: CreateClientIDRole
+    Properties:
+      RoleName: 
+        Fn::Join: [ "",[ "aws_", Ref: "pxClientID" ] ]
+      PermissionsBoundary: !Sub 'arn:aws:iam::${AWS::AccountId}:policy/LZ-IAM-Boundary'  
+      MaxSessionDuration: 36000
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated:
+                - !Sub arn:aws:iam::${AWS::AccountId}:saml-provider/LillyUserAPIGW
+            Action: sts:AssumeRoleWithSAML
+            Condition:
+              StringEquals:
+               "SAML:aud": "https://signin.aws.amazon.com/saml"
+
+  rRedCciBucketPolicy: 
+    Type: "AWS::S3::BucketPolicy"
+    Condition: DataisRedCci
+    Properties: 
+      Bucket: 
+        !Ref rBucket
+      PolicyDocument: 
+        Statement: 
+          - Sid: SSL Transit
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !Sub "arn:aws:s3:::${p1S3Bucket}/*"
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'False'
+  
+  rBucketAccessPolicyYN:
+    Type: "AWS::IAM::ManagedPolicy"
+    Condition: YN
+    DependsOn: [rClientIDGwRole]
+    Properties:
+      Description: ""
+      ManagedPolicyName: 
+        Ref: p1S3Bucket
+      Path: "/"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+            - 
+              Action:
+                - 'cloudwatch:GetMetricStatistics'
+                - 'cloudwatch:ListMetrics'
+              Effect: Allow
+              Resource: '*'
+            - 
+              Action:
+                - 'kms:ListAliases'
+              Effect: Allow
+              Resource: '*'
+            - 
+              Action:
+                - 's3:ListAllMyBuckets'
+              Effect: Allow
+              Resource: 'arn:aws:s3:::*'
+            -
+              Action:
+                - 's3:GetBucketLocation'
+                - 's3:GetBucketVersioning'
+                - 's3:ListBucket'
+                - 's3:ListBucketVersions'
+                - 's3:GetMetricsConfiguration'
+              Effect: Allow
+              Resource: 
+                Fn::Join:
+                  - ""
+                  -
+                    - "arn:aws:s3:::"
+                    -
+                      Ref: "p1S3Bucket"
+                    - ""
+            - 
+              Action:
+                - 's3:DeleteObject'
+                - 's3:DeleteObjectVersion'
+                - 's3:GetObject'
+                - 's3:GetObjectAcl'
+                - 's3:GetObjectVersion'
+                - 's3:GetObjectVersionAcl'
+                - 's3:PutObject'
+                - 's3:PutObjectTagging'
+                - 's3:PutObjectVersionTagging'
+                - 's3:RestoreObject'
+              Effect: Allow
+              Resource: 
+                Fn::Join:
+                  - ""
+                  -
+                    - "arn:aws:s3:::"
+                    -
+                      Ref: "p1S3Bucket"
+                    - "/*"
+      Roles:
+        - !Join [ "",[ "aws_", Ref: "pxClientID" ] ]
+
+  rBucketAccessPolicyYY:
+    Type: "AWS::IAM::ManagedPolicy"
+    Condition: YY
+    Properties:
+      Description: ""
+      ManagedPolicyName: 
+        Ref: p1S3Bucket
+      Path: "/"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+            - 
+              Action:
+                - 'cloudwatch:GetMetricStatistics'
+                - 'cloudwatch:ListMetrics'
+              Effect: Allow
+              Resource: '*'
+            - 
+              Action:
+                - 'kms:ListAliases'
+              Effect: Allow
+              Resource: '*'
+            - 
+              Action:
+                - 's3:ListAllMyBuckets'
+              Effect: Allow
+              Resource: 'arn:aws:s3:::*'
+            -
+              Action:
+                - 's3:GetBucketLocation'
+                - 's3:GetBucketVersioning'
+                - 's3:ListBucket'
+                - 's3:ListBucketVersions'
+                - 's3:GetMetricsConfiguration'
+              Effect: Allow
+              Resource: 
+                Fn::Join:
+                  - ""
+                  -
+                    - "arn:aws:s3:::"
+                    -
+                      Ref: "p1S3Bucket"
+                    - ""
+            - 
+              Action:
+                - 's3:DeleteObject'
+                - 's3:DeleteObjectVersion'
+                - 's3:GetObject'
+                - 's3:GetObjectAcl'
+                - 's3:GetObjectVersion'
+                - 's3:GetObjectVersionAcl'
+                - 's3:PutObject'
+                - 's3:PutObjectTagging'
+                - 's3:PutObjectVersionTagging'
+                - 's3:RestoreObject'
+              Effect: Allow
+              Resource: 
+                Fn::Join:
+                  - ""
+                  -
+                    - "arn:aws:s3:::"
+                    -
+                      Ref: "p1S3Bucket"
+                    - "/*"
+      Roles:
+        - !Join [ "",[ "aws_", Ref: "pxClientID" ] ]
