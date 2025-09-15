@@ -17,7 +17,7 @@ locals {
 
 module "create_sqs_lambda" {
   depends_on = [ module.lambda_functions ]
-  source = "./aws/modules/sqs_lambda"
+  source = "./aws/modules/lambda_sqs"
   queue_name = local.sqs_variables[count.index].queue_name
   visibility_timeout = local.sqs_variables[count.index].visbility_timeout
   max_receive_count = local.sqs_variables[count.index].max_receive_count
