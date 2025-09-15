@@ -1,0 +1,137 @@
+@use "./variables" as *;
+@use "./mixins" as *;
+
+.complaint-card {
+  display: flex;
+  flex-direction: row;
+  border: $color-medium-grey 1px solid;
+  border-radius: $radius;
+  overflow: hidden;
+  box-shadow: $shadow;
+
+  &.checked.submitted {
+    background-color: $color-light-grey;
+  }
+
+  &.not-checked.submitted {
+    opacity: .5;
+  }
+
+  .data {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    gap: $gap;
+    padding: $gap $gap-sm;
+
+    .data-cell {
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        display: block;
+        margin-bottom: $gap-sm;
+        font-size: $font-size-lg;
+        font-weight: $font-weight-bold;
+        white-space: nowrap;
+      }
+
+      > div {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        font-size: $font-size;
+        color: $color-dark-grey;
+      }
+
+      &.check-cell {
+
+        .label {
+          visibility: hidden;
+        }
+
+        .check {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transform: translateX(5px);
+
+          > span {
+            padding: 0;
+          }
+        }
+      }
+
+      &.category-cell {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      &.score-cell {
+        width: 130px;
+      }
+
+      &.level-cell {
+        width: 70px;
+      }
+
+      &.crl-cell {
+        flex: 1;
+        overflow: hidden;
+      }
+
+      &.priority-cell {
+        width: 80px;
+      }
+
+      &.unit-cell {
+        width: 50px;
+      }
+
+      .score {
+        gap: $gap;
+        height: 100%;
+
+        // Donut
+        .donutChartMainDiv {
+          text-align: center;
+
+          .donutChart {
+              position: relative;
+              display: inline-block;
+
+              canvas {
+                  height: 40px !important;
+                  width: 40px !important;
+              }
+
+              .donutChartInnerText {
+                  font-size: 12px;
+                  font-weight: normal;
+              }
+          }
+        }
+      }
+    }
+  }
+
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $gap-sm;
+    color: $color-dark-grey;
+    background-color: $color-light-grey;
+    cursor: pointer;
+
+    &.has-not-summary {
+      cursor: initial;
+
+      svg {
+        visibility: hidden;
+      }
+    }
+  }
+}
+

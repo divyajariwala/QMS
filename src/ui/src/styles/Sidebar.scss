@@ -1,0 +1,39 @@
+@use "./variables" as *;
+@use "./mixins" as *;
+
+.sidebar {
+    min-height: 600px;
+    height: 100%;
+    background-color: #252B33;
+    position: fixed;
+    width: 18rem;
+
+    .pca-header-arrow {
+        margin-right: 10px;
+    }
+
+    ul {
+        .Mui-selected {
+            background-color: #2F353D;
+        }
+
+        .Mui-selected:hover {
+            background-color: #2F353D;
+        }
+
+        .MuiListItemText-primary {
+            color: white;
+            opacity: 1;
+
+        }
+    }
+
+    list {
+
+        background: #252B33 0% 0% no-repeat padding-box;
+        opacity: 1;
+        color: #FFFFFF;
+    }
+
+
+}

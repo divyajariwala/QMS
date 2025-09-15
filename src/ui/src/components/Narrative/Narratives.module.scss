@@ -1,0 +1,123 @@
+$primary-color: #415385;
+$chip-bg: #e3f2fd;
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+}
+
+.container {
+  padding: 16px;
+//   background: #fff;
+  @media (max-width: 600px) {
+    padding: 8px;
+  }
+}
+
+.pageHeader {
+  width: 100%;
+  @include flex-center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+.filterButton {
+  padding: 8px;
+  color: #203570 !important;
+}
+
+.header {
+  @include flex-center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .tabsRoot {
+    flex: 1;
+    @media (max-width: 600px) {
+      width: 100%;
+    }
+
+    .text{
+        text-transform: none;
+        color: #415385;
+        font-weight: 500;
+        font-size: 16px;
+        font-family: 'Helvetica Neue';
+    }
+  }
+
+  .actions {
+    @include flex-center;
+    gap: 12px;
+    @media (max-width: 600px) {
+      width: 100%;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .createButton{
+        background-color: #415385;
+        border-radius: 4px;
+        text-transform: none;
+    }
+  }
+
+  .searchField {
+    width: 280px;
+    @media (max-width: 600px) {
+      width: 100%;
+    }
+  }
+}
+
+.gridContainer {
+  width: 100%;
+
+  .MuiDataGrid-root {
+    overflow-x: auto;
+  }
+}
+
+.typeCell {
+  @include flex-center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.typeChip {
+  @include flex-center;
+  padding: 0px 10px;
+  font-size: 0.875rem;
+  border: 1px solid $primary-color;
+  border-radius: 16px;
+  background-color: $chip-bg;
+  height: 25px;
+  margin-top: 13px;
+}
+
+.flagIcon {
+  color: $primary-color;
+  cursor: pointer;
+}
+
+.plusIcon{
+    color: #FFFFFF;
+    margin-right:5px;
+}
+
+.filterIcon{
+    color: #203570;
+}

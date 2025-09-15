@@ -1,0 +1,22 @@
+
+Resources:  
+  GithubOIDCRole:
+          Type: AWS::IAM::Role
+          Properties:
+              RoleName: <RoleName>
+              ManagedPolicyArns:
+                  - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+              PermissionsBoundary: !Sub "arn:aws:iam::${AWS::AccountId}:policy/LZ-IAM-Boundary"
+              AssumeRolePolicyDocument:
+                  Statement:
+                      - Effect: Allow
+                        Action: sts:AssumeRoleWithWebIdentity
+                        Principal:
+                          Federated: "arn:aws:iam::<AccountID>:oidc-provider/token.actions.githubusercontent.com"
+                        Condition:
+                          StringLike:
+                              token.actions.githubusercontent.com:sub: "repo:EliLillyCo/<RepoName>:*"
+                      - Effect: Allow
+                        Action: sts:AssumeRole
+                        Principal:
+                          Service: cloudformation.amazonaws.com

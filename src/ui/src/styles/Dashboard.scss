@@ -1,0 +1,22 @@
+@use "./variables" as *;
+@use "./mixins" as *;
+
+.MuiBox-root{
+  .cardContainer{
+    .cardBox{
+      .MuiGrid-root{
+        .resourceNo{
+          font-weight: $font-weight-bolder;
+          font-size: $font-size-xxxl;
+          line-height: $line-height-100;
+        }
+
+        .resourceLabel{
+          font-weight: $font-weight-bolder;
+          font-size: $font-size-small;
+          line-height: $line-height-100;
+        }
+      }
+    }
+  }
+}

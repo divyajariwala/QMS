@@ -1,0 +1,219 @@
+.root {
+    .uploadNarrative{
+        font-weight: 700;
+        margin-bottom: 1em !important;
+        color:  #252525;
+        font-size: 32px;
+    }
+
+    .mainGrid {
+        border: 1px solid #e0e0e0;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0px 2px 4px -2px #4747473D;
+
+        .equalCol {
+            display: flex;
+
+            .card {
+                padding: 20px;
+                border-radius: 12px;
+
+                    .dropZone {
+                        border: 2px dashed #636785;
+                        border-radius: 10px;
+                        min-height: 260px;
+                        display: grid;
+                        place-items: center;
+                        padding: 24px;
+                        background: #fafbfc;
+                        transition: border-color 0.2s ease, background 0.2s ease;
+
+                        &__icon {
+                            font-size: 44px;
+                            opacity: 0.7;
+                        }
+
+                        &:hover {
+                            background: #f6f8fb;
+                            border-color: #c6ccd6;
+                            cursor: pointer;
+                        }
+
+                        &--dragging {
+                            background: #eef4ff;
+                            border-color: #90caf9;
+                        }
+                    }
+
+                    .orDivider {
+                        width: 100%;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        color: #8f95a3;
+                        font-size: 12px;
+                        margin: 6px 0 4px;
+
+                        &::before,
+                        &::after {
+                            content: "";
+                            flex: 1;
+                            height: 1px;
+                            background: #e5e7eb;
+                        }
+
+                        span {
+                            white-space: nowrap;
+                            letter-spacing: 0.08em;
+                            font-weight: 600;
+                        }
+                    }
+
+                    .uploadBtn{
+                        text-transform: capitalize !important;
+                        border-radius: 4px !important;
+                        background-color: #415385 !important;
+                    }
+
+                    .exampleCard {
+                        margin-top: 18px;
+                        padding: 18px 20px;
+                        border-radius: 16px !important;
+                        background: #f7faff;                    
+
+                        .cardRow {
+                            display: flex;
+                            align-items: stretch;                   
+                            gap: 20px; 
+
+                            .left {
+                                flex: 1 1 auto;
+                                display: grid;
+                                grid-template-columns: 34px 1fr;
+                                grid-auto-rows: min-content;
+                                column-gap: 12px;
+                                row-gap: 6px;
+
+                                .fileBadge {
+                                    grid-column: 1 / 2;
+                                    grid-row: 1 / 2;
+                                    position: relative;
+                                    width: 34px;
+                                    display: inline-flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    color: #2e7d32;
+
+                                    svg {
+                                        font-size: 40px;
+                                        color: #2e7d32;
+                                    }
+
+                                    span {
+                                        position: absolute;
+                                        bottom: 4px;
+                                        left: 4px;
+                                        font-size: 9px;
+                                        font-weight: 700;
+                                        letter-spacing: 0.06em;
+                                        color: #2e7d32;
+                                    }
+                                }
+
+                                .title {
+                                    grid-column: 2 / 3;
+                                    grid-row: 1 / 2;
+                                    align-self: center;
+                                    font-weight: 700 !important;
+                                    font-size: 1.125rem !important;
+                                    line-height: 1.25;
+                                    color: #0f1e44;                    
+                                }
+
+                                .copy {
+                                    grid-column: 1 / -1;
+                                    grid-row: 2 / 3;
+                                    margin-top: 4px;
+                                    font-size: 1rem;
+                                    line-height: 1.75;
+                                    color: #5a6476;
+                                    max-width: 620px;
+                                }
+                            }
+
+                            .right {
+                                margin-left: auto;
+                                display: flex;
+                                align-items: center;                  
+                                flex: 0 0 auto;
+
+                                .downloadBtn {
+                                    text-transform: none !important;
+                                    border-radius: 4px !important;
+                                    border-width: 2px !important;
+                                    padding: 10px 22px !important;
+                                    font-weight: 700 !important;
+                                    color: #415385 !important;
+                                    border-color: #415385 !important;
+                                    background: transparent !important;
+
+                                    &:hover {
+                                        background: #eef3ff !important;
+                                        border-color: #7c98cf !important;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    .narrativeWrap {
+                        position: relative;
+                        display: flex;
+                        min-height: 0;
+                        height: 100%;
+
+                        .narrativePlaceholder {
+                            position: absolute;
+                            top: 14px;       
+                            left: 14px;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 6px;
+                            pointer-events: none;     
+                            color: #7b8794;          
+                            font-size: 0.95rem;
+                            line-height: 1.4;
+
+                                .requiredDot {
+                                    width: 4px;
+                                    height: 4px;
+                                    border-radius: 50%;
+                                    background: #C52A1A;
+                                }
+                            }
+                    }
+            }
+
+            .stretchCard {
+                display: flex;         
+                flex-direction: column;
+                flex: 1 1 auto;        
+                height: 100%;
+                width: 100%;
+            }
+        }
+    }
+    @media (max-width: 600px) {
+        .cardRow {
+            flex-direction: column;
+            gap: 12px;
+        }
+        .right {
+            margin-left: 0;
+        }
+        .downloadBtn {
+            width: 100%;
+        }
+    }
+}

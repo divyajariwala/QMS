@@ -1,0 +1,88 @@
+@use "./variables" as *;
+@use "./mixins" as *;
+
+$primary-color: #2bb598;
+$secondary-color: #f4873b;
+$white: #fff;
+$light-grey: #f4f4f4;
+$black: #000;
+
+.qms-header {
+    height: 65px;
+    background: #FFFFFF 0% 0% no-repeat padding-box;
+    box-shadow: 0px 1px 3px #00000029;
+    opacity: 1;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 10;
+    background-color: $white;
+    color: $black;
+
+    .qms-header-container {
+        padding: 17px;
+
+        .qms-header-container-navbar {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            .qms-header-container-navbar-left {
+                display: flex;
+                justify-content: left;
+
+                .qms-header-container-navbar-brand-logo {
+
+                    .brandLogo{
+                        margin-top: 10px;
+                    }
+                }
+
+                .qms-header-container-navbar-brand-name {
+                    padding-left: 0.5em;
+                    padding-top: 4px;
+                    font-weight: 400;
+                    font-family: 'Helvetica Neue LT Pro';
+                    font-size: 16px;
+                    line-height: 24px;
+                    letter-spacing: -0.4px;
+                    vertical-align: middle;
+                }
+            }
+
+            .qms-header-container-navbar-right {
+                flex-direction: row;
+                display: flex;
+
+                .qms-header-container-navbar-right-content {
+                    width: 32px;              
+                    height: 32px;             
+                    border-radius: 50%;       
+                    overflow: hidden;         
+                    display: flex;            
+                    align-items: center;
+                    justify-content: center;
+
+                    .MuiAvatar-root {
+                        width: 100%;              
+                        height: 100%;             
+                        object-fit: cover;   
+                        font-weight: 500;
+                        font-size: 16px;
+                        line-height: 24px;
+                        letter-spacing: -0.4px;
+                        text-align: center;
+                        vertical-align: middle;
+                    }
+
+                    .logoutIcon {
+                        font-size: 'medium';
+                        margin-top: '10px';
+                        margin-left: '5px';
+                        cursor: 'pointer';
+                    }  
+                }
+            } 
+        }  
+    }      
+}

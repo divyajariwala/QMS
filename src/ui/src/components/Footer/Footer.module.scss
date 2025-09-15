@@ -1,0 +1,14 @@
+.footer {
+    padding: 24px 0;
+    background: transparent;
+
+    .text {
+        display: block;
+        text-align: center;
+        line-height: 1.6;
+    }
+}
+
+@media (max-width: 600px) {
+  .footer { padding: 16px 0; }
+}
