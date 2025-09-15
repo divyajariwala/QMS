@@ -27,7 +27,7 @@ locals {
 #   environment_variables = var.lambda_configs[count.index].environment_variables
 #   role_arn = var.lambda_execution_role_arn
 #   file_path = var.lambda_configs[count.index].path
-#   security_group_id = ""
+#   security_group_id = var.security_group_id
 #   subnet1 = var.subnet1
 #   subnet2 = var.subnet2
 #   subnet3 = var.subnet3

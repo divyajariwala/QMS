@@ -2,7 +2,7 @@ resource "aws_lb" "ecs_alb_internal" {
   name = "${var.short_name}-${var.environment}-api-int-alb"
   load_balancer_type = "application"
   internal = true
-  security_groups = [""]
+  security_groups = [var.security_group_id]
   subnets = [var.subnet1, var.subnet2]
 }
 
@@ -79,7 +79,7 @@ resource "aws_ecs_service" "ecs_service" {
   launch_type = "FARGATE"
   network_configuration {
     subnets = [var.subnet1, var.subnet2, var.subnet3, var.subnet4]
-    security_groups = [""]
+    security_groups = [var.security_group_id]
   }
   load_balancer {
     target_group_arn = aws_lb_target_group.ecs_alb_target_group.arn

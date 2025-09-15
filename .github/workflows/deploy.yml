@@ -61,3 +61,6 @@ jobs:
 
       - name: Apply Terraform Changes
         run: terraform apply -auto-approve tfplan
+      
+      - name: Compile Frontend
+        run: npm run build:dev
