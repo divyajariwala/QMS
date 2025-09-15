@@ -84,7 +84,7 @@ resource "aws_ecs_service" "ecs_service" {
   load_balancer {
     target_group_arn = aws_lb_target_group.ecs_alb_target_group.arn
     container_name = "${var.short_name}-api"
-    container_port = 6333
+    container_port = 8080
   }
   desired_count = 1
 }

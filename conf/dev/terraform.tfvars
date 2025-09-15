@@ -13,7 +13,7 @@ api_image_uri = "120569648189.dkr.ecr.us-east-1.amazonaws.com/qms-ai-model"
 s3_buckets_list = [
   "narrative-initial-files",
 ]
-static_website = ""
+static_website = "ui"
 lambda_execution_role_arn = "arn:aws:iam::120569648189:role/qms-dev-lambda-role"
 ecs_task_role_arn = "arn:aws:iam::120569648189:role/qms-dev-ecs-role"
 step_function_role_arn = "arn:aws:iam::120569648189:role/qms-dev-step-function-role"
