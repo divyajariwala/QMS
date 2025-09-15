@@ -63,4 +63,6 @@ jobs:
         run: terraform apply -auto-approve tfplan
       
       - name: Compile Frontend
-        run: npm run build:dev
+        run: |
+          cd src/ui
+          npm run build:dev
