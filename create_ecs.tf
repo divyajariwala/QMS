@@ -3,7 +3,7 @@ resource "aws_lb" "ecs_alb_internal" {
   load_balancer_type = "application"
   internal = true
   security_groups = [""]
-  subnets = [var.subnet1, var.subnet5]
+  subnets = [var.subnet1, var.subnet2]
 }
 
 resource "aws_lb_target_group" "ecs_alb_target_group" {

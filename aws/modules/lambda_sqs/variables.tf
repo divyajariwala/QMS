@@ -3,11 +3,11 @@ variable "queue_name" {
 }
 
 variable "visibility_timeout" {
-  type = string
+  type = number
 }
 
 variable "max_receive_count" {
-    type = string
+    type = number
 }
 
 variable "lambda_function_name" {
@@ -15,13 +15,13 @@ variable "lambda_function_name" {
 }
 
 variable "batch_size" {
-    type = string
+    type = number
 }
 
 variable "max_batch_window" {
-    type = string
+    type = number
 }
 
 variable "max_concurrency" {
-    type = string
+    type = number
 }
