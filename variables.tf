@@ -89,6 +89,15 @@ variable "lambda_configs" {
       trigger_bucket = string
       trigger_path = string
     })))
+    sqs_trigger = optional(list(object({
+      queue_name = string
+      visibility_timeout = number
+      max_receive_count = number
+      lambda_function_name = string
+      batch_size = number
+      max_batch_window = number
+      max_concurrency = number
+    }))) 
   }))
 }
 
