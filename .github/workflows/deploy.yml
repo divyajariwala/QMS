@@ -76,7 +76,8 @@ jobs:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
     needs: compile_source
-
+    outputs:
+      ui_bucket: ${{ steps.tf_out.outputs.ui_bucket }}
     env:
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
@@ -113,7 +114,7 @@ jobs:
       - name: Apply Terraform Changes
         run: terraform apply -auto-approve tfplan
 
-      - name: Read TF output (UI bucket)
+      - name: Export Website Bucket Name
         id: tf_out
         shell: bash
         run: |
