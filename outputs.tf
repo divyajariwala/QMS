@@ -9,3 +9,7 @@ output "cloudfront_endpoint" {
 output "alb_dns_name" {
   value = "http://${aws_lb.ecs_alb_internal.dns_name}"
 }
+
+output "static_website_bucket_name" {
+  value = aws_s3_bucket.static_website.bucket
+}
