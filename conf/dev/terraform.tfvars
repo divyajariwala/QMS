@@ -43,90 +43,90 @@ lambda_configs = [
     ]
     event_trigger = []
   },
-  {
-    function_name = "narrative-process-handler"
-    path = "src/app/narrative_process_handler"
-    environment_variables = {
-      env = "dev"
-    }
-    api_gateway_paths = []
-    event_trigger = []
-    sqs_trigger = [
-      {
-        queue_name = "preload-narratives"
-        visibility_timeout = 5000
-        max_receive_count = 1000
-        batch_size = 500
-        max_batch_window = 20
-        max_concurrency = 20
-      }
-    ]
-  },
-  {
-    function_name = "narrative-aepc-detector"
-    path = "src/app/narrative_aepc_detector"
-    environment_variables = {
-      env = "dev"
-    }
-    api_gateway_paths = []
-    event_trigger = []
-  },
-  {
-    function_name = "narrative-get-classified-narratives"
-    path = "src/app/narrative_get_classified_narratives"
-    environment_variables = {
-      env = "dev"
-    }
-    api_gateway_paths = [
-      {
-        path_name = "getClassifiedNarratives"
-        http_method = "GET"
-      }
-    ]
-    event_trigger = []
-  },
-  {
-    function_name = "narrative-classify-narratives"
-    path = "src/app/narrative_classify_narratives"
-    environment_variables = {
-      env = "dev"
-    }
-    api_gateway_paths = [
-      {
-        path_name = "classifyNarratives"
-        http_method = "POST"
-      }
-    ]
-    event_trigger = []
-  },
-  {
-    function_name = "complaints-get-product-complaints"
-    path = "src/app/complaints_get_product_complaints"
-    environment_variables = {
-      env = "dev"
-    }
-    api_gateway_paths = [
-      {
-        path_name = "getProductComplaints"
-        http_method = "GET"
-      }
-    ]
-    event_trigger = []
-  },
-  {
-    function_name = "complaints-classify-complaints"
-    path = "src/app/complaints_classify_complaints"
-    environment_variables = {
-      env = "dev"
-    }
-    api_gateway_paths = [
-      {
-        path_name = "classifyComplaints"
-        http_method = "POST"
-      }
-    ]
-    event_trigger = []
-  },
+  # {
+  #   function_name = "narrative-process-handler"
+  #   path = "src/app/narrative_process_handler"
+  #   environment_variables = {
+  #     env = "dev"
+  #   }
+  #   api_gateway_paths = []
+  #   event_trigger = []
+  #   sqs_trigger = [
+  #     {
+  #       queue_name = "preload-narratives"
+  #       visibility_timeout = 5000
+  #       max_receive_count = 1000
+  #       batch_size = 500
+  #       max_batch_window = 20
+  #       max_concurrency = 20
+  #     }
+  #   ]
+  # },
+  # {
+  #   function_name = "narrative-aepc-detector"
+  #   path = "src/app/narrative_aepc_detector"
+  #   environment_variables = {
+  #     env = "dev"
+  #   }
+  #   api_gateway_paths = []
+  #   event_trigger = []
+  # },
+  # {
+  #   function_name = "narrative-get-classified-narratives"
+  #   path = "src/app/narrative_get_classified_narratives"
+  #   environment_variables = {
+  #     env = "dev"
+  #   }
+  #   api_gateway_paths = [
+  #     {
+  #       path_name = "getClassifiedNarratives"
+  #       http_method = "GET"
+  #     }
+  #   ]
+  #   event_trigger = []
+  # },
+  # {
+  #   function_name = "narrative-classify-narratives"
+  #   path = "src/app/narrative_classify_narratives"
+  #   environment_variables = {
+  #     env = "dev"
+  #   }
+  #   api_gateway_paths = [
+  #     {
+  #       path_name = "classifyNarratives"
+  #       http_method = "POST"
+  #     }
+  #   ]
+  #   event_trigger = []
+  # },
+  # {
+  #   function_name = "complaints-get-product-complaints"
+  #   path = "src/app/complaints_get_product_complaints"
+  #   environment_variables = {
+  #     env = "dev"
+  #   }
+  #   api_gateway_paths = [
+  #     {
+  #       path_name = "getProductComplaints"
+  #       http_method = "GET"
+  #     }
+  #   ]
+  #   event_trigger = []
+  # },
+  # {
+  #   function_name = "complaints-classify-complaints"
+  #   path = "src/app/complaints_classify_complaints"
+  #   environment_variables = {
+  #     env = "dev"
+  #   }
+  #   api_gateway_paths = [
+  #     {
+  #       path_name = "classifyComplaints"
+  #       http_method = "POST"
+  #     }
+  #   ]
+  #   event_trigger = []
+  # },
 ]
 
 
