@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   compile_source:
-    name: Compile Source-code
+    name: Compile Source Code
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -49,7 +49,7 @@ jobs:
         env:
           VITE_API_URL: development
         run: |
-          npm ci
+          npm install
           npm run build:dev
           ls -la dist || true
 
@@ -70,6 +70,7 @@ jobs:
   deploy_terraform:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
+    needs: compile_source
 
     env:
       TF_INPUT: "false"
