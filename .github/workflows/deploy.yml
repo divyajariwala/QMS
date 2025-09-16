@@ -10,36 +10,19 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-    name: Deploy QMS-AI
+  compile_source:
+    name: Compile Source-code
     runs-on: ubuntu-latest
-
-    env:
-      TF_INPUT: "false"
-      TF_IN_AUTOMATION: "true"
-      TFVARS_PATH: conf/dev/terraform.tfvars
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::120569648189:role/qms-app-github-role
-          role-session-name: GitHub_Deployer
-          aws-region: us-east-1
-
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.9.5
 
       - name: Install Pre-requisites
         run: |
           sudo apt-get update -y
           sudo apt-get install -y zip jq
 
-      - name: Compile Backend
+      - name: Create Lambda Source ZIPs
         run: |
           set -euo pipefail
           SRC="src/app"
@@ -52,6 +35,67 @@ jobs:
               (cd "$d" && zip -qr "$PWD/../${base}.zip" .)
             done
           fi
+          ls -la src/app/*.zip || true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: src/ui/package-lock.json
+
+      - name: Build Frontend
+        working-directory: src/ui
+        env:
+          VITE_API_URL: development
+        run: |
+          npm ci
+          npm run build:dev
+          ls -la dist || true
+
+      - name: Upload Backend ZIPs
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-zips
+          path: src/app/*.zip
+          if-no-files-found: ignore
+
+      - name: Upload Frontend Dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: src/ui/dist
+          if-no-files-found: ignore
+
+  deploy_terraform:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+
+    env:
+      TF_INPUT: "false"
+      TF_IN_AUTOMATION: "true"
+      TFVARS_PATH: conf/dev/terraform.tfvars
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download backend zips
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-zips
+          path: src/app
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::120569648189:role/qms-app-github-role
+          role-session-name: GitHub_Deployer
+          aws-region: us-east-1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
 
       - name: Initialize Terraform
         run: terraform init -input=false
@@ -61,8 +105,3 @@ jobs:
 
       - name: Apply Terraform Changes
         run: terraform apply -auto-approve tfplan
-      
-      - name: Compile Frontend
-        run: |
-          cd src/ui
-          npm run build:dev
