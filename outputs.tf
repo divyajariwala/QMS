@@ -2,6 +2,10 @@ output "cloudfront_endpoint" {
   value = "https://${aws_cloudfront_distribution.cloudfront_distribution.domain_name}"
 }
 
+output "cloudfront_distribution_id" {
+  value = aws_cloudfront_distribution.cloudfront_distribution.id
+}
+
 # output "api_gateway_endpoint" {
 #   value = aws_api_gateway_stage.api_stage.invoke_url
 # }

@@ -27,6 +27,37 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y zip jq
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "src/app/**/requirements.txt"
+
+      - name: Install Dependencies
+        shell: bash
+        env:
+          PIP_DISABLE_PIP_VERSION_CHECK: "1"
+          PIP_NO_INPUT: "1"
+        run: |
+          set -euo pipefail
+          SRC="src/app"
+          if [ -d "$SRC" ]; then
+            for d in "$SRC"/*/; do
+              [ -d "$d" ] || continue
+              if [ -f "${d}requirements.txt" ]; then
+                echo "==> Installing deps for $(basename "$d")"
+                python -m pip install -r "${d}requirements.txt" -t "$d"
+                find "$d" -type d -name "__pycache__" -prune -exec rm -rf {} +
+                find "$d" -type d -name "*.dist-info" -prune -exec rm -rf {} + || true
+                find "$d" -type d -name "*.egg-info"  -prune -exec rm -rf {} + || true
+                rm -rf "${d}tests" || true
+              else
+                echo "==> No requirements.txt in $(basename "$d"); skipping deps."
+              fi
+            done
+          fi
+
       - name: Create Lambda Source ZIPs
         run: |
           set -euo pipefail
@@ -90,6 +121,7 @@ jobs:
     needs: [compile_frontend, compile_backend]
     outputs:
       ui_bucket: ${{ steps.tf_out.outputs.ui_bucket }}
+      cf_dist_id: ${{ steps.tf_out.outputs.cf_dist_id }}
     env:
       TF_INPUT: "false"
       TF_IN_AUTOMATION: "true"
@@ -133,6 +165,12 @@ jobs:
           set -euo pipefail
           UI_BUCKET="$(terraform output -raw static_website_bucket_name)"
           echo "ui_bucket=${UI_BUCKET}" >> "$GITHUB_OUTPUT"
+          if terraform output -raw cloudfront_distribution_id >/dev/null 2>&1; then
+            CF_DIST_ID="$(terraform output -raw cloudfront_distribution_id)"
+            echo "cf_dist_id=${CF_DIST_ID}" >> "$GITHUB_OUTPUT"
+          else
+            echo "cf_dist_id=" >> "$GITHUB_OUTPUT"
+          fi
 
   deploy_frontend:
     name: Deploy Frontend
@@ -140,6 +178,7 @@ jobs:
     needs: deploy_terraform
     env:
       UI_BUCKET: ${{ needs.deploy_terraform.outputs.ui_bucket }}
+      CF_DIST_ID:  ${{ needs.deploy_terraform.outputs.cf_dist_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -157,6 +196,12 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name:  ${{ env.AWS_ROLE_SESSION_NAME }}
 
-      - name: Upload to S3 (recursive)
+      - name: Upload to S3 Website Bucket
         if: ${{ hashFiles('src/ui/dist/**') != '' && env.UI_BUCKET != '' }}
         run: aws s3 cp src/ui/dist "s3://${UI_BUCKET}/" --recursive
+
+      - name: Invalidate CloudFront
+        if: ${{ env.CF_DIST_ID != '' }}
+        run: |
+          echo "Invalidating CloudFront distribution ${CF_DIST_ID}"
+          aws cloudfront create-invalidation --distribution-id "${CF_DIST_ID}" --paths "/*"
