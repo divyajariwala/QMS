@@ -6,15 +6,71 @@ on:
   workflow_dispatch: {}
 
 env:
+  AWS_ACCOUNT_ID: 120569648189
   AWS_ROLE_ARN: arn:aws:iam::120569648189:role/qms-app-github-role
   AWS_REGION: us-east-1
   AWS_ROLE_SESSION_NAME: GitHub_Deployer
+  ENVIRONMENT: dev
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
+  build_docker_image_api:
+    name: Build API Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pre-requisites
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y zip jq
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: ${{ env.AWS_ROLE_SESSION_NAME }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Setup ECR Repository
+        run: |
+          set -euo pipefail
+          if ! aws ecr describe-repositories --repository-names "qms-${{ env.ENVIRONMENT }}-api" >/dev/null 2>&1; then
+            aws ecr create-repository --repository-name "qms-${{ env.ENVIRONMENT }}-api" >/dev/null
+            echo "Created ECR repository: qms-${{ env.ENVIRONMENT }}-api"
+          else
+            echo "ECR repository exists: qms-${{ env.ENVIRONMENT }}-api"
+          fi
+
+      - name: Setup Image Tags
+        run: |
+          echo "Registry: ${{ steps.ecr-login.outputs.registry }}"
+          echo "Tag: ${{ steps.ecr-login.outputs.registry }}/qms-${{ env.ENVIRONMENT }}-api:latest"
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./src/api
+          file: ./src/api/Dockerfile
+          push: true
+          platforms: linux/amd64
+          provenance: false
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/qms-${{ env.ENVIRONMENT }}-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
   compile_backend:
     name: Compile Backend
     runs-on: ubuntu-latest

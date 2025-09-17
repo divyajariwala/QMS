@@ -56,6 +56,20 @@ resource "aws_ecs_task_definition" "api_task_definition" {
           name = "${var.short_name}-api"
         }
       ]
+      environment = [
+        {
+          name = "API_KEY"
+          value = "${var.ecs_openai_api_key}"
+        },
+        {
+          name = "BASE_URL"
+          value = "${var.ecs_openai_base_url}"
+        },
+        {
+          name = "SAGEMAKER_ENDPOINT_NAME"
+          value = "${var.sagemaker_endpoint_name}"
+        }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {

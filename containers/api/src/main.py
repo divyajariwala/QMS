@@ -1,13 +1,17 @@
 import utils
 import json
 import boto3
+import os
 from fastapi import FastAPI, Request
 from openai import OpenAI
-# initialize LLM model
-# client = boto3.client(service_name="bedrock-runtime")
+
+API_KEY = os.getenv("API_KEY")
+BASE_URL = os.getenv("BASE_URL")
+SAGEMAKER_ENDPOINT_NAME = os.getenv("SAGEMAKER_ENDPOINT_NAME")
+
 client = OpenAI(
-    api_key="sk-z64AsJhaUSPWF8ns_KCZWg",
-    base_url="https://genai-sharedservice-americas.pwc.com", 
+    api_key = API_KEY,
+    base_url = BASE_URL, 
 )
 
 # initialize runtime for sagemaker endpoint
@@ -30,7 +34,7 @@ async def pc_csc_prediction(request: Request):
     if "model" in data.keys():
         model = data["model"]
     else:
-        model = "internal-pwc-mounjaro-12-categorization-model-v1"
+        model = SAGEMAKER_ENDPOINT_NAME
     input_data = [
         {
             "modelInput": {
