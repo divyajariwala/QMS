@@ -2,8 +2,8 @@ name: QMS CI/CD Pipeline
 
 on:
   push:
-    branches: [ terraform ]
-  workflow_dispatch: {}
+    branches: ['**']
+  workflow_dispatch: {} 
 
 env:
   AWS_ACCOUNT_ID: 120569648189
@@ -175,6 +175,7 @@ jobs:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
     needs: [build_docker_image_api, compile_frontend, compile_backend]
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'terraform')) }}
     outputs:
       ui_bucket: ${{ steps.tf_out.outputs.ui_bucket }}
       cf_dist_id: ${{ steps.tf_out.outputs.cf_dist_id }}
@@ -232,6 +233,7 @@ jobs:
     name: Deploy Frontend
     runs-on: ubuntu-latest
     needs: deploy_terraform
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'terraform')) }}
     env:
       UI_BUCKET: ${{ needs.deploy_terraform.outputs.ui_bucket }}
       CF_DIST_ID:  ${{ needs.deploy_terraform.outputs.cf_dist_id }}
