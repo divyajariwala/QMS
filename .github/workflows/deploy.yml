@@ -61,8 +61,8 @@ jobs:
       - name: Docker Build and Push
         uses: docker/build-push-action@v6
         with:
-          context: ./src/api
-          file: ./src/api/Dockerfile
+          context: ./containers/api
+          file: ./containers/api/Dockerfile
           push: true
           platforms: linux/amd64
           provenance: false
