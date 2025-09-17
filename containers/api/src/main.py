@@ -20,6 +20,10 @@ runtime= boto3.client('runtime.sagemaker')
 # initialize the FastAPI
 app = FastAPI()
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 @app.post("/ae_pc_detector")
 async def ae_pc_detector(request: Request):
     data = await request.json()
