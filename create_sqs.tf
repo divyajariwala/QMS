@@ -3,7 +3,7 @@ locals {
     for lambda in var.lambda_configs : [
       for sqs_trigger in (lambda.sqs_trigger != null ? lambda.sqs_trigger : []) : {
         queue_name = sqs_trigger.queue_name
-        visbility_timeout = sqs_trigger.visbility_timeout
+        visibility_timeout = sqs_trigger.visibility_timeout
         max_receive_count = sqs_trigger.max_receive_count
         batch_size = sqs_trigger.batch_size
         max_batch_window = sqs_trigger.max_batch_window
@@ -19,7 +19,7 @@ module "create_sqs_lambda" {
   depends_on = [ module.lambda_functions ]
   source = "./aws/modules/lambda_sqs"
   queue_name = local.sqs_variables[count.index].queue_name
-  visibility_timeout = local.sqs_variables[count.index].visbility_timeout
+  visibility_timeout = local.sqs_variables[count.index].visibility_timeout
   max_receive_count = local.sqs_variables[count.index].max_receive_count
   lambda_function_name = local.sqs_variables[count.index].lambda_name
   batch_size = local.sqs_variables[count.index].batch_size
