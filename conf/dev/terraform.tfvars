@@ -44,7 +44,6 @@ lambda_configs = [
         http_method = "POST"
       }
     ]
-    event_trigger = []
   },
   {
     function_name = "narrative-process-handler"
@@ -52,8 +51,6 @@ lambda_configs = [
     environment_variables = {
       env = "dev"
     }
-    api_gateway_paths = []
-    event_trigger = []
     sqs_trigger = [
       {
         queue_name = "preload-narratives"
