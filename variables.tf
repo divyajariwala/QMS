@@ -108,30 +108,30 @@ variable "lambda_configs" {
   }))
 }
 
-# variable "step_function_configs" {
-#   type = list(object({
-#     step_function_name = string
-#     definition_yaml_path = string
-#     event_trigger = optional(list(object({
-#       trigger_name = string
-#       trigger_description = string
-#       trigger_bucket = string
-#       trigger_path = string
-#     })))
-#   }))
-# }
+variable "step_function_configs" {
+  type = list(object({
+    step_function_name = string
+    definition_yaml_path = string
+    event_trigger = optional(list(object({
+      trigger_name = string
+      trigger_description = string
+      trigger_bucket = string
+      trigger_path = string
+    })))
+  }))
+}
 
-# variable "dynamodb_configs" {    
-#   type = list(object({  
-#     table_name = string  
-#     part_key = object({  
-#       key_name = string  
-#       key_type = string  
-#     })  
-#     sort_key = optional(object({  
-#       key_name = string  
-#       key_type = string  
-#     }))  
-#   }))  
+variable "dynamodb_configs" {    
+  type = list(object({  
+    table_name = string  
+    part_key = object({  
+      key_name = string  
+      key_type = string  
+    })  
+    sort_key = optional(object({  
+      key_name = string  
+      key_type = string  
+    }))  
+  }))  
 
-# } 
+} 
