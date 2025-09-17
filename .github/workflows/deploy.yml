@@ -174,7 +174,7 @@ jobs:
   deploy_terraform:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
-    needs: [compile_frontend, compile_backend]
+    needs: [build_docker_image_api, compile_frontend, compile_backend]
     outputs:
       ui_bucket: ${{ steps.tf_out.outputs.ui_bucket }}
       cf_dist_id: ${{ steps.tf_out.outputs.cf_dist_id }}
