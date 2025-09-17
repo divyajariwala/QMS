@@ -12,14 +12,6 @@ resource "aws_lb_target_group" "ecs_alb_target_group" {
   protocol = "HTTP"
   target_type = "ip"
   vpc_id = var.vpc_id
-  health_check {
-    path = "/dashboard"
-    protocol = "HTTP"
-    interval = 30
-    timeout = 10
-    healthy_threshold = 2
-    unhealthy_threshold = 5
-  }
 }
 
 resource "aws_lb_listener" "ecs_alb_listener" {
