@@ -46,25 +46,25 @@ lambda_configs = [
     ]
     event_trigger = []
   },
-  # {
-  #   function_name = "narrative-process-handler"
-  #   path = "src/app/narrative_process_handler"
-  #   environment_variables = {
-  #     env = "dev"
-  #   }
-  #   api_gateway_paths = []
-  #   event_trigger = []
-  #   sqs_trigger = [
-  #     {
-  #       queue_name = "preload-narratives"
-  #       visibility_timeout = 5000
-  #       max_receive_count = 1000
-  #       batch_size = 500
-  #       max_batch_window = 20
-  #       max_concurrency = 20
-  #     }
-  #   ]
-  # },
+  {
+    function_name = "narrative-process-handler"
+    path = "src/app/narrative_process_handler"
+    environment_variables = {
+      env = "dev"
+    }
+    api_gateway_paths = []
+    event_trigger = []
+    sqs_trigger = [
+      {
+        queue_name = "preload-narratives"
+        visibility_timeout = 5000
+        max_receive_count = 1000
+        batch_size = 500
+        max_batch_window = 20
+        max_concurrency = 20
+      }
+    ]
+  },
   # {
   #   function_name = "narrative-aepc-detector"
   #   path = "src/app/narrative_aepc_detector"
