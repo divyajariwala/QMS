@@ -42,18 +42,6 @@ variable "event_bridge_role_arn" {
   type = string
 }
 
-variable "ecs_task_role_arn" {
-  type = string
-}
-
-variable "ecs_openai_api_key" {
-  type = string
-}
-
-variable "ecs_openai_base_url" {
-  type = string
-}
-
 variable "sagemaker_endpoint_name" {
   type = string
 }

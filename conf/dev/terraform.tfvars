@@ -9,16 +9,12 @@ subnet2 = "subnet-0948aa53dddc1752a"
 subnet3 = "subnet-0142513425585a3ec"
 subnet4 = "subnet-07cf57f40e705dc5b"
 security_group_id = "sg-073837aa58ac9dc40"
-api_image_uri = "120569648189.dkr.ecr.us-east-1.amazonaws.com/qms-dev-api:latest"
-ecs_openai_api_key = "sk-z64AsJhaUSPWF8ns_KCZWg"
-ecs_openai_base_url = "https://genai-sharedservice-americas.pwc.com"
 sagemaker_endpoint_name = "internal-pwc-mounjaro-12-categorization-model-v1"
 s3_buckets_list = [
   "narrative-initial-files",
 ]
 static_website = "ui"
 lambda_execution_role_arn = "arn:aws:iam::120569648189:role/qms-dev-lambda-role"
-ecs_task_role_arn = "arn:aws:iam::120569648189:role/qms-dev-ecs-role"
 step_function_role_arn = "arn:aws:iam::120569648189:role/qms-dev-step-function-role"
 event_bridge_role_arn = "arn:aws:iam::120569648189:role/qms-dev-events-role"
 step_function_configs = []
