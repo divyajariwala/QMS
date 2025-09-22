@@ -46,10 +46,6 @@ variable "sagemaker_endpoint_name" {
   type = string
 }
 
-variable "api_image_uri" {
-  type = string
-}
-
 variable "subnet1" {
   type = string
 }
