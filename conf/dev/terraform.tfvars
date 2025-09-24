@@ -33,6 +33,7 @@ lambda_configs = [
     path = "src/app/narrative_upload_handler"
     environment_variables = {
       env = "dev"
+      narrative_metadata_table = "narrative-metadata"
     }
     api_gateway_paths = [
       {

@@ -17,7 +17,64 @@ permissions:
   contents: read
 
 jobs:
-          
+  test_backend:
+    name: Backend Coverage & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: |
+            src/app/**/requirements.txt
+            src/tests/requirements.txt
+
+      - name: Install Test Dependencies
+        env:
+          PIP_DISABLE_PIP_VERSION_CHECK: "1"
+          PIP_NO_INPUT: "1"
+        run: |
+          set -euo pipefail
+          if [ -f "src/tests/requirements.txt" ]; then
+            python -m pip install -r src/tests/requirements.txt
+          else
+            python -m pip install pytest pytest-cov moto boto3 freezegun requests-mock
+          fi
+
+          find src/app -maxdepth 2 -name "requirements.txt" -print0 | while IFS= read -r -d '' req; do
+            echo "==> Installing runtime deps from $req"
+            python -m pip install -r "$req"
+          done
+
+      - name: Run Pytest
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src/app
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_SESSION_TOKEN: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          set -euo pipefail
+          mkdir -p test-results
+          pytest -q src/tests \
+            --maxfail=1 --disable-warnings \
+            --cov=src/app --cov-report=term-missing \
+            --cov-report=xml:test-results/coverage.xml \
+            --junitxml=test-results/pytest-junit.xml
+
+      - name: Upload Test Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: |
+            test-results/coverage.xml
+            test-results/pytest-junit.xml
+          if-no-files-found: error
+
   compile_backend:
     name: Compile Backend
     runs-on: ubuntu-latest
