@@ -15,6 +15,7 @@ env:
 permissions:
   id-token: write
   contents: read
+  pages: write
 
 jobs:
   test_backend:
@@ -57,23 +58,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: test
           AWS_SESSION_TOKEN: test
           AWS_DEFAULT_REGION: us-east-1
-        run: |
-          set -euo pipefail
-          mkdir -p test-results
-          pytest -q src/tests \
-            --maxfail=1 --disable-warnings \
-            --cov=src/app --cov-report=term-missing \
-            --cov-report=xml:test-results/coverage.xml \
-            --junitxml=test-results/pytest-junit.xml
-
-      - name: Upload Test Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-test-results
-          path: |
-            test-results/coverage.xml
-            test-results/pytest-junit.xml
-          if-no-files-found: error
+        run: pytest src/tests --cov=src/app --cov-report=term-missing --cov-report=html --cov-fail-under=70 -W ignore
 
   compile_backend:
     name: Compile Backend
