@@ -60,11 +60,11 @@ lambda_configs = [
     ]
   },
   {
-    function_name = "narrative-process-handler"
-    path = "src/app/narrative_process_handler"
+    function_name = "narrative-aepc-detector"
+    path = "src/app/narrative_aepc_detector"
     environment_variables = {
       env = "dev"
-      model_id = ""
+      model_id = "arn:aws:bedrock:us-east-1:120569648189:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
     }
   }
 ]
