@@ -58,6 +58,14 @@ lambda_configs = [
         max_concurrency = 20
       }
     ]
+  },
+  {
+    function_name = "narrative-process-handler"
+    path = "src/app/narrative_process_handler"
+    environment_variables = {
+      env = "dev"
+      model_id = ""
+    }
   }
 ]
 
