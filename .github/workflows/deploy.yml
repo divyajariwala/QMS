@@ -75,6 +75,15 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Upload pylint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pylint-report
+          path: pylint_report.txt
+          if-no-files-found: error
+          retention-days: 14
+
   compile_backend:
     name: Compile Backend
     runs-on: ubuntu-latest
