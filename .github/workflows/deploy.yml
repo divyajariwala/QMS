@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   test_backend:
-    name: Backend Coverage & Unit Tests
+    name: Backend Code Coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -178,7 +178,7 @@ jobs:
   deploy_terraform:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
-    needs: [compile_frontend, compile_backend]
+    needs: [test_backend, compile_frontend, compile_backend]
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'terraform')) }}
     outputs:
       ui_bucket: ${{ steps.tf_out.outputs.ui_bucket }}
