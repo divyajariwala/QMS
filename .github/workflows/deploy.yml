@@ -64,8 +64,8 @@ jobs:
         run: |
           set -euo pipefail
           pylint src/app/ --disable=C0111 | tee pylint_report.txt || true
-          SCORE=$(grep -Eo 'rated at[[:space:]]+[0-9]+(\.[0-9]+)?/10' pylint_report.txt | grep -Eo '[0-9]+(\.[0-9]+)?' | tail -n1)
-          if (( $(echo "$SCORE >= 7" | bc -l) )); then echo "✅ Pylint Passed (Score $SCORE)"; else echo "❌ Pylint Failed (Score $SCORE)"; exit 1; fi
+          SCORE=$(tail -n 2 pylint_report.txt | grep -o '[0-9]*\.[0-9]*/10' | awk -F '/' '{print $1}')
+          if (( $(echo "$SCORE >= 9" | bc -l) )); then echo "✅ Pylint Passed (Score $SCORE)"; else echo "❌ Pylint Failed (Score $SCORE)"; exit 1; fi
 
       - name: Upload coverage HTML (htmlcov/)
         uses: actions/upload-artifact@v4
