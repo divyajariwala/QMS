@@ -148,6 +148,7 @@ jobs:
           name: backend-zips
           path: src/app/*.zip
           if-no-files-found: ignore
+          retention-days: 14
 
   compile_frontend:
     name: Compile Frontend
@@ -183,6 +184,7 @@ jobs:
           name: frontend-dist
           path: src/ui/dist
           if-no-files-found: ignore
+          retention-days: 14
 
   deploy_terraform:
     name: Deploy Infrastructure
