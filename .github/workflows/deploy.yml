@@ -60,6 +60,14 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: pytest src/tests --cov=src/app --cov-report=term-missing --cov-report=html --cov-fail-under=70 -W ignore
 
+      - name: Upload coverage HTML (htmlcov/)
+        uses: actions/upload-artifact@v4
+        with:
+          name: htmlcov
+          path: htmlcov/**
+          if-no-files-found: error
+          retention-days: 14
+
   compile_backend:
     name: Compile Backend
     runs-on: ubuntu-latest
