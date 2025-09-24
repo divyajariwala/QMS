@@ -60,8 +60,8 @@ lambda_configs = [
     ]
   },
   {
-    function_name = "narrative-process-handler"
-    path = "src/app/narrative_process_handler"
+    function_name = "narrative-aepc-detector"
+    path = "src/app/narrative_aepc_detector"
     environment_variables = {
       env = "dev"
       model_id = ""
