@@ -2,7 +2,7 @@ locals {
   sqs_variables = flatten([
     for lambda in var.lambda_configs : [
       for sqs_trigger in (lambda.sqs_trigger != null ? lambda.sqs_trigger : []) : {
-        queue_name = sqs_trigger.queue_name
+        queue_name = "${var.short_name}-${var.environment}-${sqs_trigger.queue_name}"
         visibility_timeout = sqs_trigger.visibility_timeout
         max_receive_count = sqs_trigger.max_receive_count
         batch_size = sqs_trigger.batch_size
