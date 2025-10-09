@@ -8,17 +8,38 @@ from datetime import datetime, timezone
 
 # Environment variables
 S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'narrative-upload-bucket')
-SQS_QUEUE_URL = os.environ.get('SQS_QUEUE_URL',
-                               'https://sqs.REGION.amazonaws.com/ACCOUNT_ID/narrative-processing-queue')
+SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME', 'qms-dev-preload-narratives')
 ALLOWED_EXTENSIONS = {'.csv', '.xlsx'}
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
 
 def lambda_handler(event, context):
     try:
+        if "body" not in event:
+            return _response(400, "No file provided")
+
+        headers = event.get("headers", {})
+        content_type = headers.get("content-type", "")
+        if "multipart/form-data" not in content_type:
+            return _response(400, "Invalid content-type, expected multipart/form-data")
+
+        parsed = parse_multipart_manual(...)
+        if not parsed:
+            return _response(400, "No file found in multipart data")
+
+        if not parsed["content"]:
+            return _response(400, "File is empty")
+
         # Initialize AWS clients
         s3_client = boto3.client('s3')
         sqs_client = boto3.client('sqs')
+
+        # Resolve Queue URL from name
+        try:
+            queue_url = sqs_client.get_queue_url(QueueName=SQS_QUEUE_NAME)["QueueUrl"]
+        except Exception as e:
+            print(f"Error resolving queue URL for {SQS_QUEUE_NAME}: {e}")
+            return _response(500, f"Queue {SQS_QUEUE_NAME} not found")
 
         # Validate request
         if "body" not in event:
@@ -98,7 +119,7 @@ def lambda_handler(event, context):
         }
 
         sqs_response = sqs_client.send_message(
-            QueueUrl=SQS_QUEUE_URL,
+            QueueUrl=queue_url,
             MessageBody=json.dumps(message),
             MessageAttributes={
                 'FileType': {
