@@ -1,0 +1,40 @@
+.actions {
+  .baseButton {
+    border-radius: 5px;
+    gap: 6px;
+    padding: 10px 16px;
+    box-shadow: 0px 1px 2px 0px #1018280a;
+    font-family: "Inter";
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0px;
+    text-transform: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, border 0.3s ease;
+  }
+
+  .primaryImportButton {
+    @extend .baseButton;
+    background-color: #437ef7;
+    color: #fff;
+
+    &:hover {
+      background-color: #437ef7;
+    }
+  }
+
+  .addManuallyButton {
+    @extend .baseButton;
+    background-color: #fff;
+    border: 1px solid #dae0e6;
+    color: #272d37;
+
+    &:hover {
+      border: 1px solid #dae0e6;
+    }
+  }
+}

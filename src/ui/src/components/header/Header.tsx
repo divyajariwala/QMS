@@ -1,9 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import pwcLogo from "../../assets/images/pwcLogo.svg";
-import { Avatar, Tooltip } from "@mui/material";
+import { Avatar, Badge, styled, Tooltip } from "@mui/material";
 import { useAuth } from "../../auth/useAuth";
 
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    backgroundColor: "#437EF7",
+    border: "2px solid #1C2534",
+    width: "14px",
+    height: "14px",
+    borderRadius: "50%",
+  },
+}));
 
 const stringToColor = (str: string) => {
   if (!str) return "#9e9e9e"; // fallback grey
@@ -42,7 +51,9 @@ const stringAvatar = (display: string) => ({
 const Header = () => {
   const { user } = useAuth();
 
-  const displayName = `${user?.profile?.given_name ?? ""} ${user?.profile?.family_name ?? ""}`.trim();
+  const displayName = `${user?.profile?.given_name ?? ""} ${
+    user?.profile?.family_name ?? ""
+  }`.trim();
 
   return (
     <header className={`qms-header`}>
@@ -51,10 +62,7 @@ const Header = () => {
           <div className="qms-header-container-navbar-left">
             <div className="qms-header-container-navbar-brand-logo">
               <Link to="/">
-                <img className="brandLogo"
-                  src={pwcLogo}
-                  alt="PwC"
-                />
+                <img className="brandLogo" src={pwcLogo} alt="PwC" />
               </Link>
             </div>
             <div className="qms-header-container-navbar-brand-name">
@@ -64,7 +72,16 @@ const Header = () => {
           <div className="qms-header-container-navbar-right">
             <div className="qms-header-container-navbar-right-content">
               <Tooltip title={displayName || "User"}>
-                <Avatar alt={displayName || "User"}  {...stringAvatar(displayName)} />
+                <StyledBadge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  variant="dot"
+                >
+                  <Avatar
+                    alt={displayName || "User"}
+                    {...stringAvatar(displayName)}
+                  />
+                </StyledBadge>
               </Tooltip>
             </div>
           </div>
@@ -72,6 +89,6 @@ const Header = () => {
       </div>
     </header>
   );
-}
+};
 
 export default Header;
