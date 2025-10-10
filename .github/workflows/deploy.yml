@@ -194,12 +194,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Pre-requisites
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y zip jq
-          sudo pip3 install 
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
