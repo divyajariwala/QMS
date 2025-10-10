@@ -1,8 +1,14 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import pwcLogo from "../../assets/images/pwcLogo.svg";
-import { Avatar, Badge, styled, Tooltip } from "@mui/material";
+import { Avatar, Badge, styled, Tab, Tabs, Tooltip } from "@mui/material";
 import { useAuth } from "../../auth/useAuth";
+
+const navLinks = [
+  { label: "Dashboard", path: "/" },
+  { label: "Complaints", path: "/productComplaints" },
+  { label: "Deviation", path: "/narratives" },
+];
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -55,6 +61,12 @@ const Header = () => {
     user?.profile?.family_name ?? ""
   }`.trim();
 
+  const currentTab = navLinks.findIndex((link) =>
+    link.path === "/"
+      ? location.pathname === "/"
+      : location.pathname.startsWith(link.path)
+  );
+
   return (
     <header className={`qms-header`}>
       <div className="qms-header-container">
@@ -68,6 +80,22 @@ const Header = () => {
             <div className="qms-header-container-navbar-brand-name">
               Quality Management Toolkit
             </div>
+          </div>
+          <div className="qms-header-container-navbar-center">
+            <Tabs
+              value={currentTab !== -1 ? currentTab : false}
+              TabIndicatorProps={{ hidden: true }}
+            >
+              {navLinks.map(({ label, path }) => (
+                <Tab
+                  key={label}
+                  label={label}
+                  component={NavLink}
+                  to={path}
+                  className="qms-header-navigation-tab"
+                />
+              ))}
+            </Tabs>
           </div>
           <div className="qms-header-container-navbar-right">
             <div className="qms-header-container-navbar-right-content">

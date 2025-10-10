@@ -21,7 +21,7 @@ $black: #000;
   color: $black;
 
   .qms-header-container {
-    padding: 19px;
+    padding: 15px;
 
     .qms-header-container-navbar {
       display: flex;
@@ -40,6 +40,25 @@ $black: #000;
           font-size: 18px;
           line-height: 24px;
           color: #333333;
+        }
+      }
+
+      .qms-header-container-navbar-center {
+        .qms-header-navigation-tab {
+          font-family: "Roboto";
+          font-weight: 500;
+          font-size: 15px;
+          line-height: 22px;
+          letter-spacing: -0.1px;
+          color: #5f6d7e;
+          text-transform: none;
+          border-radius: 5px;
+          padding: 9px 16px;
+          min-height: 40px;
+        }
+        .Mui-selected {
+          color: #437ef7;
+          background-color: #f5faff;
         }
       }
 
