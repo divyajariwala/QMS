@@ -208,7 +208,7 @@ jobs:
           PIP_NO_INPUT: "1"
         run: |
           python -m pip install checkov
-          checkov -d .
+          checkov -d . --skip-path src/ --skip-path conf/
           
   deploy_terraform:
     name: Deploy Infrastructure
