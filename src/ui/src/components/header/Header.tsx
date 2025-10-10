@@ -1,14 +1,8 @@
 import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import pwcLogo from "../../assets/images/pwcLogo.svg";
 import { Avatar, Badge, styled, Tab, Tabs, Tooltip } from "@mui/material";
 import { useAuth } from "../../auth/useAuth";
-
-const navLinks = [
-  { label: "Dashboard", path: "/" },
-  { label: "Complaints", path: "/productComplaints" },
-  { label: "Deviation", path: "/narratives" },
-];
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -56,16 +50,28 @@ const stringAvatar = (display: string) => ({
  */
 const Header = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const displayName = `${user?.profile?.given_name ?? ""} ${
     user?.profile?.family_name ?? ""
   }`.trim();
+
+  const navLinks = [
+    { label: "Dashboard", path: "/" },
+    { label: "Complaints", path: "/productComplaints" },
+    { label: "Deviation", path: "/narratives" },
+  ];
 
   const currentTab = navLinks.findIndex((link) =>
     link.path === "/"
       ? location.pathname === "/"
       : location.pathname.startsWith(link.path)
   );
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    navigate(navLinks[newValue].path);
+  };
 
   return (
     <header className={`qms-header`}>
@@ -83,16 +89,15 @@ const Header = () => {
           </div>
           <div className="qms-header-container-navbar-center">
             <Tabs
-              value={currentTab !== -1 ? currentTab : false}
-              TabIndicatorProps={{ hidden: true }}
+              value={currentTab !== -1 ? currentTab : 0}
+              onChange={handleChange}
+              TabIndicatorProps={{ style: { display: "none" } }}
             >
-              {navLinks.map(({ label, path }) => (
+              {navLinks.map(({ label }) => (
                 <Tab
+                  className="qms-header-navigation-tab"
                   key={label}
                   label={label}
-                  component={NavLink}
-                  to={path}
-                  className="qms-header-navigation-tab"
                 />
               ))}
             </Tabs>
