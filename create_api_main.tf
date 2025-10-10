@@ -3,6 +3,9 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
   endpoint_configuration {
     types = ["EDGE"]
   }
+  lifecycle {
+    create_before_destroy = true
+  }
   binary_media_types = ["image/png", "application/pdf", "application/octet-stream"]
 }
 

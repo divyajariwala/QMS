@@ -43,10 +43,6 @@ variable "environment_variables" {
   default = {}
 }
 
-# variable "custom_layer_arn" {
-#   type = string
-# }
-
-# variable "managed_layer_arn" {
-#   type = string
-# }
+variable "reserved_concurrent_executions" {
+  type = string
+}
