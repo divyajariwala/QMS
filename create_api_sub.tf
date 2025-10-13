@@ -12,7 +12,7 @@ locals {
 }
 
 module "create_api" {
-  depends_on = [ module.lambda_functions ]
+  # depends_on = [ module.lambda_functions ]
   source = "./aws/modules/api_components"
   count = length(local.api_variables)
   api_gateway_id = aws_api_gateway_rest_api.api_gateway.id
