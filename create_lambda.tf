@@ -1,3 +1,7 @@
+data "aws_kms_alias" "lambda_default" {
+  name = "alias/aws/lambda"
+}
+
 module "lambda_functions" {
   source = "./aws/modules/lambda_function"
   count = length(var.lambda_configs)
@@ -9,6 +13,7 @@ module "lambda_functions" {
   role_arn = var.lambda_execution_role_arn
   file_path = var.lambda_configs[count.index].path
   security_group_id = var.security_group_id
+  kms_key_arn = data.aws_kms_alias.lambda_default.arn
   subnet1 = var.subnet1
   subnet2 = var.subnet2
   subnet3 = var.subnet3

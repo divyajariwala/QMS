@@ -46,3 +46,7 @@ variable "environment_variables" {
 variable "reserved_concurrent_executions" {
   type = string
 }
+
+variable "kms_key_arn" {
+  type = string
+}
