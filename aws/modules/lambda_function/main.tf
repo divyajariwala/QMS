@@ -17,6 +17,5 @@ resource "aws_lambda_function" "lambda_function" {
   environment {
     variables = var.environment_variables
   }
-  kms_key_arn = var.kms_key_arn
   reserved_concurrent_executions = var.reserved_concurrent_executions
 }
