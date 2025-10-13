@@ -28,6 +28,14 @@ dynamodb_configs = [
   }
 ]
 lambda_configs = [
+    {
+    function_name = "narrative-extraction-handler"
+    path = "src/app/narrative_extraction_handler"
+    environment_variables = {
+      env = "dev"
+      narrative_metadata_table = "narrative-metadata"
+    }
+  },
   {
     function_name = "narrative-upload-handler"
     path = "src/app/narrative_upload_handler"
