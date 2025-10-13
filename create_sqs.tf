@@ -16,7 +16,7 @@ locals {
 }
 
 module "create_sqs_lambda" {
-  # depends_on = [ module.lambda_functions ]
+  depends_on = [ module.lambda_functions ]
   source = "./aws/modules/lambda_sqs"
   count  = length(local.sqs_variables)
   queue_name = local.sqs_variables[count.index].queue_name

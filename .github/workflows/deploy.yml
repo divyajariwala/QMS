@@ -187,7 +187,7 @@ jobs:
           retention-days: 14
 
   scan_infra:
-    name: IaC Vulnerability Scan
+    name: Checkov Scan
     needs: [test_backend, compile_frontend, compile_backend]
     runs-on: ubuntu-latest
     steps:
