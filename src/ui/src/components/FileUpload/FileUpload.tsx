@@ -17,7 +17,6 @@ interface FileUploadPopupProps {
   open: boolean;
   onClose: () => void;
   onFileSelect: (file: File) => void;
-  sampleTemplateUrl: string;
 }
 
 type Status = 'idle' | 'importing' | 'extracting' | 'success';
@@ -27,8 +26,7 @@ const TOTAL_FILES = 3;
 const FileUpload: React.FC<FileUploadPopupProps> = ({
   open,
   onClose,
-  onFileSelect,
-  sampleTemplateUrl,
+  onFileSelect
 }) => {
   const theme = useTheme();
   const [isDragActive, setIsDragActive] = useState(false);
@@ -102,6 +100,30 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
     [handleFileLoaded]
   );
 
+  const handleDownloadExample = () => {
+    const blob = new Blob(
+      [new Uint8Array([0x50, 0x57, 0x43, 0x2d, 0x58, 0x4c, 0x53])],
+      { type: "application/vnd.ms-excel" }
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "document-example.xls";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleClickUploadArea = () => {
+    document.getElementById('file-input')?.click();
+  };
+
+  const handleKeyDownUploadArea = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      document.getElementById('file-input')?.click();
+    }
+  };
+
   // Different content depending on upload status
   const renderStatusContent = () => {
     if (status === 'idle') {
@@ -131,15 +153,10 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onClick={() => document.getElementById('file-input')?.click()}
+            onClick={handleClickUploadArea}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                document.getElementById('file-input')?.click();
-              }
-            }}
+            onKeyDown={handleKeyDownUploadArea}
           >
             <img src={CloudUploadIcon} />
             <Typography
@@ -225,14 +242,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
               color: '#606260'
 
             }}
-            onClick={() => {
-              const link = document.createElement('a');
-              link.href = sampleTemplateUrl;
-              link.download = '';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-            }}
+            onClick={handleDownloadExample}
           >
             Download Sample Template
           </Button>

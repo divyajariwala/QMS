@@ -95,7 +95,6 @@ const complaintsData = [
 const Complaints = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [openFileUpload, setOpenFileUpload] = useState<boolean>(false);
-  const sampleUrl = '/path/to/sample-template.xlsx';
   const handleFileSelect = (file: File) => {
     console.log('Selected file:', file);
   };
@@ -168,7 +167,6 @@ const Complaints = () => {
       open={openFileUpload}
       onClose={() => setOpenFileUpload(false)}
       onFileSelect={handleFileSelect}
-      sampleTemplateUrl={sampleUrl}
     />
     </Box>
   );
