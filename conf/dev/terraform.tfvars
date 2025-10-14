@@ -69,7 +69,7 @@ lambda_configs = [
         max_receive_count = 1000
         batch_size = 500
         max_batch_window = 20
-        max_concurrency = 20
+        max_concurrency = 10
       }
     ]
   },
