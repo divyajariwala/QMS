@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from narrative_upload_handler import lambda_function
+from upload_complaints import lambda_function
 
 
 class TestLambdaHandler:
@@ -17,7 +17,7 @@ class TestLambdaHandler:
         'SQS_QUEUE_URL': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'
     })
     @patch('boto3.client')
-    @patch('narrative_upload_handler.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
     def test_successful_csv_upload(self, mock_parse, mock_boto3):
         """Test: Successful CSV file upload"""
         # Mock AWS clients
@@ -56,7 +56,7 @@ class TestLambdaHandler:
         'SQS_QUEUE_URL': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'
     })
     @patch('boto3.client')
-    @patch('narrative_upload_handler.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
     def test_successful_xlsx_upload(self, mock_parse, mock_boto3):
         """Test: Successful Excel file upload"""
         # Mock AWS clients
@@ -112,7 +112,7 @@ class TestLambdaHandler:
         'SQS_QUEUE_URL': 'test-queue'
     })
     @patch('boto3.client')
-    @patch('narrative_upload_handler.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
     def test_invalid_file_extension(self, mock_parse, mock_boto3):
         """Test: Error with not allowed extension"""
         mock_sqs = Mock()
@@ -141,7 +141,7 @@ class TestLambdaHandler:
         'S3_BUCKET_NAME': 'test-bucket',
         'SQS_QUEUE_URL': 'test-queue'
     })
-    @patch('narrative_upload_handler.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
     def test_empty_file(self, mock_parse):
         """Test: Error with empty file"""
         mock_parse.return_value = {
