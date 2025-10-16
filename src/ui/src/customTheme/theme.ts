@@ -6,11 +6,11 @@ const colors = {
       main: "#3078A0",
     },
     yellow: {
-      main: '#FFA929',
-      dark: '#D3702A'
+      main: "#FFA929",
+      dark: "#D3702A",
     },
     red: {
-      main: '#C80E0E'
+      main: "#C80E0E",
     },
     secondary: {
       main: "#0ab093",
@@ -19,7 +19,7 @@ const colors = {
       main: "#E1242A",
     },
     success: {
-      main: '#249A2A',
+      main: "#249A2A",
     },
     gray: {
       light: "#CBCBCB",
@@ -37,7 +37,7 @@ const theme = createTheme(
     },
     ...colors,
     typography: {
-      fontFamily: "Lato",
+      fontFamily: "Inter",
     },
   },
   {

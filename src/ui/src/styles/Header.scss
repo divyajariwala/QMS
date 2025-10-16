@@ -8,81 +8,83 @@ $light-grey: #f4f4f4;
 $black: #000;
 
 .qms-header {
-    height: 65px;
-    background: #FFFFFF 0% 0% no-repeat padding-box;
-    box-shadow: 0px 1px 3px #00000029;
-    opacity: 1;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    z-index: 10;
-    background-color: $white;
-    color: $black;
+  height: 70px;
+  background: #ffffff 0% 0% no-repeat padding-box;
+  box-shadow: 0px 1px 3px #00000029;
+  border-bottom: 1px solid #eaebf0;
+  opacity: 1;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  z-index: 10;
+  background-color: $white;
+  color: $black;
 
-    .qms-header-container {
-        padding: 17px;
+  .qms-header-container {
+    padding: 15px;
 
-        .qms-header-container-navbar {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
+    .qms-header-container-navbar {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
 
-            .qms-header-container-navbar-left {
-                display: flex;
-                justify-content: left;
+      .qms-header-container-navbar-left {
+        display: flex;
+        justify-content: left;
+        align-items: center;
 
-                .qms-header-container-navbar-brand-logo {
+        .qms-header-container-navbar-brand-name {
+          padding-left: 0.6em;
+          font-weight: 500;
+          font-family: "Roboto";
+          font-size: 18px;
+          line-height: 24px;
+          color: #333333;
+        }
+      }
 
-                    .brandLogo{
-                        margin-top: 10px;
-                    }
-                }
+      .qms-header-container-navbar-center {
+        .qms-header-navigation-tab {
+          font-family: "Roboto";
+          font-weight: 500;
+          font-size: 15px;
+          line-height: 22px;
+          letter-spacing: -0.1px;
+          color: #5f6d7e;
+          text-transform: none;
+          border-radius: 5px;
+          padding: 9px 16px;
+          min-height: 40px;
+        }
+        .Mui-selected {
+          color: #437ef7;
+          background-color: #f5faff;
+        }
+      }
 
-                .qms-header-container-navbar-brand-name {
-                    padding-left: 0.5em;
-                    padding-top: 4px;
-                    font-weight: 400;
-                    font-family: 'Helvetica Neue LT Pro';
-                    font-size: 16px;
-                    line-height: 24px;
-                    letter-spacing: -0.4px;
-                    vertical-align: middle;
-                }
-            }
+      .qms-header-container-navbar-right {
+        flex-direction: row;
+        display: flex;
 
-            .qms-header-container-navbar-right {
-                flex-direction: row;
-                display: flex;
+        .qms-header-container-navbar-right-content {
+          .MuiAvatar-root {
+            object-fit: cover;
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 24px;
+            letter-spacing: -0.4px;
+            text-align: center;
+            vertical-align: middle;
+          }
 
-                .qms-header-container-navbar-right-content {
-                    width: 32px;              
-                    height: 32px;             
-                    border-radius: 50%;       
-                    overflow: hidden;         
-                    display: flex;            
-                    align-items: center;
-                    justify-content: center;
-
-                    .MuiAvatar-root {
-                        width: 100%;              
-                        height: 100%;             
-                        object-fit: cover;   
-                        font-weight: 500;
-                        font-size: 16px;
-                        line-height: 24px;
-                        letter-spacing: -0.4px;
-                        text-align: center;
-                        vertical-align: middle;
-                    }
-
-                    .logoutIcon {
-                        font-size: 'medium';
-                        margin-top: '10px';
-                        margin-left: '5px';
-                        cursor: 'pointer';
-                    }  
-                }
-            } 
-        }  
-    }      
+          .logoutIcon {
+            font-size: "medium";
+            margin-top: "10px";
+            margin-left: "5px";
+            cursor: "pointer";
+          }
+        }
+      }
+    }
+  }
 }

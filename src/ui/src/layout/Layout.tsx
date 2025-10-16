@@ -1,73 +1,37 @@
-import * as React from 'react';
-import { Box, Toolbar } from '@mui/material';
-import { Outlet, useLocation } from 'react-router';
-import Header from '../components/header/Header';
-import Sidebar from '@components/sidebar/Sidebar';
-import Footer from '@components/Footer/Footer';
+import { Box, Toolbar } from "@mui/material";
+import { Outlet } from "react-router";
+import Header from "../components/header/Header";
 
-const HEADER_HEIGHT = 65;      
-const SIDEBAR_WIDTH = 280;   
+const HEADER_HEIGHT = 70;
 
 const Layout = () => {
-  const { pathname } = useLocation();
-  
-  const isHome = pathname === "/" || pathname.toLowerCase() === "/home";
-
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
       }}
     >
       <Header />
       <Toolbar sx={{ minHeight: HEADER_HEIGHT }} />
-
       <Box
-        component="div"
+        component="main"
         sx={{
-          display: 'flex',
-          //flexGrow: 1,
-          overflow: 'hidden',
+          width: "100%",
+          overflowY: "auto",
+          flexDirection: "column",
           height: `calc(100vh - ${HEADER_HEIGHT}px)`,
         }}
+        pt={4}
+        pb={4}
+        pl={14}
+        pr={14}
       >
-        <Box
-          component="aside"
-          sx={{
-            width: SIDEBAR_WIDTH,
-            flexShrink: 0,
-            height: '100%',
-            overflowY: 'auto',
-            marginTop: '5px'
-          }}
-        >
-          <Sidebar />
-        </Box>
-
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            height: '100%',
-            overflowY: 'auto',
-             minWidth: 0,
-             flexDirection: "column",
-          }}
-        >
-          <Outlet />
-          {!isHome && (
-            <Box
-              component="footer"
-            >
-              <Footer />
-            </Box>
-          )}
-        </Box>
+        <Outlet />
       </Box>
     </Box>
   );
-}
+};
 
 export default Layout;
