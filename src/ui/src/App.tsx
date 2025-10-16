@@ -20,6 +20,7 @@ import { COMPLAINT_ID_NAME, COMPLAINT_SESSION_ID } from "./constants";
 import Narratives from "@components/Complaints/Narratives";
 import CreateNarrative from "@components/Complaints/createNarrative";
 import Complaints from "@components/complaint/Complaints";
+import ComplaintsDetails from "@components/complaint/ComplaintsDetails";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -79,7 +80,7 @@ const App = () => {
                   path="/narratives"
                   element={
                     <ProtectedRoute>
-                      <Narratives />
+                      <ComplaintsDetails />
                     </ProtectedRoute>
                   }
                 />
