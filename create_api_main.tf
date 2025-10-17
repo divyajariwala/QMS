@@ -6,7 +6,12 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
   lifecycle {
     create_before_destroy = true
   }
-  binary_media_types = ["image/png", "application/pdf", "application/octet-stream"]
+  binary_media_types = [
+      "multipart/form-data",
+      "image/png",
+      "application/pdf",
+      "application/octet-stream"
+  ]
 }
 
 resource "aws_api_gateway_deployment" "api_deployment" {

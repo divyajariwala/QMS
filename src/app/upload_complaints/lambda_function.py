@@ -7,29 +7,14 @@ import re
 from datetime import datetime, timezone
 
 # Environment variables
-S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'narrative-upload-bucket')
-SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME', 'qms-dev-preload-narratives')
-ALLOWED_EXTENSIONS = {'.csv', '.xlsx'}
+S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'qms-dev-initial-files')
+SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME', 'qms-dev-preload-complaints')
+ALLOWED_EXTENSIONS = {'.csv', '.xlsx', '.pdf', '.xls'}
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
 
 def lambda_handler(event, context):
     try:
-        if "body" not in event:
-            return _response(400, "No file provided")
-
-        headers = event.get("headers", {})
-        content_type = headers.get("content-type", "")
-        if "multipart/form-data" not in content_type:
-            return _response(400, "Invalid content-type, expected multipart/form-data")
-
-        parsed = parse_multipart_manual(...)
-        if not parsed:
-            return _response(400, "No file found in multipart data")
-
-        if not parsed["content"]:
-            return _response(400, "File is empty")
-
         # Initialize AWS clients
         s3_client = boto3.client('s3')
         sqs_client = boto3.client('sqs')
@@ -41,10 +26,11 @@ def lambda_handler(event, context):
             print(f"Error resolving queue URL for {SQS_QUEUE_NAME}: {e}")
             return _response(500, f"Queue {SQS_QUEUE_NAME} not found")
 
-        # Validate request
+        # Validate request has body
         if "body" not in event:
             return _response(400, "No file provided")
 
+        # Validate content-type header
         headers = event.get("headers", {})
         content_type = headers.get("content-type") or headers.get("Content-Type")
 
@@ -52,17 +38,55 @@ def lambda_handler(event, context):
             return _response(400, "Content-Type must be multipart/form-data")
 
         # Handle body encoding - CRITICAL: Keep as bytes for binary files
+        body_str = event["body"]
+
+        # Debug: Log what we're receiving
+        print(f"isBase64Encoded: {event.get('isBase64Encoded', False)}")
+        print(f"Body type: {type(body_str)}")
+        print(f"Body length: {len(body_str) if body_str else 0}")
+        print(f"Content-Type: {content_type}")
+
         if event.get("isBase64Encoded", False):
-            body_bytes = base64.b64decode(event["body"])
+            # Body is base64 encoded - decode it
+            body_bytes = base64.b64decode(body_str)
+            print("Decoded from base64")
         else:
-            # For multipart with binary files, the body should already be bytes
-            # If it's a string, it means API Gateway encoded it incorrectly
-            body_str = event["body"]
+            # Body is NOT marked as base64
             if isinstance(body_str, str):
-                # Try to encode as latin-1 to preserve bytes
-                body_bytes = body_str.encode('latin-1')
+                # Check if it looks like base64
+                # Base64 strings only contain: A-Z, a-z, 0-9, +, /, =
+                is_base64_like = all(
+                    c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n\r' for c in
+                    body_str[:100])
+
+                if is_base64_like and len(body_str) > 100:
+                    try:
+                        # Likely base64 - try to decode
+                        body_bytes = base64.b64decode(body_str)
+                        print("Detected and decoded base64 (not marked)")
+                    except Exception as e:
+                        print(f"Base64 decode failed: {e}")
+                        return _response(400,
+                                         f"Cannot decode body. API Gateway binary media types may not be configured. Error: {str(e)}")
+                else:
+                    # Doesn't look like base64, try latin-1
+                    try:
+                        body_bytes = body_str.encode('iso-8859-1')
+                        print("Encoded with iso-8859-1")
+                    except Exception as e:
+                        print(f"ISO-8859-1 encode failed: {e}")
+                        # Last resort: try utf-8 with error handling
+                        try:
+                            body_bytes = body_str.encode('utf-8', errors='surrogateescape')
+                            print("Encoded with utf-8 (with error handling)")
+                        except Exception as e2:
+                            print(f"All encoding attempts failed: {e2}")
+                            return _response(400,
+                                             "Invalid body encoding. Please ensure binary media types are configured in API Gateway.")
             else:
+                # Already bytes
                 body_bytes = body_str
+                print("Body already in bytes")
 
         # Check file size
         if len(body_bytes) > MAX_FILE_SIZE:
@@ -250,7 +274,8 @@ def _get_content_type(filename):
     content_types = {
         'csv': 'text/csv',
         'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'xls': 'application/vnd.ms-excel'
+        'xls': 'application/vnd.ms-excel',
+        'pdf': 'application/pdf'
     }
     return content_types.get(ext, 'application/octet-stream')
 
