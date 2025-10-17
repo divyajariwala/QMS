@@ -1,0 +1,68 @@
+{
+    "toolSpec": {
+        "name": "extract_case_info",
+        "description": "Extract case information from pharmaceutical complaint documents",
+        "inputSchema": {
+            "json": {
+                "type": "object",
+                "properties": {
+                    "case_id": {
+                        "type": "string",
+                        "description": "Unique case identifier"
+                    },
+                    "receipt_date": {
+                        "type": "string",
+                        "description": "Date of receiving report"
+                    },
+                    "criticality": {
+                        "type": "string",
+                        "description": "Case criticality level"
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": "Category of the complaint"
+                    },
+                    "case_type": {
+                        "type": "string",
+                        "description": "Product Complaint or Adverse Event"
+                    },
+                    "report_type": {
+                        "type": "string",
+                        "description": "Type of report"
+                    },
+                    "narrative": {
+                        "type": "string",
+                        "description": "Detailed case description"
+                    },
+                    "primary_reporter": {
+                        "type": "object",
+                        "description": "Name and address of primary reporter",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "address": {"type": "string"}
+                        }
+                    },
+                    "patient_name": {
+                        "type": "string",
+                        "description": "Name of the patient"
+                    },
+                    "physician_name": {
+                        "type": "string",
+                        "description": "Name of the physician"
+                    },
+                    "product_details": {
+                        "type": "object",
+                        "description": "Product information",
+                        "properties": {
+                            "drug_name": {"type": "string"},
+                            "dosage": {"type": "string"},
+                            "lot_no": {"type": "string"},
+                            "expiration_date": {"type": "string"}
+                        }
+                    }
+                },
+                "required": ["case_id", "receipt_date", "criticality", "report_type", "case_type", "narrative", "primary_reporter", "patient_name", "physician_name", "product_details"]
+            }
+        }
+    }
+}
