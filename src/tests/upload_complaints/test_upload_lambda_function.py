@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from narrative_upload_handler import lambda_function
+from upload_complaints import lambda_function
 
 
 class TestLambdaHandler:
@@ -17,13 +17,14 @@ class TestLambdaHandler:
         'SQS_QUEUE_URL': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'
     })
     @patch('boto3.client')
-    @patch('narrative_upload_handler.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
     def test_successful_csv_upload(self, mock_parse, mock_boto3):
         """Test: Successful CSV file upload"""
         # Mock AWS clients
         mock_s3 = Mock()
         mock_sqs = Mock()
         mock_boto3.side_effect = lambda service: mock_s3 if service == 's3' else mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
         mock_sqs.send_message.return_value = {'MessageId': 'test-123'}
 
         # Mock CSV
@@ -55,13 +56,14 @@ class TestLambdaHandler:
         'SQS_QUEUE_URL': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'
     })
     @patch('boto3.client')
-    @patch('narrative_upload_handler.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
     def test_successful_xlsx_upload(self, mock_parse, mock_boto3):
         """Test: Successful Excel file upload"""
         # Mock AWS clients
         mock_s3 = Mock()
         mock_sqs = Mock()
         mock_boto3.side_effect = lambda service: mock_s3 if service == 's3' else mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
         mock_sqs.send_message.return_value = {'MessageId': 'test-456'}
 
         # Mock Excel file
@@ -109,9 +111,14 @@ class TestLambdaHandler:
         'S3_BUCKET_NAME': 'test-bucket',
         'SQS_QUEUE_URL': 'test-queue'
     })
-    @patch('narrative_upload_handler.lambda_function.parse_multipart_manual')
-    def test_invalid_file_extension(self, mock_parse):
+    @patch('boto3.client')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
+    def test_invalid_file_extension(self, mock_parse, mock_boto3):
         """Test: Error with not allowed extension"""
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+
         mock_parse.return_value = {
             'filename': 'file.txt',  # Not allowed
             'content': b'content',
@@ -134,7 +141,7 @@ class TestLambdaHandler:
         'S3_BUCKET_NAME': 'test-bucket',
         'SQS_QUEUE_URL': 'test-queue'
     })
-    @patch('narrative_upload_handler.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
     def test_empty_file(self, mock_parse):
         """Test: Error with empty file"""
         mock_parse.return_value = {

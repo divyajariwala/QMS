@@ -23,3 +23,13 @@ resource "aws_lambda_event_source_mapping" "lambda_mapping" {
     maximum_concurrency = var.max_concurrency
   }
 }
+
+# resource "aws_lambda_event_source_mapping" "lambda_mapping_dlq" {
+#   event_source_arn = aws_sqs_queue.dead_letter_queue.arn
+#   function_name = var.lambda_function_name
+#   batch_size = var.batch_size
+#   maximum_batching_window_in_seconds = var.max_batch_window
+#   scaling_config {
+#     maximum_concurrency = var.max_concurrency
+#   }
+# }

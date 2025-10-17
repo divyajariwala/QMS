@@ -3,6 +3,7 @@ module "lambda_functions" {
   count = length(var.lambda_configs)
   short_name = var.short_name
   environment = var.environment
+  reserved_concurrent_executions = try(var.lambda_configs[count.index].reserved_concurrent_executions, 10)
   function_name = var.lambda_configs[count.index].function_name
   environment_variables = var.lambda_configs[count.index].environment_variables
   role_arn = var.lambda_execution_role_arn

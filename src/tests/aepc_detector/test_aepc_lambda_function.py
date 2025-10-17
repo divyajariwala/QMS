@@ -7,15 +7,15 @@ import pytest
 
 # Add src directory to path for importing lambda_functio
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-from narrative_aepc_detector import lambda_function
+from aepc_detector import lambda_function
 
 
 class TestAEPCDetectorLambda:
     """Unit tests for narrative-aepc-detector lambda_handler"""
 
-    @patch("narrative_aepc_detector.lambda_function.list_profiles", return_value={"inferenceProfileSummaries": []})
-    @patch("narrative_aepc_detector.lambda_function.bedrock_client")
-    @patch("narrative_aepc_detector.lambda_function.load_prompt", return_value="Prompt base")
+    @patch("aepc_detector.lambda_function.list_profiles", return_value={"inferenceProfileSummaries": []})
+    @patch("aepc_detector.lambda_function.bedrock_client")
+    @patch("aepc_detector.lambda_function.load_prompt", return_value="Prompt base")
     def test_successful_response(self, mock_prompt, mock_bedrock, mock_profiles):
         mock_bedrock.invoke_model.return_value = {
             "body": Mock(read=lambda: json.dumps({
@@ -40,8 +40,8 @@ class TestAEPCDetectorLambda:
         body = json.loads(result["body"])
         assert "Missing 'narrative'" in body["error"]
 
-    @patch("narrative_aepc_detector.lambda_function.bedrock_client")
-    @patch("narrative_aepc_detector.lambda_function.load_prompt", return_value="Prompt base")
+    @patch("aepc_detector.lambda_function.bedrock_client")
+    @patch("aepc_detector.lambda_function.load_prompt", return_value="Prompt base")
     def test_error_invoke_model(self, mock_prompt, mock_client):
         """Error: Throwing exception from Bedrock client"""
         mock_client.invoke_model.side_effect = Exception("Bedrock error")
@@ -53,8 +53,8 @@ class TestAEPCDetectorLambda:
         body = json.loads(result["body"])
         assert "Bedrock error" in body["error"]
 
-    @patch("narrative_aepc_detector.lambda_function.bedrock_client")
-    @patch("narrative_aepc_detector.lambda_function.load_prompt", return_value="Prompt base")
+    @patch("aepc_detector.lambda_function.bedrock_client")
+    @patch("aepc_detector.lambda_function.load_prompt", return_value="Prompt base")
     def test_event_without_body(self, mock_prompt, mock_client):
         """Event without 'body', narrative directly in event"""
         mock_client.invoke_model.return_value = {
@@ -70,8 +70,8 @@ class TestAEPCDetectorLambda:
         body = json.loads(result["body"])
         assert "AEPC result" in body["result"]
 
-    @patch("narrative_aepc_detector.lambda_function.bedrock_client")
-    @patch("narrative_aepc_detector.lambda_function.load_prompt", return_value="Prompt base")
+    @patch("aepc_detector.lambda_function.bedrock_client")
+    @patch("aepc_detector.lambda_function.load_prompt", return_value="Prompt base")
     def test_empty_response_from_model(self, mock_prompt, mock_client):
         """Error: Empty content array from model response"""
         mock_client.invoke_model.return_value = {

@@ -17,9 +17,12 @@ resource "aws_sfn_state_machine" "state_machine" {
     include_execution_data = true
     log_destination = "${aws_cloudwatch_log_group.log_group_for_sfn.arn}:*"
   }
+  tracing_configuration {
+    enabled = true
+  }
 }
 
 resource "aws_cloudwatch_log_group" "log_group_for_sfn" {
   name = var.state_machine_name
-  retention_in_days = 7
+  retention_in_days = 365
 }
