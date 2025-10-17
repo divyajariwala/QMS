@@ -1,6 +1,6 @@
-import React from 'react';
-import { Box, Stack, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
+import React from "react";
+import { Box, Typography } from "@mui/material";
+import styles from "./ComplaintSecondaryInfo.module.scss";
 
 interface InfoItemProps {
   label: string;
@@ -9,40 +9,22 @@ interface InfoItemProps {
   value: string | React.ReactNode;
 }
 
-const labelTypographySx = {
-  fontFamily: "Inter",
-  fontWeight: 500,
-  fontSize: "14px",
-  lineHeight: "20px",
-  letterSpacing: "-0.1px",
-  color: "#5F6D7E",
-};
-
-const valueTypographySx = {
-  fontFamily: "Inter",
-  fontWeight: 600,
-  fontSize: "16px",
-  lineHeight: "22px",
-  letterSpacing: "-0.1px",
-  color: "#272D37",
-};
-
 const InfoItem: React.FC<InfoItemProps> = ({ label, iconSrc, iconAlt, value }) => (
-  <Stack direction="column" gap={0.75}>
-    <Typography variant="subtitle1" sx={labelTypographySx}>
+  <div className={styles.infoItem}>
+    <Typography component="p" className={styles.infoItem__label}>
       {label}
     </Typography>
-    <Stack direction="row" gap={0.5} alignItems="center">
+    <div className={styles.infoItem__valueRow}>
       <img src={iconSrc} alt={iconAlt} />
       {typeof value === "string" ? (
-        <Typography variant="body1" sx={valueTypographySx}>
+        <Typography component="p" className={styles.infoItem__valueText}>
           {value}
         </Typography>
       ) : (
         value
       )}
-    </Stack>
-  </Stack>
+    </div>
+  </div>
 );
 
 interface InfoChipProps {
@@ -53,21 +35,12 @@ interface InfoChipProps {
 }
 
 const InfoChip: React.FC<InfoChipProps> = ({ iconSrc, iconAlt, label, className }) => (
-  <Stack direction="row" gap={0.5} className={className}>
+  <div className={`${styles.infoChip} ${className ?? ""}`.trim()}>
     <img src={iconSrc} alt={iconAlt} />
-    <Typography
-      variant="subtitle1"
-      sx={{
-        fontFamily: "Inter",
-        fontWeight: 500,
-        fontSize: "14px",
-        lineHeight: "20px",
-        letterSpacing: "-0.1px",
-      }}
-    >
+    <Typography component="p" className={styles.infoChip__label}>
       {label}
     </Typography>
-  </Stack>
+  </div>
 );
 
 interface SecondaryInfoCardProps {
@@ -91,18 +64,8 @@ const ComplaintSecondaryInfo: React.FC<SecondaryInfoCardProps> = ({
   adverseEventChipClassName,
 }) => {
   return (
-    <Box
-      sx={{
-        mt: 3,
-        border: "1px solid",
-        borderColor: grey[300],
-        borderRadius: 2,
-        padding: 2,
-        boxShadow: 1,
-        backgroundColor: "background.paper",
-      }}
-    >
-      <Stack direction="row" gap={8}>
+    <Box className={styles.complaintSecondaryInfo}>
+      <div className={styles.complaintSecondaryInfo__row}>
         {infoItems.map(({ label, iconSrc, iconAlt, value }) => (
           <InfoItem
             key={label}
@@ -112,11 +75,11 @@ const ComplaintSecondaryInfo: React.FC<SecondaryInfoCardProps> = ({
             value={value}
           />
         ))}
-        <Stack direction="column" gap={0.75}>
-          <Typography variant="subtitle1" sx={labelTypographySx}>
+        <div className={styles.caseType}>
+          <Typography component="p" className={styles.infoItem__label}>
             Case Type
           </Typography>
-          <Stack direction="row" gap={0.5}>
+          <div className={styles.caseType__row}>
             <InfoChip
               iconSrc={productComplaintIconSrc}
               iconAlt="Product Complaint"
@@ -129,9 +92,9 @@ const ComplaintSecondaryInfo: React.FC<SecondaryInfoCardProps> = ({
               label="Adverse Event"
               className={adverseEventChipClassName}
             />
-          </Stack>
-        </Stack>
-      </Stack>
+          </div>
+        </div>
+      </div>
     </Box>
   );
 };

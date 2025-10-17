@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Grid,
   IconButton,
   Paper,
   Stack,
-  Typography,
   Select,
   MenuItem,
   TextField,
-} from '@mui/material';
+} from "@mui/material";
 import EditIcon from "../../assets/icons/edit.svg";
 
+import styles from "./ComplaintCategory.module.scss";
+
 interface ComplaintCategoryItem {
-  id: string; // Unique ID
+  id: string;
   label: string;
   level: number;
   crl: string;
@@ -23,6 +24,8 @@ interface ComplaintCategoryItem {
   color: string;
   bgColor: string;
 }
+
+
 
 interface ComplaintCategoryProps {
   complaintCategories: ComplaintCategoryItem[];
@@ -34,18 +37,14 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
   onSave,
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editedData, setEditedData] = useState<ComplaintCategoryItem | null>(
-    null
-  );
+  const [editedData, setEditedData] = useState<ComplaintCategoryItem | null>(null);
 
   const handleEditIconClick = (item: ComplaintCategoryItem) => {
     if (editingId === item.id) {
-      // Save current edited data and exit edit mode
       if (editedData && onSave) onSave(editedData);
       setEditingId(null);
       setEditedData(null);
     } else {
-      // Enter edit mode for this item
       setEditingId(item.id);
       setEditedData({ ...item });
     }
@@ -59,83 +58,44 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
     setEditedData((prev) => (prev ? { ...prev, [field]: value } : null));
   };
 
+  const colorClassMap: Record<string, string> = {
+  "#43a047": styles.green,
+  "#f57c00": styles.orange,
+  "#e53935": styles.red,
+};
+
+  function getColorClassName(color: string): string {
+     const normalizedColor = color.trim().toLowerCase();
+    return colorClassMap[normalizedColor] || "";
+  }
+
   return (
-    <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, height: "100%" }}>
-      <Stack direction="row" alignItems="center" spacing={1} mb={1}>
-        <Typography
-          sx={{
-            fontFamily: "Roboto, sans-serif",
-            fontWeight: 600,
-            fontSize: 18,
-            lineHeight: 1,
-            letterSpacing: "0.04em",
-            verticalAlign: "bottom",
-            color: "#000000",
-          }}
-        >
-          Complaint Category
-        </Typography>
+    <Paper variant="outlined" className={styles.rootPaper}>
+      <Stack direction="row" alignItems="center" spacing={1} className={styles.headerStack}>
+        <Box className={styles.headerTitle}>Complaint Category</Box>
       </Stack>
 
-      <Typography
-        sx={{
-          fontFamily: "Inter, sans-serif",
-          fontWeight: 400,
-          fontSize: 14,
-          lineHeight: "24px",
-          letterSpacing: "-0.1px",
-          color: "#5F6D7E",
-          mb: 2,
-        }}
-      >
-        Please review and modify.
-      </Typography>
+      <Box className={styles.subtitleBox}>Please review and modify.</Box>
 
       {complaintCategories.map((item) => {
+        console.log(item.color)
         const isEditing = editingId === item.id;
 
         return (
-          <Paper
-            key={item.id}
-            variant="outlined"
-            sx={{ p: 2, mb: 2, borderRadius: 1 }}
-          >
-            {/* Static info (always visible) */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 1,
-              }}
-            >
-              <Typography
-                sx={{
-                  fontFamily: "Inter, sans-serif",
-                  fontWeight: 500,
-                  fontSize: 15,
-                  lineHeight: "22px",
-                  letterSpacing: "-0.1px",
-                  color: "#272D37",
-                }}
-              >
-                {item.label}
-              </Typography>
-              <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
-                <Typography
-                  sx={{
-                    color: item.color,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    mr: 2,
-                  }}
-                >
+          <Paper key={item.id} variant="outlined" className={styles.itemPaper}>
+            {/* Static info */}
+            <Box className={styles.itemTopBox}>
+              <Box className={styles.labelBox}>{item.label}</Box>
+
+              <Box className={styles.inlineFlexCenter}>
+                <Box className={`${styles.percentageBox} ${getColorClassName(item.color)}`}>
                   {item.percentage}%
-                </Typography>
+                </Box>
+
                 <IconButton
                   aria-label={isEditing ? `save ${item.label}` : `edit ${item.label}`}
                   size="small"
-                  sx={{ padding: 0, color: "inherit" }}
+                  className={styles.iconButton}
                   onClick={() => handleEditIconClick(item)}
                 >
                   <img src={EditIcon} alt="Edit Icon" />
@@ -147,96 +107,35 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
               container
               spacing={1}
               alignItems="center"
-              sx={{ fontSize: 13, mb: isEditing ? 2 : 0 }}
+              className={isEditing ? styles.infoGrid : styles.infoGridNoMargin}
             >
               <Grid item xs={2}>
-                <Typography
-                  sx={{
-                    fontFamily: "Inter, sans-serif",
-                    fontWeight: 500,
-                    fontSize: 14,
-                    lineHeight: "20px",
-                    letterSpacing: "-0.1px",
-                    color: "#5F6D7E",
-                  }}
-                >
-                  Level
-                </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
-                  {item.level}
-                </Typography>
+                <Box className={styles.infoGridItemLabel}>Level</Box>
+                <Box className={styles.infoGridItemValue}>{item.level}</Box>
               </Grid>
               <Grid item xs={4}>
-                <Typography
-                  sx={{
-                    fontFamily: "Inter, sans-serif",
-                    fontWeight: 500,
-                    fontSize: 14,
-                    lineHeight: "20px",
-                    letterSpacing: "-0.1px",
-                    color: "#5F6D7E",
-                  }}
-                >
-                  CRL
-                </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
-                  {item.crl}
-                </Typography>
+                <Box className={styles.infoGridItemLabel}>CRL</Box>
+                <Box className={styles.infoGridItemValue}>{item.crl}</Box>
               </Grid>
               <Grid item xs={2}>
-                <Typography
-                  sx={{
-                    fontFamily: "Inter, sans-serif",
-                    fontWeight: 500,
-                    fontSize: 14,
-                    lineHeight: "20px",
-                    letterSpacing: "-0.1px",
-                    color: "#5F6D7E",
-                  }}
-                >
-                  Priority
-                </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
-                  {item.priority}
-                </Typography>
+                <Box className={styles.infoGridItemLabel}>Priority</Box>
+                <Box className={styles.infoGridItemValue}>{item.priority}</Box>
               </Grid>
               <Grid item xs={2}>
-                <Typography
-                  sx={{
-                    fontFamily: "Inter, sans-serif",
-                    fontWeight: 500,
-                    fontSize: 14,
-                    lineHeight: "20px",
-                    letterSpacing: "-0.1px",
-                    color: "#5F6D7E",
-                  }}
-                >
-                  Unit
-                </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
-                  {item.unit}
-                </Typography>
+                <Box className={styles.infoGridItemLabel}>Unit</Box>
+                <Box className={styles.infoGridItemValue}>{item.unit}</Box>
               </Grid>
             </Grid>
 
-            {/* Editable fields (only visible when editing) */}
             {isEditing && editedData && (
               <>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 2,
-                    mt: 6,
-                  }}
-                >
-                  {/* Editable dropdown for label */}
+                <Box className={styles.editingControlsBox}>
                   <Select
                     size="small"
-                    value={editedData?.label || ""}
+                    value={editedData.label || ""}
                     onChange={(e) => handleEditChange("label", e.target.value)}
-                    sx={{ minWidth: 289, minHeight: 40 }}
+                    className={styles.selectMinSize}
+                    classes={{ root: styles.editSelectRoot }}
                   >
                     {complaintCategories.map((opt) => (
                       <MenuItem key={opt.id} value={opt.label}>
@@ -245,101 +144,47 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     ))}
                   </Select>
 
-                  {/* Show percentage */}
-                  <Typography
-                    sx={{ color: item.color, fontWeight: 600, fontSize: 14, mr: 2 }}
-                  >
+                  <Box className={`${styles.percentageBox} ${getColorClassName(item.color)}`}>
                     {item.percentage}%
-                  </Typography>
+                  </Box>
                 </Box>
 
                 <Grid container spacing={2} alignItems="center">
                   <Grid item xs={2}>
-                    <Typography
-                      sx={{
-                        fontFamily: "Inter, sans-serif",
-                        fontWeight: 500,
-                        fontSize: 14,
-                        lineHeight: "20px",
-                        letterSpacing: "-0.1px",
-                        color: "#5F6D7E",
-                      }}
-                    >
-                      Level
-                    </Typography>
+                    <Box className={styles.infoGridItemLabel}>Level</Box>
                     <TextField
                       size="small"
                       type="number"
                       value={editedData.level}
                       onChange={(e) => handleEditChange("level", Number(e.target.value))}
                       fullWidth
-                      sx={{
-                        "& .MuiInputBase-input": {
-                          fontFamily: "Inter, sans-serif",
-                          fontWeight: 600,
-                          fontSize: "15px",
-                          lineHeight: "22px",
-                          letterSpacing: "-0.1px",
-                        },
+                      InputProps={{
+                        classes: { input: styles.inputBaseInput },
                       }}
                     />
                   </Grid>
 
                   <Grid item xs={4}>
-                    <Typography
-                      sx={{
-                        fontFamily: "Inter, sans-serif",
-                        fontWeight: 500,
-                        fontSize: 14,
-                        lineHeight: "20px",
-                        letterSpacing: "-0.1px",
-                        color: "#5F6D7E",
-                      }}
-                    >
-                      CRL
-                    </Typography>
+                    <Box className={styles.infoGridItemLabel}>CRL</Box>
                     <TextField
                       size="small"
                       value={editedData.crl}
                       onChange={(e) => handleEditChange("crl", e.target.value)}
                       fullWidth
-                      sx={{
-                        "& .MuiInputBase-input": {
-                          fontFamily: "Inter, sans-serif",
-                          fontWeight: 600,
-                          fontSize: "15px",
-                          lineHeight: "22px",
-                          letterSpacing: "-0.1px",
-                        },
+                      InputProps={{
+                        classes: { input: styles.inputBaseInput },
                       }}
                     />
                   </Grid>
 
                   <Grid item xs={2}>
-                    <Typography
-                      sx={{
-                        fontFamily: "Inter, sans-serif",
-                        fontWeight: 500,
-                        fontSize: 14,
-                        lineHeight: "20px",
-                        letterSpacing: "-0.1px",
-                        color: "#5F6D7E",
-                      }}
-                    >
-                      Priority
-                    </Typography>
+                    <Box className={styles.infoGridItemLabel}>Priority</Box>
                     <Select
                       size="small"
                       value={editedData.priority}
                       onChange={(e) => handleEditChange("priority", e.target.value)}
                       fullWidth
-                      sx={{
-                        fontFamily: "Inter, sans-serif",
-                        fontWeight: 600,
-                        fontSize: 15,
-                        lineHeight: "22px",
-                        letterSpacing: "-0.1px",
-                      }}
+                      className={styles.editSelectRoot}
                     >
                       <MenuItem value="High">High</MenuItem>
                       <MenuItem value="Medium">Medium</MenuItem>
@@ -348,32 +193,15 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                   </Grid>
 
                   <Grid item xs={2}>
-                    <Typography
-                      sx={{
-                        fontFamily: "Inter, sans-serif",
-                        fontWeight: 500,
-                        fontSize: 14,
-                        lineHeight: "20px",
-                        letterSpacing: "-0.1px",
-                        color: "#5F6D7E",
-                      }}
-                    >
-                      Unit
-                    </Typography>
+                    <Box className={styles.infoGridItemLabel}>Unit</Box>
                     <TextField
                       size="small"
                       type="number"
                       value={editedData.unit}
                       onChange={(e) => handleEditChange("unit", Number(e.target.value))}
                       fullWidth
-                      sx={{
-                        "& .MuiInputBase-input": {
-                          fontFamily: "Inter, sans-serif",
-                          fontWeight: 600,
-                          fontSize: "15px",
-                          lineHeight: "22px",
-                          letterSpacing: "-0.1px",
-                        },
+                      InputProps={{
+                        classes: { input: styles.inputBaseInput },
                       }}
                     />
                   </Grid>

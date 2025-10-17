@@ -1,52 +1,18 @@
 import React from 'react';
-import { Paper, Stack, Typography } from '@mui/material';
+import { Paper, Stack, Box } from '@mui/material';
+import styles from './ComplaintNarrative.module.scss';
 
 const ComplaintNarrative: React.FC = () => {
   return (
-    <Paper
-      variant="outlined"
-      sx={{
-        p: 2,
-        borderRadius: 2,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <Stack direction="row" alignItems="center" spacing={1} p={2}>
-        <Typography
-          sx={{
-            fontFamily: 'Roboto, sans-serif',
-            fontWeight: 600,
-            fontStyle: 'normal',
-            fontSize: 16,
-            lineHeight: 1,
-            letterSpacing: '0.04em',
-            color: '#29323A',
-          }}
-        >
+    <Paper variant="outlined" className={styles.complaintNarrative}>
+      <Stack direction="row" alignItems="center" spacing={1} className={styles.header}>
+        <Box className={styles.title}>
           Narrative
-        </Typography>
+        </Box>
       </Stack>
-
-      <Typography
-        variant="body2"
-        sx={{
-          fontFamily: 'Helvetica, sans-serif',
-          fontWeight: 400,
-          fontStyle: 'normal',
-          fontSize: 16,
-          lineHeight: '21px',
-          letterSpacing: '0.04em',
-          color: '#29323A',
-          whiteSpace: 'pre-line',
-          overflowY: 'auto',
-          p: 2,
-        }}
-      >
+      <Box className={styles.body}>
         Education{'\n'}
         Travenzil Pen Function: Dose Confirmation{'\n\n'}
-
         The patient can ensure that the dose was delivered by first observing the medication within the syringe prior
         to injection and visually confirming the medication is no longer in the syringe following the injection. Dose
         delivery for the Pen is confirmed by seeing the gray plunger at the top of the clear base. Additionally, patients
@@ -55,7 +21,7 @@ const ComplaintNarrative: React.FC = () => {
         confirms dose delivery. Travenzil Pen Components: Lock Ring Before beginning the injection steps, turning the Lock
         Ring back and forth from the "Lock" to "Unlock" position does not harm the pen. The Lock Ring is a safety feature
         to make sure you do not accidentally press the injection button before you are ready.
-      </Typography>
+      </Box>
     </Paper>
   );
 };

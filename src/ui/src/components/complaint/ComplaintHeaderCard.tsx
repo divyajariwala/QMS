@@ -1,15 +1,8 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  Chip,
-  Grid,
-  Stack,
-  Typography,
-  Paper,
-} from '@mui/material';
+import styles from './ComplaintHeaderCard.module.scss';
 import EventIcon from '@mui/icons-material/Event';
 import CheckIcon from '@mui/icons-material/Check';
+import { Paper, Box, Stack, Grid } from '@mui/material';
 
 interface ComplaintHeaderCardProps {
   status: string;
@@ -44,366 +37,71 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
   onApproveAndSend,
 }) => {
   return (
-    <Paper
-      sx={{
-        mt: 3,
-        p: 3,
-        position: 'relative', 
-        backgroundColor: 'background.paper', // This ensures white background in MUI theme
-      }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          width: '100%',
-          flexWrap: 'wrap',
-          alignItems: 'flex-start',
-          gap: 2,
-        }}
-      >
-        {/* Left side */}
-        <Box sx={{ flex: 1, minWidth: 0, paddingRight: 2 }}>
-          <Stack spacing={0.5} sx={{ minWidth: 0 }}>
-            <Typography
-              sx={{
-                fontFamily: 'Inter, sans-serif',
-                fontWeight: 600,
-                fontSize: 12,
-                lineHeight: '24px',
-                letterSpacing: '-0.1px',
-                textTransform: 'uppercase',
-                color: '#3B3B3B',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {status}
-            </Typography>
-
-            <Stack
-              direction="row"
-              spacing={2}
-              alignItems="center"
-              flexWrap="nowrap"
-              sx={{ width: '100%' }}
-            >
-              <Typography
-                sx={{
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 600,
-                  fontSize: 28,
-                  lineHeight: '38px',
-                  letterSpacing: '-0.01em',
-                  color: '#272D37',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {caseId}
-              </Typography>
-
+    <Paper className={styles.paper}>
+      <Box className={styles.flexContainer}>
+        <Box className={styles.leftSide}>
+          <Stack spacing={0.5} sx={{ minWidth: 0, mb: 2 }}>
+            <Box className={styles.statusText}>{status}</Box>
+            <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
+              <Box className={styles.caseIdText}>{caseId}</Box>
               {overdueDays > 0 && (
-                <Chip
-                  icon={<EventIcon sx={{ fontSize: 16 }} />}
-                  label={`Overdue by ${overdueDays} days`}
-                  size="small"
-                  sx={{
-                    bgcolor: '#FFF2F0',
-                    color: '#E2341D',
-                    fontWeight: 500,
-                    fontSize: 13,
-                    lineHeight: '18px',
-                    letterSpacing: '-0.1px',
-                    fontFamily: 'Inter, sans-serif',
-                    fontStyle: 'normal',
-                    height: 24,
-                    borderRadius: 1,
-                    whiteSpace: 'nowrap',
-                  }}
-                />
+                <div className={styles.overdueChip}>
+                  <EventIcon />
+                  <span>{`Overdue by ${overdueDays} days`}</span>
+                </div>
               )}
-
-              {/* Spacer to push button to right side */}
-              <Box sx={{ flexGrow: 1 }} />
-
-              {/* Approve and Send Button in this row */}
-              <Button
-                variant="contained"
-                sx={{
-                  textTransform: 'none',
-                  background: '#0060D7',
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 600,
-                  fontSize: 14,
-                  lineHeight: '20px',
-                  letterSpacing: 0,
-                  color: '#FFFFFF',
-                  height: 32,
-                  '&:hover': {
-                    backgroundColor: '#0050b5',
-                  },
-                  whiteSpace: 'nowrap',
-                }}
-                startIcon={<CheckIcon />}
-                size="small"
-                onClick={onApproveAndSend}
-              >
+              <Box className={styles.flexGrow} />
+              <button type="button" className={styles.approveSendButton} onClick={onApproveAndSend}>
+                <CheckIcon />
                 Approve and Send
-              </Button>
+              </button>
             </Stack>
           </Stack>
 
-          {/* Reporter and patient info grid */}
-          <Grid container spacing={1} sx={{ mt: 1, alignItems: 'flex-start' }}>
+          <Grid container spacing={1} className={styles.infoGridContainer} alignItems="flex-start">
             {/* Left block */}
             <Grid item xs={6} sm={3}>
-              <Typography
-                sx={{
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 400,
-                  fontStyle: 'normal',
-                  fontSize: 14,
-                  lineHeight: '20px',
-                  letterSpacing: '-0.1px',
-                  color: '#5F6D7E',
-                }}
-              >
-                Primary Reporter
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 700,
-                  fontStyle: 'normal',
-                  fontSize: 16,
-                  lineHeight: '22px',
-                  letterSpacing: '-0.1px',
-                  color: '#272D37',
-                }}
-              >
-                {primaryReporter.name}
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 500,
-                  fontStyle: 'normal',
-                  fontSize: 14,
-                  lineHeight: '20px',
-                  letterSpacing: '-0.1px',
-                  color: '#5F6D7E',
-                }}
-              >
-                {primaryReporter.location}
-              </Typography>
+              <Box className={styles.labelText}>Primary Reporter</Box>
+              <Box className={styles.primaryReporterName}>{primaryReporter.name}</Box>
+              <Box className={styles.valueText}>{primaryReporter.location}</Box>
             </Grid>
 
             {/* Right block with fields */}
             <Grid item xs={12} sm={8}>
               <Grid container spacing={2}>
                 <Grid item xs={8} sm={3}>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 400,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#5F6D7E',
-                    }}
-                  >
-                    Patient Name
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 500,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#272D37',
-                    }}
-                  >
-                    {patientName}
-                  </Typography>
+                  <Box className={styles.labelText}>Patient Name</Box>
+                  <Box className={styles.valueText}>{patientName}</Box>
                 </Grid>
 
                 <Grid item xs={8} sm={3}>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 400,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#5F6D7E',
-                    }}
-                  >
-                    Physician
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 500,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#272D37',
-                    }}
-                  >
-                    {physicianName}
-                  </Typography>
+                  <Box className={styles.labelText}>Physician</Box>
+                  <Box className={styles.valueText}>{physicianName}</Box>
                 </Grid>
 
                 <Grid item xs={8} sm={3}>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 400,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#5F6D7E',
-                    }}
-                  >
-                    Drug
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 500,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#272D37',
-                    }}
-                  >
-                    {drug}
-                  </Typography>
+                  <Box className={styles.labelText}>Drug</Box>
+                  <Box className={styles.valueText}>{drug}</Box>
                 </Grid>
 
                 <Grid item xs={8} sm={3}>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 400,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#5F6D7E',
-                    }}
-                  >
-                    Lot #
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 500,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#272D37',
-                    }}
-                  >
-                    {lotNumber}
-                  </Typography>
+                  <Box className={styles.labelText}>Lot #</Box>
+                  <Box className={styles.valueText}>{lotNumber}</Box>
                 </Grid>
 
                 <Grid item xs={8} sm={3}>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 400,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#5F6D7E',
-                    }}
-                    mt={2}
-                  >
-                    Dose Amount
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 500,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#272D37',
-                    }}
-                  >
-                    {doseAmount}
-                  </Typography>
+                  <Box className={`${styles.labelText} ${styles.mt2}`}>Dose Amount</Box>
+                  <Box className={styles.valueText}>{doseAmount}</Box>
                 </Grid>
 
                 <Grid item xs={8} sm={3}>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 400,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#5F6D7E',
-                    }}
-                    mt={2}
-                  >
-                    Expiration Date
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 500,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#272D37',
-                    }}
-                  >
-                    {expirationDate}
-                  </Typography>
+                  <Box className={`${styles.labelText} ${styles.mt2}`}>Expiration Date</Box>
+                  <Box className={styles.valueText}>{expirationDate}</Box>
                 </Grid>
 
                 <Grid item xs={8} sm={3}>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 400,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#5F6D7E',
-                    }}
-                    mt={2}
-                  >
-                    Part Number
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontWeight: 500,
-                      fontStyle: 'normal',
-                      fontSize: 14,
-                      lineHeight: '20px',
-                      letterSpacing: '-0.1px',
-                      color: '#272D37',
-                    }}
-                  >
-                    {partNumber}
-                  </Typography>
+                  <Box className={`${styles.labelText} ${styles.mt2}`}>Part Number</Box>
+                  <Box className={styles.valueText}>{partNumber}</Box>
                 </Grid>
               </Grid>
             </Grid>
