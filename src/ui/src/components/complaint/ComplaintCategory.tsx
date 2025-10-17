@@ -10,7 +10,6 @@ import {
   TextField,
 } from "@mui/material";
 import EditIcon from "../../assets/icons/edit.svg";
-
 import styles from "./ComplaintCategory.module.scss";
 
 interface ComplaintCategoryItem {
@@ -74,24 +73,17 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
       <Stack direction="row" alignItems="center" spacing={1} className={styles.headerStack}>
         <Box className={styles.headerTitle}>Complaint Category</Box>
       </Stack>
-
       <Box className={styles.subtitleBox}>Please review and modify.</Box>
-
       {complaintCategories.map((item) => {
-        console.log(item.color)
         const isEditing = editingId === item.id;
-
         return (
           <Paper key={item.id} variant="outlined" className={styles.itemPaper}>
-            {/* Static info */}
             <Box className={styles.itemTopBox}>
               <Box className={styles.labelBox}>{item.label}</Box>
-
               <Box className={styles.inlineFlexCenter}>
                 <Box className={`${styles.percentageBox} ${getColorClassName(item.color)}`}>
                   {item.percentage}%
                 </Box>
-
                 <IconButton
                   aria-label={isEditing ? `save ${item.label}` : `edit ${item.label}`}
                   size="small"
@@ -102,11 +94,10 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                 </IconButton>
               </Box>
             </Box>
-
             <Grid
               container
               spacing={1}
-              alignItems="center"
+              alignItems={"center"}
               className={isEditing ? styles.infoGrid : styles.infoGridNoMargin}
             >
               <Grid item xs={2}>

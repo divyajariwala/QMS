@@ -5,42 +5,44 @@ import CheckIcon from '@mui/icons-material/Check';
 import { Paper, Box, Stack, Grid } from '@mui/material';
 
 interface ComplaintHeaderCardProps {
-  status: string;
-  caseId: string;
-  overdueDays: number;
-  primaryReporter: {
-    name: string;
-    location: string;
+  complaintData: {
+    status: string;
+    caseId: string;
+    overdueDays: number;
+    primaryReporter: { name: string; location: string };
+    patientName: string;
+    physicianName: string;
+    drug: string;
+    lotNumber: string;
+    doseAmount: string;
+    expirationDate: string;
+    partNumber: string;
   };
-  patientName: string;
-  physicianName: string;
-  drug: string;
-  lotNumber: string | number;
-  doseAmount: string;
-  expirationDate: string;
-  partNumber: string | number;
-  onApproveAndSend?: () => void;
+  onApproveAndSend: () => void;
 }
 
 const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
-  status,
-  caseId,
-  overdueDays,
-  primaryReporter,
-  patientName,
-  physicianName,
-  drug,
-  lotNumber,
-  doseAmount,
-  expirationDate,
-  partNumber,
+  complaintData,
   onApproveAndSend,
 }) => {
+  const {
+    status,
+    caseId,
+    overdueDays,
+    primaryReporter,
+    patientName,
+    physicianName,
+    drug,
+    lotNumber,
+    doseAmount,
+    expirationDate,
+    partNumber,
+  } = complaintData;
   return (
     <Paper className={styles.paper}>
       <Box className={styles.flexContainer}>
         <Box className={styles.leftSide}>
-          <Stack spacing={0.5} sx={{ minWidth: 0, mb: 2 }}>
+          <Stack spacing={0.5} className={styles.stackCustom}>
             <Box className={styles.statusText}>{status}</Box>
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
               <Box className={styles.caseIdText}>{caseId}</Box>

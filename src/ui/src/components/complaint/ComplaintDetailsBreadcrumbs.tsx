@@ -2,7 +2,7 @@ import React from 'react';
 import { Breadcrumbs, Link, Typography } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Link as RouterLink } from 'react-router-dom';
-import styles from './ComplaintBreadcrumbs.module.scss';
+import styles from './ComplaintDetailsBreadcrumbs.module.scss';
 
 interface ComplaintBreadcrumbsProps {
   caseId: string;

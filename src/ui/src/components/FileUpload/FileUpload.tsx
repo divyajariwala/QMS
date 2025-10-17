@@ -1,7 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import {
   Box,
-  Button,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -155,14 +154,17 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
             If you do not have a file you can use the sample below:
           </Box>
 
-          <Button
-            variant="outlined"
-            startIcon={<img src={DownloadIcon} alt="Download icon" className={styles.downloadButtonIcon} />}
+          <button
             className={styles.downloadButton}
             onClick={handleDownloadExample}
           >
+            <img
+              src={DownloadIcon}
+              alt="Download icon"
+              className={styles.downloadButtonIcon}
+            />
             Download Sample Template
-          </Button>
+          </button>
         </>
       );
     }
