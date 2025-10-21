@@ -268,7 +268,7 @@ class TestProcessWithBedrockConversations:
         }
         mock_bedrock.converse.return_value = mock_response
         
-        with patch('lambda_function.load_tool_spec', return_value={'tool': 'spec'}):
+        with patch('extract_complaints.lambda_function.load_tool_spec', return_value={'tool': 'spec'}):
             result = lambda_function.process_with_bedrock_conversations([], mock_bedrock)
             
             assert result == {'extracted': 'data'}
@@ -285,7 +285,7 @@ class TestProcessWithBedrockConversations:
         }
         mock_bedrock.converse.return_value = mock_response
         
-        with patch('lambda_function.load_tool_spec', return_value={'tool': 'spec'}):
+        with patch('extract_complaints.lambda_function.load_tool_spec', return_value={'tool': 'spec'}):
             with pytest.raises(ValueError, match="No tool use found in response"):
                 lambda_function.process_with_bedrock_conversations([], mock_bedrock)
 
