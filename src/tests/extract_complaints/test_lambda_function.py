@@ -4,7 +4,7 @@ import io
 import base64
 from unittest.mock import Mock, patch, MagicMock, mock_open
 from PIL import Image
-import lambda_function
+from src.app.extract_complaints import lambda_function
 
 
 class TestLambdaHandler:
