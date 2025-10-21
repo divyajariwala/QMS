@@ -37,28 +37,32 @@ Field Specific Instructions:
 3. Criticality: 
 	Key : criticality
 	Definition : Severity of the case. It should be inferred as one of the expected values from the narrative.
-	Expected Values : SAE, SUSAR, nonserious
-	Document Specific Instructions:
-		- Ashfield Report - It appears at the top of the document. It is a unique id provided as a value to the Case field.
-		- MedWatch Report - It appears at the top of the document. It appears as Mfr Report #.
+	Expected Values : 
+		- For Ashfield reports : [Critical, Major , Minor]
+		- For MedWatch reports : [Adverse Event Inital Report, Follow Up]
 4. Category:
 	Key : category
 	Definition : Category of the complaint
-	Expected Values : Adverse Event Initial Report, Product Quality Initial Report, or Follow Up(Ashfield Report); All checked boxes for Inital and/or Follow# in section G. ALL MANUFACTURERS (MedWatch Report)
+	Expected Values : 
+		- For Ashfield reports : [Adverse Event Initial Report, Product Quality Initial Report, Follow Up]
+		- For MedWatch reports : All checked boxes for Inital and/or Follow# in section G. ALL MANUFACTURERS
+			- [Initial, Follow#], [Initial]
 	Document Specific Instructions:
 		- Ashfield Report - It appears as a value for the Topic Field.
 		- MedWatch Report - It appears as checked boxes in Type of Report field in section G. ALL MANUFACTURERS.
 5. Case Type:
 	Key : case_type
 	Definition : To check if a case is an adverse event, product type or both
-	Expected Values : [AE, PC, AE & PC]
+	Expected Values : 
+		- For Ashfield reports : [AE, PC, AE & PC]
+		- For MedWatch reports : [Adverse Event], [Adverse Event, Product Problem], [Product Problem] 
 	Document Specific Instructions:
 		- Ashfield Report - It appears as a value for Case Type field in the case information section.
 		- MedWatch Report - It appears as checked boxes in Type of Report Field in section B. ADVERSE EVENT OR PRODUCT PROBLEM of the MedWatch Report.
 6. Report Type:
 	Key : report_type
 	Definition : Need to be inferred from the narrative as one of the expected values
-	Expected Values : Spontaneous, Clinical Trial, Literature, PSUR, PBRER or NA
+	Expected Values : [Spontaneous, Clinical Trial, Literature, PSUR, PBRER, NA]
 	Document Specific Instructions:
 		- Ashfield Report - It needs to be inferred from one of the expected values from the narratives.
 		- MedWatch Report - NA

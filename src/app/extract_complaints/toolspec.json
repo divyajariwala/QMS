@@ -19,12 +19,14 @@
                         "description": "Case criticality level"
                     },
                     "category": {
-                        "type": "string",
-                        "description": "Category of the complaint"
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Category of the complaint - can be multiple values like [Initial, Follow#]"
                     },
                     "case_type": {
-                        "type": "string",
-                        "description": "Product Complaint or Adverse Event"
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Product Complaint or Adverse Event - can be multiple like [AE, PC] or [Adverse Event, Product Problem]"
                     },
                     "report_type": {
                         "type": "string",
@@ -61,7 +63,7 @@
                         }
                     }
                 },
-                "required": ["case_id", "receipt_date", "criticality", "report_type", "case_type", "narrative", "primary_reporter", "patient_name", "physician_name", "product_details"]
+                "required": ["case_id", "receipt_date", "criticality", "category", "case_type", "report_type", "narrative", "primary_reporter", "patient_name", "physician_name", "product_details"]
             }
         }
     }
