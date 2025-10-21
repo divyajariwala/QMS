@@ -39,7 +39,7 @@ MAX_PDF_SIZE_MB = 50  # Maximum PDF file size in MB
 MAX_PAGES = 20        # Maximum number of pages to process
 
 # Test event for local development
-event = {"s3path" : "s3://qms-textract-staging-bucket/s3testsample.pdf"}
+# event = {"s3path" : "s3://qms-textract-staging-bucket/s3testsample.pdf"}
 
 def validate_event(event):
     """
@@ -362,15 +362,15 @@ def lambda_handler(event, context):
             'body': json.dumps({'success': False, 'error': 'Internal error'})
         }
     
-def main():
-    """
-    Local testing function for development and debugging.
+# def main():
+#     """
+#     Local testing function for development and debugging.
     
-    Simulates Lambda execution with test event and prints results.
-    Only runs when script is executed directly (not imported).
-    """
-    result = lambda_handler(event, None)
-    print(json.dumps(result, indent=2))
+#     Simulates Lambda execution with test event and prints results.
+#     Only runs when script is executed directly (not imported).
+#     """
+#     result = lambda_handler(event, None)
+#     print(json.dumps(result, indent=2))
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
