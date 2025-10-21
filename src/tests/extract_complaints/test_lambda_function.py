@@ -2,20 +2,25 @@ import pytest
 import json
 import io
 import base64
+import os
+import sys
 from unittest.mock import Mock, patch, MagicMock, mock_open
 from PIL import Image
-from src.app.extract_complaints import lambda_function
+
+# Add src directory to path for importing lambda_function
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from extract_complaints import lambda_function
 
 
 class TestLambdaHandler:
     """Unit tests for the main lambda_handler function"""
 
-    @patch('lambda_function.boto3.client')
-    @patch('lambda_function.fetch_pdf_from_s3')
-    @patch('lambda_function.pdf_to_images')
-    @patch('lambda_function.images_to_base64')
-    @patch('lambda_function.prompt_constructor')
-    @patch('lambda_function.process_with_bedrock_conversations')
+    @patch('extract_complaints.lambda_function.boto3.client')
+    @patch('extract_complaints.lambda_function.fetch_pdf_from_s3')
+    @patch('extract_complaints.lambda_function.pdf_to_images')
+    @patch('extract_complaints.lambda_function.images_to_base64')
+    @patch('extract_complaints.lambda_function.prompt_constructor')
+    @patch('extract_complaints.lambda_function.process_with_bedrock_conversations')
     def test_successful_processing(self, mock_bedrock, mock_prompt, mock_base64, 
                                  mock_pdf_to_images, mock_fetch_pdf, mock_boto3):
         """Test: Successful PDF processing"""
@@ -55,7 +60,7 @@ class TestLambdaHandler:
         assert body['success'] is False
         assert "Invalid S3 path format" in body['error']
 
-    @patch('lambda_function.fetch_pdf_from_s3')
+    @patch('extract_complaints.lambda_function.fetch_pdf_from_s3')
     def test_internal_error(self, mock_fetch_pdf):
         """Test: Internal server error handling"""
         mock_fetch_pdf.side_effect = Exception("S3 error")
@@ -113,7 +118,7 @@ class TestLoadPromptFromFile:
 class TestFetchPdfFromS3:
     """Tests for fetch_pdf_from_s3 function"""
 
-    @patch('lambda_function.boto3.client')
+    @patch('extract_complaints.lambda_function.boto3.client')
     def test_successful_fetch(self, mock_boto3):
         """Test: Successfully fetch PDF from S3"""
         mock_s3 = Mock()
@@ -127,7 +132,7 @@ class TestFetchPdfFromS3:
         mock_s3.head_object.assert_called_once_with(Bucket='bucket', Key='file.pdf')
         mock_s3.get_object.assert_called_once_with(Bucket='bucket', Key='file.pdf')
 
-    @patch('lambda_function.boto3.client')
+    @patch('extract_complaints.lambda_function.boto3.client')
     def test_file_too_large(self, mock_boto3):
         """Test: PDF file exceeds size limit"""
         mock_s3 = Mock()
@@ -137,7 +142,7 @@ class TestFetchPdfFromS3:
         with pytest.raises(ValueError, match="PDF too large"):
             lambda_function.fetch_pdf_from_s3('s3://bucket/large.pdf')
 
-    @patch('lambda_function.boto3.client')
+    @patch('extract_complaints.lambda_function.boto3.client')
     def test_s3_error(self, mock_boto3):
         """Test: S3 client error"""
         mock_s3 = Mock()
@@ -151,7 +156,7 @@ class TestFetchPdfFromS3:
 class TestPdfToImages:
     """Tests for pdf_to_images function"""
 
-    @patch('lambda_function.fitz.open')
+    @patch('extract_complaints.lambda_function.fitz.open')
     def test_successful_conversion(self, mock_fitz_open):
         """Test: Successfully convert PDF to images"""
         # Mock PDF document
@@ -165,7 +170,7 @@ class TestPdfToImages:
         mock_fitz_open.return_value = mock_doc
         
         # Mock PIL Image
-        with patch('lambda_function.Image.open') as mock_image_open:
+        with patch('extract_complaints.lambda_function.Image.open') as mock_image_open:
             mock_image = Mock()
             mock_image_open.return_value = mock_image
             
@@ -175,7 +180,7 @@ class TestPdfToImages:
             assert result[0] == mock_image
             mock_doc.close.assert_called_once()
 
-    @patch('lambda_function.fitz.open')
+    @patch('extract_complaints.lambda_function.fitz.open')
     def test_max_pages_limit(self, mock_fitz_open):
         """Test: Respects MAX_PAGES limit"""
         mock_doc = Mock()
@@ -187,7 +192,7 @@ class TestPdfToImages:
         mock_doc.__getitem__ = Mock(return_value=mock_page)
         mock_fitz_open.return_value = mock_doc
         
-        with patch('lambda_function.Image.open') as mock_image_open:
+        with patch('extract_complaints.lambda_function.Image.open') as mock_image_open:
             mock_image_open.return_value = Mock()
             result = lambda_function.pdf_to_images(b'pdf_data')
             assert len(result) == lambda_function.MAX_PAGES
@@ -213,7 +218,7 @@ class TestImagesToBase64:
 class TestPromptConstructor:
     """Tests for prompt_constructor function"""
 
-    @patch('lambda_function.load_prompt_from_file')
+    @patch('extract_complaints.lambda_function.load_prompt_from_file')
     def test_successful_construction(self, mock_load_prompt):
         """Test: Successfully construct prompt with images"""
         mock_load_prompt.return_value = "Test prompt"
