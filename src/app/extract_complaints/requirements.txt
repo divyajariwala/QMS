@@ -1,0 +1,8 @@
+# Core dependencies for lambda_function.py
+PyMuPDF==1.23.26
+Pillow==10.4.0
+boto3==1.35.36
+botocore==1.35.36
+
+# Testing dependencies
+pytest==8.4.2
