@@ -1,5 +1,5 @@
 import React, { useState, MouseEvent } from 'react';
-import { Box, Stack, Button } from "@mui/material";
+import { Box, Stack, Button, Breadcrumbs, Link, Typography } from "@mui/material";
 import PlusIcon from "../../assets/icons/plus.svg";
 import ImportIcon from "../../assets/icons/import.svg";
 import ComplaintsResult from "@components/complaint/ComplaintsResult";
@@ -9,6 +9,7 @@ import ComplaintsEmptyState from "./ComplaintsEmptyState";
 import Popup from "@components/Popup/Popup";
 import FileUpload from '@components/FileUpload/FileUpload';
 import { complaintsData } from 'src/mockData/mockData';
+import ComplaintsBreadcrumbs from './ComplaintsBreadcrumbs';
 
 const Complaints = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -29,12 +30,11 @@ const Complaints = () => {
     alert(`Submitted value: ${value}`);
     setOpen(false);
   };
+
   return (
     <Box component="main">
       <Stack direction="column" gap={2.5}>
-        <Box className={styles.dashboardTitle}>
-          Dashboard
-        </Box>
+        <ComplaintsBreadcrumbs/>
         <Stack
           direction="row"
           alignItems={"baseline"}
@@ -55,8 +55,8 @@ const Complaints = () => {
           </Stack>
         </Stack>
       </Stack>
-      {/* For empty state
-      <ComplaintsEmptyState /> */}
+      {/* For empty state */}
+      {/* <ComplaintsEmptyState /> */}
       <ComplaintsFilter />
       {complaintsData.map((complaint, index) => (
         <ComplaintsResult key={index} complaint={complaint} />

@@ -211,3 +211,31 @@ export const fetchHtml = async (url: string) => {
     return;
   }
 }
+
+/**
+ * Uploads a complaint file to the backend.
+ *
+ * @param file - The file to upload.
+ * @returns The response data from the upload endpoint. May be undefined if an error occurs.
+ */
+export const uploadComplaintFile = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/uploadComplaints`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (res.ok) {
+      return await res.json();
+    }
+
+    console.log(`uploadComplaintFile error: status ${res.status} ${res.statusText}`);
+    return;
+  } catch (err) {
+    console.log('uploadComplaintFile error', err);
+    return;
+  }
+};
