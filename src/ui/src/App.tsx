@@ -80,7 +80,7 @@ const App = () => {
                   path="/narratives"
                   element={
                     <ProtectedRoute>
-                      <ComplaintsDetails />
+                      <Narratives />
                     </ProtectedRoute>
                   }
                 />
@@ -95,11 +95,16 @@ const App = () => {
                 <Route
                   path="/productComplaints"
                   element={
-                    // <ProtectedRoute>
-                    //    <ProductComplaints />
-                    // </ProtectedRoute>
                     <ProtectedRoute>
                       <Complaints />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/productComplaints/:id"
+                  element={
+                    <ProtectedRoute>
+                      <ComplaintsDetails />
                     </ProtectedRoute>
                   }
                 />
