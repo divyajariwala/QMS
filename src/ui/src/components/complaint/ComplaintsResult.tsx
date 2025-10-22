@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom"; 
 import { Box, Stack, Typography } from "@mui/material";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ComplaintsDueDateChip from "./ComplaintsDueDateChip";
@@ -154,6 +155,10 @@ const getDueStatus = (
 };
 
 const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
+  const navigate = useNavigate();
+  const handleSeeDetailsClick = () => {
+    navigate(`/productComplaints/CAS-12345`);
+  };
   const infoItems = [
     {
       label: "Criticality",
@@ -270,6 +275,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
         direction={"row"}
         alignItems={"center"}
         justifyContent={"space-between"}
+        onClick={handleSeeDetailsClick}
       >
         <Typography
           variant="caption"
@@ -297,6 +303,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
               fontSize: "14px",
               lineHeight: "20px",
               color: "#437EF7",
+              cursor: 'pointer'
             }}
           >
             See Details
