@@ -22,9 +22,21 @@ dynamodb_configs = [
   {
     table_name = "complaints-metadata"
     part_key = {
-      key_name = "ta_id"
+      key_name = "PK"
       key_type = "S"
     }
+    sort_key = {
+      key_name = "SK"
+      key_type = "S"
+    }
+    global_secondary_indexes = [
+      {
+        name = "GSI1"
+        hash_key = "GSI1PK"
+        range_key = "GSI1SK"
+        projection_type = "ALL"
+      }
+    ]
   }
 ]
 lambda_configs = [
