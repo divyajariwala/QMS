@@ -1,10 +1,10 @@
 import React from 'react';
-import { Breadcrumbs, Link, Typography } from '@mui/material';
+import { Breadcrumbs, Link } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Link as RouterLink } from 'react-router-dom';
-import styles from './ComplaintsBreadcrumbs.module.scss'; // your CSS module
+import styles from './DeviationsBreadcrumbs.module.scss';
 
-const ComplaintsBreadcrumbs: React.FC = () => {
+const DeviationsBreadcrumbs: React.FC = () => {
   return (
     <Breadcrumbs
       separator={<NavigateNextIcon fontSize="small" />}
@@ -21,14 +21,14 @@ const ComplaintsBreadcrumbs: React.FC = () => {
       </Link>
       <Link
         component={RouterLink}
-        to="/complaints"
+        to="/deviations"
         underline="hover"
         className={styles.crumbCurrent}
       >
-        Complaints
+        Deviations
       </Link>
     </Breadcrumbs>
   );
 };
 
-export default ComplaintsBreadcrumbs;
+export default DeviationsBreadcrumbs;

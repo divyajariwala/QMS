@@ -7,6 +7,25 @@
   background-color: #ffffff;
   border: 1px solid #eaebf0;
 
+  /* New styles for TextField search */
+  .searchField {
+    width: 43%;
+
+    & .MuiOutlinedInput-notchedOutline {
+      border: none;
+    }
+  }
+
+  /* New styles for Select fields */
+  .selectField {
+    width: 15%;
+
+    & .MuiOutlinedInput-notchedOutline {
+      border: none;
+    }
+  }
+
+  /* Buttons */
   .searchButton {
     border-radius: 5px;
     padding: 10px 16px;
@@ -21,6 +40,7 @@
     color: #272d37;
     text-transform: none;
     width: 11%;
+
     &:hover {
       border: 1px solid #dae0e6;
     }
@@ -38,8 +58,17 @@
     letter-spacing: 0px;
     text-transform: none;
     color: #838486;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
     &:hover {
       border: 1px solid #dcdbdd;
+    }
+
+    img {
+      display: inline-block;
     }
   }
 }

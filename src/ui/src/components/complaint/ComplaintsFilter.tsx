@@ -31,12 +31,6 @@ const ComplaintsFilter: React.FC = () => {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         variant="outlined"
-        sx={{
-          "& .MuiOutlinedInput-notchedOutline": {
-            border: "none",
-          },
-          width: "43%",
-        }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -53,12 +47,7 @@ const ComplaintsFilter: React.FC = () => {
         displayEmpty
         value={caseType}
         onChange={(e) => setCaseType(e.target.value)}
-        sx={{
-          "& .MuiOutlinedInput-notchedOutline": {
-            border: "none",
-          },
-          width: "15%",
-        }}
+        className={styles.selectField}
         renderValue={(selected) => {
           if (selected === "") {
             return "Select Case Type";
@@ -67,7 +56,7 @@ const ComplaintsFilter: React.FC = () => {
         }}
       >
         <MenuItem value={"Case Type 1"}>Case Type 1</MenuItem>
-        <MenuItem value={"Case Type 2"}>'Case Type 2</MenuItem>
+        <MenuItem value={"Case Type 2"}>Case Type 2</MenuItem>
         <MenuItem value={"Case Type 3"}>Case Type 3</MenuItem>
       </Select>
       <Divider orientation="vertical" flexItem />
@@ -78,12 +67,7 @@ const ComplaintsFilter: React.FC = () => {
         displayEmpty
         value={criticality}
         onChange={(e) => setCriticality(e.target.value)}
-        sx={{
-          "& .MuiOutlinedInput-notchedOutline": {
-            border: "none",
-          },
-          width: "15%",
-        }}
+        className={styles.selectField}
         renderValue={(selected) => {
           if (selected === "") {
             return "Select Criticality";

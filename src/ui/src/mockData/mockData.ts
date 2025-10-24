@@ -85,6 +85,79 @@ export const complaintsData = [
   },
 ];
 
+export const deviationsData = [
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 02 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "inactive"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 09 2025",
+    "rcaStatus": "inactive",
+    "gradingStatus": "inactive"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 10 2025",
+    "rcaStatus": "completed",
+    "gradingStatus": "completed"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 11 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 12 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 13 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 14 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 15 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 16 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 17 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+];
+
 export const complaintCategories = [
   {
     id: "1",

@@ -18,7 +18,7 @@ const ComplaintBreadcrumbs: React.FC<ComplaintBreadcrumbsProps> = ({ caseId }) =
       <Link component={RouterLink} to="/" underline="hover" className={styles.link}>
         Home
       </Link>
-      <Link component={RouterLink} to="/productComplaints" underline="hover" className={styles.link}>
+      <Link component={RouterLink} to="/complaints" underline="hover" className={styles.link}>
         Complaints
       </Link>
       <Typography className={styles.crumbCurrent}>
