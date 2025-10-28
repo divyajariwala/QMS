@@ -44,8 +44,14 @@ interface StatusStepProps {
   status: Status;
 }
 
+const iconClassNames: Record<Status, string> = {
+  completed: styles.iconCompleted,
+  active: styles.iconActive,
+  inactive: styles.iconInactive,
+};
+
 const StatusStep = ({ label, status }: StatusStepProps) => {
-  const { icon, color } = statusStyles[status];
+  const { icon } = statusStyles[status];
 
   return (
     <Stack
@@ -54,11 +60,7 @@ const StatusStep = ({ label, status }: StatusStepProps) => {
       spacing={0.5}
       alignItems="center"
     >
-      <img
-        src={icon}
-        alt={`${label} icon`}
-        style={{ filter: `drop-shadow(0 0 0 ${color})` }}
-      />
+      <img src={icon} alt={`${label} icon`} className={iconClassNames[status]} />
       <Typography variant="body2" className={styles.label}>
         {label}
       </Typography>

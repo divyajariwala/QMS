@@ -1,34 +1,44 @@
-import React, { useState, MouseEvent } from 'react';
+import React from 'react';
 import { Box, Stack, Button } from "@mui/material";
-import ImportIcon from "../../assets/icons/import.svg";
 import DeviationsResult from "./DeviationsResult";
-import ComplaintsFilter from "@components/complaint/ComplaintsFilter";
+import DeviationsFilter from "@components/deviations/DeviationsFilter";
 import styles from "./Deviations.module.scss";
 import { deviationsData } from 'src/mockData/mockData';
 import DeviationsBreadcrumbs from './DeviationsBreadcrumbs';
+import StatusTabs from './StatusTabs';
+import StatusCards from './StatusCards';
+import { useAuth } from "../../auth/useAuth";
 
 const Deviations = () => {
+
+  const { user } = useAuth();
+  const displayName = `${user?.profile?.given_name ?? ""}`.trim();
+
   return (
     <Box component="main">
       <Stack direction="column" gap={2.5}>
-        <DeviationsBreadcrumbs/>
+        <DeviationsBreadcrumbs />
         <Stack
           direction="row"
           alignItems={"baseline"}
           justifyContent={"space-between"}
         >
           <Box className={styles.pageTitle}>
-            Deviations
+            Hey there, {displayName}!
+            <Box className={styles.pageDetails}>
+              Welcome to Deviations dashboard!
+            </Box>
           </Box>
           <Stack className={styles.actions} direction="row" spacing={2}>
             <Button variant="contained" className={styles.primaryImportButton}>
-              <img src={ImportIcon} alt="import" />
               Import
             </Button>
           </Stack>
         </Stack>
+        <div className={styles.statusCards}> <StatusCards /></div>
+        <div className={styles.statusTabs}> <StatusTabs /></div>
       </Stack>
-      <ComplaintsFilter />
+      <DeviationsFilter />
       {deviationsData.map((deviation, index) => (
         <DeviationsResult key={index} deviation={deviation} />
       ))}

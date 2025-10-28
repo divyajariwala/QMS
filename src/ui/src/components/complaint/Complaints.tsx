@@ -10,10 +10,15 @@ import Popup from "@components/Popup/Popup";
 import FileUpload from '@components/FileUpload/FileUpload';
 import { complaintsData } from 'src/mockData/mockData';
 import ComplaintsBreadcrumbs from './ComplaintsBreadcrumbs';
+import StatusTabs from './StatusTabs';
+import StatusCards from './StatusCards';
+import { useAuth } from "../../auth/useAuth";
 
 const Complaints = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [openFileUpload, setOpenFileUpload] = useState<boolean>(false);
+  const { user } = useAuth();
+  const displayName = `${user?.profile?.given_name ?? ""}`.trim();
   const handleFileSelect = (file: File) => {
     console.log('Selected file:', file);
   };
@@ -41,8 +46,12 @@ const Complaints = () => {
           justifyContent={"space-between"}
         >
           <Box className={styles.pageTitle}>
-            Complaints
+            Hey there, {displayName}!
+            <Box className={styles.pageDetails}>
+           Welcome to Complaints dashboard!
           </Box>
+          </Box>
+          
           <Stack className={styles.actions} direction="row" spacing={2}>
             <Button variant="outlined" className={styles.addManuallyButton} onClick={handleOpen}>
               <img src={PlusIcon} alt="plus" />
@@ -57,6 +66,8 @@ const Complaints = () => {
       </Stack>
       {/* For empty state */}
       {/* <ComplaintsEmptyState /> */}
+      <StatusCards />
+      <div className={styles.statusTabs}> <StatusTabs /></div>
       <ComplaintsFilter />
       {complaintsData.map((complaint, index) => (
         <ComplaintsResult key={index} complaint={complaint} />

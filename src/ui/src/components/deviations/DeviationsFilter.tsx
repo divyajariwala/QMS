@@ -1,7 +1,7 @@
 import React from "react";
-import styles from "./ComplaintsFilter.module.scss";
+import styles from "./DeviationsFilter.module.scss";
 
-const ComplaintsFilter: React.FC = () => {
+const DeviationsFilter: React.FC = () => {
   const SearchSvg = () => (
     <svg
       className={styles.searchIcon}
@@ -40,11 +40,8 @@ const ComplaintsFilter: React.FC = () => {
           <span className={styles.searchButtonText}>Search</span>
         </button>
       </div>
-      <button type="button" className={styles.advancedButton}>
-        Advanced Search
-      </button>
     </div>
   );
 };
 
-export default ComplaintsFilter;
+export default DeviationsFilter;

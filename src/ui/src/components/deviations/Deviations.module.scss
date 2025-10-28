@@ -56,3 +56,23 @@
   letter-spacing: -1%;
   color: #272D37;
 }
+
+.pageDetails {
+  font-family: 'Inter';
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  color:#5F6D7E;
+}
+
+.statusTabs {
+  display: inline-flex;
+  align-self: start;
+  margin-top: 16px;
+}
+
+.statusCards {
+  display: inline-flex;
+}
