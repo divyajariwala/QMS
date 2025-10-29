@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Stack, Button } from "@mui/material";
 import DeviationsResult from "./DeviationsResult";
 import DeviationsFilter from "@components/deviations/DeviationsFilter";
@@ -7,9 +7,11 @@ import { deviationsData } from 'src/mockData/mockData';
 import DeviationsBreadcrumbs from './DeviationsBreadcrumbs';
 import StatusTabs from './StatusTabs';
 import StatusCards from './StatusCards';
+import ButtonGroup from './ButtonGroup';
 import { useAuth } from "../../auth/useAuth";
 
 const Deviations = () => {
+  const [selected, setSelected] = useState('Root Cause Analysis');
 
   const { user } = useAuth();
   const displayName = `${user?.profile?.given_name ?? ""}`.trim();
@@ -35,6 +37,9 @@ const Deviations = () => {
             </Button>
           </Stack>
         </Stack>
+        <div>
+      <ButtonGroup selected={selected} onSelect={setSelected} />
+    </div>
         <div className={styles.statusCards}> <StatusCards /></div>
         <div className={styles.statusTabs}> <StatusTabs /></div>
       </Stack>
