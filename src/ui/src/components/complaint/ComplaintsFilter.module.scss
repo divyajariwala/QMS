@@ -9,7 +9,8 @@
   width: 100%;
   margin-top: 16px;
   box-sizing: border-box;
-  height: 72px; /* height as in screenshot */
+  height: 72px;
+  font-family: 'Inter';
 }
 
 .inputWrapper {
@@ -18,9 +19,9 @@
   display: flex;
   align-items: center;
   height: 100%;
+  font-family: 'Inter';
 }
 
-/* Left search icon inside input */
 .searchIcon {
   position: absolute;
   left: 12px;
@@ -28,15 +29,15 @@
   height: 100%;
   display: flex;
   align-items: center;
-  pointer-events: none; /* so clicks pass through to input */
+  pointer-events: none;
   color: #999;
-  width: 24px; /* adjust according to your icon size */
+  width: 24px;
 }
 
 .searchInput {
   width: 100%;
   font-size: 14px;
-  padding: 8px 140px 8px 36px; /* left padding for icon, right padding for button */
+  padding: 8px 140px 8px 36px;
   border: 1px solid #ccc;
   border-radius: 6px;
   outline: none;
@@ -44,6 +45,7 @@
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
   line-height: 24px;
+  font-family: 'Inter';
 }
 
 .searchInput:focus {
@@ -66,7 +68,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter';
   font-weight: 500;
   user-select: none;
   width: 126px;
@@ -88,10 +90,10 @@
 
 .searchButtonText {
   display: inline-block;
-  margin-left: 0; /* Left margin handled by gap on button flex */
+  margin-left: 0;
+  font-family: 'Inter';
 }
 
-/* Optional: remove native search cancel icon */
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }
@@ -106,13 +108,13 @@ input[type="search"]::-webkit-search-cancel-button {
   cursor: pointer;
   transition: background-color 0.2s;
   width: 177px;
-  height: 100%; /* fill container height */
+  height: 100%;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 16px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter';
   white-space: nowrap;
 }
 

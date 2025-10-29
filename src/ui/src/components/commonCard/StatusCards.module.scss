@@ -12,9 +12,9 @@
   flex: 1 1 0%;
   max-width: none;
   display: flex;
-  flex-direction: row;  /* restore horizontal layout */
+  flex-direction: row;
   padding: 16px 24px;
-  align-items: center;  /* vertical align center header and legend */
+  align-items: center;
   justify-content: space-between;
   min-height: 146px;
 }
@@ -22,7 +22,7 @@
 .cardInfo {
   display: flex;
   flex-direction: column;
-  justify-content: center;  /* center vertically */
+  justify-content: center;
 }
 
 .cardHeader {
@@ -36,7 +36,7 @@
     color: #5F6D7E;
     margin: 0;
     white-space: nowrap;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter';
     line-height: 20px;
     letter-spacing: -0.1px;
   }
@@ -49,7 +49,7 @@
 }
 
 .cardValue {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter';
   font-weight: 600;
   font-size: 22px;
   line-height: 30px;
@@ -78,7 +78,7 @@
   white-space: nowrap;
   min-width: 160px;
   padding: 8px 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter';
   font-weight: 500;
   font-size: 15px;
   line-height: 22px;
@@ -93,8 +93,7 @@
   color: #222;
   font-weight: 600;
   margin-left: 6px;
-  font-variant-numeric: tabular-nums;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter';
 }
 
 .dot {
@@ -121,4 +120,7 @@
   align-items: center;
   gap: 8px;
   white-space: nowrap;
+  span {
+    font-family: 'Inter';
+  }
 }
