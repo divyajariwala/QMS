@@ -9,7 +9,7 @@ import ComplaintsEmptyState from "./ComplaintsEmptyState";
 import Popup from "@components/Popup/Popup";
 import FileUpload from '@components/FileUpload/FileUpload';
 import { complaintsData } from 'src/mockData/mockData';
-import ComplaintsBreadcrumbs from './ComplaintsBreadcrumbs';
+import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import StatusTabs from './StatusTabs';
 import StatusCards from './StatusCards';
 import { useAuth } from "../../auth/useAuth";
@@ -19,6 +19,10 @@ const Complaints = () => {
   const [openFileUpload, setOpenFileUpload] = useState<boolean>(false);
   const { user } = useAuth();
   const displayName = `${user?.profile?.given_name ?? ""}`.trim();
+  const items = [
+    { label: 'Home', to: '/' },
+    { label: 'Complaints' },
+  ];
   const handleFileSelect = (file: File) => {
     console.log('Selected file:', file);
   };
@@ -39,7 +43,7 @@ const Complaints = () => {
   return (
     <Box component="main">
       <Stack direction="column" gap={2.5}>
-        <ComplaintsBreadcrumbs/>
+        <CommonBreadcrumbs items={items} />
         <Stack
           direction="row"
           alignItems={"baseline"}
@@ -48,10 +52,10 @@ const Complaints = () => {
           <Box className={styles.pageTitle}>
             Hey there, {displayName}!
             <Box className={styles.pageDetails}>
-           Welcome to Complaints dashboard!
+              Welcome to Complaints dashboard!
+            </Box>
           </Box>
-          </Box>
-          
+
           <Stack className={styles.actions} direction="row" spacing={2}>
             <Button variant="outlined" className={styles.addManuallyButton} onClick={handleOpen}>
               <img src={PlusIcon} alt="plus" />
