@@ -11,7 +11,7 @@ import FileUpload from '@components/FileUpload/FileUpload';
 import { complaintsData } from 'src/mockData/mockData';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import StatusTabs from './StatusTabs';
-import StatusCards from './StatusCards';
+import ComplaintsStatusCard from '@components/commonCard/ComplaintsStatusCard';
 import { useAuth } from "../../auth/useAuth";
 
 const Complaints = () => {
@@ -70,7 +70,7 @@ const Complaints = () => {
       </Stack>
       {/* For empty state */}
       {/* <ComplaintsEmptyState /> */}
-      <StatusCards />
+      <ComplaintsStatusCard />
       <div className={styles.statusTabs}> <StatusTabs /></div>
       <ComplaintsFilter />
       {complaintsData.map((complaint, index) => (

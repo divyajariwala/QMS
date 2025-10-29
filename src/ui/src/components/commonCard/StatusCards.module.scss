@@ -12,8 +12,9 @@
   flex: 1 1 0%;
   max-width: none;
   display: flex;
+  flex-direction: row;  /* restore horizontal layout */
   padding: 16px 24px;
-  align-items: center;
+  align-items: center;  /* vertical align center header and legend */
   justify-content: space-between;
   min-height: 146px;
 }
@@ -21,7 +22,7 @@
 .cardInfo {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: center;  /* center vertically */
 }
 
 .cardHeader {
@@ -35,7 +36,7 @@
     color: #5F6D7E;
     margin: 0;
     white-space: nowrap;
-    font-family: 'Inter';
+    font-family: 'Inter', sans-serif;
     line-height: 20px;
     letter-spacing: -0.1px;
   }
@@ -48,7 +49,7 @@
 }
 
 .cardValue {
-  font-family: 'Inter';
+  font-family: 'Inter', sans-serif;
   font-weight: 600;
   font-size: 22px;
   line-height: 30px;
@@ -60,12 +61,12 @@
   display: flex;
   gap: 32px;
   align-items: flex-start;
+}
 
-  .legendColumn {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
+.legendColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .legendItem {
@@ -77,12 +78,11 @@
   white-space: nowrap;
   min-width: 160px;
   padding: 8px 0;
-  font-family: 'Inter';
+  font-family: 'Inter', sans-serif;
   font-weight: 500;
   font-size: 15px;
   line-height: 22px;
   letter-spacing: -0.1px;
-
 
   &:not(:last-child) {
     border-bottom: 1px solid #e0e0e0;
@@ -94,7 +94,7 @@
   font-weight: 600;
   margin-left: 6px;
   font-variant-numeric: tabular-nums;
-  font-family: 'Inter';
+  font-family: 'Inter', sans-serif;
 }
 
 .dot {
@@ -106,12 +106,10 @@
 
 .dotPending {
   background-color: #0060D7;
-
 }
 
 .dotProcessed {
   background-color: #4EB523;
-
 }
 
 .dotOverdue {

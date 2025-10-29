@@ -5,7 +5,7 @@ import DeviationsFilter from "@components/deviations/DeviationsFilter";
 import styles from "./Deviations.module.scss";
 import { deviationsData } from 'src/mockData/mockData';
 import StatusTabs from './StatusTabs';
-import StatusCards from './StatusCards';
+import DeviationsStatusCard from '@components/commonCard/DeviationsStatusCard';
 import ButtonGroup from './ButtonGroup';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import { useAuth } from "../../auth/useAuth";
@@ -43,7 +43,7 @@ const Deviations = () => {
         <div>
       <ButtonGroup selected={selected} onSelect={setSelected} />
     </div>
-        <div className={styles.statusCards}> <StatusCards /></div>
+        <div className={styles.statusCards}> <DeviationsStatusCard /></div>
         <div className={styles.statusTabs}> <StatusTabs /></div>
       </Stack>
       <DeviationsFilter />
