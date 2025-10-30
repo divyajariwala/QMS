@@ -130,6 +130,34 @@ def lambda_handler(event, context):
             }
         )
 
+        ##Extract PDF Data
+        file_extension = _get_file_extension(filename)
+        if file_extension == 'pdf':
+            s3_uri = f"s3://{S3_BUCKET_NAME}/{s3_key}"
+            lambda_payload = {
+                "s3_uri": s3_uri
+            }
+            lambda_response = lambda_client.invoke(
+                FunctionName='qms-dev-extract-complaints',
+                InvocationType='RequestResponse',
+                Payload=json.dumps(lambda_payload)
+            )
+            pdf_contents = json.loads(lambda_response['Payload'].read().decode('utf-8'))
+
+
+        # Send to SQS
+        message = {
+            "file_id": file_id,
+            "filename": filename,
+            "s3_key": s3_key,
+            "s3_bucket": S3_BUCKET_NAME,
+            "uploaded_at": datetime.now(timezone.utc).isoformat(),
+            "file_size": len(file_content),
+            "content_type": file_info.get('content_type', _get_content_type(filename)),
+            "file_extension": _get_file_extension(filename),
+            "pdf_contents": pdf_contents if file_extension == 'pdf' else None
+        }
+
         # Send to SQS
         message = {
             "file_id": file_id,
