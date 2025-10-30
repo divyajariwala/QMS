@@ -16,7 +16,7 @@ Dependencies:
 - Pillow (PIL) for image manipulation
 - boto3 for AWS services
 - prompt.txt file containing AI prompt
-- ToolSpec.json file containing tool configuration
+- toolspec.json file containing tool configuration
 
 Author: QMS Team
 Version: 1.0
@@ -231,13 +231,13 @@ def prompt_constructor(base64_images):
 
 def load_tool_spec():
     """
-    Load tool specification from ToolSpec.json file.
+    Load tool specification from toolspec.json file.
     
     Returns:
         dict: Tool specification for Bedrock function calling
         
     Raises:
-        FileNotFoundError: If ToolSpec.json doesn't exist
+        FileNotFoundError: If toolspec.json doesn't exist
         json.JSONDecodeError: If JSON is malformed
         Exception: For other file reading errors
         
@@ -246,7 +246,7 @@ def load_tool_spec():
         function calling in Bedrock, enabling structured data extraction
     """
     try:
-        with open('ToolSpec.json', 'r') as file:
+        with open('toolspec.json', 'r') as file:
             return json.load(file)
     except FileNotFoundError as e:
         logger.error(f"Tool spec file not found: {str(e)}")
