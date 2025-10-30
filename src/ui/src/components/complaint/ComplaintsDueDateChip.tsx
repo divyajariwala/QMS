@@ -4,24 +4,15 @@ import OverdueIcon from "../../assets/icons/overdue.svg";
 import DueTodayIcon from "../../assets/icons/dueToday.svg";
 import DueTomorrowIcon from "../../assets/icons/dueTomorrow.svg";
 import DueIcon from "../../assets/icons/due.svg";
+import { ComplaintsDueDateChipProps, DueDateChipProps } from "src/types";
 import styles from "./ComplaintsDueDateChip.module.scss";
-
-interface ComplaintsDueDateChipProps {
-  type: "Overdue" | "Today" | "Tomorrow" | "Due";
-  label: string;
-}
 
 const DueDateChip = ({
   iconSrc,
   iconAlt,
   label,
   className,
-}: {
-  iconSrc: string;
-  iconAlt: string;
-  label: string;
-  className?: string;
-}) => (
+}: DueDateChipProps) => (
   <Stack
     direction="row"
     alignItems={"center"}

@@ -4,10 +4,9 @@ import { Typography, Stack, Box } from "@mui/material";
 import stepActive from "../../assets/icons/stepActive.svg";
 import stepCompleted from "../../assets/icons/stepCompleted.svg";
 import stepIncomplete from "../../assets/icons/stepIncomplete.svg";
+import { Status, StatusStepProps, StatusStepsProps, ConnectorProps } from "src/types";
 
 import styles from "./DeviationStatusStep.module.scss";
-
-type Status = "completed" | "active" | "inactive";
 
 const statusStyles: Record<
   Status,
@@ -27,10 +26,6 @@ const statusStyles: Record<
   },
 };
 
-interface ConnectorProps {
-  active: boolean;
-}
-
 const Connector = ({ active }: ConnectorProps) => {
   const connectorClassName = `${styles.connector} ${
     active ? styles.active : ""
@@ -38,11 +33,6 @@ const Connector = ({ active }: ConnectorProps) => {
 
   return <Box className={connectorClassName} />;
 };
-
-interface StatusStepProps {
-  label: string;
-  status: Status;
-}
 
 const iconClassNames: Record<Status, string> = {
   completed: styles.iconCompleted,
@@ -67,11 +57,6 @@ const StatusStep = ({ label, status }: StatusStepProps) => {
     </Stack>
   );
 };
-
-interface StatusStepsProps {
-  rcaStatus: Status;
-  gradingStatus: Status;
-}
 
 const DeviationStatusStep = ({ rcaStatus, gradingStatus }: StatusStepsProps) => {
   const connectorActive =

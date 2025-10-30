@@ -1,17 +1,6 @@
 import React, { useState } from "react";
+import { statuses } from "../../mockData/mockData"
 import styles from "./StatusTabs.module.scss";
-
-interface Status {
-  label: string;
-  count: number;
-  description: React.ReactNode;
-}
-
-const statuses: Status[] = [
-  { label: "In Review", count: 14000, description: "Details for In Review." },
-  { label: "Overdue", count: 2000, description: "Details for Overdue." },
-  { label: "Processed", count: 7123, description: "Details for Processed." },
-];
 
 const StatusTabs: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);

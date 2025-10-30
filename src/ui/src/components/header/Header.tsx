@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import pwcLogo from "../../assets/images/pwcLogo.svg";
 import { Avatar, Badge, styled, Tab, Tabs, Tooltip } from "@mui/material";
 import { useAuth } from "../../auth/useAuth";
@@ -50,7 +50,6 @@ const stringAvatar = (display: string) => ({
  */
 const Header = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const displayName = `${user?.profile?.given_name ?? ""} ${
@@ -63,18 +62,13 @@ const Header = () => {
     { label: "Deviation", path: "/deviations" },
   ];
 
-  const currentTab = navLinks.findIndex((link) =>
-    link.path === "/"
-      ? location.pathname === "/"
-      : location.pathname.startsWith(link.path)
+  // Find the index of current tab by checking if location pathname starts with path
+  const currentTab = navLinks.findIndex(({ path }) =>
+    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path)
   );
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    navigate(navLinks[newValue].path);
-  };
-
   return (
-    <header className={`qms-header`}>
+    <header className="qms-header">
       <div className="qms-header-container">
         <div className="qms-header-container-navbar">
           <div className="qms-header-container-navbar-left">
@@ -90,14 +84,15 @@ const Header = () => {
           <div className="qms-header-container-navbar-center">
             <Tabs
               value={currentTab !== -1 ? currentTab : 0}
-              onChange={handleChange}
               TabIndicatorProps={{ style: { display: "none" } }}
             >
-              {navLinks.map(({ label }) => (
+              {navLinks.map(({ label, path }) => (
                 <Tab
-                  className="qms-header-navigation-tab"
                   key={label}
                   label={label}
+                  component={Link}
+                  to={path}
+                  className="qms-header-navigation-tab"
                 />
               ))}
             </Tabs>
@@ -110,10 +105,7 @@ const Header = () => {
                   anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                   variant="dot"
                 >
-                  <Avatar
-                    alt={displayName || "User"}
-                    {...stringAvatar(displayName)}
-                  />
+                  <Avatar alt={displayName || "User"} {...stringAvatar(displayName)} />
                 </StyledBadge>
               </Tooltip>
             </div>

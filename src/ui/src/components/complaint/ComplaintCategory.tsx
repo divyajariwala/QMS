@@ -9,27 +9,9 @@ import {
   MenuItem,
   TextField,
 } from "@mui/material";
+import { ComplaintCategoryProps, ComplaintCategoryItem } from "src/types";
 import EditIcon from "../../assets/icons/edit.svg";
 import styles from "./ComplaintCategory.module.scss";
-
-interface ComplaintCategoryItem {
-  id: string;
-  label: string;
-  level: number;
-  crl: string;
-  priority: string;
-  unit: number;
-  percentage: number;
-  color: string;
-  bgColor: string;
-}
-
-
-
-interface ComplaintCategoryProps {
-  complaintCategories: ComplaintCategoryItem[];
-  onSave?: (updatedItem: ComplaintCategoryItem) => void;
-}
 
 const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
   complaintCategories,

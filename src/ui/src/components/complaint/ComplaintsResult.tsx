@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Box, Stack } from "@mui/material";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ComplaintsDueDateChip from "./ComplaintsDueDateChip";
+import { getDueStatus } from "src/helpers";
 
 import CriticalityIcon from "../../assets/icons/criticality.svg";
 import ReportTypeIcon from "../../assets/icons/reportType.svg";
@@ -12,29 +13,14 @@ import ProductComplaintIcon from "../../assets/icons/productComplaint.svg";
 import AdverseEventIcon from "../../assets/icons/adverseEvent.svg";
 
 import styles from "./ComplaintsResult.module.scss";
-
-interface ComplaintProps {
-  complaint: {
-    Criticality: string;
-    "Report Type": string;
-    Category: string;
-    "Receipt Date": string;
-    "Case Type": string[];
-    "Due Date": string;
-  };
-}
+import { InfoChipProps, InfoItemProps, ComplaintProps } from "src/types";
 
 const InfoItem = ({
   label,
   iconSrc,
   iconAlt,
   value,
-}: {
-  label: string;
-  iconSrc: string;
-  iconAlt: string;
-  value: string | React.ReactNode;
-}) => (
+}: InfoItemProps) => (
   <div className={styles.stackColumn}>
     <Box className={styles.infoItemLabel}>{label}</Box>
     <div className={styles.iconValueRow}>
@@ -53,12 +39,7 @@ const Chip = ({
   iconAlt,
   label,
   className,
-}: {
-  iconSrc: string;
-  iconAlt: string;
-  label: string;
-  className?: string;
-}) => (
+}: InfoChipProps) => (
   <div className={className}>
     <Stack direction="row" gap={0.5}>
       <img src={iconSrc} alt={iconAlt} />
@@ -70,35 +51,6 @@ const Chip = ({
     </Stack>
   </div>
 );
-
-const getDueStatus = (
-  dateStr: string
-): {
-  type: "Overdue" | "Today" | "Tomorrow" | "Due";
-  label: string;
-} => {
-  const dueDate = new Date(dateStr);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diffTime = dueDate.getTime() - today.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) {
-    return {
-      type: "Overdue",
-      label: `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? "" : "s"}`,
-    };
-  } else if (diffDays === 0) {
-    return { type: "Today", label: "Due Today" };
-  } else if (diffDays === 1) {
-    return { type: "Tomorrow", label: "Due Tomorrow" };
-  } else {
-    const formattedDate = dueDate
-      .toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" })
-      .replace(/,/g, "");
-    return { type: "Due", label: `Due on ${formattedDate}` };
-  }
-};
 
 const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
   const navigate = useNavigate();

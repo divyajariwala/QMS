@@ -1,13 +1,7 @@
 import React from "react";
+import { InfoItemProps, InfoChipProps, SecondaryInfoCardProps } from "src/types";
 import { Box, Typography } from "@mui/material";
 import styles from "./ComplaintSecondaryInfo.module.scss";
-
-interface InfoItemProps {
-  label: string;
-  iconSrc: string;
-  iconAlt: string;
-  value: string | React.ReactNode;
-}
 
 const InfoItem: React.FC<InfoItemProps> = ({ label, iconSrc, iconAlt, value }) => (
   <div className={styles.infoItem}>
@@ -27,13 +21,6 @@ const InfoItem: React.FC<InfoItemProps> = ({ label, iconSrc, iconAlt, value }) =
   </div>
 );
 
-interface InfoChipProps {
-  iconSrc: string;
-  iconAlt: string;
-  label: string;
-  className?: string;
-}
-
 const InfoChip: React.FC<InfoChipProps> = ({ iconSrc, iconAlt, label, className }) => (
   <div className={`${styles.infoChip} ${className ?? ""}`.trim()}>
     <img src={iconSrc} alt={iconAlt} />
@@ -42,19 +29,6 @@ const InfoChip: React.FC<InfoChipProps> = ({ iconSrc, iconAlt, label, className 
     </Typography>
   </div>
 );
-
-interface SecondaryInfoCardProps {
-  infoItems: Array<{
-    label: string;
-    iconSrc: string;
-    iconAlt: string;
-    value: string | React.ReactNode;
-  }>;
-  productComplaintIconSrc: string;
-  adverseEventIconSrc: string;
-  productComplaintsChipClassName?: string;
-  adverseEventChipClassName?: string;
-}
 
 const ComplaintSecondaryInfo: React.FC<SecondaryInfoCardProps> = ({
   infoItems,

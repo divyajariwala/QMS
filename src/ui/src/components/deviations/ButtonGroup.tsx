@@ -1,10 +1,6 @@
 import React from 'react';
+import { ButtonGroupProps } from 'src/types'
 import styles from './ButtonGroup.module.scss';
-
-interface ButtonGroupProps {
-  onSelect?: (selected: string) => void;
-  selected?: string;
-}
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({
   onSelect,
@@ -18,9 +14,8 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({
         <button
           key={btn}
           type="button"
-          className={`${styles.button} ${
-            selected === btn ? styles.selected : ''
-          }`}
+          className={`${styles.button} ${selected === btn ? styles.selected : ''
+            }`}
           onClick={() => onSelect && onSelect(btn)}
           aria-pressed={selected === btn}
         >

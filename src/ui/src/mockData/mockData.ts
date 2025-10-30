@@ -2,6 +2,14 @@ import CriticalityIcon from "../../src/assets/icons/criticality.svg";
 import ReportTypeIcon from "../../src/assets/icons/reportType.svg";
 import CategoryIcon from "../../src/assets/icons/category.svg";
 import ReceiptDateIcon from "../../src/assets/icons/receiptDate.svg";
+import { StatusTabItem } from "src/types";
+
+export const statuses: StatusTabItem[] = [
+  { label: "In Review", count: 14000, description: "Details for In Review." },
+  { label: "Overdue", count: 2000, description: "Details for Overdue." },
+  { label: "Processed", count: 7123, description: "Details for Processed." },
+];
+
 export const complaintsData = [
   {
     Criticality: "NA",

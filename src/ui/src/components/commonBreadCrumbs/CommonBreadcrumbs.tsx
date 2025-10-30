@@ -2,17 +2,8 @@ import React from 'react';
 import { Breadcrumbs, Link, Box, Typography } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Link as RouterLink } from 'react-router-dom';
+import { CommonBreadcrumbsProps } from 'src/types';
 import styles from './CommonBreadcrumbs.module.scss';
-
-interface BreadcrumbItem {
-  label: string;
-  to?: string;
-}
-
-interface CommonBreadcrumbsProps {
-  items: BreadcrumbItem[];
-  ariaLabel?: string;
-}
 
 const CommonBreadcrumbs: React.FC<CommonBreadcrumbsProps> = ({
   items,

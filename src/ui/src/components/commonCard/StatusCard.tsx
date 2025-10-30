@@ -1,20 +1,7 @@
 import React from "react";
+import { StatusCardProps } from "src/types";
 import styles from "./StatusCards.module.scss";
 import LegendItem from "./LegendItem";
-
-interface LegendData {
-  colorClass?: "dotPending" | "dotProcessed" | "dotOverdue";
-  label: string;
-  value: string | number;
-}
-
-interface StatusCardProps {
-  iconSrc: string;
-  iconAlt: string;
-  title: string;
-  cardValue: string | number;
-  legend?: LegendData[];
-}
 
 const StatusCard: React.FC<StatusCardProps> = ({ iconSrc, iconAlt, title, cardValue, legend }) => {
   return (
