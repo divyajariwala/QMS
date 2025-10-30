@@ -101,6 +101,20 @@ lambda_configs = [
       model_id = "arn:aws:bedrock:us-east-1:120569648189:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
     }
   },
+  {
+    function_name = "get-complaints"
+    path = "src/app/get_complaints"
+    environment_variables = {
+      env = "dev"
+      metadata_table_name = "complaints-metadata"
+    }
+    api_gateway_paths = [
+      {
+        path_name = "getComplaints"
+        http_method = "GET"
+      }
+    ]
+  }
 ]
 
 
