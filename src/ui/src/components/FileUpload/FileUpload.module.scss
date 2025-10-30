@@ -1,0 +1,158 @@
+.dialogPaper {
+  width: 551px;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.dialogTitle {
+  width: 551px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  user-select: none;
+  font-family: 'Inter';
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 0;
+  box-sizing: border-box;
+  border-bottom: 1px solid grey;
+}
+
+.dialogContent {
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.uploadArea {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  padding: 16px;
+  width: 499px;
+  height: 150px;
+  border: 1.5px dashed #BDBDBD; /* neutral dashed border */
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  color: #757575; /* neutral text color */
+  transition: border-color 0.3s, color 0.3s;
+  user-select: none;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+.uploadAreaActive {
+  border-color: #1976d2;
+  color: #1976d2;
+}
+
+.uploadIcon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.fileInputHidden {
+  display: none;
+}
+
+.formatsLine {
+  display: block;
+  margin-bottom: 24px;
+  font-family: 'Inter';
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1;
+  color: #9D9D9D;
+  border-bottom: 1px solid #9D9D9D;
+  padding-bottom: 8px;
+  padding-top: 8px;
+}
+
+.helperText {
+  font-family: 'Inter';
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1;
+  color: #525252;
+  margin-bottom: 16px;
+  margin-top: 16px;
+}
+
+.downloadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 503px;
+  height: 44px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding-left: 24px;
+  padding-right: 16px;
+  text-transform: none;
+  font-family: 'Inter';
+  font-weight: 400;
+  font-size: 16px;
+  color: #606260;
+  border: 1px solid #cccccc;
+  box-sizing: border-box;
+}
+
+.downloadButtonIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.statusBox {
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  user-select: none;
+  gap: 8px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.statusTitle {
+  font-family: 'Inter';
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 28px;
+  color: #535353;
+  text-align: center;
+}
+
+.statusSubtitle {
+  font-family: 'Inter';
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #757575;
+  text-align: center;
+  width: 276px;
+  height: 40px;
+}
+
+.successIcon {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.circularProgress {
+  margin-bottom: 16px;
+  color: #64D2FF;
+}

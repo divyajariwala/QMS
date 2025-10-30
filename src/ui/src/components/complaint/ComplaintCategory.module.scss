@@ -1,0 +1,153 @@
+.rootPaper {
+  padding: 16px;
+  border-radius: 16px;
+  height: 100%;
+}
+
+.headerStack {
+  margin-bottom: 8px;
+}
+
+.headerTitle {
+  font-family: "Inter";
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  vertical-align: bottom;
+  color: #000000;
+}
+
+.subtitleBox {
+  font-family: "Inter";
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  color: #5f6d7e;
+  margin-bottom: 16px;
+}
+
+.itemPaper {
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.itemTopBox {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.labelBox {
+  font-family: "Inter";
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  color: #272d37;
+}
+
+.percentageBox {
+  font-weight: 600;
+  font-size: 14px;
+  margin-right: 16px;
+  font-family: "Inter";
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.iconButton {
+  padding: 0;
+  color: inherit;
+}
+
+.inlineFlexCenter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.infoGrid {
+  font-family: "Inter";
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.infoGridNoMargin {
+  font-family: "Inter";
+  font-size: 13px;
+  margin-bottom: 0;
+}
+
+.infoGridItemLabel {
+  font-family: "Inter";
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.1px;
+  color: #5f6d7e;
+}
+
+.infoGridItemValue {
+  font-family: "Inter";
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.editingControlsBox {
+  font-family: "Inter";
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  margin-top: 48px;
+}
+
+.selectMinSize {
+  min-width: 289px;
+  min-height: 40px;
+}
+
+.inputBaseInput {
+  font-family: "Inter";
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  padding: 6px 8px;
+}
+
+:global(.MuiInputBase-input) {
+  font-family: "Inter";
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  padding: 6px 8px;
+}
+
+.editSelectRoot {
+  font-family: "Inter";
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+}
+
+.green {
+  color: #2e7d32;
+  background-color: #f0faf0;
+}
+
+.orange {
+  color: #ef6c00;
+  background-color: #fff8eb;
+}
+
+.red {
+  color: #d32f2f;
+  background-color: #fff8eb;
+}

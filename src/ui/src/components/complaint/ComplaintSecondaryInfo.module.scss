@@ -1,0 +1,74 @@
+.complaintSecondaryInfo {
+  margin-top: 24px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+}
+
+.complaintSecondaryInfo__row {
+  display: flex;
+  gap: 64px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.infoItem__label {
+  font-family: "Inter";
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.1px;
+  color: #5f6d7e;
+  margin: 0;
+}
+
+.infoItem__valueRow {
+  display: flex;
+  flex-direction: row;
+  gap: 4px; /* gap={0.5} */
+  align-items: center;
+}
+
+.infoItem__valueText {
+  font-family: "Inter";
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  color: #272d37;
+  margin: 0;
+}
+
+.infoChip {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+}
+
+.infoChip__label {
+  font-family: "Inter";
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.1px;
+  margin: 0;
+}
+
+.caseType {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.caseType__row {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
