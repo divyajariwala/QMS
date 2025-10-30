@@ -20,7 +20,7 @@ permissions:
 jobs:
 
   resolve_lambda_wheels:
-    name: Resolve Lambda Wheels (Py3.12 / AL2023)
+    name: Resolve Lambda Wheels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
