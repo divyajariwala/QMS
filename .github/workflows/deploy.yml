@@ -18,9 +18,48 @@ permissions:
   pages: write
 
 jobs:
+
+  resolve_lambda_wheels:
+    name: Resolve Lambda Wheels (Py3.12 / AL2023)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download manylinux wheels for all functions
+        env:
+          PYDIGITS: "312"
+          PLATFORM: "manylinux_2_28_x86_64"
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p wheelhouse
+          find src/app -maxdepth 2 -name "requirements.txt" -print0 \
+          | while IFS= read -r -d '' req; do
+            echo "==> Resolving wheels for $req"
+            pip download -r "$req" \
+              --dest wheelhouse \
+              --only-binary=:all: \
+              --platform "$PLATFORM" \
+              --implementation cp \
+              --python-version "$PYDIGITS" \
+              --abi "cp${PYDIGITS}"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheelhouse-py312-al2023-x86_64
+          path: wheelhouse/
+          if-no-files-found: error
+          retention-days: 14
+
   test_backend:
     name: Test Backend
     runs-on: ubuntu-latest
+    needs: [resolve_lambda_wheels]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,6 +73,12 @@ jobs:
             src/app/**/requirements.txt
             src/tests/requirements.txt
 
+      - name: Download wheelhouse
+        uses: actions/download-artifact@v4
+        with:
+          name: wheelhouse-py312-al2023-x86_64
+          path: wheelhouse
+
       - name: Install Test Dependencies
         env:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -46,9 +91,10 @@ jobs:
             python -m pip install pytest pytest-cov moto boto3 freezegun requests-mock
           fi
 
+          # Install each function's runtime deps from the same wheelhouse (AL2023-compatible)
           find src/app -maxdepth 2 -name "requirements.txt" -print0 | while IFS= read -r -d '' req; do
-            echo "==> Installing runtime deps from $req"
-            python -m pip install -r "$req"
+            echo "==> Installing runtime deps from $req (no build)"
+            python -m pip install -r "$req" --no-index --find-links=wheelhouse
           done
 
       - name: Run Pytest
@@ -87,6 +133,7 @@ jobs:
   compile_backend:
     name: Compile Backend
     runs-on: ubuntu-latest
+    needs: [resolve_lambda_wheels]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -103,7 +150,13 @@ jobs:
           cache: "pip"
           cache-dependency-path: "src/app/**/requirements.txt"
 
-      - name: Install Dependencies
+      - name: Download wheelhouse
+        uses: actions/download-artifact@v4
+        with:
+          name: wheelhouse-py312-al2023-x86_64
+          path: wheelhouse
+
+      - name: Install Dependencies into function folders (no-build)
         shell: bash
         env:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -116,11 +169,14 @@ jobs:
               [ -d "$d" ] || continue
               if [ -f "${d}requirements.txt" ]; then
                 echo "==> Installing deps for $(basename "$d")"
-                python -m pip install -r "${d}requirements.txt" -t "$d"
-                find "$d" -type d -name "__pycache__" -prune -exec rm -rf {} +
-                find "$d" -type d -name "*.dist-info" -prune -exec rm -rf {} + || true
-                find "$d" -type d -name "*.egg-info"  -prune -exec rm -rf {} + || true
+                python -m pip install -r "${d}requirements.txt" --no-index --find-links=wheelhouse -t "$d"
+                # Trim extras; keep wheels lean
+                find "$d" -type d -name "__pycache__"    -prune -exec rm -rf {} +
+                find "$d" -type d -name "*.dist-info"    -prune -exec rm -rf {} + || true
+                find "$d" -type d -name "*.egg-info"     -prune -exec rm -rf {} + || true
                 rm -rf "${d}tests" || true
+                # Optional: boto3/botocore are in the runtime for Lambda
+                rm -rf "${d}boto3" "${d}botocore" || true
               else
                 echo "==> No requirements.txt in $(basename "$d"); skipping deps."
               fi
