@@ -2,6 +2,14 @@ import CriticalityIcon from "../../src/assets/icons/criticality.svg";
 import ReportTypeIcon from "../../src/assets/icons/reportType.svg";
 import CategoryIcon from "../../src/assets/icons/category.svg";
 import ReceiptDateIcon from "../../src/assets/icons/receiptDate.svg";
+import { StatusTabItem } from "src/types";
+
+export const statuses: StatusTabItem[] = [
+  { label: "In Review", count: 14000, description: "Details for In Review." },
+  { label: "Overdue", count: 2000, description: "Details for Overdue." },
+  { label: "Processed", count: 7123, description: "Details for Processed." },
+];
+
 export const complaintsData = [
   {
     Criticality: "NA",
@@ -82,6 +90,79 @@ export const complaintsData = [
     "Receipt Date": "Aug 04 2025",
     "Case Type": ["Product Complaint"],
     "Due Date": "Oct 17 2025",
+  },
+];
+
+export const deviationsData = [
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 02 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "inactive"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 09 2025",
+    "rcaStatus": "inactive",
+    "gradingStatus": "inactive"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 10 2025",
+    "rcaStatus": "completed",
+    "gradingStatus": "completed"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 11 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 12 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 13 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 14 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 15 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 16 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
+  },
+  {
+    "Recieved Date": "Aug 04 2025",
+    "Processed Date": "Aug 10 2025",
+    "Due Date": "Oct 17 2025",
+    "rcaStatus": "active",
+    "gradingStatus": "active"
   },
 ];
 

@@ -1,19 +1,11 @@
 import React, { useState, ChangeEvent, MouseEvent } from 'react';
 import styles from './Popup.module.scss';
-
-interface PopupProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (value: string) => void;
-}
-
-const MAX_LENGTH = 420;
+import { PopupProps } from 'src/types';
+import { MAX_LENGTH } from 'src/constants';
 
 const Popup: React.FC<PopupProps> = ({ open, onClose, onSubmit }) => {
   const [inputValue, setInputValue] = useState<string>('');
-
   if (!open) return null;
-
   const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     if (e.target.value.length <= MAX_LENGTH) {
       setInputValue(e.target.value);

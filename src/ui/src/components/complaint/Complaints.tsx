@@ -9,11 +9,20 @@ import ComplaintsEmptyState from "./ComplaintsEmptyState";
 import Popup from "@components/Popup/Popup";
 import FileUpload from '@components/FileUpload/FileUpload';
 import { complaintsData } from 'src/mockData/mockData';
-import ComplaintsBreadcrumbs from './ComplaintsBreadcrumbs';
+import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
+import StatusTabs from './StatusTabs';
+import ComplaintsStatusCard from '@components/commonCard/ComplaintsStatusCard';
+import { useAuth } from "../../auth/useAuth";
 
 const Complaints = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [openFileUpload, setOpenFileUpload] = useState<boolean>(false);
+  const { user } = useAuth();
+  const displayName = `${user?.profile?.given_name ?? ""}`.trim();
+  const items = [
+    { label: 'Home', to: '/' },
+    { label: 'Complaints' },
+  ];
   const handleFileSelect = (file: File) => {
     console.log('Selected file:', file);
   };
@@ -34,15 +43,19 @@ const Complaints = () => {
   return (
     <Box component="main">
       <Stack direction="column" gap={2.5}>
-        <ComplaintsBreadcrumbs/>
+        <CommonBreadcrumbs items={items} />
         <Stack
           direction="row"
           alignItems={"baseline"}
           justifyContent={"space-between"}
         >
           <Box className={styles.pageTitle}>
-            Complaints
+            Hey there, {displayName}!
+            <Box className={styles.pageDetails}>
+              Welcome to Complaints dashboard!
+            </Box>
           </Box>
+
           <Stack className={styles.actions} direction="row" spacing={2}>
             <Button variant="outlined" className={styles.addManuallyButton} onClick={handleOpen}>
               <img src={PlusIcon} alt="plus" />
@@ -57,6 +70,8 @@ const Complaints = () => {
       </Stack>
       {/* For empty state */}
       {/* <ComplaintsEmptyState /> */}
+      <ComplaintsStatusCard />
+      <div className={styles.statusTabs}> <StatusTabs /></div>
       <ComplaintsFilter />
       {complaintsData.map((complaint, index) => (
         <ComplaintsResult key={index} complaint={complaint} />

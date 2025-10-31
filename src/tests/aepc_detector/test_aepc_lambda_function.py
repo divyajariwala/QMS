@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-# Add src directory to path for importing lambda_functio
+# Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from aepc_detector import lambda_function
 

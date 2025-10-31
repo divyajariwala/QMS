@@ -1,0 +1,126 @@
+.cardsContainer {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgb(0 0 0 / 0.12);
+  flex: 1 1 0%;
+  max-width: none;
+  display: flex;
+  flex-direction: row;
+  padding: 16px 24px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 146px;
+}
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #5F6D7E;
+    margin: 0;
+    white-space: nowrap;
+    font-family: 'Inter';
+    line-height: 20px;
+    letter-spacing: -0.1px;
+  }
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.cardValue {
+  font-family: 'Inter';
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 30px;
+  letter-spacing: -1%;
+  color: #272D37;
+}
+
+.cardLegend {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.legendColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #000000;
+  white-space: nowrap;
+  min-width: 160px;
+  padding: 8px 0;
+  font-family: 'Inter';
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #e0e0e0;
+  }
+}
+
+.legendValue {
+  color: #222;
+  font-weight: 600;
+  margin-left: 6px;
+  font-family: 'Inter';
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+
+.dotPending {
+  background-color: #0060D7;
+}
+
+.dotProcessed {
+  background-color: #4EB523;
+}
+
+.dotOverdue {
+  background-color: #F7C8C4;
+}
+
+.dotWithText {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  span {
+    font-family: 'Inter';
+  }
+}

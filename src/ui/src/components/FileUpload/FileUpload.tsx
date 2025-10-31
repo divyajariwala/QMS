@@ -4,33 +4,23 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  useTheme,
   CircularProgress,
 } from '@mui/material';
 import CloudUploadIcon from '../../../src/assets/icons/upload.svg';
 import DownloadIcon from '../../../src/assets/icons/vector.svg';
 import CheckCircleIcon from '../../../src/assets/icons/uploadSuccess.svg';
 import { uploadComplaintFile } from 'src/services/api.service';
+import { FileUploadPopupProps, fileUploadStatus } from 'src/types';
+import { TOTAL_FILES } from 'src/constants';
 import styles from './FileUpload.module.scss';
-
-interface FileUploadPopupProps {
-  open: boolean;
-  onClose: () => void;
-  onFileSelect: (file: File) => void;
-}
-
-type Status = 'idle' | 'uploading' | 'importing' | 'extracting' | 'success' | 'error';
-
-const TOTAL_FILES = 3;
 
 const FileUpload: React.FC<FileUploadPopupProps> = ({
   open,
   onClose,
   onFileSelect
 }) => {
-  const theme = useTheme();
   const [isDragActive, setIsDragActive] = useState(false);
-  const [status, setStatus] = useState<Status>('idle');
+  const [status, setStatus] = useState<fileUploadStatus>('idle');
   const [fileCount, setFileCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -158,7 +148,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
               id="file-input"
               className={styles.fileInputHidden}
               onChange={handleFileChange}
-              disabled={(status as Status) === 'uploading'}
+              disabled={(status as fileUploadStatus) === 'uploading'}
             />
           </Box>
 
@@ -173,7 +163,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
           <button
             className={styles.downloadButton}
             onClick={handleDownloadExample}
-            disabled={(status as Status) === 'uploading'}
+            disabled={(status as fileUploadStatus) === 'uploading'}
           >
             <img
               src={DownloadIcon}

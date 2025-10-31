@@ -1,8 +1,7 @@
 import React from "react";
 import { Box, Container, Link, Typography } from "@mui/material";
+import { FooterProps } from "src/types";
 import styles from "./Footer.module.scss";
-
-type FooterProps = { year?: number; className?: string };
 
 const Footer: React.FC<FooterProps> = ({ year = new Date().getFullYear(), className }) => (
   <Box component="footer" className={`${styles.footer} ${className || ""}`}>

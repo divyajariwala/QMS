@@ -1,0 +1,575 @@
+import pytest
+import json
+import os
+import sys
+from unittest.mock import Mock, patch, MagicMock
+from datetime import datetime, timezone
+
+# Add src directory to path for importing lambda_function
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app'))
+from create_complaint import lambda_function
+
+
+class TestLambdaHandler:
+    """Unit tests for the main lambda_handler function"""
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_successful_complaint_creation(self, mock_boto3):
+        """Test: Successful complaint creation with valid narrative"""
+        # Mock SQS client
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'test-message-123'}
+
+        # Create event with valid narrative
+        event = {
+            'body': json.dumps({
+                'narrative': 'Customer reported a defect in the product packaging. The seal was broken.'
+            }),
+            'headers': {
+                'content-type': 'application/json',
+                'x-user-email': 'test@example.com'
+            }
+        }
+
+        # Mock context
+        context = Mock()
+        context.request_id = 'test-request-123'
+
+        result = lambda_function.lambda_handler(event, context)
+
+        # Assertions
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['success'] is True
+        assert body['message'] == "Complaint created and queued for processing"
+        assert 'complaint' in body['data']
+        assert 'CAS-' in body['data']['complaint']['code']
+        assert body['data']['message_id'] == 'test-message-123'
+
+        # Verify SQS was called
+        mock_sqs.send_message.assert_called_once()
+        call_args = mock_sqs.send_message.call_args
+        assert call_args[1]['QueueUrl'] == 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_successful_with_cognito_user(self, mock_boto3):
+        """Test: Successful complaint with Cognito user info"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'msg-456'}
+
+        event = {
+            'body': json.dumps({'narrative': 'Product defect reported'}),
+            'headers': {'content-type': 'application/json'},
+            'requestContext': {
+                'authorizer': {
+                    'claims': {
+                        'email': 'cognito-user@example.com',
+                        'sub': 'user-12345'
+                    }
+                }
+            }
+        }
+
+        context = Mock()
+        context.request_id = 'req-123'
+
+        result = lambda_function.lambda_handler(event, context)
+
+        assert result['statusCode'] == 200
+
+        # Verify the message sent to SQS contains the correct user
+        call_args = mock_sqs.send_message.call_args
+        message_body = json.loads(call_args[1]['MessageBody'])
+        assert message_body['created_by'] == 'cognito-user@example.com'
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_empty_narrative(self, mock_boto3):
+        """Test: Error when narrative is empty"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+
+        event = {
+            'body': json.dumps({'narrative': ''}),
+            'headers': {'content-type': 'application/json'}
+        }
+
+        result = lambda_function.lambda_handler(event, None)
+
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert body['success'] is False
+        assert body['message'] == "Narrative is required"
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_narrative_too_long(self, mock_boto3):
+        """Test: Error when narrative exceeds 420 characters"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+
+        # Create narrative with 421 characters (over limit)
+        long_narrative = 'a' * 421
+
+        event = {
+            'body': json.dumps({'narrative': long_narrative}),
+            'headers': {'content-type': 'application/json'}
+        }
+
+        result = lambda_function.lambda_handler(event, None)
+
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert body['success'] is False
+        assert "exceeds maximum length" in body['message']
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_narrative_at_max_length(self, mock_boto3):
+        """Test: Success when narrative is exactly 420 characters"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'msg-789'}
+
+        # Create narrative with exactly 420 characters
+        max_narrative = 'a' * 420
+
+        event = {
+            'body': json.dumps({'narrative': max_narrative}),
+            'headers': {'content-type': 'application/json'}
+        }
+
+        context = Mock()
+        context.request_id = 'req-456'
+
+        result = lambda_function.lambda_handler(event, context)
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['success'] is True
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_missing_body(self, mock_boto3):
+        """Test: Error when body is missing"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+
+        event = {
+            'headers': {'content-type': 'application/json'}
+        }
+
+        result = lambda_function.lambda_handler(event, None)
+
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert body['success'] is False
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_invalid_json_body(self, mock_boto3):
+        """Test: Error when body has invalid JSON"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+
+        event = {
+            'body': 'invalid-json{{{',
+            'headers': {'content-type': 'application/json'}
+        }
+
+        result = lambda_function.lambda_handler(event, None)
+
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert body['success'] is False
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'non-existent-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_queue_not_found(self, mock_boto3):
+        """Test: Error when SQS queue doesn't exist"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+
+        # Simulate queue not found error
+        from botocore.exceptions import ClientError
+        mock_sqs.get_queue_url.side_effect = ClientError(
+            {'Error': {'Code': 'AWS.SimpleQueueService.NonExistentQueue'}},
+            'GetQueueUrl'
+        )
+
+        event = {
+            'body': json.dumps({'narrative': 'Test complaint'}),
+            'headers': {'content-type': 'application/json'}
+        }
+
+        result = lambda_function.lambda_handler(event, None)
+
+        assert result['statusCode'] == 500
+        body = json.loads(result['body'])
+        assert "not found" in body['message']
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_sqs_send_message_failure(self, mock_boto3):
+        """Test: Error when SQS send_message fails"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+
+        # Simulate SQS send failure
+        mock_sqs.send_message.side_effect = Exception("SQS send failed")
+
+        event = {
+            'body': json.dumps({'narrative': 'Test complaint'}),
+            'headers': {'content-type': 'application/json'}
+        }
+
+        context = Mock()
+        context.request_id = 'req-789'
+
+        result = lambda_function.lambda_handler(event, context)
+
+        assert result['statusCode'] == 500
+        body = json.loads(result['body'])
+        assert body['success'] is False
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'ulid')
+    @patch('boto3.client')
+    def test_ulid_code_strategy(self, mock_boto3):
+        """Test: Complaint creation with ULID strategy"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'msg-ulid'}
+
+        event = {
+            'body': json.dumps({'narrative': 'Test with ULID'}),
+            'headers': {'content-type': 'application/json'}
+        }
+
+        context = Mock()
+        context.request_id = 'req-ulid'
+
+        result = lambda_function.lambda_handler(event, context)
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+
+        # ULID codes are 26 chars + 'CAS-' prefix = 30 chars
+        assert len(body['data']['complaint']['code']) == 30
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'uuid_short')
+    @patch('boto3.client')
+    def test_uuid_short_strategy(self, mock_boto3):
+        """Test: Complaint creation with UUID short strategy"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'msg-uuid'}
+
+        event = {
+            'body': json.dumps({'narrative': 'Test with UUID'}),
+            'headers': {'content-type': 'application/json'}
+        }
+
+        context = Mock()
+        context.request_id = 'req-uuid'
+
+        result = lambda_function.lambda_handler(event, context)
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+
+        # UUID short codes are 8 chars + 'CAS-' prefix = 12 chars
+        assert len(body['data']['complaint']['code']) == 12
+
+
+class TestCodeGeneration:
+    """Tests for complaint code generation functions"""
+
+    def test_timestamp_random_strategy(self):
+        """Test: timestamp_random code generation"""
+        code = lambda_function.generate_complaint_code('timestamp_random')
+
+        assert code.startswith('CAS-')
+        assert len(code) == 24  # CAS- (4) + YYYYMMDDHHMMSS (17) + RRR (3)
+
+        # Verify format
+        code_parts = code.split('-')
+        assert len(code_parts) == 2
+        assert code_parts[0] == 'CAS'
+        assert code_parts[1].isdigit()
+        assert len(code_parts[1]) == 20  # 17 timestamp + 3 random
+
+    def test_ulid_strategy(self):
+        """Test: ULID code generation"""
+        code = lambda_function.generate_complaint_code('ulid')
+
+        assert code.startswith('CAS-')
+        assert len(code) == 30  # CAS- (4) + ULID (26)
+
+    def test_uuid_short_strategy(self):
+        """Test: UUID short code generation"""
+        code = lambda_function.generate_complaint_code('uuid_short')
+
+        assert code.startswith('CAS-')
+        assert len(code) == 12  # CAS- (4) + UUID_SHORT (8)
+
+        # Verify it's alphanumeric uppercase
+        uuid_part = code.split('-')[1]
+        assert uuid_part.isupper()
+        assert uuid_part.isalnum()
+
+    def test_nanoid_strategy(self):
+        """Test: NanoID code generation"""
+        code = lambda_function.generate_complaint_code('nanoid')
+
+        assert code.startswith('CAS-')
+        assert len(code) == 12  # CAS- (4) + NANOID (8)
+
+    def test_unknown_strategy_defaults_to_timestamp(self):
+        """Test: Unknown strategy falls back to timestamp_random"""
+        code = lambda_function.generate_complaint_code('unknown_strategy')
+
+        assert code.startswith('CAS-')
+        assert len(code) == 24  # timestamp_random format
+
+    def test_code_uniqueness(self):
+        """Test: Generated codes are unique"""
+        codes = set()
+        for _ in range(10):
+            code = lambda_function.generate_complaint_code('timestamp_random')
+            codes.add(code)
+
+        # All 100 codes should be unique
+        assert len(codes) == 10
+
+    def test_ulid_generation(self):
+        """Test: ULID generation function"""
+        ulid = lambda_function.generate_ulid()
+
+        assert len(ulid) == 26
+
+        # ULID uses Crockford's Base32 (0-9, A-Z excluding I, L, O, U)
+        valid_chars = set('0123456789ABCDEFGHJKMNPQRSTVWXYZ')
+        assert all(c in valid_chars for c in ulid)
+
+    def test_nanoid_generation(self):
+        """Test: NanoID generation function"""
+        nanoid = lambda_function.generate_nanoid(8)
+
+        assert len(nanoid) == 8
+
+        # NanoID excludes ambiguous characters (0, O, 1, I, l)
+        forbidden_chars = set('01OIl')
+        assert not any(c in forbidden_chars for c in nanoid)
+
+
+class TestUtilityFunctions:
+    """Tests for utility functions"""
+
+    def test_get_user_from_event_cognito(self):
+        """Test: Extract user from Cognito claims"""
+        event = {
+            'requestContext': {
+                'authorizer': {
+                    'claims': {
+                        'email': 'user@example.com',
+                        'sub': 'user-123'
+                    }
+                }
+            }
+        }
+
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'user@example.com'
+
+    def test_get_user_from_event_header(self):
+        """Test: Extract user from header"""
+        event = {
+            'headers': {
+                'x-user-email': 'header-user@example.com'
+            }
+        }
+
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'header-user@example.com'
+
+    def test_get_user_from_event_anonymous(self):
+        """Test: Return anonymous when no user info"""
+        event = {}
+
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'anonymous'
+
+    def test_response_function_success(self):
+        """Test: HTTP response for success"""
+        result = lambda_function._response(200, "Success", {"key": "value"})
+
+        assert result['statusCode'] == 200
+        assert 'Access-Control-Allow-Origin' in result['headers']
+
+        body = json.loads(result['body'])
+        assert body['success'] is True
+        assert body['message'] == "Success"
+        assert body['data']['key'] == "value"
+        assert 'timestamp' in body
+
+    def test_response_function_error(self):
+        """Test: HTTP response for error"""
+        result = lambda_function._response(400, "Bad Request")
+
+        assert result['statusCode'] == 400
+
+        body = json.loads(result['body'])
+        assert body['success'] is False
+        assert body['message'] == "Bad Request"
+        assert body['data'] == {}
+
+
+class TestMessageFormatting:
+    """Tests for SQS message formatting"""
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_sqs_message_structure(self, mock_boto3):
+        """Test: SQS message has correct structure"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'msg-test'}
+
+        narrative = "Test complaint narrative"
+        event = {
+            'body': json.dumps({'narrative': narrative}),
+            'headers': {
+                'content-type': 'application/json',
+                'x-user-email': 'tester@example.com'
+            }
+        }
+
+        context = Mock()
+        context.request_id = 'req-test'
+
+        lambda_function.lambda_handler(event, context)
+
+        # Verify send_message was called
+        call_args = mock_sqs.send_message.call_args
+
+        # Check message body
+        message_body = json.loads(call_args[1]['MessageBody'])
+        assert 'complaint_id' in message_body
+        assert message_body['complaint_id'].startswith('CAS-')
+        assert message_body['narrative'] == narrative
+        assert message_body['status'] == 'IN-REVIEW'
+        assert message_body['criticality'] == 'NA'
+        assert message_body['created_by'] == 'tester@example.com'
+        assert message_body['metadata']['source'] == 'manual'
+
+        # Check short description is truncated to 100 chars
+        assert len(message_body['short_description']) <= 100
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_short_description_truncation(self, mock_boto3):
+        """Test: Long narratives are truncated in short_description"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'msg-test'}
+
+        # Narrative longer than 100 characters
+        long_narrative = "A" * 200
+
+        event = {
+            'body': json.dumps({'narrative': long_narrative}),
+            'headers': {'content-type': 'application/json'}
+        }
+
+        context = Mock()
+        context.request_id = 'req-test'
+
+        lambda_function.lambda_handler(event, context)
+
+        # Get the message that was sent
+        call_args = mock_sqs.send_message.call_args
+        message_body = json.loads(call_args[1]['MessageBody'])
+
+        # short_description should be exactly 100 chars
+        assert len(message_body['short_description']) == 100
+
+
+class TestIntegration:
+    """Integration tests for complete workflows"""
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
+    @patch('boto3.client')
+    def test_end_to_end_complaint_creation(self, mock_boto3):
+        """Test: Complete complaint creation workflow"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123/queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'final-msg-id'}
+
+        event = {
+            'body': json.dumps({
+                'narrative': 'Customer reported critical safety issue with product batch #12345'
+            }),
+            'headers': {
+                'content-type': 'application/json',
+                'x-user-email': 'safety@company.com'
+            },
+            'requestContext': {
+                'requestId': 'api-req-123'
+            }
+        }
+
+        context = Mock()
+        context.request_id = 'lambda-req-456'
+        context.function_name = 'create-complaint-test'
+
+        # Execute
+        result = lambda_function.lambda_handler(event, context)
+
+        # Verify response
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['success'] is True
+
+        complaint_data = body['data']['complaint']
+        assert complaint_data['code'].startswith('CAS-')
+        assert complaint_data['status'] == 'IN-REVIEW'
+        assert 'created_at' in complaint_data
+
+        # Verify SQS interaction
+        mock_sqs.get_queue_url.assert_called_once_with(QueueName='test-queue')
+        mock_sqs.send_message.assert_called_once()
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v", "--cov=create_complaint.lambda_function", "--cov-report=html"])
