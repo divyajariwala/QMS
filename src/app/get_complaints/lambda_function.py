@@ -167,8 +167,8 @@ def _calculate_stats(complaints):
     Calculate complaint statistics
     """
     total = len(complaints)
-    pending = len([c for c in complaints if c.get('status', '').upper() in ['PENDING', 'IN-REVIEW']])
-    processed = len([c for c in complaints if c.get('status', '').upper() in ['PROCESSED', 'COMPLETED']])
+    pending = len([c for c in complaints if c.get('status', '').upper() in ['IN-REVIEW']])
+    processed = len([c for c in complaints if c.get('status', '').upper() in ['PROCESSED']])
     overdue = len([c for c in complaints if c.get('status', '').upper() == 'OVERDUE'])
     
     # Calculate cycle times (mock values for now)
@@ -207,9 +207,9 @@ def _group_by_status(complaints):
             'case_type': complaint.get('case_type', [])
         }
         
-        if status in ['pending', 'in-review']:
+        if status in ['in-review']:
             status_groups['pending'].append(complaint_summary)
-        elif status in ['processed', 'completed']:
+        elif status in ['processed']:
             status_groups['processed'].append(complaint_summary)
         elif status == 'overdue':
             status_groups['overdue'].append(complaint_summary)
