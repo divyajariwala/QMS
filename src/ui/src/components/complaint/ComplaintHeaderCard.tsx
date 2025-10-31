@@ -3,23 +3,7 @@ import styles from './ComplaintHeaderCard.module.scss';
 import EventIcon from '@mui/icons-material/Event';
 import CheckIcon from '@mui/icons-material/Check';
 import { Paper, Box, Stack, Grid } from '@mui/material';
-
-interface ComplaintHeaderCardProps {
-  complaintData: {
-    status: string;
-    caseId: string;
-    overdueDays: number;
-    primaryReporter: { name: string; location: string };
-    patientName: string;
-    physicianName: string;
-    drug: string;
-    lotNumber: string;
-    doseAmount: string;
-    expirationDate: string;
-    partNumber: string;
-  };
-  onApproveAndSend: () => void;
-}
+import { ComplaintHeaderCardProps } from 'src/types';
 
 const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
   complaintData,

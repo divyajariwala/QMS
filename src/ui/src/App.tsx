@@ -17,7 +17,7 @@ import Callback from "./auth/Callback";
 import LogoutCallback from "./auth/LogoutCallback";
 import "./App.scss";
 import { COMPLAINT_ID_NAME, COMPLAINT_SESSION_ID } from "./constants";
-import Narratives from "@components/Complaints/Narratives";
+import Deviations from "@components/deviations/Deviations";
 import CreateNarrative from "@components/Complaints/createNarrative";
 import Complaints from "@components/complaint/Complaints";
 import ComplaintsDetails from "@components/complaint/ComplaintsDetails";
@@ -77,10 +77,10 @@ const App = () => {
                   }
                 />
                 <Route
-                  path="/narratives"
+                  path="/deviations"
                   element={
                     <ProtectedRoute>
-                      <Narratives />
+                      <Deviations />
                     </ProtectedRoute>
                   }
                 />
@@ -93,7 +93,7 @@ const App = () => {
                   }
                 />
                 <Route
-                  path="/productComplaints"
+                  path="/complaints"
                   element={
                     <ProtectedRoute>
                       <Complaints />
@@ -101,7 +101,7 @@ const App = () => {
                   }
                 />
                 <Route
-                  path="/productComplaints/:id"
+                  path="/complaints/:id"
                   element={
                     <ProtectedRoute>
                       <ComplaintsDetails />

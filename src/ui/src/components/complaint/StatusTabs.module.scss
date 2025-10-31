@@ -1,0 +1,99 @@
+.tabsContainer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0;
+  font-family: "Inter";
+  font-size: 14px;
+}
+
+.tabs {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  border-bottom: 3px solid transparent;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 10+ */
+
+  &::-webkit-scrollbar {
+    display: none;
+    /* Safari and Chrome */
+  }
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0px;
+  min-width: auto; // remove fixed min-width so it shrinks to content
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  color: #858585;
+  text-transform: none;
+  transition: color 0.2s ease;
+}
+
+.tabContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 3px solid transparent;
+  padding-bottom: 10px;
+  font-family: 'Inter';
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: -0.1px;
+}
+
+.active {
+  color: #2962FF;
+  border-bottom-color: #2962FF;
+  font-family: "Inter";
+}
+
+.tabContent.active {
+  color: #2962FF;
+  border-bottom-color: #2962FF;
+  font-family: "Inter";
+}
+
+.label {
+  white-space: nowrap;
+  font-family: "Inter";
+}
+
+.count,
+.countActive {
+  display: inline-block;
+  font-size: 12px;
+  min-width: 34px;
+  height: 20px;
+  padding: 0 10px;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 20px;
+  flex-shrink: 0;
+  font-family: "Inter";
+}
+
+.count {
+  background-color: #e0e0e0;
+  color: #272D37;
+  font-family: "Inter";
+  font-weight: 500;
+  font-style: Medium;
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: -0.1px;
+  vertical-align: middle;
+}
+
+.countActive {
+  background-color: #2962FF;
+  color: white;
+  font-family: "Inter";
+}

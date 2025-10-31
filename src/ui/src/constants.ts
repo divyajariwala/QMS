@@ -10,3 +10,7 @@ export const DRUGNAME: {[key: string]: string} = {
 };
 
 export const LEVELS: number[] = [1, 2, 3];
+
+export const TOTAL_FILES = 3;
+
+export const MAX_LENGTH = 420;

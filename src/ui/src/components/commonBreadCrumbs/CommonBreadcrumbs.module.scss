@@ -1,38 +1,32 @@
 .breadcrumbs {
   font-size: 14px;
   color: #616161;
+  font-family: 'Inter';
 
-  a {
-    text-decoration: none;
-    cursor: pointer;
-    color: #1976d2;
+  a,
+  .link {
     font-family: 'Inter';
     font-weight: 500;
     font-style: normal;
     font-size: 14px;
     line-height: 20px;
     letter-spacing: -0.1px;
+    color: #5F6D7E;
+    cursor: pointer;
+    text-decoration: none;
 
     &:hover {
       color: black;
       text-decoration: underline;
     }
   }
-}
 
-.link {
-  font-family: 'Inter';
-  font-weight: 500;
-  font-style: normal;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.1px;
-  color: #5F6D7E !important;
-  cursor: pointer;
+  a.MuiLink-underlineHover {
+    text-decoration: none;
 
-  &:hover {
-    color: black;
-    text-decoration: underline;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 

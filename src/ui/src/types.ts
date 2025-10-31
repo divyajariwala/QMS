@@ -1,4 +1,4 @@
-import { User} from "oidc-client-ts";
+import { User } from "oidc-client-ts";
 
 export interface SessionData {
   session_id: string;
@@ -125,3 +125,163 @@ export interface AuthContextType {
   getAccessToken: () => Promise<string | undefined>;
   isLoading: boolean;
 };
+
+export interface BreadcrumbItem {
+  label: string;
+  to?: string;
+}
+
+export interface CommonBreadcrumbsProps {
+  items: BreadcrumbItem[];
+  ariaLabel?: string;
+}
+
+export interface LegendItemProps {
+  colorClass: "dotPending" | "dotProcessed" | "dotOverdue" | undefined;
+  label: string;
+  value: string | number;
+}
+
+export interface LegendData {
+  colorClass?: "dotPending" | "dotProcessed" | "dotOverdue";
+  label: string;
+  value: string | number;
+}
+
+export interface StatusCardProps {
+  iconSrc: string;
+  iconAlt: string;
+  title: string;
+  cardValue: string | number;
+  legend?: LegendData[];
+}
+
+export interface ComplaintCategoryItem {
+  id: string;
+  label: string;
+  level: number;
+  crl: string;
+  priority: string;
+  unit: number;
+  percentage: number;
+  color: string;
+  bgColor: string;
+}
+export interface ComplaintCategoryProps {
+  complaintCategories: ComplaintCategoryItem[];
+  onSave?: (updatedItem: ComplaintCategoryItem) => void;
+}
+
+export interface ComplaintHeaderCardProps {
+  complaintData: {
+    status: string;
+    caseId: string;
+    overdueDays: number;
+    primaryReporter: { name: string; location: string };
+    patientName: string;
+    physicianName: string;
+    drug: string;
+    lotNumber: string;
+    doseAmount: string;
+    expirationDate: string;
+    partNumber: string;
+  };
+  onApproveAndSend: () => void;
+}
+
+export interface ComplaintsDueDateChipProps {
+  type: "Overdue" | "Today" | "Tomorrow" | "Due";
+  label: string;
+}
+
+export interface DueDateChipProps {
+  iconSrc: string;
+  iconAlt: string;
+  label: string;
+  className?: string;
+}
+
+export interface InfoItemProps {
+  label: string;
+  iconSrc: string;
+  iconAlt: string;
+  value: string | React.ReactNode;
+}
+
+export interface InfoChipProps {
+  iconSrc: string;
+  iconAlt: string;
+  label: string;
+  className?: string;
+}
+
+export interface SecondaryInfoCardProps {
+  infoItems: Array<InfoItemProps>;
+  productComplaintIconSrc: string;
+  adverseEventIconSrc: string;
+  productComplaintsChipClassName?: string;
+  adverseEventChipClassName?: string;
+}
+
+export interface StatusTabItem {
+  label: string;
+  count: number;
+  description: React.ReactNode;
+}
+
+export interface ComplaintProps {
+  complaint: {
+    "Criticality": string;
+    "Report Type": string;
+    "Category": string;
+    "Receipt Date": string;
+    "Case Type": string[];
+    "Due Date": string;
+  };
+}
+
+export interface ButtonGroupProps {
+  onSelect?: (selected: string) => void;
+  selected?: string;
+}
+
+export interface DeviationProps {
+  deviation: {
+    "Recieved Date": string,
+    "Processed Date": string,
+    "Due Date": string,
+    "rcaStatus": string,
+    "gradingStatus": string
+  };
+}
+
+export type Status = "completed" | "active" | "inactive";
+
+export interface StatusStepProps {
+  label: string;
+  status: Status;
+}
+export interface StatusStepsProps {
+  rcaStatus: Status;
+  gradingStatus: Status;
+}
+
+export interface ConnectorProps {
+  active: boolean;
+}
+
+export interface FileUploadPopupProps {
+  open: boolean;
+  onClose: () => void;
+  onFileSelect: (file: File) => void;
+}
+
+export type fileUploadStatus = 'idle' | 'uploading' | 'importing' | 'extracting' | 'success' | 'error';
+
+export type FooterProps = { year?: number; className?: string };
+
+export interface PopupProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (value: string) => void;
+}

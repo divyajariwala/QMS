@@ -3,32 +3,27 @@ import { Box, Grid } from '@mui/material';
 import ProductComplaintIcon from "../../assets/icons/productComplaint.svg";
 import AdverseEventIcon from "../../assets/icons/adverseEvent.svg";
 import ComplaintHeaderCard from './ComplaintHeaderCard';
-import ComplaintDetailsBreadcrumbs from './ComplaintDetailsBreadcrumbs';
 import ComplaintSecondaryInfo from './ComplaintSecondaryInfo';
 import ComplaintAISummary from './ComplaintAISummary';
 import ComplaintNarrative from './ComplaintNarrative';
 import ComplaintCategory from './ComplaintCategory';
 import { complaintCategories, infoItems, complaintHeaderData } from 'src/mockData/mockData';
+import { ComplaintCategoryItem } from 'src/types';
+import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import styles from "./ComplaintsResult.module.scss";
-
-interface ComplaintCategoryItem {
-  id: string;
-  label: string;
-  level: number;
-  crl: string;
-  priority: string;
-  unit: number;
-  percentage: number;
-  color: string;
-  bgColor: string;
-}
 
 const ComplaintsDetails: React.FC = () => {
   const [complaints, setComplaints] = useState<ComplaintCategoryItem[]>(complaintCategories);
 
+  const items = [
+    { label: 'Home', to: '/' },
+    { label: 'Complaints', to: '/complaints' },
+    { label: "CAS-12345" },
+  ];
+
   return (
     <Box className={styles.rootBox}>
-      <ComplaintDetailsBreadcrumbs caseId={"CAS-12345"} />
+      <CommonBreadcrumbs items={items} />
       <ComplaintHeaderCard
         complaintData={complaintHeaderData}
         onApproveAndSend={() => {

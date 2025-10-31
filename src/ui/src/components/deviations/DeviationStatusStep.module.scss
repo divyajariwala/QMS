@@ -1,0 +1,49 @@
+.deviationStatusStep {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.statusStep {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px; // roughly spacing={0.5}
+
+  .label {
+    user-select: none;
+    font-size: 0.875rem; /* MUI body2 approx */
+    color: #000; /* fallback color if needed */
+  }
+}
+
+.connector {
+  width: 104px;
+  height: 2px;
+  align-self: center;
+  margin: 0 8px;
+  background-color: #bdbdbd;
+  transition: background-color 0.3s ease;
+
+  &.active {
+    background-color: #4caf50;
+  }
+}
+
+.iconCompleted {
+  filter: drop-shadow(0 0 0 #4CAF50);
+  width: 20px;
+  height: 20px;
+}
+
+.iconActive {
+  filter: drop-shadow(0 0 0 #1976D2);
+  width: 25px;
+  height: 25px;
+}
+
+.iconInactive {
+  filter: drop-shadow(0 0 0 #BDBDBD);
+  width: 20px;
+  height: 20px;
+}
