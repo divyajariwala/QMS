@@ -32,7 +32,7 @@ class TestLambdaHandler:
                 'case_id': 'RGL23-000070',
                 'narrative': 'Test complaint narrative',
                 'criticality': 'High',
-                'status': 'pending',
+                'status': 'in-review',
                 'created_at': '2023-01-07T00:00:00Z',
                 'primary_reporter': {'name': 'John Doe'},
                 'product_details': {'drug_name': 'Test Drug'}
@@ -50,7 +50,7 @@ class TestLambdaHandler:
         assert body['case_id'] == 'RGL23-000070'
         assert body['narrative'] == 'Test complaint narrative'
         assert body['criticality'] == 'High'
-        assert body['caseStatus'] == 'pending'
+        assert body['caseStatus'] == 'in-review'
 
     @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
     @patch('boto3.resource')
@@ -117,7 +117,7 @@ class TestLambdaHandler:
         mock_table.query.side_effect = Exception("GSI error")
         mock_table.scan.return_value = {
             'Items': [
-                {'PK': 'COMPLAINT#CAS-1', 'status': 'pending'},
+                {'PK': 'COMPLAINT#CAS-1', 'status': 'in-review'},
                 {'PK': 'COMPLAINT#CAS-2', 'status': 'processed'}
             ]
         }
@@ -222,7 +222,7 @@ class TestGetSingleComplaint:
         assert body['criticality'] == 'NA'
         assert body['report_type'] == 'NA'
         assert body['narrative'] == ''
-        assert body['caseStatus'] == 'pending'
+        assert body['caseStatus'] == 'in-review'
 
     def test_get_single_complaint_db_error(self):
         """Test: Database error in get_single_complaint"""
@@ -263,8 +263,7 @@ class TestGetAllComplaints:
         # Mock GSI queries for different statuses
         mock_table.query.side_effect = [
             {'Items': [
-                {'status': 'IN-REVIEW', 'complaint_id': 'CAS-1', 'criticality': 'High'},
-                {'status': 'PENDING', 'complaint_id': 'CAS-2', 'criticality': 'Medium'}
+                {'status': 'IN-REVIEW', 'complaint_id': 'CAS-1', 'criticality': 'High'}
             ]},
             {'Items': [
                 {'status': 'PROCESSED', 'complaint_id': 'CAS-3', 'criticality': 'Low'}
@@ -281,14 +280,14 @@ class TestGetAllComplaints:
         
         # Check statistics
         stats = body['caseStats']
-        assert stats['total_complaints'] == 4
-        assert stats['pending'] == 2  # IN-REVIEW + PENDING
+        assert stats['total_complaints'] == 3
+        assert stats['pending'] == 1  # IN-REVIEW only
         assert stats['processed'] == 1
         assert stats['overdue'] == 1
 
         # Check case status grouping
         case_status = body['caseStatus']
-        assert len(case_status['pending']) == 2
+        assert len(case_status['pending']) == 1
         assert len(case_status['processed']) == 1
         assert len(case_status['overdue']) == 1
 
@@ -315,7 +314,7 @@ class TestGetAllComplaints:
         # Scan succeeds
         mock_table.scan.return_value = {
             'Items': [
-                {'PK': 'COMPLAINT#CAS-1', 'status': 'pending'},
+                {'PK': 'COMPLAINT#CAS-1', 'status': 'in-review'},
                 {'PK': 'COMPLAINT#CAS-2', 'status': 'processed'}
             ]
         }
@@ -346,20 +345,18 @@ class TestUtilityFunctions:
     def test_calculate_stats_various_statuses(self):
         """Test: Calculate statistics with various statuses"""
         complaints = [
-            {'status': 'PENDING'},
             {'status': 'IN-REVIEW'},
             {'status': 'PROCESSED'},
-            {'status': 'COMPLETED'},
             {'status': 'OVERDUE'},
-            {'status': 'pending'},  # lowercase
+            {'status': 'in-review'},  # lowercase
             {'status': ''}  # empty status
         ]
 
         stats = lambda_function._calculate_stats(complaints)
 
-        assert stats['total_complaints'] == 7
-        assert stats['pending'] == 3  # PENDING, IN-REVIEW, pending
-        assert stats['processed'] == 2  # PROCESSED, COMPLETED
+        assert stats['total_complaints'] == 5
+        assert stats['pending'] == 2  # IN-REVIEW, in-review
+        assert stats['processed'] == 1  # PROCESSED
         assert stats['overdue'] == 1
         assert stats['avg_cycle_time'] == 24
         assert stats['best_time'] == 7
@@ -378,7 +375,7 @@ class TestUtilityFunctions:
         """Test: Group complaints by status comprehensively"""
         complaints = [
             {
-                'status': 'pending',
+                'status': 'in-review',
                 'complaint_id': 'CAS-1',
                 'case_id': 'RGL-1',
                 'criticality': 'High',
@@ -407,7 +404,7 @@ class TestUtilityFunctions:
 
         result = lambda_function._group_by_status(complaints)
 
-        assert len(result['pending']) == 2  # pending, IN-REVIEW
+        assert len(result['pending']) == 2  # in-review, IN-REVIEW
         assert len(result['processed']) == 1  # PROCESSED
         assert len(result['overdue']) == 1   # overdue
         
@@ -420,7 +417,7 @@ class TestUtilityFunctions:
     def test_group_by_status_missing_fields(self):
         """Test: Group by status with missing fields"""
         complaints = [
-            {'status': 'pending'},  # Minimal data
+            {'status': 'in-review'},  # Minimal data
             {}  # No status
         ]
 
@@ -526,17 +523,16 @@ class TestEdgeCases:
     def test_calculate_stats_case_insensitive(self):
         """Test: Statistics calculation is case insensitive"""
         complaints = [
-            {'status': 'Pending'},
-            {'status': 'PENDING'},
-            {'status': 'pending'},
             {'status': 'In-Review'},
+            {'status': 'IN-REVIEW'},
+            {'status': 'in-review'},
             {'status': 'PROCESSED'},
             {'status': 'Overdue'}
         ]
 
         stats = lambda_function._calculate_stats(complaints)
 
-        assert stats['pending'] == 4  # All pending variants
+        assert stats['pending'] == 3  # All in-review variants
         assert stats['processed'] == 1
         assert stats['overdue'] == 1
 
