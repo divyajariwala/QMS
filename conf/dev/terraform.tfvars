@@ -106,7 +106,7 @@ lambda_configs = [
     path = "src/app/get_complaints"
     environment_variables = {
       env = "dev"
-      metadata_table_name = "complaints-metadata"
+      DYNAMODB_TABLE_NAME = "qms-dev-complaints-metadata"
     }
     api_gateway_paths = [
       {
@@ -114,7 +114,7 @@ lambda_configs = [
         http_method = "GET"
       },
       {
-        path_name = "getComplaints/{caseID}"
+        path_name = "getComplaints/{complaint_id}"
         http_method = "GET" 
       }
     ]

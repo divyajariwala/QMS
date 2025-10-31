@@ -210,6 +210,7 @@ def lambda_handler(event, context):
                     "message_id": file_upload_sqs_response['MessageId'],
                     "complaint_message_id": pdf_complaint_message_sqs_response['MessageId']
                 })
+        ##TO DO: Frame complaint messages for CSV, Excel Files 
         else:
             # Send File Upload Message to SQS
             file_upload_message = {
