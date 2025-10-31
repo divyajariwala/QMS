@@ -210,43 +210,41 @@ def lambda_handler(event, context):
                     "message_id": file_upload_sqs_response['MessageId'],
                     "complaint_message_id": pdf_complaint_message_sqs_response['MessageId']
                 })
-
-
-
-        # Send File Upload Message to SQS
-        file_upload_message = {
-            "file_id": file_id,
-            "filename": filename,
-            "s3_key": s3_key,
-            "s3_bucket": S3_BUCKET_NAME,
-            "uploaded_at": datetime.now(timezone.utc).isoformat(),
-            "file_size": len(file_content),
-            "content_type": file_info.get('content_type', _get_content_type(filename)),
-            "file_extension": _get_file_extension(filename)
-        }
-
-        file_upload_sqs_response = sqs_client.send_message(
-            QueueUrl=queue_url,
-            MessageBody=json.dumps(file_upload_message),
-            MessageAttributes={
-                'FileType': {
-                    'StringValue': _get_file_extension(filename),
-                    'DataType': 'String'
-                },
-                'FileSize': {
-                    'StringValue': str(len(file_content)),
-                    'DataType': 'Number'
-                }
+        else:
+            # Send File Upload Message to SQS
+            file_upload_message = {
+                "file_id": file_id,
+                "filename": filename,
+                "s3_key": s3_key,
+                "s3_bucket": S3_BUCKET_NAME,
+                "uploaded_at": datetime.now(timezone.utc).isoformat(),
+                "file_size": len(file_content),
+                "content_type": file_info.get('content_type', _get_content_type(filename)),
+                "file_extension": _get_file_extension(filename)
             }
-        )
 
-        return _response(200, "File uploaded successfully", {
-            "file_id": file_id,
-            "filename": filename,
-            "file_size": len(file_content),
-            "s3_key": s3_key,
-            "message_id": file_upload_sqs_response['MessageId']
-        })
+            file_upload_sqs_response = sqs_client.send_message(
+                QueueUrl=queue_url,
+                MessageBody=json.dumps(file_upload_message),
+                MessageAttributes={
+                    'FileType': {
+                        'StringValue': _get_file_extension(filename),
+                        'DataType': 'String'
+                    },
+                    'FileSize': {
+                        'StringValue': str(len(file_content)),
+                        'DataType': 'Number'
+                    }
+                }
+            )
+
+            return _response(200, "File uploaded successfully", {
+                "file_id": file_id,
+                "filename": filename,
+                "file_size": len(file_content),
+                "s3_key": s3_key,
+                "message_id": file_upload_sqs_response['MessageId']
+            })
 
     except Exception as e:
         print(f"Error: {str(e)}")

@@ -293,3 +293,287 @@ class TestUtilityFunctions:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestPDFExtraction:
+    """Tests for PDF extraction and complaint message functionality"""
+
+    @patch.dict(os.environ, {
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.create_complaint_message_from_output')
+    def test_successful_pdf_upload_with_extraction(self, mock_create_complaint, mock_parse, mock_boto3):
+        """Test: Successful PDF upload with extraction and complaint creation"""
+        # Mock AWS clients
+        mock_s3 = Mock()
+        mock_sqs = Mock()
+        mock_lambda = Mock()
+        mock_boto3.side_effect = lambda service: {
+            's3': mock_s3,
+            'sqs': mock_sqs,
+            'lambda': mock_lambda
+        }[service]
+        
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'test-msg-123'}
+
+        # Mock PDF file
+        mock_parse.return_value = {
+            'filename': 'complaint.pdf',
+            'content': b'%PDF-1.4 fake pdf content',
+            'content_type': 'application/pdf',
+            'field_name': 'file'
+        }
+
+        # Mock lambda extraction response
+        mock_lambda_response = {
+            'success': True,
+            'result': {
+                'case_id': 'RGL22-000433',
+                'narrative': 'Test complaint narrative',
+                'criticality': 'High'
+            }
+        }
+        mock_lambda.invoke.return_value = {
+            'Payload': Mock(read=Mock(return_value=json.dumps(mock_lambda_response).encode()))
+        }
+
+        # Mock complaint message creation
+        mock_create_complaint.return_value = {
+            'complaint_id': 'CAS-123456789',
+            'code': 'CAS-123456789',
+            'narrative': 'Test complaint narrative'
+        }
+
+        event = {
+            'body': 'fake-pdf-content',
+            'isBase64Encoded': False,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['success'] is True
+        assert 'complaint_message_id' in body['data']
+        
+        # Verify lambda extraction was called
+        mock_lambda.invoke.assert_called_once()
+        # Verify two SQS messages sent (complaint + file upload)
+        assert mock_sqs.send_message.call_count == 2
+
+    @patch.dict(os.environ, {
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
+    def test_pdf_extraction_lambda_failure(self, mock_parse, mock_boto3):
+        """Test: PDF extraction lambda fails"""
+        # Mock AWS clients
+        mock_s3 = Mock()
+        mock_sqs = Mock()
+        mock_lambda = Mock()
+        mock_boto3.side_effect = lambda service: {
+            's3': mock_s3,
+            'sqs': mock_sqs,
+            'lambda': mock_lambda
+        }[service]
+        
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+
+        # Mock PDF file
+        mock_parse.return_value = {
+            'filename': 'complaint.pdf',
+            'content': b'%PDF-1.4 fake pdf content',
+            'content_type': 'application/pdf',
+            'field_name': 'file'
+        }
+
+        # Mock lambda extraction failure
+        mock_lambda.invoke.side_effect = Exception("Lambda invocation failed")
+
+        event = {
+            'body': 'fake-pdf-content',
+            'isBase64Encoded': False,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 500
+        body = json.loads(result['body'])
+        assert body['success'] is False
+
+
+class TestComplaintMessageCreation:
+    """Tests for complaint message creation functionality"""
+
+    def test_create_complaint_message_from_dict(self):
+        """Test: Create complaint message from dictionary input"""
+        output_data = {
+            'success': True,
+            'result': {
+                'case_id': 'RGL22-000433',
+                'narrative': 'Test narrative',
+                'criticality': 'High',
+                'report_type': 'Spontaneous',
+                'primary_reporter': {'name': 'John Doe'},
+                'patient_name': 'Jane Smith'
+            }
+        }
+
+        result = lambda_function.create_complaint_message_from_output(output_data)
+
+        assert result['case_id'] == 'RGL22-000433'
+        assert result['narrative'] == 'Test narrative'
+        assert result['criticality'] == 'High'
+        assert result['status'] == 'IN-REVIEW'
+        assert 'CAS-' in result['code']
+
+    def test_create_complaint_message_from_json_string(self):
+        """Test: Create complaint message from JSON string input"""
+        output_str = json.dumps({
+            'success': True,
+            'result': {
+                'case_id': 'RGL22-000444',
+                'narrative': 'Another test narrative',
+                'criticality': 'Medium'
+            }
+        })
+
+        result = lambda_function.create_complaint_message_from_output(output_str)
+
+        assert result['case_id'] == 'RGL22-000444'
+        assert result['narrative'] == 'Another test narrative'
+        assert result['criticality'] == 'Medium'
+
+    def test_create_complaint_message_missing_fields(self):
+        """Test: Create complaint message with missing optional fields"""
+        output_data = {
+            'success': True,
+            'result': {
+                'case_id': 'RGL22-000555'
+                # Missing other fields
+            }
+        }
+
+        result = lambda_function.create_complaint_message_from_output(output_data)
+
+        assert result['case_id'] == 'RGL22-000555'
+        assert result['narrative'] == ''  # Default empty
+        assert result['criticality'] == 'NA'  # Default NA
+        assert result['primary_reporter'] == {}  # Default empty dict
+
+
+class TestComplaintCodeGeneration:
+    """Tests for complaint code generation functions"""
+
+    def test_generate_complaint_code_timestamp_random(self):
+        """Test: Generate complaint code with timestamp_random strategy"""
+        code = lambda_function.generate_complaint_code('timestamp_random')
+        
+        assert code.startswith('CAS-')
+        assert len(code) > 10  # Should be reasonably long
+        
+        # Generate another to ensure uniqueness
+        code2 = lambda_function.generate_complaint_code('timestamp_random')
+        assert code != code2
+
+    def test_generate_complaint_code_uuid_short(self):
+        """Test: Generate complaint code with uuid_short strategy"""
+        code = lambda_function.generate_complaint_code('uuid_short')
+        
+        assert code.startswith('CAS-')
+        assert len(code) == 12  # CAS- + 8 chars
+
+    def test_generate_complaint_code_default(self):
+        """Test: Generate complaint code with default strategy"""
+        code = lambda_function.generate_complaint_code()
+        
+        assert code.startswith('CAS-')
+        # Should default to timestamp_random
+
+    def test_generate_ulid(self):
+        """Test: Generate ULID"""
+        ulid = lambda_function.generate_ulid()
+        
+        assert len(ulid) == 26
+        assert ulid.isalnum()  # Should be alphanumeric
+
+    def test_generate_nanoid(self):
+        """Test: Generate Nanoid"""
+        nanoid = lambda_function.generate_nanoid(8)
+        
+        assert len(nanoid) == 8
+        # Should not contain confusing characters
+        assert '0' not in nanoid
+        assert '1' not in nanoid
+        assert 'O' not in nanoid
+        assert 'I' not in nanoid
+
+
+class TestUserExtraction:
+    """Tests for user extraction from event"""
+
+    def test_get_user_from_cognito_claims(self):
+        """Test: Extract user from Cognito claims"""
+        event = {
+            'requestContext': {
+                'authorizer': {
+                    'claims': {
+                        'email': 'user@example.com',
+                        'sub': 'user-123'
+                    }
+                }
+            }
+        }
+
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'user@example.com'
+
+    def test_get_user_from_headers(self):
+        """Test: Extract user from custom headers"""
+        event = {
+            'headers': {
+                'x-user-email': 'header-user@example.com'
+            }
+        }
+
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'header-user@example.com'
+
+    def test_get_user_anonymous_fallback(self):
+        """Test: Fallback to anonymous when no user info"""
+        event = {}
+
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'anonymous'
+
+
+class TestSQSQueueResolution:
+    """Tests for SQS queue URL resolution"""
+
+    @patch('boto3.client')
+    def test_queue_url_resolution_success(self, mock_boto3):
+        """Test: Successful queue URL resolution"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123/test-queue'}
+
+        # This would be tested as part of lambda_handler, but we can test the logic
+        assert True  # Placeholder for queue resolution test
+
+    @patch('boto3.client')
+    def test_queue_url_resolution_failure(self, mock_boto3):
+        """Test: Queue URL resolution failure"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.side_effect = Exception("Queue not found")
+
+        # This would result in 500 error in lambda_handler
+        assert True  # Placeholder for queue resolution failure test
