@@ -1,283 +1,222 @@
 import json
-import boto3
-import base64
+import logging
 import os
-import uuid
-import re
 from datetime import datetime, timezone
+from decimal import Decimal
+
+import boto3
 
 # Environment variables
-S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'narrative-upload-bucket')
-SQS_QUEUE_URL = os.environ.get('SQS_QUEUE_URL',
-                               'https://sqs.REGION.amazonaws.com/ACCOUNT_ID/narrative-processing-queue')
-ALLOWED_EXTENSIONS = {'.csv', '.xlsx'}
-MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+DYNAMODB_TABLE_NAME = os.environ.get('DYNAMODB_TABLE_NAME', 'qms-dev-complaints-metadata')
+
+# Setup logging
+logger = logging.getLogger("process_complaint_lambda")
+logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
+    """
+    Lambda function to process SQS messages and save complaints to DynamoDB.
+
+    Expected SQS event structure:
+    {
+        "Records": [
+            {
+                "messageId": "...",
+                "body": "{...complaint data...}"
+            }
+        ]
+    }
+    """
+    logger.info("Received event: %s", json.dumps(event, indent=2))
+
     try:
-        # Initialize AWS clients
-        s3_client = boto3.client('s3')
-        sqs_client = boto3.client('sqs')
+        # Initialize AWS clients (inside handler like create_complaint)
+        dynamodb = boto3.resource('dynamodb')
+        table = dynamodb.Table(DYNAMODB_TABLE_NAME)
 
-        # Validate request
-        if "body" not in event:
-            return _response(400, "No file provided")
+        # Track processing results
+        successful = 0
+        failed = 0
+        errors = []
+        # Process each SQS message
+        for record in event.get('Records', []):
+            try:
+                message_id = record.get('messageId', 'unknown')
+                logger.info(f"Processing message: {message_id}")
 
-        headers = event.get("headers", {})
-        content_type = headers.get("content-type") or headers.get("Content-Type")
+                # Parse message body
+                body = json.loads(record['body'])
 
-        if not content_type or 'multipart/form-data' not in content_type.lower():
-            return _response(400, "Content-Type must be multipart/form-data")
+                # Validate complaint data
+                validate_complaint(body)
 
-        # Handle body encoding - CRITICAL: Keep as bytes for binary files
-        if event.get("isBase64Encoded", False):
-            body_bytes = base64.b64decode(event["body"])
-        else:
-            # For multipart with binary files, the body should already be bytes
-            # If it's a string, it means API Gateway encoded it incorrectly
-            body_str = event["body"]
-            if isinstance(body_str, str):
-                # Try to encode as latin-1 to preserve bytes
-                body_bytes = body_str.encode('latin-1')
-            else:
-                body_bytes = body_str
+                # Save to DynamoDB (pass table as parameter)
+                save_to_dynamodb(table, body)
 
-        # Check file size
-        if len(body_bytes) > MAX_FILE_SIZE:
-            return _response(400, f"File too large. Maximum size: {MAX_FILE_SIZE // (1024 * 1024)}MB")
+                successful += 1
+                print(f"Successfully processed complaint: {body.get('complaint_id')}")
 
-        # Parse multipart manually (more reliable for binary files)
-        file_info = parse_multipart_manual(body_bytes, content_type)
+            except json.JSONDecodeError as e:
+                failed += 1
+                error_msg = f"Invalid JSON in message {message_id}: {str(e)}"
+                print(error_msg)
+                errors.append({
+                    'messageId': message_id,
+                    'error': 'InvalidJSON',
+                    'detail': str(e)
+                })
 
-        if not file_info:
-            return _response(400, "No valid file found in request")
+            except ValueError as e:
+                failed += 1
+                error_msg = f"Validation error in message {message_id}: {str(e)}"
+                print(error_msg)
+                errors.append({
+                    'messageId': message_id,
+                    'error': 'ValidationError',
+                    'detail': str(e)
+                })
 
-        filename = file_info['filename']
-        file_content = file_info['content']
+            except Exception as e:
+                failed += 1
+                error_msg = f"Error processing message {message_id}: {str(e)}"
+                print(error_msg)
+                import traceback
+                print(f"Traceback: {traceback.format_exc()}")
+                errors.append({
+                    'messageId': message_id,
+                    'error': 'ProcessingError',
+                    'detail': str(e)
+                })
 
-        if not filename:
-            return _response(400, "No filename provided")
+        # Log summary
+        print(f"Processing complete - Successful: {successful}, Failed: {failed}")
 
-        if not _is_allowed_file(filename):
-            return _response(400, f"Invalid file format. Allowed: {', '.join(ALLOWED_EXTENSIONS)}")
-
-        if len(file_content) == 0:
-            return _response(400, "File is empty")
-
-        # Generate S3 key with safe filename
-        file_id = str(uuid.uuid4())
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d")
-        safe_filename = _sanitize_filename(filename)
-        s3_key = f"uploads/{timestamp}/{file_id}_{safe_filename}"
-
-        # Upload to S3
-        s3_client.put_object(
-            Bucket=S3_BUCKET_NAME,
-            Key=s3_key,
-            Body=file_content,
-            ContentType=file_info.get('content_type', _get_content_type(filename)),
-            Metadata={
-                "original_filename": filename,
-                "uploaded_at": datetime.now(timezone.utc).isoformat(),
-                "file_size": str(len(file_content)),
-                "file_id": file_id
-            }
-        )
-
-        # Send to SQS
-        message = {
-            "file_id": file_id,
-            "filename": filename,
-            "s3_key": s3_key,
-            "s3_bucket": S3_BUCKET_NAME,
-            "uploaded_at": datetime.now(timezone.utc).isoformat(),
-            "file_size": len(file_content),
-            "content_type": file_info.get('content_type', _get_content_type(filename)),
-            "file_extension": _get_file_extension(filename)
+        # Return results
+        return {
+            'statusCode': 200 if failed == 0 else 207,
+            'body': json.dumps({
+                'processed': successful + failed,
+                'successful': successful,
+                'failed': failed,
+                'errors': errors
+            })
         }
-
-        sqs_response = sqs_client.send_message(
-            QueueUrl=SQS_QUEUE_URL,
-            MessageBody=json.dumps(message),
-            MessageAttributes={
-                'FileType': {
-                    'StringValue': _get_file_extension(filename),
-                    'DataType': 'String'
-                },
-                'FileSize': {
-                    'StringValue': str(len(file_content)),
-                    'DataType': 'Number'
-                }
-            }
-        )
-
-        return _response(200, "File uploaded successfully", {
-            "file_id": file_id,
-            "filename": filename,
-            "file_size": len(file_content),
-            "s3_key": s3_key,
-            "message_id": sqs_response['MessageId']
-        })
 
     except Exception as e:
         print(f"Error: {str(e)}")
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
-        return _response(500, f"Internal server error: {str(e)}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': 'Internal server error',
+                'detail': str(e)
+            })
+        }
 
 
-def parse_multipart_manual(body_bytes, content_type):
+def validate_complaint(complaint):
     """
-    Manual multipart parsing that works reliably with binary files
+    Validate that complaint has all required fields.
+
+    Args:
+        complaint (dict): Complaint data
+
+    Raises:
+        ValueError: If validation fails
     """
+    required_fields = [
+        'complaint_id',
+        'code',
+        'narrative',
+        'status',
+        'created_at',
+        'created_by'
+    ]
+
+    # Check required fields
+    missing_fields = [field for field in required_fields if field not in complaint]
+    if missing_fields:
+        raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
+
+    # Validate field values
+    if not complaint['complaint_id'].strip():
+        raise ValueError("complaint_id cannot be empty")
+
+    if not complaint['narrative'].strip():
+        raise ValueError("narrative cannot be empty")
+
+    if len(complaint['narrative']) > 420:
+        raise ValueError("narrative exceeds maximum length of 420 characters")
+
+
+def save_to_dynamodb(table, complaint):
+    """
+    Save complaint to DynamoDB table using Single Table Design.
+
+    Args:
+        table: DynamoDB table resource
+        complaint (dict): Complaint data to save
+
+    Raises:
+        Exception: If DynamoDB operation fails
+    """
+    complaint_id = complaint['complaint_id']
+
     try:
-        # Extract boundary
-        boundary_match = re.search(rb'boundary=([^;]+)', content_type.encode())
-        if not boundary_match:
-            # Try with string match
-            boundary_match = re.search(r'boundary=([^;]+)', content_type)
-            if not boundary_match:
-                raise ValueError("No boundary found in Content-Type")
-            boundary = boundary_match.group(1).strip('"').encode()
-        else:
-            boundary = boundary_match.group(1).strip(b'"')
+        # Convert floats to Decimal (required by DynamoDB)
+        item = _convert_floats_to_decimal(complaint)
 
-        # Split by boundary
-        boundary_delimiter = b'--' + boundary
-        parts = body_bytes.split(boundary_delimiter)
+        # Add Single Table Design keys
+        item['PK'] = f"COMPLAINT#{complaint_id}"
+        item['SK'] = "METADATA"
 
-        print(f"Found {len(parts)} parts")
+        # Add GSI keys for querying
+        status = complaint.get('status', 'IN-REVIEW')
+        created_at = complaint.get('created_at', datetime.now(timezone.utc).isoformat())
 
-        # Process each part
-        for i, part in enumerate(parts[1:-1], 1):  # Skip first empty and last closing parts
-            if len(part) < 10:  # Skip very small parts
-                continue
+        item['GSI1PK'] = f"STATUS#{status}"
+        item['GSI1SK'] = f"CREATED#{created_at}"
 
-            print(f"Processing part {i}, size: {len(part)} bytes")
+        # Add processing metadata
+        now = datetime.now(timezone.utc)
+        item['processed_at'] = now.isoformat()
+        item['table_version'] = '1.0'
 
-            # Find headers-content separator
-            if b'\r\n\r\n' in part:
-                headers_section, content = part.split(b'\r\n\r\n', 1)
-            elif b'\n\n' in part:
-                headers_section, content = part.split(b'\n\n', 1)
-            else:
-                print(f"Part {i}: No header separator found")
-                continue
+        # Map narrative field name (support both formats)
+        if 'narrative' in complaint and 'narrative_text' not in complaint:
+            item['narrative_text'] = complaint['narrative']
 
-            # Decode headers only (not content!)
-            try:
-                headers_text = headers_section.decode('utf-8', errors='ignore')
-            except Exception as e:
-                print(f"Part {i}: Cannot decode headers: {e}")
-                continue
+        # Add source tracking if available
+        if 'source' not in item:
+            item['source'] = 'api'
 
-            print(f"Part {i} headers: {headers_text[:200]}...")
+        # Save to DynamoDB
+        table.put_item(Item=item)
 
-            # Parse Content-Disposition header
-            content_disposition_match = re.search(
-                r'Content-Disposition:\s*form-data;\s*name="([^"]+)"(?:;\s*filename="([^"]*)")?',
-                headers_text,
-                re.IGNORECASE
-            )
-
-            if not content_disposition_match:
-                print(f"Part {i}: No Content-Disposition found")
-                continue
-
-            field_name = content_disposition_match.group(1)
-            filename = content_disposition_match.group(2)
-
-            print(f"Part {i}: field_name={field_name}, filename={filename}")
-
-            # Only process file fields (with filename)
-            if filename is not None and filename.strip():
-                # Get content-type
-                content_type_match = re.search(
-                    r'Content-Type:\s*([^\r\n]+)',
-                    headers_text,
-                    re.IGNORECASE
-                )
-                file_content_type = content_type_match.group(1).strip() if content_type_match else _get_content_type(
-                    filename)
-
-                # Clean content (remove trailing CRLF)
-                content = content.rstrip(b'\r\n')
-
-                print(f"Found file: {filename}, size: {len(content)} bytes, type: {file_content_type}")
-
-                return {
-                    'filename': filename.strip(),
-                    'content': content,
-                    'content_type': file_content_type,
-                    'field_name': field_name
-                }
-
-        print("No file found in any part")
-        return None
+        print(f"Saved complaint to DynamoDB: {complaint_id}")
 
     except Exception as e:
-        print(f"Multipart parsing error: {str(e)}")
-        import traceback
-        print(f"Traceback: {traceback.format_exc()}")
-        return None
+        print(f"DynamoDB error for complaint {complaint_id}: {str(e)}")
+        raise
 
 
-def _get_content_type(filename):
-    """Get appropriate content type based on file extension"""
-    ext = _get_file_extension(filename).lower()
-    content_types = {
-        'csv': 'text/csv',
-        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'xls': 'application/vnd.ms-excel'
-    }
-    return content_types.get(ext, 'application/octet-stream')
+def _convert_floats_to_decimal(obj):
+    """
+    Convert floats to Decimal for DynamoDB compatibility.
 
+    Args:
+        obj: Object to convert (dict, list, or primitive)
 
-def _sanitize_filename(filename):
-    """Sanitize filename for S3"""
-    if not filename:
-        return "unknown_file"
-
-    # Remove or replace problematic characters
-    sanitized = re.sub(r'[^\w\-_\.]', '_', filename)
-    # Remove multiple underscores
-    sanitized = re.sub(r'_+', '_', sanitized)
-    return sanitized
-
-
-def _get_file_extension(filename):
-    """Get file extension without dot"""
-    if not filename:
-        return "unknown"
-    return os.path.splitext(filename)[-1].lower().lstrip('.')
-
-
-def _response(status_code, message, data=None):
-    """Standardized HTTP response"""
-    body = {
-        "success": status_code < 400,
-        "message": message,
-        "data": data or {},
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-
-    return {
-        "statusCode": status_code,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
-            "Access-Control-Max-Age": "86400"
-        },
-        "body": json.dumps(body)
-    }
-
-
-def _is_allowed_file(filename):
-    """Check if file has allowed extension"""
-    if not filename:
-        return False
-    ext = os.path.splitext(filename)[-1].lower()
-    return ext in ALLOWED_EXTENSIONS
+    Returns:
+        Object with floats converted to Decimal
+    """
+    if isinstance(obj, list):
+        return [_convert_floats_to_decimal(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: _convert_floats_to_decimal(value) for key, value in obj.items()}
+    elif isinstance(obj, float):
+        return Decimal(str(obj))
+    else:
+        return obj
