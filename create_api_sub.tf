@@ -124,4 +124,4 @@
 #   lambda_arn     = each.value.lambda_arn
 #   aws_account_id = data.aws_caller_identity.current.account_id
 #   region         = var.region
-}
+# }
