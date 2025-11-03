@@ -114,7 +114,7 @@ lambda_configs = [
         http_method = "GET"
       },
       {
-        path_name = "getComplaints/{complaint_id}"
+        path_name = "getComplaints-{complaint_id}"
         http_method = "GET" 
       }
     ]
