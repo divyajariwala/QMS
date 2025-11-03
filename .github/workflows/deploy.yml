@@ -129,7 +129,7 @@ jobs:
   compile_backend:
     name: Compile Backend
     runs-on: ubuntu-latest
-    needs: [resolve_lambda_wheels]
+    needs: [resolve_lambda_wheels, test_backend]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -238,7 +238,7 @@ jobs:
 
   scan_infra:
     name: Checkov Scan
-    needs: [test_backend, compile_frontend, compile_backend]
+    needs: [compile_frontend, compile_backend]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -261,7 +261,7 @@ jobs:
   deploy_terraform:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
-    needs: [test_backend, compile_frontend, compile_backend, scan_infra]
+    needs: [scan_infra]
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'terraform')) }}
     outputs:
       ui_bucket: ${{ steps.tf_out.outputs.ui_bucket }}
