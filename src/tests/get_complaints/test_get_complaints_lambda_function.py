@@ -40,7 +40,7 @@ class TestLambdaHandler:
         }
 
         event = {
-            'pathParameters': {'complaint_id': 'CAS-123'}
+            'queryStringParameters': {'complaint_id': 'CAS-123'}
         }
 
         result = lambda_function.lambda_handler(event, {})
@@ -66,7 +66,7 @@ class TestLambdaHandler:
         mock_table.get_item.return_value = {}
 
         event = {
-            'pathParameters': {'complaint_id': 'CAS-999'}
+            'queryStringParameters': {'complaint_id': 'CAS-999'}
         }
 
         result = lambda_function.lambda_handler(event, {})
@@ -160,7 +160,7 @@ class TestLambdaHandler:
         mock_table.query.return_value = {'Items': []}
         mock_table.scan.return_value = {'Items': []}
 
-        event = {'pathParameters': {}}
+        event = {'queryStringParameters': {}}
 
         result = lambda_function.lambda_handler(event, {})
 
@@ -493,7 +493,7 @@ class TestEdgeCases:
         mock_table.query.return_value = {'Items': []}
         mock_table.scan.return_value = {'Items': []}
 
-        event = {'pathParameters': None}
+        event = {'queryStringParameters': None}
 
         result = lambda_function.lambda_handler(event, {})
 
@@ -513,7 +513,7 @@ class TestEdgeCases:
         mock_table.query.return_value = {'Items': []}
         mock_table.scan.return_value = {'Items': []}
 
-        event = {'pathParameters': {'complaint_id': None}}
+        event = {'queryStringParameters': {'complaint_id': None}}
 
         result = lambda_function.lambda_handler(event, {})
 
