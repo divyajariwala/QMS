@@ -12,19 +12,19 @@ def lambda_handler(event, context):
     Lambda function handler to retrieve complaints data from DynamoDB.
     Supports two endpoints:
     - GET /getComplaints - Returns all complaints with stats
-    - GET /getComplaints/{complaint_id} - Returns specific complaint details
+    - GET /getComplaints?complaint_id=CAS-xxx - Returns specific complaint details
     """
     try:
         # Initialize DynamoDB
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table(DYNAMODB_TABLE_NAME)
         
-        # Get path parameters
-        path_parameters = event.get('pathParameters', {})
-        complaint_id = path_parameters.get('complaint_id') if path_parameters else None
+        # Get query parameters
+        query_parameters = event.get('queryStringParameters', {})
+        complaint_id = query_parameters.get('complaint_id') if query_parameters else None
         
         if complaint_id:
-            # Handle single complaint request: /getComplaints/{complaint_id}
+            # Handle single complaint request: /getComplaints?complaint_id=xxx
             return get_single_complaint(table, complaint_id)
         else:
             # Handle all complaints request: /getComplaints
