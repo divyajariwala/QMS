@@ -127,7 +127,7 @@ export interface AuthContextType {
 };
 
 export interface BreadcrumbItem {
-  label: string;
+  label: string | undefined;
   to?: string;
 }
 
@@ -139,7 +139,7 @@ export interface CommonBreadcrumbsProps {
 export interface LegendItemProps {
   colorClass: "dotPending" | "dotProcessed" | "dotOverdue" | undefined;
   label: string;
-  value: string | number;
+  value: string | number | undefined;
 }
 
 export interface LegendData {
@@ -152,7 +152,7 @@ export interface StatusCardProps {
   iconSrc: string;
   iconAlt: string;
   title: string;
-  cardValue: string | number;
+  cardValue?: string | number | undefined;
   legend?: LegendData[];
 }
 
@@ -174,30 +174,31 @@ export interface ComplaintCategoryProps {
 
 export interface ComplaintHeaderCardProps {
   complaintData: {
-    status: string;
-    caseId: string;
-    overdueDays: number;
-    primaryReporter: { name: string; location: string };
-    patientName: string;
-    physicianName: string;
-    drug: string;
-    lotNumber: string;
-    doseAmount: string;
-    expirationDate: string;
-    partNumber: string;
+    status?: string | undefined;
+    caseId?: string | undefined;
+    overdueDays?: number | undefined;
+    primaryReporter?: Record<string, any> | undefined;
+    patientName?: string | undefined;
+    physicianName?: string | undefined;
+    drug?: string | undefined;
+    lotNumber?: string | undefined;
+    doseAmount?: string | undefined;
+    expirationDate?: string | undefined;
+    partNumber?: string | undefined;
+    receipt_date: string | undefined;
   };
   onApproveAndSend: () => void;
 }
 
 export interface ComplaintsDueDateChipProps {
-  type: "Overdue" | "Today" | "Tomorrow" | "Due";
-  label: string;
+  type: "Overdue" | "Today" | "Tomorrow" | "Due" | "" | undefined;
+  label: string | undefined;
 }
 
 export interface DueDateChipProps {
   iconSrc: string;
   iconAlt: string;
-  label: string;
+  label: string | undefined;
   className?: string;
 }
 
@@ -221,23 +222,23 @@ export interface SecondaryInfoCardProps {
   adverseEventIconSrc: string;
   productComplaintsChipClassName?: string;
   adverseEventChipClassName?: string;
+  caseType: string[]
 }
 
 export interface StatusTabItem {
   label: string;
-  count: number;
-  description: React.ReactNode;
+  count: number | undefined;
 }
 
 export interface ComplaintProps {
   complaint: {
-    "Criticality": string;
-    "Report Type": string;
-    "Category": string;
-    "Receipt Date": string;
-    "Case Type": string[];
-    "Due Date": string;
-  };
+    case_id: string;
+    criticality: string;
+    report_type: string;
+    receipt_date: string; // You might want to correct this to 'receipt_date' if it's a typo
+    case_type: string[];
+  },
+  selected: string
 }
 
 export interface ButtonGroupProps {
@@ -284,4 +285,74 @@ export interface PopupProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (value: string) => void;
+  setInputValue: (value: string) => void;
+  inputValue: string;
+}
+
+export interface Complaint {
+  case_id: string;
+  criticality: string;
+  report_type: string;
+  receipt_dtae: string; // You might want to correct this to 'receipt_date' if it's a typo
+  case_type: string;
+}
+
+export interface CreateComplaintData {
+  complaint: Complaint;
+  message_id: string;
+}
+
+export interface CreateComplaintResponse {
+  success: boolean;
+  message: string;
+  data: CreateComplaintData;
+  timestamp: string;
+}
+
+export type ComplaintRequest = {
+  narrative: string;
+};
+
+export type Case = {
+  case_id: string;
+  criticality: string;
+  report_type: string;
+  receipt_date: string;
+  case_type: string[];
+};
+
+export type CaseStatus = {
+  pending: Case[];
+  processed: Case[];
+  overdue: Case[];
+};
+
+export type CaseStats = {
+  total_complaints: number;
+  pending: number;
+  processed: number;
+  overdue: number;
+  avg_cycle_time: number;
+  best_time: number;
+  longest_time: number;
+};
+
+export type getComplaintsApiResponse = {
+  caseStats: CaseStats;
+  caseStatus: CaseStatus;
+};
+
+export interface ComplaintDetail {
+  case_id: string;
+  receipt_date: string;
+  criticality: string;
+  report_type: string;
+  ai_summary: string;
+  case_type: string[];
+  narrative: string;
+  primary_reporter: Record<string, any>; // undefined structure assumed, adjust if known
+  patient_name: string;
+  physician_name: string;
+  product_details: Record<string, any>; // undefined structure assumed, adjust if known
+  caseStatus: string;
 }

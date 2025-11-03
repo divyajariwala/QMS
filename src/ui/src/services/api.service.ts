@@ -3,7 +3,7 @@ import {
   COMPLAINT_SESSION_ID,
   COMPLAINT_USER_NAME,
 } from '../constants';
-import { ComplaintResult, SessionData, UIResultsParams } from '../types';
+import { ComplaintResult, SessionData, UIResultsParams, ComplaintRequest, CreateComplaintResponse, getComplaintsApiResponse, ComplaintDetail } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
@@ -32,7 +32,7 @@ export const getInitialData = async (
     }
 
     return;
-  } catch(err) {
+  } catch (err) {
     console.log('getinitialdata error', err);
     return;
   }
@@ -77,7 +77,7 @@ export const invokeApi = async (
     }
 
     return;
-  } catch(err) {
+  } catch (err) {
     console.log('invokeApi error', err);
     return;
   }
@@ -109,7 +109,7 @@ export const categoryInvoke = async (id: string) => {
     }
 
     return;
-  } catch(err) {
+  } catch (err) {
     console.log('categoryInvoke error', err);
     return;
   }
@@ -140,7 +140,7 @@ export const fetchResults = async (id: string) => {
     }
 
     return;
-  } catch(err) {
+  } catch (err) {
     console.log('fetchResults error', err);
     return;
   }
@@ -185,7 +185,7 @@ export const uiResults = async (
     }
 
     return;
-  } catch(err) {
+  } catch (err) {
     console.log('uiResults error', err);
     return;
   }
@@ -206,7 +206,7 @@ export const fetchHtml = async (url: string) => {
     }
 
     return;
-  } catch(err) {
+  } catch (err) {
     console.log('fetchHtml error', err);
     return;
   }
@@ -239,3 +239,54 @@ export const uploadComplaintFile = async (file: File) => {
     return;
   }
 };
+
+
+export const createComplaint = async (
+  complaint: ComplaintRequest
+): Promise<CreateComplaintResponse> => {
+  const response = await fetch(
+    "https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/createComplaint",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(complaint),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: CreateComplaintResponse = await response.json();
+  return data;
+};
+
+export async function fetchComplaints(): Promise<getComplaintsApiResponse> {
+  const response = await fetch(
+    "https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/getComplaints"
+  );
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: getComplaintsApiResponse = await response.json();
+  return data;
+}
+
+export async function fetchComplaintDetailById(complaint_id: string | undefined): Promise<ComplaintDetail> {
+  const url = new URL("https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/getComplaints");
+  if(complaint_id) url.searchParams.append("complaint_id", complaint_id);
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: ComplaintDetail = await response.json();
+  return data;
+}
+
+

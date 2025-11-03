@@ -1,5 +1,5 @@
-import React, { useState, MouseEvent } from 'react';
-import { Box, Stack, Button, Breadcrumbs, Link, Typography } from "@mui/material";
+import React, { useState, useEffect, MouseEvent } from 'react';
+import { Box, Stack, Button } from "@mui/material";
 import PlusIcon from "../../assets/icons/plus.svg";
 import ImportIcon from "../../assets/icons/import.svg";
 import ComplaintsResult from "@components/complaint/ComplaintsResult";
@@ -12,11 +12,21 @@ import { complaintsData } from 'src/mockData/mockData';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import StatusTabs from './StatusTabs';
 import ComplaintsStatusCard from '@components/commonCard/ComplaintsStatusCard';
+import { createComplaint } from 'src/services/api.service';
+import { fetchComplaints } from 'src/services/api.service';
+import { getComplaintsApiResponse } from 'src/types';
 import { useAuth } from "../../auth/useAuth";
 
 const Complaints = () => {
   const [open, setOpen] = useState<boolean>(false);
+  const [inputValue, setInputValue] = useState<string>('');
   const [openFileUpload, setOpenFileUpload] = useState<boolean>(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [data, setData] = useState<getComplaintsApiResponse>();
+  const [loading, setLoading] = useState<boolean>(true);
+  const { caseStats, caseStatus } = data || {};
+  const { pending, processed, overdue } = caseStats || {};
+
   const { user } = useAuth();
   const displayName = `${user?.profile?.given_name ?? ""}`.trim();
   const items = [
@@ -35,10 +45,49 @@ const Complaints = () => {
     setOpen(false);
   };
 
-  const handleSubmit = (value: string): void => {
-    alert(`Submitted value: ${value}`);
-    setOpen(false);
+
+  const handleCreateComplaint = async () => {
+    try {
+      const complaintPayload = {
+        narrative: inputValue,
+      };
+      const result = await createComplaint(complaintPayload);
+      console.log("Complaint created:", result);
+    } catch (error) {
+      console.error("Failed to create complaint:", error);
+    } finally {
+      setOpen(false)
+    }
   };
+
+  const mapped: { [key: number]: string } = {
+    0: 'pending',
+    1: 'overdue',
+    2: 'processed'
+  }
+
+  const selected = mapped[activeIndex]
+
+  type CaseStatusKey = "pending" | "processed" | "overdue";
+
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await fetchComplaints();
+      setData(res);
+    } catch (err: any) {
+      console.log(err.message)
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
+
+const complaints = caseStatus?.[selected as CaseStatusKey];
+
+if (loading) return <p>Loading complaints...</p>;
 
   return (
     <Box component="main">
@@ -70,13 +119,13 @@ const Complaints = () => {
       </Stack>
       {/* For empty state */}
       {/* <ComplaintsEmptyState /> */}
-      <ComplaintsStatusCard />
-      <div className={styles.statusTabs}> <StatusTabs /></div>
+      <ComplaintsStatusCard complaintStats={caseStats} />
+      <div className={styles.statusTabs}> <StatusTabs activeIndex={activeIndex} setActiveIndex={setActiveIndex} pending={pending} processed={processed} overdue={overdue} /></div>
       <ComplaintsFilter />
-      {complaintsData.map((complaint, index) => (
-        <ComplaintsResult key={index} complaint={complaint} />
+      {caseStats && complaints?.map((complaint, index) => (
+        <ComplaintsResult key={index} complaint={complaint} selected={selected}/>
       ))}
-      <Popup open={open} onClose={handleClose} onSubmit={handleSubmit} />
+      <Popup open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />
       <FileUpload
         open={openFileUpload}
         onClose={() => setOpenFileUpload(false)}
