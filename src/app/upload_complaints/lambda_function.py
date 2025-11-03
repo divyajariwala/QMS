@@ -4,6 +4,8 @@ import base64
 import os
 import uuid
 import re
+import random
+import string
 from datetime import datetime, timezone
 
 # Environment variables
@@ -11,6 +13,7 @@ S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'qms-dev-initial-files')
 SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME', 'qms-dev-preload-complaints')
 ALLOWED_EXTENSIONS = {'.csv', '.xlsx', '.pdf', '.xls'}
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+CODE_STRATEGY = os.environ.get('CODE_STRATEGY', 'timestamp_random')
 
 
 def lambda_handler(event, context):
@@ -18,6 +21,7 @@ def lambda_handler(event, context):
         # Initialize AWS clients
         s3_client = boto3.client('s3')
         sqs_client = boto3.client('sqs')
+        lambda_client = boto3.client('lambda')
 
         # Resolve Queue URL from name
         try:
@@ -130,40 +134,118 @@ def lambda_handler(event, context):
             }
         )
 
-        # Send to SQS
-        message = {
-            "file_id": file_id,
-            "filename": filename,
-            "s3_key": s3_key,
-            "s3_bucket": S3_BUCKET_NAME,
-            "uploaded_at": datetime.now(timezone.utc).isoformat(),
-            "file_size": len(file_content),
-            "content_type": file_info.get('content_type', _get_content_type(filename)),
-            "file_extension": _get_file_extension(filename)
-        }
-
-        sqs_response = sqs_client.send_message(
-            QueueUrl=queue_url,
-            MessageBody=json.dumps(message),
-            MessageAttributes={
-                'FileType': {
-                    'StringValue': _get_file_extension(filename),
-                    'DataType': 'String'
-                },
-                'FileSize': {
-                    'StringValue': str(len(file_content)),
-                    'DataType': 'Number'
-                }
+        ##Extract PDF Data and send complaint message to SQS
+        file_extension = _get_file_extension(filename)
+        if file_extension == 'pdf':
+            s3_uri = f"s3://{S3_BUCKET_NAME}/{s3_key}"
+            lambda_payload = {
+                "s3_uri": s3_uri
             }
-        )
+            lambda_response = lambda_client.invoke(
+                FunctionName='qms-dev-extract-complaints',
+                InvocationType='RequestResponse',
+                Payload=json.dumps(lambda_payload)
+            )
 
-        return _response(200, "File uploaded successfully", {
-            "file_id": file_id,
-            "filename": filename,
-            "file_size": len(file_content),
-            "s3_key": s3_key,
-            "message_id": sqs_response['MessageId']
-        })
+            pdf_contents = json.loads(lambda_response['Payload'].read().decode('utf-8'))
+
+            pdf_complaint_message = create_complaint_message_from_output(pdf_contents)
+
+            pdf_complaint_code = pdf_complaint_message['code']
+
+            pdf_complaint_message_sqs_response = sqs_client.send_message(
+                QueueUrl=queue_url,
+                MessageBody=json.dumps(pdf_complaint_message),
+                MessageAttributes={
+                    'Source': {
+                        'StringValue': 'PDF Extraction',
+                        'DataType': 'String'
+                    },
+                    'ComplaintCode': {
+                        'StringValue': pdf_complaint_code,
+                        'DataType': 'String'
+                    },
+                    'CreatedBy': {
+                        'StringValue': _get_user_from_event(event),
+                        'DataType': 'String'
+                    }
+                }
+            )
+
+            # Send File Upload Message to SQS
+            file_upload_message = {
+                "file_id": file_id,
+                "filename": filename,
+                "s3_key": s3_key,
+                "s3_bucket": S3_BUCKET_NAME,
+                "uploaded_at": datetime.now(timezone.utc).isoformat(),
+                "file_size": len(file_content),
+                "content_type": file_info.get('content_type', _get_content_type(filename)),
+                "file_extension": _get_file_extension(filename),
+                "pdf_contents": pdf_contents if file_extension == 'pdf' else None
+            }
+
+            file_upload_sqs_response = sqs_client.send_message(
+                QueueUrl=queue_url,
+                MessageBody=json.dumps(file_upload_message),
+                MessageAttributes={
+                    'FileType': {
+                        'StringValue': _get_file_extension(filename),
+                        'DataType': 'String'
+                    },
+                    'FileSize': {
+                        'StringValue': str(len(file_content)),
+                        'DataType': 'Number'
+                    }
+                }
+            )
+
+            print(f"PDF Complaint sent to SQS successfully: {pdf_complaint_code}, MessageId: {pdf_complaint_message_sqs_response['MessageId']}")
+
+            return _response(200, "PDF file uploaded and complaint queued for processing successfully", {
+                    "file_id": file_id,
+                    "filename": filename,
+                    "file_size": len(file_content),
+                    "s3_key": s3_key,
+                    "message_id": file_upload_sqs_response['MessageId'],
+                    "complaint_message_id": pdf_complaint_message_sqs_response['MessageId']
+                })
+        ##TO DO: Frame complaint messages for CSV, Excel Files 
+        else:
+            # Send File Upload Message to SQS
+            file_upload_message = {
+                "file_id": file_id,
+                "filename": filename,
+                "s3_key": s3_key,
+                "s3_bucket": S3_BUCKET_NAME,
+                "uploaded_at": datetime.now(timezone.utc).isoformat(),
+                "file_size": len(file_content),
+                "content_type": file_info.get('content_type', _get_content_type(filename)),
+                "file_extension": _get_file_extension(filename)
+            }
+
+            file_upload_sqs_response = sqs_client.send_message(
+                QueueUrl=queue_url,
+                MessageBody=json.dumps(file_upload_message),
+                MessageAttributes={
+                    'FileType': {
+                        'StringValue': _get_file_extension(filename),
+                        'DataType': 'String'
+                    },
+                    'FileSize': {
+                        'StringValue': str(len(file_content)),
+                        'DataType': 'Number'
+                    }
+                }
+            )
+
+            return _response(200, "File uploaded successfully", {
+                "file_id": file_id,
+                "filename": filename,
+                "file_size": len(file_content),
+                "s3_key": s3_key,
+                "message_id": file_upload_sqs_response['MessageId']
+            })
 
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -327,3 +409,134 @@ def _is_allowed_file(filename):
         return False
     ext = os.path.splitext(filename)[-1].lower()
     return ext in ALLOWED_EXTENSIONS
+
+def generate_complaint_code(strategy='timestamp_random'):
+    """
+    Generate unique complaint code with different strategies
+
+    Strategies:
+    - timestamp_random: CAS-20241030154523789 (timestamp + 3 random digits)
+    - ulid: CAS-01HQZP2N7V8CHJ... (ULID format)
+    - uuid_short: CAS-A7B2C9D4 (8 chars from UUID)
+    - nanoid: CAS-V1StGXR8 (8 random alphanumeric)
+    """
+
+    if strategy == 'timestamp_random':
+        # CAS-20241030154523789456 (timestamp with microseconds + 3 random digits)
+        now = datetime.now(timezone.utc)
+        timestamp = now.strftime('%Y%m%d%H%M%S')
+        microseconds = str(now.microsecond)[:3]  # First 3 digits of microseconds
+        random_suffix = ''.join(random.choices(string.digits, k=3))
+        return f"CAS-{timestamp}{microseconds}{random_suffix}"
+
+    elif strategy == 'ulid':
+        # CAS-01HQZP2N7V8CHJ9K3T2W4X5Y6Z
+        ulid = generate_ulid()
+        return f"CAS-{ulid}"
+
+    elif strategy == 'uuid_short':
+        # CAS-A7B2C9D4
+        import uuid
+        short_uuid = str(uuid.uuid4()).replace('-', '')[:8].upper()
+        return f"CAS-{short_uuid}"
+
+    elif strategy == 'nanoid':
+        # CAS-V1StGXR8
+        nanoid = generate_nanoid(8)
+        return f"CAS-{nanoid}"
+
+    else:
+        # Default: timestamp_random
+        return generate_complaint_code('timestamp_random')
+
+
+def generate_ulid():
+    """
+    Generate ULID (Universally Unique Lexicographically Sortable Identifier)
+    Format: 26 characters, time-sortable
+    """
+    # Timestamp part (10 chars, 48 bits)
+    timestamp = int(datetime.now(timezone.utc).timestamp() * 1000)
+
+    # Crockford's Base32 encoding
+    encoding = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+
+    # Encode timestamp (10 characters)
+    time_part = ""
+    for _ in range(10):
+        time_part = encoding[timestamp % 32] + time_part
+        timestamp //= 32
+
+    # Random part (16 chars, 80 bits)
+    random_part = ''.join(random.choices(encoding, k=16))
+
+    return time_part + random_part
+
+
+def generate_nanoid(length=8):
+    """
+    Generate Nanoid-style identifier
+    URL-safe, readable, no ambiguous characters
+    """
+    # Exclude similar looking characters: 0/O, 1/I/l
+    alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz"
+    return ''.join(random.choices(alphabet, k=length))
+
+# Parse the output and form complaint message
+def create_complaint_message_from_output(output_data):
+    # Handle both string and dict inputs
+    if isinstance(output_data, str):
+        parsed_output = json.loads(output_data)
+    else:
+        parsed_output = output_data
+    result = parsed_output['result']
+    
+    # Generate complaint code
+    complaint_code = generate_complaint_code('timestamp_random')
+    now = datetime.now(timezone.utc)
+    
+    # Form complaint message with all available fields
+    complaint_message = {
+        'complaint_id': complaint_code,
+        'code': complaint_code,
+        'case_id': result.get('case_id', 'N/A'),
+        'narrative': result.get('narrative', ''),
+        'short_description': result.get('narrative', '')[:100],
+        'status': 'IN-REVIEW',
+        'criticality': result.get('criticality', 'NA'),
+        'report_type': result.get('report_type', 'NA'),
+        'receipt_date': result.get('receipt_date', ''),
+        'category': result.get('category', []),
+        'case_type': result.get('case_type', []),
+        'primary_reporter': result.get('primary_reporter', {}),
+        'patient_name': result.get('patient_name', ''),
+        'physician_name': result.get('physician_name', ''),
+        'product_details': result.get('product_details', {}),
+        'created_at': now.isoformat(),
+        'updated_at': now.isoformat(),
+        'created_by': 'system',
+        'metadata': {
+            'source': 'PDF Extraction',
+            'version': '1.0',
+            'original_case_id': result.get('case_id', '')
+        }
+    }
+    
+    return complaint_message
+
+def _get_user_from_event(event):
+    """Extract user information from event (Cognito, API Key, etc.)"""
+    try:
+        # From Cognito authorizer
+        request_context = event.get('requestContext', {})
+        authorizer = request_context.get('authorizer', {})
+
+        if 'claims' in authorizer:
+            return authorizer['claims'].get('email') or authorizer['claims'].get('sub')
+
+        # From custom header
+        headers = event.get('headers', {})
+        return headers.get('x-user-email') or headers.get('x-user-id') or 'anonymous'
+
+    except Exception:
+        return 'anonymous'
