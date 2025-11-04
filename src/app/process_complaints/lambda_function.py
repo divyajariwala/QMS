@@ -173,7 +173,7 @@ def save_to_dynamodb(table, complaint):
         item['SK'] = "METADATA"
 
         # Add GSI keys for querying
-        status = complaint.get('status', 'IN-REVIEW')
+        status = complaint.get('status', 'pending')
         created_at = complaint.get('created_at', datetime.now(timezone.utc).isoformat())
 
         item['GSI1PK'] = f"STATUS#{status}"
@@ -183,10 +183,6 @@ def save_to_dynamodb(table, complaint):
         now = datetime.now(timezone.utc)
         item['processed_at'] = now.isoformat()
         item['table_version'] = '1.0'
-
-        # Map narrative field name (support both formats)
-        if 'narrative' in complaint and 'narrative_text' not in complaint:
-            item['narrative_text'] = complaint['narrative']
 
         # Add source tracking if available
         if 'source' not in item:

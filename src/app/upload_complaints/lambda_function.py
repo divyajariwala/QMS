@@ -153,7 +153,7 @@ def lambda_handler(event, context):
 
             pdf_complaint_message = create_complaint_message_from_output(pdf_contents)
 
-            pdf_complaint_code = pdf_complaint_message['code']
+            pdf_complaint_id = pdf_complaint_message['complaint_id']
 
             pdf_complaint_message_sqs_response = sqs_client.send_message(
                 QueueUrl=queue_url,
@@ -164,7 +164,7 @@ def lambda_handler(event, context):
                         'DataType': 'String'
                     },
                     'ComplaintCode': {
-                        'StringValue': pdf_complaint_code,
+                        'StringValue': pdf_complaint_id,
                         'DataType': 'String'
                     },
                     'CreatedBy': {
@@ -202,7 +202,7 @@ def lambda_handler(event, context):
                 }
             )
 
-            print(f"PDF Complaint sent to SQS successfully: {pdf_complaint_code}, MessageId: {pdf_complaint_message_sqs_response['MessageId']}")
+            print(f"PDF Complaint sent to SQS successfully: {pdf_complaint_id}, MessageId: {pdf_complaint_message_sqs_response['MessageId']}")
 
             return _response(200, "PDF file uploaded and complaint queued for processing successfully", {
                     "file_id": file_id,
@@ -235,7 +235,7 @@ def lambda_handler(event, context):
                                 'DataType': 'String'
                             },
                             'ComplaintCode': {
-                                'StringValue': complaint_message['code'],
+                                'StringValue': complaint_message['complaint_id'],
                                 'DataType': 'String'
                             },
                             'CreatedBy': {
@@ -541,15 +541,14 @@ def create_complaint_message_from_output(output_data):
         parsed_output = output_data
     result = parsed_output['result']
     
-    # Generate complaint code
-    complaint_code = generate_complaint_code('timestamp_random')
+    # Use case_id from PDF as complaint_id, fallback to generated code if not available
+    case_id = result.get('case_id', '')
+    complaint_id = case_id if case_id and case_id != 'N/A' else generate_complaint_code('timestamp_random')
     now = datetime.now(timezone.utc)
     
     # Form complaint message with all available fields
     complaint_message = {
-        'complaint_id': complaint_code,
-        'code': complaint_code,
-        'case_id': result.get('case_id', 'N/A'),
+        'complaint_id': complaint_id,
         'narrative': result.get('narrative', ''),
         'short_description': result.get('narrative', '')[:100],
         'status': 'IN-REVIEW',
@@ -616,7 +615,6 @@ def process_csv_excel_file(file_content, file_extension):
             # Create complaint message
             complaint_message = {
                 'complaint_id': complaint_code,
-                'code': complaint_code,
                 'case_id': original_case_id,
                 'narrative': narrative,
                 'short_description': narrative[:100],
