@@ -2,7 +2,9 @@ import pytest
 import json
 import os
 import sys
+import io
 from unittest.mock import Mock, patch
+import pandas as pd
 
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app'))
@@ -30,7 +32,7 @@ class TestLambdaHandler:
         # Mock CSV
         mock_parse.return_value = {
             'filename': 'data.csv',
-            'content': b'name,age\nJohn,30\nMaria,25',
+            'content': b'Case ID,Narrative Text\nCAS-001,Test complaint narrative',
             'content_type': 'text/csv',
             'field_name': 'file'
         }
@@ -49,7 +51,7 @@ class TestLambdaHandler:
         assert body['data']['filename'] == 'data.csv'
 
         mock_s3.put_object.assert_called_once()
-        mock_sqs.send_message.assert_called_once()
+        mock_sqs.send_message.assert_called_once()  # Only one complaint from CSV
 
     @patch.dict(os.environ, {
         'S3_BUCKET_NAME': 'test-bucket',
@@ -66,10 +68,19 @@ class TestLambdaHandler:
         mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
         mock_sqs.send_message.return_value = {'MessageId': 'test-456'}
 
+        # Create actual Excel content
+        df = pd.DataFrame({
+            'Case ID': ['EXL-001'],
+            'Narrative Text': ['Excel test complaint']
+        })
+        excel_buffer = io.BytesIO()
+        df.to_excel(excel_buffer, index=False)
+        excel_content = excel_buffer.getvalue()
+        
         # Mock Excel file
         mock_parse.return_value = {
             'filename': 'report.xlsx',
-            'content': b'\x50\x4b\x03\x04',  # Typical Excel bytes
+            'content': excel_content,
             'content_type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'field_name': 'file'
         }
@@ -84,7 +95,9 @@ class TestLambdaHandler:
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
+        assert body['success'] is True
         assert body['data']['filename'] == 'report.xlsx'
+        assert body['data']['complaints_processed'] == 1
 
     @patch.dict(os.environ, {
         'S3_BUCKET_NAME': 'test-bucket',
@@ -577,3 +590,197 @@ class TestSQSQueueResolution:
 
         # This would result in 500 error in lambda_handler
         assert True  # Placeholder for queue resolution failure test
+
+
+class TestCSVExcelProcessing:
+    """Tests for CSV/Excel file processing functionality"""
+
+    def test_process_csv_file_success(self):
+        """Test: Successfully process CSV file with valid data"""
+        csv_content = "Case ID,Narrative Text\nCAS-001,First complaint narrative\nCAS-002,Second complaint narrative"
+        csv_bytes = csv_content.encode('utf-8')
+        
+        result = lambda_function.process_csv_excel_file(csv_bytes, 'csv')
+        
+        assert result['success'] is True
+        assert result['total_rows'] == 2
+        assert result['processed_complaints'] == 2
+        assert len(result['complaints']) == 2
+        
+        # Check first complaint
+        complaint1 = result['complaints'][0]
+        assert complaint1['case_id'] == 'CAS-001'
+        assert complaint1['narrative'] == 'First complaint narrative'
+        assert complaint1['status'] == 'IN-REVIEW'
+        assert 'CAS-' in complaint1['code']
+        assert complaint1['metadata']['source'] == 'CSV Import'
+        assert complaint1['metadata']['row_number'] == 1
+
+    def test_process_excel_file_success(self):
+        """Test: Successfully process Excel file with valid data"""
+        # Create test Excel file in memory
+        df = pd.DataFrame({
+            'Case ID': ['EXL-001', 'EXL-002'],
+            'Narrative Text': ['Excel complaint one', 'Excel complaint two']
+        })
+        excel_buffer = io.BytesIO()
+        df.to_excel(excel_buffer, index=False)
+        excel_bytes = excel_buffer.getvalue()
+        
+        result = lambda_function.process_csv_excel_file(excel_bytes, 'xlsx')
+        
+        assert result['success'] is True
+        assert result['total_rows'] == 2
+        assert result['processed_complaints'] == 2
+        
+        complaint1 = result['complaints'][0]
+        assert complaint1['case_id'] == 'EXL-001'
+        assert complaint1['narrative'] == 'Excel complaint one'
+        assert complaint1['metadata']['source'] == 'XLSX Import'
+
+    def test_process_csv_file_row_limit_exceeded(self):
+        """Test: Reject CSV file with more than 20 rows"""
+        # Create CSV with 21 rows
+        rows = ["Case ID,Narrative Text"]
+        for i in range(21):
+            rows.append(f"CAS-{i:03d},Complaint narrative {i}")
+        csv_content = "\n".join(rows)
+        csv_bytes = csv_content.encode('utf-8')
+        
+        result = lambda_function.process_csv_excel_file(csv_bytes, 'csv')
+        
+        assert result['success'] is False
+        assert "21 rows" in result['message']
+        assert "Maximum allowed is 20 rows" in result['message']
+
+    def test_process_csv_file_insufficient_columns(self):
+        """Test: Reject CSV file with less than 2 columns"""
+        csv_content = "Single Column\nValue 1\nValue 2"
+        csv_bytes = csv_content.encode('utf-8')
+        
+        result = lambda_function.process_csv_excel_file(csv_bytes, 'csv')
+        
+        assert result['success'] is False
+        assert "at least 2 columns" in result['message']
+
+    def test_process_csv_file_empty_narratives(self):
+        """Test: Skip rows with empty narratives"""
+        csv_content = "Case ID,Narrative Text\nCAS-001,Valid narrative\nCAS-002,\nCAS-003,Another valid narrative"
+        csv_bytes = csv_content.encode('utf-8')
+        
+        result = lambda_function.process_csv_excel_file(csv_bytes, 'csv')
+        
+        assert result['success'] is True
+        assert result['total_rows'] == 3
+        assert result['processed_complaints'] == 2  # Skip empty narrative
+        
+        # Check that only valid narratives are processed
+        narratives = [c['narrative'] for c in result['complaints']]
+        assert 'Valid narrative' in narratives
+        assert 'Another valid narrative' in narratives
+
+    @patch.dict(os.environ, {
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.process_csv_excel_file')
+    def test_csv_upload_integration(self, mock_process, mock_parse, mock_boto3):
+        """Test: Full CSV upload integration with SQS"""
+        # Mock AWS clients
+        mock_s3 = Mock()
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_s3 if service == 's3' else mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'msg-123'}
+
+        # Mock file parsing
+        mock_parse.return_value = {
+            'filename': 'complaints.csv',
+            'content': b'Case ID,Narrative\nC001,Test complaint',
+            'content_type': 'text/csv',
+            'field_name': 'file'
+        }
+
+        # Mock CSV processing
+        mock_process.return_value = {
+            'success': True,
+            'complaints': [{
+                'complaint_id': 'CAS-123456789',
+                'code': 'CAS-123456789',
+                'case_id': 'C001',
+                'narrative': 'Test complaint',
+                'status': 'IN-REVIEW'
+            }],
+            'total_rows': 1,
+            'processed_complaints': 1
+        }
+
+        event = {
+            'body': 'multipart-csv-content',
+            'isBase64Encoded': False,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['success'] is True
+        assert body['data']['complaints_processed'] == 1
+        assert 'complaint_message_ids' in body['data']
+        
+        # Verify SQS message was sent
+        mock_sqs.send_message.assert_called_once()
+        
+        # Verify message attributes
+        call_args = mock_sqs.send_message.call_args
+        message_attrs = call_args[1]['MessageAttributes']
+        assert message_attrs['Source']['StringValue'] == 'CSV Extraction'
+        assert message_attrs['ComplaintCode']['StringValue'] == 'CAS-123456789'
+
+    @patch.dict(os.environ, {
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    @patch('upload_complaints.lambda_function.parse_multipart_manual')
+    @patch('upload_complaints.lambda_function.process_csv_excel_file')
+    def test_csv_processing_error_handling(self, mock_process, mock_parse, mock_boto3):
+        """Test: Error handling during CSV processing"""
+        # Mock AWS clients
+        mock_s3 = Mock()
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_s3 if service == 's3' else mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+
+        # Mock file parsing
+        mock_parse.return_value = {
+            'filename': 'bad.csv',
+            'content': b'malformed,csv,data',
+            'content_type': 'text/csv',
+            'field_name': 'file'
+        }
+
+        # Mock CSV processing failure
+        mock_process.return_value = {
+            'success': False,
+            'message': 'File has 25 rows. Maximum allowed is 20 rows.'
+        }
+
+        event = {
+            'body': 'multipart-bad-csv-content',
+            'isBase64Encoded': False,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert body['success'] is False
+        assert "Maximum allowed is 20 rows" in body['message']
+        
+        # Verify no SQS messages were sent
+        mock_sqs.send_message.assert_not_called()

@@ -6,7 +6,9 @@ import uuid
 import re
 import random
 import string
+import io
 from datetime import datetime, timezone
+import pandas as pd
 
 # Environment variables
 S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'qms-dev-initial-files')
@@ -210,9 +212,57 @@ def lambda_handler(event, context):
                     "message_id": file_upload_sqs_response['MessageId'],
                     "complaint_message_id": pdf_complaint_message_sqs_response['MessageId']
                 })
-        ##TO DO: Frame complaint messages for CSV, Excel Files 
+        # Process CSV/Excel files
+        elif file_extension in ['csv', 'xlsx', 'xls']:
+            try:
+                # Process CSV/Excel file
+                complaints_data = process_csv_excel_file(file_content, file_extension)
+                
+                if not complaints_data['success']:
+                    return _response(400, complaints_data['message'])
+                
+                complaint_messages = complaints_data['complaints']
+                message_ids = []
+                
+                # Send each complaint to SQS
+                for complaint_message in complaint_messages:
+                    complaint_sqs_response = sqs_client.send_message(
+                        QueueUrl=queue_url,
+                        MessageBody=json.dumps(complaint_message),
+                        MessageAttributes={
+                            'Source': {
+                                'StringValue': f'{file_extension.upper()} Extraction',
+                                'DataType': 'String'
+                            },
+                            'ComplaintCode': {
+                                'StringValue': complaint_message['code'],
+                                'DataType': 'String'
+                            },
+                            'CreatedBy': {
+                                'StringValue': _get_user_from_event(event),
+                                'DataType': 'String'
+                            }
+                        }
+                    )
+                    message_ids.append(complaint_sqs_response['MessageId'])
+                
+                print(f"Processed {len(complaint_messages)} complaints from {file_extension.upper()} file")
+                
+                return _response(200, f"{file_extension.upper()} file processed and {len(complaint_messages)} complaints queued successfully", {
+                    "file_id": file_id,
+                    "filename": filename,
+                    "file_size": len(file_content),
+                    "s3_key": s3_key,
+                    "complaints_processed": len(complaint_messages),
+                    "complaint_message_ids": message_ids
+                })
+                
+            except Exception as e:
+                print(f"Error processing {file_extension} file: {str(e)}")
+                return _response(400, f"Error processing {file_extension} file: {str(e)}")
+        
         else:
-            # Send File Upload Message to SQS
+            # Send File Upload Message to SQS for other file types
             file_upload_message = {
                 "file_id": file_id,
                 "filename": filename,
@@ -523,6 +573,77 @@ def create_complaint_message_from_output(output_data):
     }
     
     return complaint_message
+
+def process_csv_excel_file(file_content, file_extension):
+    """Process CSV/Excel file and extract complaints"""
+    try:
+        # Read file into pandas DataFrame
+        if file_extension == 'csv':
+            df = pd.read_csv(io.BytesIO(file_content))
+        elif file_extension in ['xlsx', 'xls']:
+            df = pd.read_excel(io.BytesIO(file_content))
+        else:
+            return {'success': False, 'message': f'Unsupported file type: {file_extension}'}
+        
+        # Check row limit
+        if len(df) > 20:
+            return {'success': False, 'message': f'File has {len(df)} rows. Maximum allowed is 20 rows.'}
+        
+        # Validate structure - expect Case ID as first column, Narrative Text as second
+        if len(df.columns) < 2:
+            return {'success': False, 'message': 'File must have at least 2 columns: Case ID and Narrative Text'}
+        
+        # Get column names (first two columns)
+        case_id_col = df.columns[0]
+        narrative_col = df.columns[1]
+        
+        complaints = []
+        now = datetime.now(timezone.utc)
+        
+        # Process each row
+        for index, row in df.iterrows():
+            original_case_id = str(row[case_id_col]).strip() if pd.notna(row[case_id_col]) else ''
+            narrative = str(row[narrative_col]).strip() if pd.notna(row[narrative_col]) else ''
+            
+            # Skip empty narratives
+            if not narrative:
+                continue
+            
+            # Generate unique complaint code
+            complaint_code = generate_complaint_code('timestamp_random')
+            
+            # Create complaint message
+            complaint_message = {
+                'complaint_id': complaint_code,
+                'code': complaint_code,
+                'case_id': original_case_id,
+                'narrative': narrative,
+                'short_description': narrative[:100],
+                'status': 'IN-REVIEW',
+                'criticality': 'NA',
+                'report_type': 'NA',
+                'created_at': now.isoformat(),
+                'updated_at': now.isoformat(),
+                'created_by': 'system',
+                'metadata': {
+                    'source': f'{file_extension.upper()} Import',
+                    'version': '1.0',
+                    'original_case_id': original_case_id,
+                    'row_number': index + 1
+                }
+            }
+            
+            complaints.append(complaint_message)
+        
+        return {
+            'success': True,
+            'complaints': complaints,
+            'total_rows': len(df),
+            'processed_complaints': len(complaints)
+        }
+        
+    except Exception as e:
+        return {'success': False, 'message': f'Error processing file: {str(e)}'}
 
 def _get_user_from_event(event):
     """Extract user information from event (Cognito, API Key, etc.)"""
