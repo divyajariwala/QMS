@@ -22,44 +22,32 @@ resource "aws_dynamodb_table" "dynamodb_tables" {
     }
   }
 
-  # Collect all GSIs for this table as a safe list (never null)
-  # We'll reuse this expression in multiple places.
-  # gsis := coalescelist(lookup(table_cfg, "global_secondary_indexes", []), [])
-  # (inlined below)
-
-  # Attribute: all GSI key attributes (deduped, excluding PK/SK)
+  # Attribute: all GSI key attributes (deduped, exclude PK/SK)
   dynamic "attribute" {
     for_each = {
-      for n in toset(compact(flatten([
-        for gsi in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) :
-        [ gsi.hash_key, try(gsi.range_key, null) ]
-      ])))
-      : n => {
-          # derive a type for this attribute name from the GSI that uses it; default "S"
-          type = try(
-            # if it's used as a hash_key in some GSI
-            [for g in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) : try(g.hash_key_type, "S") if g.hash_key == n][0],
-            # else if it's used as a range_key in some GSI
-            [for g in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) : try(g.range_key_type, "S") if try(g.range_key, null) == n][0],
-            "S"
-          )
-        }
-      if (
-        n != var.dynamodb_configs[count.index].part_key.key_name &&
-        n != try(var.dynamodb_configs[count.index].sort_key.key_name, "")
-      )
+      for k in toset(flatten([
+        for g in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) :
+        concat(
+          [ g.hash_key ],
+          try(g.range_key, null) != null ? [ g.range_key ] : []
+        )
+      ])) :
+      k => k
+      if k != var.dynamodb_configs[count.index].part_key.key_name &&
+         k != try(var.dynamodb_configs[count.index].sort_key.key_name, "")
     }
     content {
-      name = attribute.key           # <-- fix: name comes from the map key
-      type = attribute.value.type
+      name = attribute.key
+      # Default to "S" unless you add *_key_type fields in your vars
+      type = "S"
     }
   }
 
   # GSIs WITHOUT a range key
   dynamic "global_secondary_index" {
     for_each = [
-      for gsi in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) :
-      gsi if try(gsi.range_key, null) == null
+      for g in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) :
+      g if try(g.range_key, null) == null
     ]
     content {
       name               = global_secondary_index.value.name
@@ -72,8 +60,8 @@ resource "aws_dynamodb_table" "dynamodb_tables" {
   # GSIs WITH a range key
   dynamic "global_secondary_index" {
     for_each = [
-      for gsi in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) :
-      gsi if try(gsi.range_key, null) != null
+      for g in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) :
+      g if try(g.range_key, null) != null
     ]
     content {
       name               = global_secondary_index.value.name
