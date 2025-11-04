@@ -128,7 +128,6 @@ def validate_complaint(complaint):
     """
     required_fields = [
         'complaint_id',
-        'code',
         'narrative',
         'status',
         'created_at',

@@ -63,7 +63,6 @@ def lambda_handler(event, context):
         now = datetime.now(timezone.utc)
         complaint_message = {
             'complaint_id': complaint_code,
-            'code': complaint_code,
             'narrative': narrative,
             'short_description': narrative[:100],  # First 100 chars as short desc
             'status': 'IN-REVIEW',

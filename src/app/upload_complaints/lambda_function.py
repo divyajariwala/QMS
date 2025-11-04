@@ -141,7 +141,7 @@ def lambda_handler(event, context):
         if file_extension == 'pdf':
             s3_uri = f"s3://{S3_BUCKET_NAME}/{s3_key}"
             lambda_payload = {
-                "s3_uri": s3_uri
+                "s3path": s3_uri
             }
             lambda_response = lambda_client.invoke(
                 FunctionName='qms-dev-extract-complaints',
@@ -150,6 +150,9 @@ def lambda_handler(event, context):
             )
 
             pdf_contents = json.loads(lambda_response['Payload'].read().decode('utf-8'))
+            
+            # Debug: Print the structure we received
+            print(f"PDF extraction response: {json.dumps(pdf_contents, indent=2)}")
 
             pdf_complaint_message = create_complaint_message_from_output(pdf_contents)
 
@@ -539,7 +542,23 @@ def create_complaint_message_from_output(output_data):
         parsed_output = json.loads(output_data)
     else:
         parsed_output = output_data
-    result = parsed_output['result']
+    
+    
+    response_body = json.loads(parsed_output['body'])
+
+    result = response_body['result']
+    
+    # Handle different response structures
+    if 'body' in parsed_output:
+        if isinstance(parsed_output['body'], str):
+            body_data = json.loads(parsed_output['body'])
+            result = body_data.get('result', body_data)
+        else:
+            result = parsed_output['body'].get('result', parsed_output['body'])
+    elif 'result' in parsed_output:
+        result = parsed_output['result']
+    else:
+        result = parsed_output
     
     # Use case_id from PDF as complaint_id, fallback to generated code if not available
     case_id = result.get('case_id', '')

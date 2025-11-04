@@ -69,7 +69,7 @@ def get_single_complaint(table, complaint_id):
         
         # Transform DynamoDB item to response format
         complaint_details = {
-            'case_id': item.get('case_id', item.get('complaint_id', complaint_id)),
+            'case_id': item.get(complaint_id, item.get('complaint_id', complaint_id)),
             'receipt_date': item.get('receipt_date', item.get('created_at', '')),
             'criticality': item.get('criticality', 'NA'),
             'report_type': item.get('report_type', 'NA'),
