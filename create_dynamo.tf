@@ -22,19 +22,25 @@ resource "aws_dynamodb_table" "dynamodb_tables" {
     }
   }
 
+  # Collect all GSIs for this table as a safe list (never null)
+  # We'll reuse this expression in multiple places.
+  # gsis := coalescelist(lookup(table_cfg, "global_secondary_indexes", []), [])
+  # (inlined below)
+
   # Attribute: all GSI key attributes (deduped, excluding PK/SK)
   dynamic "attribute" {
     for_each = {
       for n in toset(compact(flatten([
-        for gsi in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) :
+        for gsi in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) :
         [ gsi.hash_key, try(gsi.range_key, null) ]
       ])))
       : n => {
+          # derive a type for this attribute name from the GSI that uses it; default "S"
           type = try(
-            # match hash_key type for this name
-            [for g in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) : try(g.hash_key_type, "S") if g.hash_key == n][0],
-            # else match range_key type for this name
-            [for g in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) : try(g.range_key_type, "S") if try(g.range_key, null) == n][0],
+            # if it's used as a hash_key in some GSI
+            [for g in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) : try(g.hash_key_type, "S") if g.hash_key == n][0],
+            # else if it's used as a range_key in some GSI
+            [for g in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) : try(g.range_key_type, "S") if try(g.range_key, null) == n][0],
             "S"
           )
         }
@@ -44,7 +50,7 @@ resource "aws_dynamodb_table" "dynamodb_tables" {
       )
     }
     content {
-      name = attribute.value.name
+      name = attribute.key           # <-- fix: name comes from the map key
       type = attribute.value.type
     }
   }
@@ -52,13 +58,13 @@ resource "aws_dynamodb_table" "dynamodb_tables" {
   # GSIs WITHOUT a range key
   dynamic "global_secondary_index" {
     for_each = [
-      for gsi in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) :
+      for gsi in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) :
       gsi if try(gsi.range_key, null) == null
     ]
     content {
-      name            = global_secondary_index.value.name
-      hash_key        = global_secondary_index.value.hash_key
-      projection_type = global_secondary_index.value.projection_type
+      name               = global_secondary_index.value.name
+      hash_key           = global_secondary_index.value.hash_key
+      projection_type    = global_secondary_index.value.projection_type
       non_key_attributes = try(global_secondary_index.value.non_key_attributes, null)
     }
   }
@@ -66,7 +72,7 @@ resource "aws_dynamodb_table" "dynamodb_tables" {
   # GSIs WITH a range key
   dynamic "global_secondary_index" {
     for_each = [
-      for gsi in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) :
+      for gsi in coalescelist(lookup(var.dynamodb_configs[count.index], "global_secondary_indexes", []), []) :
       gsi if try(gsi.range_key, null) != null
     ]
     content {
