@@ -356,3 +356,17 @@ export interface ComplaintDetail {
   product_details: Record<string, any>; // undefined structure assumed, adjust if known
   caseStatus: string;
 }
+
+export type CaseStatusKey = "pending" | "processed" | "overdue";
+
+export interface complaintStatsProps {
+  complaintStats: {
+    "total_complaints": number,
+    "pending": number,
+    "processed": number,
+    "overdue": number,
+    "avg_cycle_time": number,
+    "best_time": number,
+    "longest_time": number,
+  } | undefined
+}

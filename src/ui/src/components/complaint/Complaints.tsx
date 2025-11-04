@@ -8,13 +8,13 @@ import styles from "./Complaints.module.scss";
 import ComplaintsEmptyState from "./ComplaintsEmptyState";
 import Popup from "@components/Popup/Popup";
 import FileUpload from '@components/FileUpload/FileUpload';
-import { complaintsData } from 'src/mockData/mockData';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import StatusTabs from './StatusTabs';
 import ComplaintsStatusCard from '@components/commonCard/ComplaintsStatusCard';
 import { createComplaint } from 'src/services/api.service';
 import { fetchComplaints } from 'src/services/api.service';
-import { getComplaintsApiResponse } from 'src/types';
+import { getComplaintsApiResponse, CaseStatusKey } from 'src/types';
+import { mapped } from 'src/constants';
 import { useAuth } from "../../auth/useAuth";
 
 const Complaints = () => {
@@ -26,7 +26,6 @@ const Complaints = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const { caseStats, caseStatus } = data || {};
   const { pending, processed, overdue } = caseStats || {};
-
   const { user } = useAuth();
   const displayName = `${user?.profile?.given_name ?? ""}`.trim();
   const items = [
@@ -60,15 +59,7 @@ const Complaints = () => {
     }
   };
 
-  const mapped: { [key: number]: string } = {
-    0: 'pending',
-    1: 'overdue',
-    2: 'processed'
-  }
-
   const selected = mapped[activeIndex]
-
-  type CaseStatusKey = "pending" | "processed" | "overdue";
 
   useEffect(() => {
   const fetchData = async () => {

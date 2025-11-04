@@ -3,20 +3,9 @@ import styles from "./StatusCards.module.scss";
 
 import StatusCard from "./StatusCard";
 import { formatHoursToDays } from "src/helpers"
+import { complaintStatsProps } from "src/types";
 import DeviationsIcon from "../../assets/icons/deviationsCard.svg";
 import CycleIcon from "../../assets/icons/cycleTime.svg";
-
-interface complaintStatsProps {
-  complaintStats: {
-    "total_complaints": number,
-    "pending": number,
-    "processed": number,
-    "overdue": number,
-    "avg_cycle_time": number,
-    "best_time": number,
-    "longest_time": number,
-  } | undefined
-}
 
 const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats }) => {
   const { total_complaints, pending, processed, overdue, avg_cycle_time,

@@ -1,10 +1,9 @@
 import React from 'react';
 import styles from './ComplaintHeaderCard.module.scss';
-import EventIcon from '@mui/icons-material/Event';
 import CheckIcon from '@mui/icons-material/Check';
 import { Paper, Box, Stack, Grid } from '@mui/material';
 import ComplaintsDueDateChip from './ComplaintsDueDateChip';
-import { ComplaintHeaderCardProps, ComplaintsDueDateChipProps } from 'src/types';
+import { ComplaintHeaderCardProps } from 'src/types';
 import { getDueStatus } from 'src/helpers';
 
 const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
