@@ -485,6 +485,7 @@ class TestMessageFormatting:
         assert message_body['complaint_id'].startswith('CAS-')
         assert message_body['narrative'] == narrative
         assert message_body['status'] == 'IN-REVIEW'
+        assert message_body['caseStatus'] == 'pending'
         assert message_body['criticality'] == 'NA'
         assert message_body['created_by'] == 'tester@example.com'
         assert message_body['metadata']['source'] == 'manual'
@@ -564,6 +565,7 @@ class TestIntegration:
         complaint_data = body['data']['complaint']
         assert complaint_data['code'].startswith('CAS-')
         assert complaint_data['status'] == 'IN-REVIEW'
+        # Note: caseStatus is not returned in API response, only used internally
         assert 'created_at' in complaint_data
 
         # Verify SQS interaction
