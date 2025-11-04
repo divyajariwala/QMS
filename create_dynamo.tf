@@ -26,11 +26,8 @@ resource "aws_dynamodb_table" "dynamodb_tables" {
   dynamic "attribute" {
     for_each = {
       for k in toset(flatten([
-        for g in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) :
-        concat(
-          [ g.hash_key ],
-          try(g.range_key, null) != null ? [ g.range_key ] : []
-        )
+        for g in coalesce(try(var.dynamodb_configs[count.index].global_secondary_indexes, null), []) :
+        concat([g.hash_key], try(g.range_key, null) != null ? [g.range_key] : [])
       ])) :
       k => k
       if k != var.dynamodb_configs[count.index].part_key.key_name &&
@@ -38,15 +35,14 @@ resource "aws_dynamodb_table" "dynamodb_tables" {
     }
     content {
       name = attribute.key
-      # Default to "S" unless you add *_key_type fields in your vars
-      type = "S"
+      type = "S"  # default; switch to resolver below if you add *_key_type in your vars
     }
   }
 
   # GSIs WITHOUT a range key
   dynamic "global_secondary_index" {
     for_each = [
-      for g in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) :
+      for g in coalesce(try(var.dynamodb_configs[count.index].global_secondary_indexes, null), []) :
       g if try(g.range_key, null) == null
     ]
     content {
@@ -60,7 +56,7 @@ resource "aws_dynamodb_table" "dynamodb_tables" {
   # GSIs WITH a range key
   dynamic "global_secondary_index" {
     for_each = [
-      for g in try(var.dynamodb_configs[count.index].global_secondary_indexes, []) :
+      for g in coalesce(try(var.dynamodb_configs[count.index].global_secondary_indexes, null), []) :
       g if try(g.range_key, null) != null
     ]
     content {
