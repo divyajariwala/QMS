@@ -37,6 +37,42 @@ dynamodb_configs = [
         projection_type = "ALL"
       }
     ]
+  },
+  {
+    table_name = "complaints-audit-log"
+    part_key = {
+      key_name = "PK"
+      key_type = "S"
+    }
+    sort_key = {
+      key_name = "SK"
+      key_type = "S"
+    }
+    global_secondary_indexes = [
+      {
+        name = "GSI1"
+        hash_key = "GSI1PK"
+        range_key = "GSI1SK"
+        projection_type = "ALL"
+      },
+      {
+        name = "GSI2"
+        hash_key = "GSI2PK"
+        range_key = "GSI2SK"
+        projection_type = "ALL"
+      }
+    ]
+  },
+  {
+    table_name = "complaints-unified-lookup"
+    part_key = {
+      key_name = "PK"
+      key_type = "S"
+    }
+    sort_key = {
+      key_name = "SK"
+      key_type = "S"
+    }
   }
 ]
 lambda_configs = [
