@@ -17,7 +17,9 @@ static_website = "ui"
 lambda_execution_role_arn = "arn:aws:iam::120569648189:role/qms-dev-lambda-role"
 step_function_role_arn = "arn:aws:iam::120569648189:role/qms-dev-step-function-role"
 event_bridge_role_arn = "arn:aws:iam::120569648189:role/qms-dev-events-role"
-step_function_configs = []
+step_function_configs = [
+
+]
 dynamodb_configs = [
   {
     table_name = "complaints-metadata"
@@ -77,6 +79,23 @@ lambda_configs = [
     sqs_trigger = [
       {
         queue_name = "preload-complaints"
+        visibility_timeout = 5000
+        max_receive_count = 1000
+        batch_size = 500
+        max_batch_window = 20
+        max_concurrency = 10
+      }
+    ]
+  },
+  {
+    function_name = "classify-complaints"
+    path = "src/app/classify_complaints"
+    environment_variables = {
+      env = "dev"
+    }
+    sqs_trigger = [
+      {
+        queue_name = "classify-complaints"
         visibility_timeout = 5000
         max_receive_count = 1000
         batch_size = 500
