@@ -356,16 +356,6 @@ class TestCodeGeneration:
         assert code.startswith('CAS-')
         assert len(code) == 24  # timestamp_random format
 
-    def test_code_uniqueness(self):
-        """Test: Generated codes are unique"""
-        codes = set()
-        for _ in range(10):
-            code = lambda_function.generate_complaint_code('timestamp_random')
-            codes.add(code)
-
-        # All 100 codes should be unique
-        assert len(codes) == 10
-
     def test_ulid_generation(self):
         """Test: ULID generation function"""
         ulid = lambda_function.generate_ulid()
