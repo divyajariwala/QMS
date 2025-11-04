@@ -1,0 +1,42 @@
+{
+  "StartAt": "execution",
+  "States": {
+    "execution": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Level",
+          "States": {
+            "Level": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${region}:${account_id}:function:${short_name}-${environment}-${complaints_level_function_name}",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Sub-Category",
+          "States": {
+            "Sub-Category": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:${region}:${account_id}:function:${short_name}-${environment}-${complaints_subcat_function_name}",
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "CRL"
+    },
+    "CRL": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${region}:${account_id}:function:${short_name}-${environment}-${complaints_crl_function_name}",
+      "Next": "Priority"
+    },
+    "Priority": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:${region}:${account_id}:function:${short_name}-${environment}-${complaints_priority_function_name}",
+      "End": true
+    }
+  },
+  "TimeoutSeconds": 100
+}
