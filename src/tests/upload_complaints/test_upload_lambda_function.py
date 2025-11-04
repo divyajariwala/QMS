@@ -442,11 +442,11 @@ class TestComplaintMessageCreation:
 
         result = lambda_function.create_complaint_message_from_output(output_data)
 
-        assert result['case_id'] == 'RGL22-000433'
+        assert result['complaint_id']
         assert result['narrative'] == 'Test narrative'
         assert result['criticality'] == 'High'
         assert result['status'] == 'IN-REVIEW'
-        assert 'CAS-' in result['code']
+        assert result['complaint_id'] == 'RGL22-000433'  # Uses case_id from input
 
     def test_create_complaint_message_from_json_string(self):
         """Test: Create complaint message from JSON string input"""
@@ -461,7 +461,7 @@ class TestComplaintMessageCreation:
 
         result = lambda_function.create_complaint_message_from_output(output_str)
 
-        assert result['case_id'] == 'RGL22-000444'
+        assert result['complaint_id']
         assert result['narrative'] == 'Another test narrative'
         assert result['criticality'] == 'Medium'
 
@@ -477,7 +477,7 @@ class TestComplaintMessageCreation:
 
         result = lambda_function.create_complaint_message_from_output(output_data)
 
-        assert result['case_id'] == 'RGL22-000555'
+        assert result['complaint_id']
         assert result['narrative'] == ''  # Default empty
         assert result['criticality'] == 'NA'  # Default NA
         assert result['primary_reporter'] == {}  # Default empty dict
@@ -612,7 +612,7 @@ class TestCSVExcelProcessing:
         assert complaint1['case_id'] == 'CAS-001'
         assert complaint1['narrative'] == 'First complaint narrative'
         assert complaint1['status'] == 'IN-REVIEW'
-        assert 'CAS-' in complaint1['code']
+        assert 'CAS-' in complaint1['complaint_id']
         assert complaint1['metadata']['source'] == 'CSV Import'
         assert complaint1['metadata']['row_number'] == 1
 

@@ -543,11 +543,6 @@ def create_complaint_message_from_output(output_data):
     else:
         parsed_output = output_data
     
-    
-    response_body = json.loads(parsed_output['body'])
-
-    result = response_body['result']
-    
     # Handle different response structures
     if 'body' in parsed_output:
         if isinstance(parsed_output['body'], str):
