@@ -92,19 +92,6 @@ variable "lambda_configs" {
   }))
 }
 
-variable "step_function_configs" {
-  type = list(object({
-    step_function_name = string
-    definition_yaml_path = string
-    event_trigger = optional(list(object({
-      trigger_name = string
-      trigger_description = string
-      trigger_bucket = string
-      trigger_path = string
-    })))
-  }))
-}
-
 variable "dynamodb_configs" {    
   type = list(object({  
     table_name = string  
