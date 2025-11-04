@@ -17,9 +17,6 @@ static_website = "ui"
 lambda_execution_role_arn = "arn:aws:iam::120569648189:role/qms-dev-lambda-role"
 step_function_role_arn = "arn:aws:iam::120569648189:role/qms-dev-step-function-role"
 event_bridge_role_arn = "arn:aws:iam::120569648189:role/qms-dev-events-role"
-step_function_configs = [
-
-]
 dynamodb_configs = [
   {
     table_name = "complaints-metadata"
@@ -39,6 +36,28 @@ dynamodb_configs = [
         projection_type = "ALL"
       }
     ]
+  },
+  {
+    table_name = "complaints-audit-log"
+    part_key = {
+      key_name = "PK"
+      key_type = "S"
+    }
+    sort_key = {
+      key_name = "SK"
+      key_type = "S"
+    }
+  },
+  {
+    table_name = "complaints-unified-lookup"
+    part_key = {
+      key_name = "PK"
+      key_type = "S"
+    }
+    sort_key = {
+      key_name = "SK"
+      key_type = "S"
+    }
   }
 ]
 lambda_configs = [
