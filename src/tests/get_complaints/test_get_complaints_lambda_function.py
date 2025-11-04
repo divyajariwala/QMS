@@ -48,7 +48,7 @@ class TestLambdaHandler:
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['case_id'] == 'RGL23-000070'
+        assert body['case_id'] == 'CAS-123'
         assert body['narrative'] == 'Test complaint narrative'
         assert body['criticality'] == 'High'
         assert body['caseStatus'] == 'pending'
@@ -201,7 +201,7 @@ class TestGetSingleComplaint:
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['case_id'] == 'RGL23-000070'
+        assert body['case_id'] == 'CAS-123'
         assert body['narrative'] == 'Full narrative text'
         assert body['ai_summary'] == 'AI generated summary'
         assert body['case_type'] == ['AE', 'PC']

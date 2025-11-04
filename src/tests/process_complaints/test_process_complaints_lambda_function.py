@@ -30,9 +30,7 @@ class TestLambdaHandler:
                     'receiptHandle': 'test-receipt',
                     'body': json.dumps({
                         'complaint_id': 'CAS-12345',
-                        'code': 'CAS-12345',
                         'narrative': 'Test complaint narrative',
-                        'short_description': 'Test complaint',
                         'status': 'IN-REVIEW',
                         'created_at': '2024-10-30T12:00:00Z',
                         'created_by': 'test@example.com'
@@ -69,7 +67,6 @@ class TestLambdaHandler:
                     'messageId': 'msg-1',
                     'body': json.dumps({
                         'complaint_id': 'CAS-001',
-                        'code': 'CAS-001',
                         'narrative': 'First complaint',
                         'status': 'IN-REVIEW',
                         'created_at': '2024-10-30T12:00:00Z',
@@ -80,7 +77,6 @@ class TestLambdaHandler:
                     'messageId': 'msg-2',
                     'body': json.dumps({
                         'complaint_id': 'CAS-002',
-                        'code': 'CAS-002',
                         'narrative': 'Second complaint',
                         'status': 'IN-REVIEW',
                         'created_at': '2024-10-30T12:01:00Z',
@@ -139,7 +135,7 @@ class TestLambdaHandler:
                     'messageId': 'msg-missing-fields',
                     'body': json.dumps({
                         'complaint_id': 'CAS-123'
-                        # Missing: code, narrative, status, created_at, created_by
+                        # Missing: narrative, status, created_at, created_by
                     })
                 }
             ]
@@ -168,7 +164,6 @@ class TestLambdaHandler:
                     'messageId': 'msg-long-narrative',
                     'body': json.dumps({
                         'complaint_id': 'CAS-456',
-                        'code': 'CAS-456',
                         'narrative': 'a' * 421,
                         'status': 'IN-REVIEW',
                         'created_at': '2024-10-30T12:00:00Z',
@@ -201,7 +196,6 @@ class TestLambdaHandler:
                     'messageId': 'msg-db-error',
                     'body': json.dumps({
                         'complaint_id': 'CAS-789',
-                        'code': 'CAS-789',
                         'narrative': 'Test complaint',
                         'status': 'IN-REVIEW',
                         'created_at': '2024-10-30T12:00:00Z',
@@ -237,7 +231,6 @@ class TestLambdaHandler:
                     'messageId': 'msg-success',
                     'body': json.dumps({
                         'complaint_id': 'CAS-SUCCESS',
-                        'code': 'CAS-SUCCESS',
                         'narrative': 'This will succeed',
                         'status': 'IN-REVIEW',
                         'created_at': '2024-10-30T12:00:00Z',
@@ -248,7 +241,6 @@ class TestLambdaHandler:
                     'messageId': 'msg-failure',
                     'body': json.dumps({
                         'complaint_id': 'CAS-FAIL',
-                        'code': 'CAS-FAIL',
                         'narrative': 'This will fail',
                         'status': 'IN-REVIEW',
                         'created_at': '2024-10-30T12:01:00Z',
@@ -292,7 +284,6 @@ class TestValidateComplaint:
         """Test: Valid complaint passes validation"""
         complaint = {
             'complaint_id': 'CAS-12345',
-            'code': 'CAS-12345',
             'narrative': 'Valid complaint narrative',
             'status': 'IN-REVIEW',
             'created_at': '2024-10-30T12:00:00Z',
@@ -304,7 +295,6 @@ class TestValidateComplaint:
     def test_missing_complaint_id(self):
         """Test: Missing complaint_id raises ValueError"""
         complaint = {
-            'code': 'CAS-12345',
             'narrative': 'Test',
             'status': 'IN-REVIEW',
             'created_at': '2024-10-30T12:00:00Z',
@@ -319,7 +309,6 @@ class TestValidateComplaint:
         """Test: Empty narrative raises ValueError"""
         complaint = {
             'complaint_id': 'CAS-12345',
-            'code': 'CAS-12345',
             'narrative': '',
             'status': 'IN-REVIEW',
             'created_at': '2024-10-30T12:00:00Z',
@@ -334,7 +323,6 @@ class TestValidateComplaint:
         """Test: Narrative over 420 characters raises ValueError"""
         complaint = {
             'complaint_id': 'CAS-12345',
-            'code': 'CAS-12345',
             'narrative': 'a' * 421,
             'status': 'IN-REVIEW',
             'created_at': '2024-10-30T12:00:00Z',
@@ -398,7 +386,6 @@ class TestSaveToDynamoDB:
 
         complaint = {
             'complaint_id': 'CAS-12345',
-            'code': 'CAS-12345',
             'narrative': 'Test complaint',
             'status': 'IN-REVIEW',
             'created_at': '2024-10-30T12:00:00Z',
@@ -425,8 +412,8 @@ class TestSaveToDynamoDB:
         assert 'table_version' in item
         assert item['table_version'] == '1.0'
 
-        # Verify narrative mapping
-        assert item['narrative_text'] == 'Test complaint'
+        # Verify narrative field
+        assert item['narrative'] == 'Test complaint'
 
     def test_save_with_floats(self):
         """Test: Floats are converted to Decimal before saving"""
@@ -437,7 +424,6 @@ class TestSaveToDynamoDB:
 
         complaint = {
             'complaint_id': 'CAS-12345',
-            'code': 'CAS-12345',
             'narrative': 'Test',
             'status': 'IN-REVIEW',
             'created_at': '2024-10-30T12:00:00Z',
@@ -458,7 +444,6 @@ class TestSaveToDynamoDB:
 
         complaint = {
             'complaint_id': 'CAS-12345',
-            'code': 'CAS-12345',
             'narrative': 'Test',
             'status': 'IN-REVIEW',
             'created_at': '2024-10-30T12:00:00Z',
