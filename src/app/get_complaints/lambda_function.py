@@ -80,7 +80,7 @@ def get_single_complaint(table, complaint_id):
             'patient_name': item.get('patient_name', ''),
             'physician_name': item.get('physician_name', ''),
             'product_details': item.get('product_details', {}),
-            'caseStatus': item.get('status', 'in-review')
+            'caseStatus': item.get('caseStatus', item.get('status', 'pending'))
         }
         
         return {
@@ -110,7 +110,7 @@ def get_all_complaints(table):
         all_complaints = []
         
         # Get complaints by status using GSI1PK
-        for status in ['IN-REVIEW', 'PROCESSED', 'OVERDUE']:
+        for status in ['pending', 'processed', 'overdue']:
             try:
                 response = table.query(
                     IndexName='GSI1',
@@ -167,9 +167,9 @@ def _calculate_stats(complaints):
     Calculate complaint statistics
     """
     total = len(complaints)
-    pending = len([c for c in complaints if c.get('status', '').upper() == 'IN-REVIEW'])
-    processed = len([c for c in complaints if c.get('status', '').upper() == 'PROCESSED'])
-    overdue = len([c for c in complaints if c.get('status', '').upper() == 'OVERDUE'])
+    pending = len([c for c in complaints if c.get('caseStatus', '').lower() == 'pending'])
+    processed = len([c for c in complaints if c.get('caseStatus', '').lower() == 'processed'])
+    overdue = len([c for c in complaints if c.get('caseStatus', '').lower() == 'overdue'])
     
     # Calculate cycle times (mock values for now)
     avg_cycle_time = 24
@@ -197,7 +197,7 @@ def _group_by_status(complaints):
     }
     
     for complaint in complaints:
-        status = complaint.get('status', '').lower()
+        case_status = complaint.get('caseStatus', '').lower()
         
         complaint_summary = {
             'case_id': complaint.get('case_id', complaint.get('complaint_id', '')),
@@ -207,11 +207,11 @@ def _group_by_status(complaints):
             'case_type': complaint.get('case_type', [])
         }
         
-        if status == 'in-review':
+        if case_status == 'pending':
             status_groups['pending'].append(complaint_summary)
-        elif status == 'processed':
+        elif case_status == 'processed':
             status_groups['processed'].append(complaint_summary)
-        elif status == 'overdue':
+        elif case_status == 'overdue':
             status_groups['overdue'].append(complaint_summary)
     
     return status_groups

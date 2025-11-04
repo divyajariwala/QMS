@@ -67,6 +67,7 @@ def lambda_handler(event, context):
             'narrative': narrative,
             'short_description': narrative[:100],  # First 100 chars as short desc
             'status': 'IN-REVIEW',
+            'caseStatus': 'pending',
             'criticality': 'NA',
             'report_type': 'NA',
             'created_at': now.isoformat(),
