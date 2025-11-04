@@ -17,9 +17,6 @@ static_website = "ui"
 lambda_execution_role_arn = "arn:aws:iam::120569648189:role/qms-dev-lambda-role"
 step_function_role_arn = "arn:aws:iam::120569648189:role/qms-dev-step-function-role"
 event_bridge_role_arn = "arn:aws:iam::120569648189:role/qms-dev-events-role"
-step_function_configs = [
-
-]
 dynamodb_configs = [
   {
     table_name = "complaints-metadata"
