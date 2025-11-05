@@ -1,9 +1,10 @@
 import React from 'react';
 import styles from './ComplaintHeaderCard.module.scss';
-import EventIcon from '@mui/icons-material/Event';
 import CheckIcon from '@mui/icons-material/Check';
 import { Paper, Box, Stack, Grid } from '@mui/material';
+import ComplaintsDueDateChip from './ComplaintsDueDateChip';
 import { ComplaintHeaderCardProps } from 'src/types';
+import { getDueStatus } from 'src/helpers';
 
 const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
   complaintData,
@@ -21,7 +22,9 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
     doseAmount,
     expirationDate,
     partNumber,
-  } = complaintData;
+    receipt_date
+  } = complaintData || {};
+
   return (
     <Paper className={styles.paper}>
       <Box className={styles.flexContainer}>
@@ -30,12 +33,10 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
             <Box className={styles.statusText}>{status}</Box>
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
               <Box className={styles.caseIdText}>{caseId}</Box>
-              {overdueDays > 0 && (
-                <div className={styles.overdueChip}>
-                  <EventIcon />
-                  <span>{`Overdue by ${overdueDays} days`}</span>
-                </div>
-              )}
+              <ComplaintsDueDateChip
+                type={receipt_date && getDueStatus(receipt_date).type}
+                label={receipt_date && getDueStatus(receipt_date).label}
+              />
               <Box className={styles.flexGrow} />
               <button type="button" className={styles.approveSendButton} onClick={onApproveAndSend}>
                 <CheckIcon />
@@ -48,8 +49,8 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
             {/* Left block */}
             <Grid item xs={6} sm={3}>
               <Box className={styles.labelText}>Primary Reporter</Box>
-              <Box className={styles.primaryReporterName}>{primaryReporter.name}</Box>
-              <Box className={styles.valueText}>{primaryReporter.location}</Box>
+              <Box className={styles.primaryReporterName}>{primaryReporter?.name}</Box>
+              <Box className={styles.valueText}>{primaryReporter?.address}</Box>
             </Grid>
 
             {/* Right block with fields */}

@@ -1,9 +1,31 @@
-import React, { useState } from "react";
-import { statuses } from "../../mockData/mockData"
+import React from "react";
 import styles from "./StatusTabs.module.scss";
 
-const StatusTabs: React.FC = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
+type StatusTabItem = {
+  label: string;
+  count?: number;
+};
+
+type Props = {
+  pending?: number;
+  processed?: number;
+  overdue?: number;
+  activeIndex: number;
+  setActiveIndex: (val: number) => void;
+};
+
+const StatusTabs: React.FC<Props> = ({
+  pending,
+  processed,
+  overdue,
+  activeIndex,
+  setActiveIndex,
+}) => {
+  const statuses: StatusTabItem[] = [
+    { label: "In Review", count: pending },
+    { label: "Overdue", count: overdue },
+    { label: "Processed", count: processed },
+  ];
 
   return (
     <div className={styles.tabsContainer}>
@@ -14,9 +36,8 @@ const StatusTabs: React.FC = () => {
             <div
               key={label}
               role="tab"
-              aria-selected={isActive}
               tabIndex={isActive ? 0 : -1}
-              className={styles.tab}
+              className={`${styles.tab} ${isActive ? styles.active : ""}`}
               onClick={() => setActiveIndex(index)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -24,10 +45,10 @@ const StatusTabs: React.FC = () => {
                 }
               }}
             >
-              <div className={`${styles.tabContent} ${isActive ? styles.active : ""}`}>
+              <div className={styles.tabContent}>
                 <span className={styles.label}>{label}</span>
                 <span className={isActive ? styles.countActive : styles.count}>
-                  {count.toLocaleString()}
+                  {count ?? 0}
                 </span>
               </div>
             </div>

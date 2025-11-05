@@ -25,3 +25,25 @@ export const getDueStatus = (
     return { type: "Due", label: `Due on ${formattedDate}` };
   }
 };
+
+export const calculateOverdueDays = (dateStr: string): number => {
+  const givenDate = new Date(dateStr);
+  const today = new Date();
+  givenDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  const diffMs = today.getTime() - givenDate.getTime();
+
+  if (diffMs <= 0) return 0;
+  const overdueDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return overdueDays;
+}
+
+export function formatHoursToDays(hours: number | undefined): string {
+  const days = hours !== undefined ? Math.floor(hours / 24) : 0;
+  const remainingHours = hours !== undefined ? hours % 24 : 0;
+
+  const dayStr = days > 0 ? `${days} day${days > 1 ? "s" : ""}` : "";
+  const hourStr = remainingHours > 0 ? `${remainingHours} hr${remainingHours > 1 ? "s" : ""}` : "";
+
+  return [dayStr, hourStr].filter(Boolean).join(" ");
+}

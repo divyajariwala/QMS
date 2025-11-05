@@ -4,6 +4,7 @@ import { Box, Stack } from "@mui/material";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ComplaintsDueDateChip from "./ComplaintsDueDateChip";
 import { getDueStatus } from "src/helpers";
+import {formatDateMMM_D_YYYY} from "src/utils"
 
 import CriticalityIcon from "../../assets/icons/criticality.svg";
 import ReportTypeIcon from "../../assets/icons/reportType.svg";
@@ -52,11 +53,11 @@ const Chip = ({
   </div>
 );
 
-const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
+const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected }) => {
   const navigate = useNavigate();
 
   const handleSeeDetailsClick = () => {
-    navigate(`/complaints/CAS-12345`);
+    navigate(`/complaints/${complaint.case_id}`);
   };
 
   const infoItems = [
@@ -64,25 +65,25 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
       label: "Criticality",
       iconSrc: CriticalityIcon,
       iconAlt: "Criticality",
-      value: complaint.Criticality,
+      value: complaint.criticality,
     },
     {
       label: "Report Type",
       iconSrc: ReportTypeIcon,
       iconAlt: "Report Type",
-      value: complaint["Report Type"],
+      value: complaint.report_type,
     },
     {
       label: "Category",
       iconSrc: CategoryIcon,
       iconAlt: "Category",
-      value: complaint.Category,
+      value: 'NA',
     },
     {
       label: "Receipt Date",
       iconSrc: ReceiptDateIcon,
       iconAlt: "Receipt Date",
-      value: complaint["Receipt Date"],
+      value: formatDateMMM_D_YYYY(complaint.receipt_date),
     },
   ];
 
@@ -90,12 +91,12 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
     <div className={styles.complaintsCardContainer}>
       <div className={styles.headerRow}>
         <Box>
-          <Box className={styles.statusText}>IN-REVIEW</Box>
-          <Box className={styles.caseNumberText}>CAS-12345</Box>
+          <Box className={styles.statusText}>{selected === 'pending' ? "IN REVIEW" : selected.toUpperCase()}</Box>
+          <Box className={styles.caseNumberText}>{complaint.case_id}</Box>
         </Box>
         <ComplaintsDueDateChip
-          type={getDueStatus(complaint["Due Date"]).type}
-          label={getDueStatus(complaint["Due Date"]).label}
+          type={getDueStatus(complaint.receipt_date).type}
+          label={getDueStatus(complaint.receipt_date).label}
         />
       </div>
 
@@ -107,7 +108,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
         <div className={styles.infoItemColumn}>
           <Box className={styles.infoItemLabel}>Case Type</Box>
           <div className={styles.caseTypeRow}>
-            {complaint["Case Type"].includes("Product Complaint") && (
+            {complaint.case_type.includes("PC") && (
               <Chip
                 iconSrc={ProductComplaintIcon}
                 iconAlt="Product Complaint"
@@ -115,7 +116,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
                 className={styles.productComplaintsChip}
               />
             )}
-            {complaint["Case Type"].includes("Adverse Event") && (
+            {complaint.case_type.includes("AE") && (
               <Chip
                 iconSrc={AdverseEventIcon}
                 iconAlt="Adverse Event"
@@ -123,6 +124,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint }) => {
                 className={styles.adverseEventChip}
               />
             )}
+            {!(complaint.case_type.includes("PC") && complaint.case_type.includes("PC")) && 'NA'}
           </div>
         </div>
       </div>

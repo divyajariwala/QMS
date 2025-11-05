@@ -3,7 +3,7 @@ import { Box, Link } from "@mui/material";
 import AISummaryIcon from "../../assets/icons/aiSummary.svg";
 import styles from "./ComplaintAISummary.module.scss";
 
-const ComplaintAISummary: React.FC = () => {
+const ComplaintAISummary = ({ai_summary}: {ai_summary: string}) => {
   return (
     <Box className={styles.container}>
       <Box className={styles.header}>
@@ -13,11 +13,7 @@ const ComplaintAISummary: React.FC = () => {
         </Box>
       </Box>
       <Box component="div" className={styles.content}>
-        A patient can ensure that the medication was delivered by first observing
-        the medication within the syringe prior to injection and visually
-        confirming the medication is no longer in the syringe following the
-        injection. Dose delivery for the Pen is confirmed by seeing the gray
-        plunger at the top of the clear base.{" "}
+        {ai_summary}{" "}
         <Link href="#" underline="always">
           Read more
         </Link>

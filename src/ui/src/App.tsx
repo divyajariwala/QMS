@@ -101,7 +101,7 @@ const App = () => {
                   }
                 />
                 <Route
-                  path="/complaints/:id"
+                  path="/complaints/:complaintId"
                   element={
                     <ProtectedRoute>
                       <ComplaintsDetails />
