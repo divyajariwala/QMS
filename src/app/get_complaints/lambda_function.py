@@ -66,6 +66,38 @@ def get_single_complaint(table, complaint_id):
             }
         
         item = response['Item']
+
+        # TEMP CATEGORY DETAILS
+
+        category_details = [
+        {
+            "id": "1",
+            "label": "Broken Needle",
+            "level": 1,
+            "crl": "Needle was chipped",
+            "priority": "High",
+            "unit": 1,
+            "percentage": 85
+        },
+        {
+            "id": "2",
+            "label": "Bent Needle",
+            "level": 1,
+            "crl": "Needle was chipped",
+            "priority": "High",
+            "unit": 1,
+            "percentage": 65
+        },
+        {
+            "id": "3",
+            "label": "Injection incomplete",
+            "level": 1,
+            "crl": "Needle was chipped",
+            "priority": "High",
+            "unit": 1,
+            "percentage": 45
+        }
+        ]
         
         # Transform DynamoDB item to response format
         complaint_details = {
@@ -80,7 +112,8 @@ def get_single_complaint(table, complaint_id):
             'patient_name': item.get('patient_name', ''),
             'physician_name': item.get('physician_name', ''),
             'product_details': item.get('product_details', {}),
-            'caseStatus': item.get('caseStatus', item.get('status', 'pending'))
+            'caseStatus': item.get('caseStatus', item.get('status', 'pending')),
+            'category_details' : category_details
         }
         
         return {
