@@ -139,14 +139,27 @@ def get_all_complaints(table):
     Get all complaints with statistics
     """
     try:
-        # Scan all complaints directly (more reliable than GSI)
+        # Scan all complaints with proper filtering
         response = table.scan(
-            FilterExpression='begins_with(PK, :pk_prefix)',
+            FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
             ExpressionAttributeValues={
-                ':pk_prefix': 'COMPLAINT#'
+                ':pk_prefix': 'COMPLAINT#',
+                ':sk_value': 'METADATA'
             }
         )
         all_complaints = response.get('Items', [])
+        
+        # Handle pagination if there are more items
+        while 'LastEvaluatedKey' in response:
+            response = table.scan(
+                FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
+                ExpressionAttributeValues={
+                    ':pk_prefix': 'COMPLAINT#',
+                    ':sk_value': 'METADATA'
+                },
+                ExclusiveStartKey=response['LastEvaluatedKey']
+            )
+            all_complaints.extend(response.get('Items', []))
         
         # Calculate statistics
         stats = _calculate_stats(all_complaints)
