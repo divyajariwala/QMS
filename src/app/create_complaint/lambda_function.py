@@ -25,7 +25,7 @@ def lambda_handler(event, context):
 
     Expected POST body:
     {
-        "narrative": "Detailed description of the complaint here (max 420 chars)."
+        "narrative": "Detailed description of the complaint here (max 1500 chars)."
     }
     """
     logger.info("Received event: %s", json.dumps(event, indent=2))
@@ -56,8 +56,8 @@ def lambda_handler(event, context):
         if not narrative:
             return _response(400, "Narrative is required")
 
-        if len(narrative) > 420:
-            return _response(400, "Narrative exceeds maximum length of 420 characters")
+        if len(narrative) > 1500:
+            return _response(400, "Narrative exceeds maximum length of 1500 characters")
 
         # Generate unique complaint code
         complaint_code = generate_complaint_code(CODE_STRATEGY)
