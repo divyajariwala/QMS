@@ -213,7 +213,7 @@ class TestLambdaHandler:
             'patient_name': 'Patient Name',
             'physician_name': 'Dr. Smith',
             'product_details': {'drug_name': 'TestDrug'},
-            'categoryDetails': [{'id': '1', 'label': 'Test'}],
+            'category_details': [{'id': '1', 'label': 'Test'}],
             'caseStatus': 'pending'
         }
 
