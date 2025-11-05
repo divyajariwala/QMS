@@ -7,8 +7,9 @@ from decimal import Decimal
 import boto3
 
 # Environment variables
-STEP_FUNCTION_ARN = os.environ.get('STEP_FUNCTION_ARN',
-                                   'arn:aws:states:us-east-1:ACCOUNT_ID:stateMachine:qms-dev-classify-complaints')
+ENV = os.environ.get('env', 'dev')
+STEP_FUNCTION_BASE_NAME = os.environ.get('step_function_base_name', 'classify-complaints')
+AWS_REGION = os.environ.get('aws_region', 'us-east-1')
 
 # Setup logging
 logger = logging.getLogger("classify_complaints_lambda")
@@ -32,8 +33,12 @@ def lambda_handler(event, context):
     logger.info("Received event: %s", json.dumps(event, indent=2))
 
     try:
-        # Initialize AWS clients
+        # Initialize AWS clients (inside handler for testability)
         stepfunctions = boto3.client('stepfunctions')
+
+        # Build Step Function ARN from context
+        step_function_arn = build_step_function_arn(context)
+        logger.info(f"Using Step Function ARN: {step_function_arn}")
 
         # Track processing results
         successful = 0
@@ -54,7 +59,7 @@ def lambda_handler(event, context):
                 validate_complaint(body)
 
                 # Start Step Function execution
-                execution_arn = start_step_function(stepfunctions, body)
+                execution_arn = start_step_function(stepfunctions, step_function_arn, body)
 
                 successful += 1
                 executions.append({
@@ -124,6 +129,30 @@ def lambda_handler(event, context):
         }
 
 
+def build_step_function_arn(context):
+    """
+    Build Step Function ARN from Lambda context.
+
+    Args:
+        context: Lambda context object
+
+    Returns:
+        str: Complete Step Function ARN
+    """
+    # Extract account ID from Lambda ARN
+    # Lambda ARN format: arn:aws:lambda:region:account-id:function:function-name
+    lambda_arn = context.invoked_function_arn
+    account_id = lambda_arn.split(':')[4]
+
+    # Build Step Function name
+    step_function_name = f"qms-{ENV}-{STEP_FUNCTION_BASE_NAME}"
+
+    # Build complete ARN
+    step_function_arn = f"arn:aws:states:{AWS_REGION}:{account_id}:stateMachine:{step_function_name}"
+
+    return step_function_arn
+
+
 def validate_complaint(complaint):
     """
     Validate that complaint has all required fields for classification.
@@ -155,12 +184,13 @@ def validate_complaint(complaint):
         raise ValueError("narrative exceeds maximum length of 420 characters")
 
 
-def start_step_function(stepfunctions_client, complaint):
+def start_step_function(stepfunctions_client, step_function_arn, complaint):
     """
     Start Step Function execution for complaint classification.
 
     Args:
         stepfunctions_client: Boto3 Step Functions client
+        step_function_arn: Complete ARN of the Step Function
         complaint (dict): Complaint data to process
 
     Returns:
@@ -177,11 +207,13 @@ def start_step_function(stepfunctions_client, complaint):
 
         # Generate unique execution name
         timestamp = datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')
-        execution_name = f"classify-{complaint_id}-{timestamp}"
+        # Add microseconds for uniqueness
+        microseconds = datetime.now(timezone.utc).strftime('%f')[:3]
+        execution_name = f"classify-{complaint_id}-{timestamp}-{microseconds}"
 
         # Start execution
         response = stepfunctions_client.start_execution(
-            stateMachineArn=STEP_FUNCTION_ARN,
+            stateMachineArn=step_function_arn,
             name=execution_name,
             input=json.dumps(step_input, default=decimal_default)
         )
