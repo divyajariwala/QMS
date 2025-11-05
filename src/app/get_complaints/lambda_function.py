@@ -139,32 +139,14 @@ def get_all_complaints(table):
     Get all complaints with statistics
     """
     try:
-        # Query all complaints using GSI1 to get by status
-        all_complaints = []
-        
-        # Get complaints by status using GSI1PK
-        for status in ['pending', 'processed', 'overdue']:
-            try:
-                response = table.query(
-                    IndexName='GSI1',
-                    KeyConditionExpression='GSI1PK = :status',
-                    ExpressionAttributeValues={
-                        ':status': f'STATUS#{status}'
-                    }
-                )
-                all_complaints.extend(response.get('Items', []))
-            except Exception as e:
-                print(f"Error querying status {status}: {str(e)}")
-        
-        # If GSI query fails, fallback to scan
-        if not all_complaints:
-            response = table.scan(
-                FilterExpression='begins_with(PK, :pk_prefix)',
-                ExpressionAttributeValues={
-                    ':pk_prefix': 'COMPLAINT#'
-                }
-            )
-            all_complaints = response.get('Items', [])
+        # Scan all complaints directly (more reliable than GSI)
+        response = table.scan(
+            FilterExpression='begins_with(PK, :pk_prefix)',
+            ExpressionAttributeValues={
+                ':pk_prefix': 'COMPLAINT#'
+            }
+        )
+        all_complaints = response.get('Items', [])
         
         # Calculate statistics
         stats = _calculate_stats(all_complaints)

@@ -92,12 +92,14 @@ class TestLambdaHandler:
         mock_dynamodb.Table.return_value = mock_table
         mock_boto3.return_value = mock_dynamodb
 
-        # Mock GSI query responses
-        mock_table.query.side_effect = [
-            {'Items': [{'caseStatus': 'pending', 'complaint_id': 'CAS-1'}]},
-            {'Items': [{'caseStatus': 'processed', 'complaint_id': 'CAS-2'}]},
-            {'Items': [{'caseStatus': 'overdue', 'complaint_id': 'CAS-3'}]}
-        ]
+        # Mock scan response
+        mock_table.scan.return_value = {
+            'Items': [
+                {'caseStatus': 'pending', 'complaint_id': 'CAS-1'},
+                {'caseStatus': 'processed', 'complaint_id': 'CAS-2'},
+                {'caseStatus': 'overdue', 'complaint_id': 'CAS-3'}
+            ]
+        }
 
         event = {}  # No path parameters
 
@@ -111,16 +113,15 @@ class TestLambdaHandler:
 
     @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
     @patch('boto3.resource')
-    def test_get_all_complaints_gsi_fallback(self, mock_boto3):
-        """Test: GSI query fails, fallback to scan"""
+    def test_get_all_complaints_scan_method(self, mock_boto3):
+        """Test: Direct scan method for all complaints"""
         # Mock DynamoDB
         mock_table = Mock()
         mock_dynamodb = Mock()
         mock_dynamodb.Table.return_value = mock_table
         mock_boto3.return_value = mock_dynamodb
 
-        # Mock GSI query failure, scan success
-        mock_table.query.side_effect = Exception("GSI error")
+        # Mock scan success
         mock_table.scan.return_value = {
             'Items': [
                 {'PK': 'COMPLAINT#CAS-1', 'caseStatus': 'pending'},
@@ -267,18 +268,14 @@ class TestGetAllComplaints:
         """Test: Get all complaints with various statuses"""
         mock_table = Mock()
         
-        # Mock GSI queries for different statuses
-        mock_table.query.side_effect = [
-            {'Items': [
-                {'caseStatus': 'pending', 'complaint_id': 'CAS-1', 'criticality': 'High'}
-            ]},
-            {'Items': [
-                {'caseStatus': 'processed', 'complaint_id': 'CAS-3', 'criticality': 'Low'}
-            ]},
-            {'Items': [
+        # Mock scan response with different statuses
+        mock_table.scan.return_value = {
+            'Items': [
+                {'caseStatus': 'pending', 'complaint_id': 'CAS-1', 'criticality': 'High'},
+                {'caseStatus': 'processed', 'complaint_id': 'CAS-3', 'criticality': 'Low'},
                 {'caseStatus': 'overdue', 'complaint_id': 'CAS-4', 'criticality': 'High'}
-            ]}
-        ]
+            ]
+        }
 
         result = lambda_function.get_all_complaints(mock_table)
 
@@ -311,12 +308,9 @@ class TestGetAllComplaints:
         body = json.loads(result['body'])
         assert body['caseStats']['total_complaints'] == 0
 
-    def test_get_all_complaints_scan_fallback(self):
-        """Test: GSI query fails, uses scan fallback"""
+    def test_get_all_complaints_direct_scan(self):
+        """Test: Direct scan method for retrieving complaints"""
         mock_table = Mock()
-        
-        # All GSI queries fail
-        mock_table.query.side_effect = Exception("GSI unavailable")
         
         # Scan succeeds
         mock_table.scan.return_value = {
