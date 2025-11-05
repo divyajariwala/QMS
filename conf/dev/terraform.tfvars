@@ -166,6 +166,20 @@ lambda_configs = [
         http_method = "GET"
       }
     ]
+  },
+  {
+    function_name = "approve-complaints"
+    path = "src/app/approve-complaints"
+    environment_variables = {
+      env = "dev"
+      DYNAMODB_TABLE_NAME = "qms-dev-complaints-metadata"
+    }
+    api_gateway_paths = [
+      {
+        path_name = "approveComplaints"
+        http_method = "POST"
+      }
+    ]
   }
 ]
 

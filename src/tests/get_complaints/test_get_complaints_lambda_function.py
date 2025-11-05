@@ -2,12 +2,17 @@ import pytest
 import json
 import os
 import sys
+import importlib.util
 from unittest.mock import Mock, patch, MagicMock
 from decimal import Decimal
 
 # Add src directory to path for importing lambda_function
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'get_complaints'))
-import lambda_function
+get_complaints_path = os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'get_complaints')
+sys.path.insert(0, get_complaints_path)
+import importlib.util
+spec = importlib.util.spec_from_file_location("get_complaints_lambda", os.path.join(get_complaints_path, "lambda_function.py"))
+lambda_function = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(lambda_function)
 
 
 class TestLambdaHandler:
