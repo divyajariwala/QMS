@@ -1,0 +1,54 @@
+{
+    "case_id": "RGL23-000070",
+    "receipt_date": "08/Jan/2023",
+    "criticality": "Major",
+    "report_type": "Spontaneous",
+    "ai_summary": "On 09JAN2023, a potential product quality complaint was received via email. See attached source docu",
+    "case_type": [
+        "AE",
+        "PC"
+    ],
+    "narrative": "On 09JAN2023, a potential product quality complaint was received via email. See attached source document. 09JAN2023 11:42am GT. Complaint Type Lack of Effect",
+    "primary_reporter": {
+        "name": "C F",
+        "address": "Patient Unknown, XX 00000 US"
+    },
+    "patient_name": "C.F",
+    "physician_name": "Mahmoud Mahafzah",
+    "product_details": {
+        "drug_name": "Tavalisse",
+        "dosage": "100MG",
+        "lot_no": "See attached source document",
+        "expiration_date": "8/31/2024"
+    },
+    "caseStatus": "pending",
+    "categoryDetails": [
+        {
+            "id": "1",
+            "label": "Broken Needle",
+            "level": 1,
+            "crl": "Needle was chipped",
+            "priority": "High",
+            "unit": 1,
+            "percentage": 85
+        },
+        {
+            "id": "2",
+            "label": "Bent Needle",
+            "level": 1,
+            "crl": "Needle was chipped",
+            "priority": "High",
+            "unit": 1,
+            "percentage": 65
+        },
+        {
+            "id": "3",
+            "label": "Injection incomplete",
+            "level": 1,
+            "crl": "Needle was chipped",
+            "priority": "High",
+            "unit": 1,
+            "percentage": 45
+        }
+    ]
+}
