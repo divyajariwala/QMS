@@ -61,40 +61,72 @@ def lambda_handler(event, context):
                 return _error_response(404, f"Complaint with case_id '{case_id}' not found")
             
             existing_item = response['Item']
+            print(f"DEBUG: Existing item keys: {list(existing_item.keys())}")
+            print(f"DEBUG: Existing case_type: {existing_item.get('case_type')}")
+            print(f"DEBUG: Existing primary_reporter: {existing_item.get('primary_reporter')}")
             
         except Exception as e:
             return _error_response(500, f"Error retrieving complaint: {str(e)}")
         
-        # Update the complaint with new data and change status to processed
-        updated_item = {
-            'PK': f'COMPLAINT#{case_id}',
-            'SK': 'METADATA',
+        # Start with existing item and only update specific fields
+        updated_item = existing_item.copy()
+        
+        # Update status-related fields
+        updated_item.update({
             'GSI1PK': 'STATUS#processed',  # Update GSI for status queries
             'GSI1SK': f'COMPLAINT#{case_id}',
-            'case_id': case_id,
-            'complaint_id': case_id,  # Keep both for compatibility
-            'receipt_date': body.get('receipt_date', existing_item.get('receipt_date', '')),
-            'criticality': body.get('criticality', existing_item.get('criticality', 'NA')),
-            'report_type': body.get('report_type', existing_item.get('report_type', 'NA')),
-            'ai_summary': body.get('ai_summary', existing_item.get('ai_summary', '')),
-            'case_type': body.get('case_type', existing_item.get('case_type', [])),
-            'narrative': body.get('narrative', existing_item.get('narrative', '')),
-            'primary_reporter': body.get('primary_reporter', existing_item.get('primary_reporter', {})),
-            'patient_name': body.get('patient_name', existing_item.get('patient_name', '')),
-            'physician_name': body.get('physician_name', existing_item.get('physician_name', '')),
-            'product_details': body.get('product_details', existing_item.get('product_details', {})),
-            'categoryDetails': body.get('categoryDetails', existing_item.get('categoryDetails', [])),
             'caseStatus': 'processed',  # Change status to processed
             'status': 'processed',  # Keep both for compatibility
             'updated_at': datetime.now(timezone.utc).isoformat(),
             'approved_at': datetime.now(timezone.utc).isoformat(),
             'approved_by': _get_user_from_event(event)
+        })
+        
+        # Only update fields that are explicitly provided in the request body
+        if 'receipt_date' in body:
+            updated_item['receipt_date'] = body['receipt_date']
+        if 'criticality' in body:
+            updated_item['criticality'] = body['criticality']
+        if 'report_type' in body:
+            updated_item['report_type'] = body['report_type']
+        if 'ai_summary' in body:
+            updated_item['ai_summary'] = body['ai_summary']
+        if 'case_type' in body:
+            updated_item['case_type'] = body['case_type']
+        if 'narrative' in body:
+            updated_item['narrative'] = body['narrative']
+        if 'primary_reporter' in body:
+            updated_item['primary_reporter'] = body['primary_reporter']
+        if 'patient_name' in body:
+            updated_item['patient_name'] = body['patient_name']
+        if 'physician_name' in body:
+            updated_item['physician_name'] = body['physician_name']
+        if 'product_details' in body:
+            updated_item['product_details'] = body['product_details']
+        if 'category_details' in body:
+            updated_item['category_details'] = body['category_details']
+            
+        print(f"DEBUG: Updated case_type: {updated_item.get('case_type')}")
+        print(f"DEBUG: Updated primary_reporter: {updated_item.get('primary_reporter')}")
+        
+        # Ensure required fields have default values if missing
+        field_defaults = {
+            'case_type': [],
+            'primary_reporter': {},
+            'patient_name': '',
+            'physician_name': '',
+            'product_details': {},
+            'category_details': [],
+            'criticality': 'NA',
+            'report_type': 'NA',
+            'ai_summary': '',
+            'narrative': '',
+            'receipt_date': ''
         }
         
-        # Preserve existing fields that might not be in the input
-        for key, value in existing_item.items():
-            if key not in updated_item and key not in ['GSI1PK', 'GSI1SK']:
-                updated_item[key] = value
+        for field, default_value in field_defaults.items():
+            if field not in updated_item or updated_item[field] is None:
+                updated_item[field] = default_value
         
         # Update the item in DynamoDB
         try:
@@ -113,7 +145,7 @@ def lambda_handler(event, context):
                 'patient_name': updated_item['patient_name'],
                 'physician_name': updated_item['physician_name'],
                 'product_details': updated_item['product_details'],
-                'categoryDetails': updated_item['categoryDetails'],
+                'category_details': updated_item['category_details'],
                 'caseStatus': updated_item['caseStatus'],
                 'approved_at': updated_item['approved_at'],
                 'approved_by': updated_item['approved_by']
