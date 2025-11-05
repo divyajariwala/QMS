@@ -8,8 +8,11 @@ from datetime import datetime, timezone
 import boto3
 
 # Environment variables
-SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME', 'qms-dev-preload-complaints')
+ENV = os.environ.get('env', 'dev')
 CODE_STRATEGY = os.environ.get('CODE_STRATEGY', 'timestamp_random')
+SQS_QUEUE_BASE_NAME = os.environ.get('sqs_queue_base_name', 'preload-complaints')
+SQS_QUEUE_NAME = f"qms-{ENV}-{SQS_QUEUE_BASE_NAME}"
+
 
 # Setup logging
 logger = logging.getLogger("create_complaint_lambda")

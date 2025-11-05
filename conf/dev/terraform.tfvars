@@ -80,7 +80,7 @@ lambda_configs = [
     path = "src/app/create_complaint"
     environment_variables = {
       env = "dev"
-      metadata_table_name = "complaints-metadata"
+      sqs_queue_base_name = "preload-complaints"
     }
     api_gateway_paths = [
       {
