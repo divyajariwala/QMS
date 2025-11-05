@@ -139,32 +139,27 @@ def get_all_complaints(table):
     Get all complaints with statistics
     """
     try:
-        # Query all complaints using GSI1 to get by status
-        all_complaints = []
+        # Scan all complaints with proper filtering
+        response = table.scan(
+            FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
+            ExpressionAttributeValues={
+                ':pk_prefix': 'COMPLAINT#',
+                ':sk_value': 'METADATA'
+            }
+        )
+        all_complaints = response.get('Items', [])
         
-        # Get complaints by status using GSI1PK
-        for status in ['pending', 'processed', 'overdue']:
-            try:
-                response = table.query(
-                    IndexName='GSI1',
-                    KeyConditionExpression='GSI1PK = :status',
-                    ExpressionAttributeValues={
-                        ':status': f'STATUS#{status}'
-                    }
-                )
-                all_complaints.extend(response.get('Items', []))
-            except Exception as e:
-                print(f"Error querying status {status}: {str(e)}")
-        
-        # If GSI query fails, fallback to scan
-        if not all_complaints:
+        # Handle pagination if there are more items
+        while 'LastEvaluatedKey' in response:
             response = table.scan(
-                FilterExpression='begins_with(PK, :pk_prefix)',
+                FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
                 ExpressionAttributeValues={
-                    ':pk_prefix': 'COMPLAINT#'
-                }
+                    ':pk_prefix': 'COMPLAINT#',
+                    ':sk_value': 'METADATA'
+                },
+                ExclusiveStartKey=response['LastEvaluatedKey']
             )
-            all_complaints = response.get('Items', [])
+            all_complaints.extend(response.get('Items', []))
         
         # Calculate statistics
         stats = _calculate_stats(all_complaints)

@@ -127,6 +127,8 @@ lambda_configs = [
     path = "src/app/classify_complaints"
     environment_variables = {
       env = "dev"
+      dynamodb_table_base_name = "complaints-metadata"
+      classify_sqs_queue_base_name = "classify-complaints"
     }
     sqs_trigger = [
       {

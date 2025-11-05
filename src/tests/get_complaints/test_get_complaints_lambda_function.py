@@ -85,19 +85,21 @@ class TestLambdaHandler:
     @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
     @patch('boto3.resource')
     def test_get_all_complaints_success(self, mock_boto3):
-        """Test: Successful all complaints retrieval"""
+        """Test: Successful all complaints retrieval with proper filtering"""
         # Mock DynamoDB
         mock_table = Mock()
         mock_dynamodb = Mock()
         mock_dynamodb.Table.return_value = mock_table
         mock_boto3.return_value = mock_dynamodb
 
-        # Mock GSI query responses
-        mock_table.query.side_effect = [
-            {'Items': [{'caseStatus': 'pending', 'complaint_id': 'CAS-1'}]},
-            {'Items': [{'caseStatus': 'processed', 'complaint_id': 'CAS-2'}]},
-            {'Items': [{'caseStatus': 'overdue', 'complaint_id': 'CAS-3'}]}
-        ]
+        # Mock scan response with proper PK/SK structure
+        mock_table.scan.return_value = {
+            'Items': [
+                {'PK': 'COMPLAINT#CAS-1', 'SK': 'METADATA', 'caseStatus': 'pending', 'complaint_id': 'CAS-1'},
+                {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA', 'caseStatus': 'processed', 'complaint_id': 'CAS-2'},
+                {'PK': 'COMPLAINT#CAS-3', 'SK': 'METADATA', 'caseStatus': 'overdue', 'complaint_id': 'CAS-3'}
+            ]
+        }
 
         event = {}  # No path parameters
 
@@ -108,25 +110,41 @@ class TestLambdaHandler:
         assert 'caseStats' in body
         assert 'caseStatus' in body
         assert body['caseStats']['total_complaints'] == 3
+        
+        # Verify scan was called with proper filter
+        mock_table.scan.assert_called_with(
+            FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
+            ExpressionAttributeValues={
+                ':pk_prefix': 'COMPLAINT#',
+                ':sk_value': 'METADATA'
+            }
+        )
 
     @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
     @patch('boto3.resource')
-    def test_get_all_complaints_gsi_fallback(self, mock_boto3):
-        """Test: GSI query fails, fallback to scan"""
+    def test_get_all_complaints_with_pagination(self, mock_boto3):
+        """Test: Scan method with pagination handling"""
         # Mock DynamoDB
         mock_table = Mock()
         mock_dynamodb = Mock()
         mock_dynamodb.Table.return_value = mock_table
         mock_boto3.return_value = mock_dynamodb
 
-        # Mock GSI query failure, scan success
-        mock_table.query.side_effect = Exception("GSI error")
-        mock_table.scan.return_value = {
-            'Items': [
-                {'PK': 'COMPLAINT#CAS-1', 'caseStatus': 'pending'},
-                {'PK': 'COMPLAINT#CAS-2', 'caseStatus': 'processed'}
-            ]
-        }
+        # Mock paginated scan responses
+        mock_table.scan.side_effect = [
+            {
+                'Items': [
+                    {'PK': 'COMPLAINT#CAS-1', 'SK': 'METADATA', 'caseStatus': 'pending'},
+                    {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA', 'caseStatus': 'processed'}
+                ],
+                'LastEvaluatedKey': {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA'}
+            },
+            {
+                'Items': [
+                    {'PK': 'COMPLAINT#CAS-3', 'SK': 'METADATA', 'caseStatus': 'overdue'}
+                ]
+            }
+        ]
 
         event = {}
 
@@ -134,7 +152,10 @@ class TestLambdaHandler:
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['caseStats']['total_complaints'] == 2
+        assert body['caseStats']['total_complaints'] == 3
+        
+        # Verify pagination was handled (scan called twice)
+        assert mock_table.scan.call_count == 2
 
     @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
     @patch('boto3.resource')
@@ -162,8 +183,7 @@ class TestLambdaHandler:
         mock_dynamodb.Table.return_value = mock_table
         mock_boto3.return_value = mock_dynamodb
 
-        # Mock GSI queries to return empty results, then scan fallback
-        mock_table.query.return_value = {'Items': []}
+        # Mock scan to return empty results
         mock_table.scan.return_value = {'Items': []}
 
         event = {'queryStringParameters': {}}
@@ -172,6 +192,14 @@ class TestLambdaHandler:
 
         assert result['statusCode'] == 200
         # Should call get_all_complaints, not get_single_complaint
+        # Verify scan was called with proper filter
+        mock_table.scan.assert_called_with(
+            FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
+            ExpressionAttributeValues={
+                ':pk_prefix': 'COMPLAINT#',
+                ':sk_value': 'METADATA'
+            }
+        )
 
 
 class TestGetSingleComplaint:
@@ -264,21 +292,17 @@ class TestGetAllComplaints:
     """Tests for get_all_complaints function"""
 
     def test_get_all_complaints_with_data(self):
-        """Test: Get all complaints with various statuses"""
+        """Test: Get all complaints with various statuses and proper filtering"""
         mock_table = Mock()
         
-        # Mock GSI queries for different statuses
-        mock_table.query.side_effect = [
-            {'Items': [
-                {'caseStatus': 'pending', 'complaint_id': 'CAS-1', 'criticality': 'High'}
-            ]},
-            {'Items': [
-                {'caseStatus': 'processed', 'complaint_id': 'CAS-3', 'criticality': 'Low'}
-            ]},
-            {'Items': [
-                {'caseStatus': 'overdue', 'complaint_id': 'CAS-4', 'criticality': 'High'}
-            ]}
-        ]
+        # Mock scan response with different statuses and proper PK/SK structure
+        mock_table.scan.return_value = {
+            'Items': [
+                {'PK': 'COMPLAINT#CAS-1', 'SK': 'METADATA', 'caseStatus': 'pending', 'complaint_id': 'CAS-1', 'criticality': 'High'},
+                {'PK': 'COMPLAINT#CAS-3', 'SK': 'METADATA', 'caseStatus': 'processed', 'complaint_id': 'CAS-3', 'criticality': 'Low'},
+                {'PK': 'COMPLAINT#CAS-4', 'SK': 'METADATA', 'caseStatus': 'overdue', 'complaint_id': 'CAS-4', 'criticality': 'High'}
+            ]
+        }
 
         result = lambda_function.get_all_complaints(mock_table)
 
@@ -288,7 +312,7 @@ class TestGetAllComplaints:
         # Check statistics
         stats = body['caseStats']
         assert stats['total_complaints'] == 3
-        assert stats['pending'] == 1  # IN-REVIEW only
+        assert stats['pending'] == 1
         assert stats['processed'] == 1
         assert stats['overdue'] == 1
 
@@ -297,12 +321,20 @@ class TestGetAllComplaints:
         assert len(case_status['pending']) == 1
         assert len(case_status['processed']) == 1
         assert len(case_status['overdue']) == 1
+        
+        # Verify scan was called with proper filter
+        mock_table.scan.assert_called_with(
+            FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
+            ExpressionAttributeValues={
+                ':pk_prefix': 'COMPLAINT#',
+                ':sk_value': 'METADATA'
+            }
+        )
 
     def test_get_all_complaints_empty_result(self):
         """Test: Get all complaints with no data"""
         mock_table = Mock()
-        # Mock GSI queries to return empty, then scan fallback
-        mock_table.query.return_value = {'Items': []}
+        # Mock scan to return empty
         mock_table.scan.return_value = {'Items': []}
 
         result = lambda_function.get_all_complaints(mock_table)
@@ -311,31 +343,45 @@ class TestGetAllComplaints:
         body = json.loads(result['body'])
         assert body['caseStats']['total_complaints'] == 0
 
-    def test_get_all_complaints_scan_fallback(self):
-        """Test: GSI query fails, uses scan fallback"""
+    def test_get_all_complaints_pagination_multiple_pages(self):
+        """Test: Pagination handling across multiple pages"""
         mock_table = Mock()
         
-        # All GSI queries fail
-        mock_table.query.side_effect = Exception("GSI unavailable")
-        
-        # Scan succeeds
-        mock_table.scan.return_value = {
-            'Items': [
-                {'PK': 'COMPLAINT#CAS-1', 'caseStatus': 'pending'},
-                {'PK': 'COMPLAINT#CAS-2', 'caseStatus': 'processed'}
-            ]
-        }
+        # Mock multiple paginated responses
+        mock_table.scan.side_effect = [
+            {
+                'Items': [
+                    {'PK': 'COMPLAINT#CAS-1', 'SK': 'METADATA', 'caseStatus': 'pending'},
+                    {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA', 'caseStatus': 'processed'}
+                ],
+                'LastEvaluatedKey': {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA'}
+            },
+            {
+                'Items': [
+                    {'PK': 'COMPLAINT#CAS-3', 'SK': 'METADATA', 'caseStatus': 'overdue'},
+                    {'PK': 'COMPLAINT#CAS-4', 'SK': 'METADATA', 'caseStatus': 'pending'}
+                ],
+                'LastEvaluatedKey': {'PK': 'COMPLAINT#CAS-4', 'SK': 'METADATA'}
+            },
+            {
+                'Items': [
+                    {'PK': 'COMPLAINT#CAS-5', 'SK': 'METADATA', 'caseStatus': 'processed'}
+                ]
+            }
+        ]
 
         result = lambda_function.get_all_complaints(mock_table)
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['caseStats']['total_complaints'] == 2
+        assert body['caseStats']['total_complaints'] == 5
+        
+        # Verify all pages were processed
+        assert mock_table.scan.call_count == 3
 
     def test_get_all_complaints_db_error(self):
         """Test: Database error in get_all_complaints"""
         mock_table = Mock()
-        mock_table.query.side_effect = Exception("Query failed")
         mock_table.scan.side_effect = Exception("Scan failed")
 
         result = lambda_function.get_all_complaints(mock_table)
@@ -496,8 +542,7 @@ class TestEdgeCases:
         mock_dynamodb.Table.return_value = mock_table
         mock_boto3.return_value = mock_dynamodb
 
-        # Mock GSI queries and scan fallback
-        mock_table.query.return_value = {'Items': []}
+        # Mock scan fallback
         mock_table.scan.return_value = {'Items': []}
 
         event = {'queryStringParameters': None}
@@ -516,8 +561,7 @@ class TestEdgeCases:
         mock_dynamodb.Table.return_value = mock_table
         mock_boto3.return_value = mock_dynamodb
 
-        # Mock GSI queries and scan fallback
-        mock_table.query.return_value = {'Items': []}
+        # Mock scan fallback
         mock_table.scan.return_value = {'Items': []}
 
         event = {'queryStringParameters': {'complaint_id': None}}
