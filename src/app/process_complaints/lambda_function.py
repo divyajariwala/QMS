@@ -7,7 +7,11 @@ from decimal import Decimal
 import boto3
 
 # Environment variables
-DYNAMODB_TABLE_NAME = os.environ.get('DYNAMODB_TABLE_NAME', 'qms-dev-complaints-metadata')
+ENV = os.environ.get('env', 'dev')
+DYNAMODB_TABLE_BASE_NAME = os.environ.get('dynamodb_table_base_name', 'complaints-metadata')
+DYNAMODB_TABLE_NAME = f"qms-{ENV}-{DYNAMODB_TABLE_BASE_NAME}"
+CLASSIFY_SQS_QUEUE_BASE_NAME = os.environ.get('classify_sqs_queue_base_name', 'classify-complaints')
+CLASSIFY_SQS_QUEUE_NAME = f"qms-{ENV}-{CLASSIFY_SQS_QUEUE_BASE_NAME}"
 
 # Setup logging
 logger = logging.getLogger("process_complaint_lambda")
