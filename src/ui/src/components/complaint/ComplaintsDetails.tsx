@@ -8,8 +8,7 @@ import ComplaintSecondaryInfo from './ComplaintSecondaryInfo';
 import ComplaintAISummary from './ComplaintAISummary';
 import ComplaintNarrative from './ComplaintNarrative';
 import ComplaintCategory from './ComplaintCategory';
-import { complaintCategories } from 'src/mockData/mockData';
-import { ComplaintCategoryItem, ComplaintDetail } from 'src/types';
+import { ComplaintDetail } from 'src/types';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import CriticalityIcon from "../../assets/icons/criticality.svg";
 import ReportTypeIcon from "../../assets/icons/reportType.svg";
@@ -17,28 +16,62 @@ import CategoryIcon from "../../assets/icons/category.svg";
 import ReceiptDateIcon from "../../assets/icons/receiptDate.svg";
 import { formatDateMMM_D_YYYY } from 'src/utils';
 import { calculateOverdueDays } from 'src/helpers';
-import { fetchComplaintDetailById } from 'src/services/api.service';
+import { fetchComplaintDetailById, postApproveComplaint } from 'src/services/api.service';
+import Notification from '@components/Notification/Notification';
 import styles from "./ComplaintsResult.module.scss";
 
 const ComplaintsDetails: React.FC = () => {
-  const [complaints, setComplaints] = useState<ComplaintCategoryItem[]>(complaintCategories);
+  const [open, setOpen] = useState(false);
+  //const [complaints, setComplaints] = useState<ComplaintCategoryItem[]>(complaintCategories);
   const [complaintDetails, setComplaintDetails] = useState<ComplaintDetail | null>(null);
+  const [isApproved, setIsApproved] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const { complaintId } = useParams<{ complaintId: string | undefined }>(); 
+  const { complaintId } = useParams<{ complaintId: string | undefined }>();
   const complaintHeaderData = {
-  status: complaintDetails?.caseStatus,
-  caseId: complaintDetails?.case_id,
-  overdueDays: calculateOverdueDays(complaintDetails?.receipt_date as string),
-  primaryReporter: complaintDetails?.primary_reporter,
-  patientName: complaintDetails?.patient_name,
-  physicianName: complaintDetails?.physician_name,
-  drug: complaintDetails?.product_details.drug_name,
-  lotNumber: complaintDetails?.product_details?.lot_no,
-  doseAmount: complaintDetails?.product_details?.dosage,
-  expirationDate: '',
-  partNumber: '',
-  receipt_date: complaintDetails?.receipt_date
-};
+    status: complaintDetails?.caseStatus,
+    caseId: complaintDetails?.case_id,
+    overdueDays: calculateOverdueDays(complaintDetails?.receipt_date as string),
+    primaryReporter: complaintDetails?.primary_reporter,
+    patientName: complaintDetails?.patient_name,
+    physicianName: complaintDetails?.physician_name,
+    drug: complaintDetails?.product_details?.drug_name,
+    lotNumber: complaintDetails?.product_details?.lot_no,
+    doseAmount: complaintDetails?.product_details?.dosage,
+    expirationDate: '',
+    partNumber: '',
+    receipt_date: complaintDetails?.receipt_date
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      if (complaintDetails) {
+        const res = await postApproveComplaint(complaintDetails);
+        setComplaintDetails(res?.data);
+        setIsApproved(true);
+        handleShowNotification();
+      }
+
+    } catch (err: any) {
+      console.log(err.message || "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleShowNotification = () => {
+    setOpen(true);
+  };
+
+  const handleCloseNotification = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string,
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpen(false);
+  };
 
   const items = [
     { label: 'Home', to: '/' },
@@ -46,7 +79,7 @@ const ComplaintsDetails: React.FC = () => {
     { label: complaintDetails?.case_id.toString() },
   ];
 
-    const infoItems = [
+  const infoItems = [
     {
       label: "Criticality",
       iconSrc: CriticalityIcon,
@@ -73,7 +106,7 @@ const ComplaintsDetails: React.FC = () => {
     },
   ];
 
-    useEffect(() => {
+  useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
@@ -87,16 +120,16 @@ const ComplaintsDetails: React.FC = () => {
     }
     if (complaintId) fetchData();
   }, [complaintId]);
-
-if (loading) return <p>Loading details...</p>;
+  console.log(complaintDetails)
+  if (loading) return <p>Loading details...</p>;
   return (
     <Box className={styles.rootBox}>
       <CommonBreadcrumbs items={items} />
       <ComplaintHeaderCard
         complaintData={complaintHeaderData}
-        onApproveAndSend={() => {
-          console.log('Approve and Send clicked!');
-        }}
+        onApproveAndSend={handleSubmit}
+        caseStatus={complaintDetails?.caseStatus}
+        isApproved={isApproved}
       />
       <ComplaintSecondaryInfo
         infoItems={infoItems}
@@ -106,24 +139,29 @@ if (loading) return <p>Loading details...</p>;
         adverseEventChipClassName={styles.adverseEventChip}
         caseType={complaintDetails?.case_type as string[]}
       />
-      <ComplaintAISummary ai_summary={complaintDetails?.ai_summary as string}/>
+      <ComplaintAISummary ai_summary={complaintDetails?.ai_summary as string} />
       <Grid container spacing={3} className={styles.gridWithMarginTop}>
         <Grid item xs={12} md={4.9}>
-          <ComplaintNarrative narrative={complaintDetails?.narrative as string}/>
+          <ComplaintNarrative narrative={complaintDetails?.narrative as string} />
         </Grid>
         <Grid item xs={12} md={7.1}>
           <ComplaintCategory
-            complaintCategories={complaints}
-            onSave={(updatedItem) => {
-              setComplaints((prev) =>
-                prev.map((item) =>
-                  item.id === updatedItem.id ? { ...item, ...updatedItem } : item
-                )
-              );
+            complaintCategories={complaintDetails?.category_details || []}
+            setComplaintCategories={(newCategoryDetails) => {
+              setComplaintDetails((prev) => {
+                if (!prev) return prev;
+                // Force deep clone
+                const clonedPrev = JSON.parse(JSON.stringify(prev));
+                clonedPrev.category_details = newCategoryDetails;
+                console.log("Setting complaintDetails with cloned data:", clonedPrev);
+                return clonedPrev;
+              });
             }}
+
           />
         </Grid>
       </Grid>
+      <Notification open={open} onClose={handleCloseNotification} />
     </Box>
   );
 };

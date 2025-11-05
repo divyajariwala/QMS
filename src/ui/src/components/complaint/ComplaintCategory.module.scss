@@ -2,6 +2,7 @@
   padding: 16px;
   border-radius: 16px;
   height: 100%;
+  background-color: #fff;
 }
 
 .headerStack {
@@ -28,87 +29,152 @@
   margin-bottom: 16px;
 }
 
-.itemPaper {
+/* Non-edit mode */
+
+.nonEditPaper {
   padding: 16px;
   margin-bottom: 16px;
   border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
 }
 
-.itemTopBox {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.labelBox {
+.nonEditLabel {
   font-family: "Inter";
-  font-weight: 500;
-  font-size: 15px;
-  line-height: 22px;
-  letter-spacing: -0.1px;
-  color: #272d37;
+  font-weight: 600;
+  font-size: 16px;
+  color: #000;
 }
 
 .percentageBox {
   font-weight: 600;
   font-size: 14px;
-  margin-right: 16px;
   font-family: "Inter";
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 6px;
+  user-select: none;
 }
 
-.iconButton {
-  padding: 0;
-  color: inherit;
+.percentageBadge {
+  background-color: #d6f5d6; /* pale green */
+  color: #2e7d32; /* green */
 }
 
-.inlineFlexCenter {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.infoGrid {
+.nonEditGrid {
   font-family: "Inter";
   font-size: 13px;
-  margin-bottom: 16px;
+  margin-top: 8px;
 }
 
-.infoGridNoMargin {
-  font-family: "Inter";
-  font-size: 13px;
-  margin-bottom: 0;
-}
-
-.infoGridItemLabel {
+.nonEditFieldLabel {
   font-family: "Inter";
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: -0.1px;
   color: #5f6d7e;
+  margin-bottom: 4px;
 }
 
-.infoGridItemValue {
+.nonEditFieldValue {
   font-family: "Inter";
   font-weight: 600;
   font-size: 15px;
+  color: #272d37;
 }
 
-.editingControlsBox {
+.nonEditFieldValueBold {
   font-family: "Inter";
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #272d37;
+}
+
+.editIconButton {
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  padding: 6px;
+  background-color: #fff;
+  color: #272d37;
+  transition: background-color 0.2s ease;
+}
+
+.editIconButton:hover {
+  background-color: #f0f0f0;
+}
+
+/* Edit mode */
+
+.editModePaper {
+  padding: 16px;
   margin-bottom: 16px;
-  margin-top: 48px;
+  border-radius: 8px;
+  background-color: #f5f6f7 !important; /* Light gray background */
+  box-shadow: none;
+
+  /* Inputs and text fields */
+  input,
+  textarea,
+  .MuiInputBase-root,
+  .MuiOutlinedInput-root {
+    background-color: #fff !important;
+    color: #272d37 !important;
+  }
+
+  /* Selects (visible selected area) */
+  .MuiSelect-select {
+    background-color: #fff !important;
+    color: #272d37 !important;
+  }
+
+  /* The select input wrapper */
+  .MuiOutlinedInput-root.Mui-focused,
+  .MuiOutlinedInput-root {
+    background-color: #fff !important;
+    color: #272d37 !important;
+  }
+
+  /* Dropdown menu paper background */
+  .MuiPopover-paper,
+  .MuiPaper-root {
+    background-color: #fff !important;
+    color: #272d37 !important;
+  }
+
+  /* Labels */
+  label,
+  .MuiInputLabel-root,
+  .MuiFormLabel-root {
+    color: #5f6d7e !important;
+  }
 }
 
 .selectMinSize {
-  min-width: 289px;
+  min-width: 280px;
   min-height: 40px;
+  background-color: #fff !important;
+  color: #272d37;
+  border-radius: 4px;
+}
+
+.editSelectRoot {
+  font-family: "Inter";
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+}
+
+.editGrid {
+  margin-top: 8px;
+}
+
+.editLabel {
+  font-family: "Inter";
+  font-weight: 500;
+  font-size: 13px;
+  color: #5f6d7e;
+  margin-bottom: 4px;
 }
 
 .inputBaseInput {
@@ -120,34 +186,45 @@
   padding: 6px 8px;
 }
 
-:global(.MuiInputBase-input) {
-  font-family: "Inter";
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 22px;
-  letter-spacing: -0.1px;
-  padding: 6px 8px;
+.editField {
+  background: #fff;
+  border-radius: 4px;
 }
 
-.editSelectRoot {
-  font-family: "Inter";
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 22px;
-  letter-spacing: -0.1px;
+.buttonsRow {
+  margin-top: 12px;
 }
 
-.green {
-  color: #2e7d32;
-  background-color: #f0faf0;
+.cancelButton, .confirmButton {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;   /* Override MUI default min-width */
+  min-height: 40px;  /* Override MUI default min-height */
+  border-radius: 4px; /* Square corners (small radius) */
+  padding: 0;         /* Remove extra padding */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.orange {
-  color: #ef6c00;
-  background-color: #fff8eb;
-}
-
-.red {
+.cancelButton {
+  border: 1px solid #d32f2f;
   color: #d32f2f;
-  background-color: #fff8eb;
+  background-color: #fff;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #fdefec;
+  }
+}
+
+.confirmButton {
+  border: 1px solid #43a047;
+  color: #43a047;
+  background-color: #fff;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #e9f6e9;
+  }
 }

@@ -24,6 +24,8 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   const [fileCount, setFileCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  console.log(status);
+
   useEffect(() => {
     if (!open) {
       setStatus('idle');
@@ -40,7 +42,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
     } else if (status === 'extracting') {
       timer = setTimeout(() => setStatus('success'), 1000);
     } else if (status === 'success') {
-      timer = setTimeout(() => onClose(), 1000);
+      timer = setTimeout(() => onClose(), 4000);
     }
 
     return () => {
@@ -184,7 +186,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
 
     const statusBoxProps = { className: styles.statusBox };
 
-    if (status === 'importing') {
+    if (status === 'importing' || 'uploading') {
       return (
         <Box {...statusBoxProps}>
           <CircularProgress className={styles.circularProgress} />

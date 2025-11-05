@@ -9,6 +9,8 @@ import { getDueStatus } from 'src/helpers';
 const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
   complaintData,
   onApproveAndSend,
+  caseStatus,
+  isApproved
 }) => {
   const {
     status,
@@ -30,7 +32,17 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
       <Box className={styles.flexContainer}>
         <Box className={styles.leftSide}>
           <Stack spacing={0.5} className={styles.stackCustom}>
-            <Box className={styles.statusText}>{status}</Box>
+            {caseStatus === 'processed' ? (
+              isApproved ? (
+                <Box className={styles.statusTextGreen}>PROCESSED AND SENT TO QMS</Box>
+              ) : (
+                <Box className={styles.statusText}>{caseStatus.toUpperCase()}</Box>
+              )
+            ) : caseStatus === 'pending' ? (
+              <Box className={styles.statusText}>IN REVIEW</Box>
+            ) : (
+              <Box className={styles.statusText}>{caseStatus?.toUpperCase()}</Box>
+            )}
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
               <Box className={styles.caseIdText}>{caseId}</Box>
               <ComplaintsDueDateChip
@@ -38,10 +50,10 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
                 label={receipt_date && getDueStatus(receipt_date).label}
               />
               <Box className={styles.flexGrow} />
-              <button type="button" className={styles.approveSendButton} onClick={onApproveAndSend}>
+              {(caseStatus !== 'processed') && <button type="button" className={styles.approveSendButton} onClick={onApproveAndSend}>
                 <CheckIcon />
                 Approve and Send
-              </button>
+              </button>}
             </Stack>
           </Stack>
 

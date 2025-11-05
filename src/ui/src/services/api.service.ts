@@ -3,7 +3,8 @@ import {
   COMPLAINT_SESSION_ID,
   COMPLAINT_USER_NAME,
 } from '../constants';
-import { ComplaintResult, SessionData, UIResultsParams, ComplaintRequest, CreateComplaintResponse, getComplaintsApiResponse, ComplaintDetail } from '../types';
+import { ComplaintResult, SessionData, UIResultsParams, ComplaintRequest, CreateComplaintResponse, getComplaintsApiResponse,
+   ComplaintDetail, ApproveComplaintResponse, ApproveComplaintRequest } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
@@ -288,5 +289,26 @@ export async function fetchComplaintDetailById(complaint_id: string | undefined)
   const data: ComplaintDetail = await response.json();
   return data;
 }
+
+
+export async function postApproveComplaint(
+  data: ApproveComplaintRequest
+): Promise<ApproveComplaintResponse> {
+  const response = await fetch("https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/approveComplaints", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const responseData: ApproveComplaintResponse = await response.json();
+  return responseData;
+}
+
 
 

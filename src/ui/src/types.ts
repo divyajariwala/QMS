@@ -164,12 +164,10 @@ export interface ComplaintCategoryItem {
   priority: string;
   unit: number;
   percentage: number;
-  color: string;
-  bgColor: string;
 }
 export interface ComplaintCategoryProps {
-  complaintCategories: ComplaintCategoryItem[];
-  onSave?: (updatedItem: ComplaintCategoryItem) => void;
+    complaintCategories: ComplaintCategoryItem[];
+  setComplaintCategories: (updatedCategories: ComplaintCategoryItem[]) => void;
 }
 
 export interface ComplaintHeaderCardProps {
@@ -188,6 +186,8 @@ export interface ComplaintHeaderCardProps {
     receipt_date: string | undefined;
   };
   onApproveAndSend: () => void;
+  caseStatus: string | undefined;
+  isApproved: boolean
 }
 
 export interface ComplaintsDueDateChipProps {
@@ -342,6 +342,27 @@ export type getComplaintsApiResponse = {
   caseStatus: CaseStatus;
 };
 
+export type CategoryDetail = {
+  id: string;
+  label: string;
+  level: number;
+  crl: string;
+  priority: string;
+  unit: number;
+  percentage: number;
+};
+
+type PrimaryReporter = {
+  name: string;
+  address: string;
+};
+
+type ProductDetails = {
+  drug_name: string;
+  dosage: string;
+  lot_no: string;
+  expiration_date: string;
+};
 export interface ComplaintDetail {
   case_id: string;
   receipt_date: string;
@@ -350,11 +371,12 @@ export interface ComplaintDetail {
   ai_summary: string;
   case_type: string[];
   narrative: string;
-  primary_reporter: Record<string, any>; // undefined structure assumed, adjust if known
+  primary_reporter: PrimaryReporter; // undefined structure assumed, adjust if known
   patient_name: string;
   physician_name: string;
-  product_details: Record<string, any>; // undefined structure assumed, adjust if known
+  product_details: ProductDetails; // undefined structure assumed, adjust if known
   caseStatus: string;
+  category_details: CategoryDetail[];
 }
 
 export type CaseStatusKey = "pending" | "processed" | "overdue";
@@ -370,3 +392,59 @@ export interface complaintStatsProps {
     "longest_time": number,
   } | undefined
 }
+
+export type CategoryDetailApi = {
+  id: string;
+  label: string;
+  level: number;
+  crl: string;
+  priority: string;
+  unit: number;
+  percentage: number;
+};
+
+type PrimaryReporterApi = {
+  name: string;
+  address: string;
+};
+
+type ProductDetailsApi = {
+  drug_name: string;
+  dosage: string;
+  lot_no: string;
+  expiration_date: string;
+};
+
+export type ApproveComplaintResponse = {
+  data: {
+    case_id: string;
+    receipt_date: string;
+    criticality: string;
+    report_type: string;
+    ai_summary: string;
+    case_type: string[];
+    narrative: string;
+    primary_reporter: PrimaryReporterApi;
+    patient_name: string;
+    physician_name: string;
+    product_details: ProductDetailsApi;
+    caseStatus: string;
+    category_details: CategoryDetailApi[];
+  }
+};
+
+export type ApproveComplaintRequest = {
+    case_id: string;
+    receipt_date: string;
+    criticality: string;
+    report_type: string;
+    ai_summary: string;
+    case_type: string[];
+    narrative: string;
+    primary_reporter: PrimaryReporterApi;
+    patient_name: string;
+    physician_name: string;
+    product_details: ProductDetailsApi;
+    caseStatus: string;
+    category_details: CategoryDetailApi[];
+};
