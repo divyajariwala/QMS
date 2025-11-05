@@ -38,6 +38,7 @@ def lambda_handler(event, context):
         # Initialize AWS clients (inside handler like create_complaint)
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table(DYNAMODB_TABLE_NAME)
+        sqs_client = boto3.client('sqs')
 
         # Track processing results
         successful = 0
@@ -57,6 +58,9 @@ def lambda_handler(event, context):
 
                 # Save to DynamoDB (pass table as parameter)
                 save_to_dynamodb(table, body)
+
+                # Send to classification queue
+                send_to_classify_queue(sqs_client, body)
 
                 successful += 1
                 print(f"Successfully processed complaint: {body.get('complaint_id')}")
@@ -198,6 +202,51 @@ def save_to_dynamodb(table, complaint):
 
     except Exception as e:
         print(f"DynamoDB error for complaint {complaint_id}: {str(e)}")
+        raise
+
+
+def send_to_classify_queue(sqs_client, complaint):
+    """
+    Send complaint data to classification SQS queue.
+
+    Args:
+        sqs_client: Boto3 SQS client
+        complaint (dict): Complaint data
+
+    Raises:
+        Exception: If SQS operation fails
+    """
+    complaint_id = complaint['complaint_id']
+
+    try:
+        # Get queue URL
+        queue_url_response = sqs_client.get_queue_url(
+            QueueName=CLASSIFY_SQS_QUEUE_NAME
+        )
+        queue_url = queue_url_response['QueueUrl']
+
+        # Prepare message with only necessary fields
+        message_body = {
+            'complaint_id': complaint_id,
+            'narrative': complaint['narrative']
+        }
+
+        # Send message to SQS
+        response = sqs_client.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps(message_body),
+            MessageAttributes={
+                'complaint_id': {
+                    'StringValue': complaint_id,
+                    'DataType': 'String'
+                }
+            }
+        )
+
+        logger.info(f"Sent complaint to classify queue: {complaint_id}, MessageId: {response['MessageId']}")
+
+    except Exception as e:
+        logger.error(f"SQS error for complaint {complaint_id}: {str(e)}")
         raise
 
 
