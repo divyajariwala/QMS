@@ -136,85 +136,35 @@ def lambda_handler(event, context):
             }
         )
 
-        ##Extract PDF Data and send complaint message to SQS
+        # Process files based on type
         file_extension = _get_file_extension(filename)
+        
         if file_extension == 'pdf':
+            # For PDFs: Upload to S3 and invoke extract complaints lambda asynchronously
             s3_uri = f"s3://{S3_BUCKET_NAME}/{s3_key}"
             lambda_payload = {
-                "s3path": s3_uri
-            }
-            lambda_response = lambda_client.invoke(
-                FunctionName='qms-dev-extract-complaints',
-                InvocationType='RequestResponse',
-                Payload=json.dumps(lambda_payload)
-            )
-
-            pdf_contents = json.loads(lambda_response['Payload'].read().decode('utf-8'))
-            
-            # Debug: Print the structure we received
-            print(f"PDF extraction response: {json.dumps(pdf_contents, indent=2)}")
-
-            pdf_complaint_message = create_complaint_message_from_output(pdf_contents)
-
-            pdf_complaint_id = pdf_complaint_message['complaint_id']
-
-            pdf_complaint_message_sqs_response = sqs_client.send_message(
-                QueueUrl=queue_url,
-                MessageBody=json.dumps(pdf_complaint_message),
-                MessageAttributes={
-                    'Source': {
-                        'StringValue': 'PDF Extraction',
-                        'DataType': 'String'
-                    },
-                    'ComplaintCode': {
-                        'StringValue': pdf_complaint_id,
-                        'DataType': 'String'
-                    },
-                    'CreatedBy': {
-                        'StringValue': _get_user_from_event(event),
-                        'DataType': 'String'
-                    }
-                }
-            )
-
-            # Send File Upload Message to SQS
-            file_upload_message = {
+                "s3path": s3_uri,
                 "file_id": file_id,
                 "filename": filename,
-                "s3_key": s3_key,
-                "s3_bucket": S3_BUCKET_NAME,
-                "uploaded_at": datetime.now(timezone.utc).isoformat(),
-                "file_size": len(file_content),
-                "content_type": file_info.get('content_type', _get_content_type(filename)),
-                "file_extension": _get_file_extension(filename),
-                "pdf_contents": pdf_contents if file_extension == 'pdf' else None
+                "created_by": _get_user_from_event(event)
             }
-
-            file_upload_sqs_response = sqs_client.send_message(
-                QueueUrl=queue_url,
-                MessageBody=json.dumps(file_upload_message),
-                MessageAttributes={
-                    'FileType': {
-                        'StringValue': _get_file_extension(filename),
-                        'DataType': 'String'
-                    },
-                    'FileSize': {
-                        'StringValue': str(len(file_content)),
-                        'DataType': 'Number'
-                    }
-                }
+            
+            # Invoke extract complaints lambda asynchronously
+            lambda_client.invoke(
+                FunctionName='qms-dev-extract-complaints',
+                InvocationType='Event',  # Async invocation
+                Payload=json.dumps(lambda_payload)
             )
-
-            print(f"PDF Complaint sent to SQS successfully: {pdf_complaint_id}, MessageId: {pdf_complaint_message_sqs_response['MessageId']}")
-
-            return _response(200, "PDF file uploaded and complaint queued for processing successfully", {
-                    "file_id": file_id,
-                    "filename": filename,
-                    "file_size": len(file_content),
-                    "s3_key": s3_key,
-                    "message_id": file_upload_sqs_response['MessageId'],
-                    "complaint_message_id": pdf_complaint_message_sqs_response['MessageId']
-                })
+            
+            print(f"PDF uploaded to S3 and extract complaints lambda invoked asynchronously for file: {filename}")
+            
+            return _response(200, "PDF file uploaded and queued for processing successfully", {
+                "file_id": file_id,
+                "filename": filename,
+                "file_size": len(file_content),
+                "s3_key": s3_key,
+                "status": "processing"
+            })
         # Process CSV/Excel files
         elif file_extension in ['csv', 'xlsx', 'xls']:
             try:
@@ -265,39 +215,12 @@ def lambda_handler(event, context):
                 return _response(400, f"Error processing {file_extension} file: {str(e)}")
         
         else:
-            # Send File Upload Message to SQS for other file types
-            file_upload_message = {
-                "file_id": file_id,
-                "filename": filename,
-                "s3_key": s3_key,
-                "s3_bucket": S3_BUCKET_NAME,
-                "uploaded_at": datetime.now(timezone.utc).isoformat(),
-                "file_size": len(file_content),
-                "content_type": file_info.get('content_type', _get_content_type(filename)),
-                "file_extension": _get_file_extension(filename)
-            }
-
-            file_upload_sqs_response = sqs_client.send_message(
-                QueueUrl=queue_url,
-                MessageBody=json.dumps(file_upload_message),
-                MessageAttributes={
-                    'FileType': {
-                        'StringValue': _get_file_extension(filename),
-                        'DataType': 'String'
-                    },
-                    'FileSize': {
-                        'StringValue': str(len(file_content)),
-                        'DataType': 'Number'
-                    }
-                }
-            )
-
+            # For other file types, just return success
             return _response(200, "File uploaded successfully", {
                 "file_id": file_id,
                 "filename": filename,
                 "file_size": len(file_content),
-                "s3_key": s3_key,
-                "message_id": file_upload_sqs_response['MessageId']
+                "s3_key": s3_key
             })
 
     except Exception as e:
@@ -535,58 +458,7 @@ def generate_nanoid(length=8):
     alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz"
     return ''.join(random.choices(alphabet, k=length))
 
-# Parse the output and form complaint message
-def create_complaint_message_from_output(output_data):
-    # Handle both string and dict inputs
-    if isinstance(output_data, str):
-        parsed_output = json.loads(output_data)
-    else:
-        parsed_output = output_data
-    
-    # Handle different response structures
-    if 'body' in parsed_output:
-        if isinstance(parsed_output['body'], str):
-            body_data = json.loads(parsed_output['body'])
-            result = body_data.get('result', body_data)
-        else:
-            result = parsed_output['body'].get('result', parsed_output['body'])
-    elif 'result' in parsed_output:
-        result = parsed_output['result']
-    else:
-        result = parsed_output
-    
-    # Use case_id from PDF as complaint_id, fallback to generated code if not available
-    case_id = result.get('case_id', '')
-    complaint_id = case_id if case_id and case_id != 'N/A' else generate_complaint_code('timestamp_random')
-    now = datetime.now(timezone.utc)
-    
-    # Form complaint message with all available fields
-    complaint_message = {
-        'complaint_id': complaint_id,
-        'narrative': result.get('narrative', ''),
-        'short_description': result.get('narrative', '')[:100],
-        'status': 'IN-REVIEW',
-        'caseStatus': 'pending',
-        'criticality': result.get('criticality', 'NA'),
-        'report_type': result.get('report_type', 'NA'),
-        'receipt_date': result.get('receipt_date', ''),
-        'category': result.get('category', []),
-        'case_type': result.get('case_type', []),
-        'primary_reporter': result.get('primary_reporter', {}),
-        'patient_name': result.get('patient_name', ''),
-        'physician_name': result.get('physician_name', ''),
-        'product_details': result.get('product_details', {}),
-        'created_at': now.isoformat(),
-        'updated_at': now.isoformat(),
-        'created_by': 'system',
-        'metadata': {
-            'source': 'PDF Extraction',
-            'version': '1.0',
-            'original_case_id': result.get('case_id', '')
-        }
-    }
-    
-    return complaint_message
+
 
 def process_csv_excel_file(file_content, file_extension):
     """Process CSV/Excel file and extract complaints"""
