@@ -129,6 +129,7 @@ lambda_configs = [
       env = "dev"
       step_function_base_name = "complaints"
       aws_region = "us-east-1"
+      audit_log_table_base_name = "complaints-audit-log"
     }
     sqs_trigger = [
       {

@@ -11,6 +11,8 @@ ENV = os.environ.get('env', 'dev')
 STEP_FUNCTION_BASE_NAME = os.environ.get('step_function_base_name', 'complaints')
 STEP_FUNCTION_NAME = f"qms-{ENV}-{STEP_FUNCTION_BASE_NAME}"
 AWS_REGION = os.environ.get('aws_region', 'us-east-1')
+AUDIT_LOG_TABLE_BASE_NAME = os.environ.get('audit_log_table_base_name', 'complaints-audit-log')
+AUDIT_LOG_TABLE_NAME = f"qms-{ENV}-{AUDIT_LOG_TABLE_BASE_NAME}"
 
 # Setup logging
 logger = logging.getLogger("classify_complaints_lambda")
@@ -36,6 +38,8 @@ def lambda_handler(event, context):
     try:
         # Initialize AWS clients (inside handler for testability)
         stepfunctions = boto3.client('stepfunctions')
+        dynamodb = boto3.resource('dynamodb')
+        audit_table = dynamodb.Table(AUDIT_LOG_TABLE_NAME)
 
         # Build Step Function ARN from context
         step_function_arn = build_step_function_arn(context)
@@ -59,6 +63,20 @@ def lambda_handler(event, context):
                 # Validate complaint data
                 validate_complaint(body)
 
+                complaint_id = body.get('complaint_id')
+                logger.info(f"Validated complaint ID: {complaint_id}")
+
+                try:
+                    audit_entry = save_initial_audit_log(
+                        audit_table=audit_table,
+                        complaint_id=complaint_id,
+                        complaint_data=body,
+                        message_id=message_id
+                    )
+                    logger.info(f"Saved initial audit log for complaint ID: {complaint_id}")
+                except Exception as audit_error:
+                    logger.error(f"Failed to save audit log for complaint ID {complaint_id}: {str(audit_error)}")
+
                 # Start Step Function execution
                 execution_arn = start_step_function(stepfunctions, step_function_arn, body)
 
@@ -66,7 +84,8 @@ def lambda_handler(event, context):
                 executions.append({
                     'complaint_id': body.get('complaint_id'),
                     'execution_arn': execution_arn,
-                    'messageId': message_id
+                    'messageId': message_id,
+                    'audit_logged': True
                 })
                 logger.info(f"Successfully started classification for complaint: {body.get('complaint_id')}")
 
@@ -128,6 +147,75 @@ def lambda_handler(event, context):
                 'detail': str(e)
             })
         }
+
+
+def save_initial_audit_log(audit_table, complaint_id, complaint_data, message_id):
+    """
+    Save initial audit log entry for the complaint classification process.
+
+    Args:
+        audit_table: DynamoDB Table resource
+        complaint_id (str): Complaint ID
+        complaint_data (dict): Full complaint data
+        message_id (str): SQS message ID
+
+    Returns:
+        dict: Saved audit log entry
+    """
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    audit_entry = {
+        # Primary Keys
+        'PK': f'COMPLAINT#{complaint_id}',
+        'SK': 'STEP#classify-complaints-trigger',
+
+        # Complaint Info
+        'complaint_id': complaint_id,
+        'lambda_name': 'classify-complaints',
+        'step_name': 'classification_trigger',
+        'step_order': 0,  # Primer paso
+
+        # Execution Info
+        'last_execution': {
+            'timestamp': timestamp,
+            'status': 'triggered',
+            'message_id': message_id
+        },
+
+        # Input data
+        'input': {
+            'complaint_id': complaint_id,
+            'narrative': complaint_data.get('narrative'),
+            'code': complaint_data.get('code'),
+            'status': complaint_data.get('status', 'IN-REVIEW'),
+            'source': complaint_data.get('source', 'api')
+        },
+
+        # Output data (empty at this stage)
+        'output': {},
+
+        # Metadata
+        'metadata': {
+            'triggered_at': timestamp,
+            'trigger_source': 'sqs',
+            'full_complaint_data': complaint_data
+        },
+
+        # GSI1 - To query by Lambda function
+        'GSI1PK': 'LAMBDA#classify-complaints',
+        'GSI1SK': f"STATUS#triggered#{timestamp}",
+
+        # GSI2 - To query by status and time
+        'GSI2PK': 'STATUS#triggered',
+        'GSI2SK': f"TIME#{timestamp}"
+    }
+
+    # Record audit log in DynamoDB
+    audit_table.put_item(Item=audit_entry)
+
+    logger.info(f"Audit log saved: PK={audit_entry['PK']}, SK={audit_entry['SK']}")
+
+    return audit_entry
 
 
 def build_step_function_arn(context):
