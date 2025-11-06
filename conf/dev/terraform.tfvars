@@ -174,7 +174,7 @@ lambda_configs = [
   },
   {
     function_name = "approve-complaints"
-    path = "src/app/approve-complaints"
+    path = "src/app/approve_complaints"
     environment_variables = {
       env = "dev"
       DYNAMODB_TABLE_NAME = "qms-dev-complaints-metadata"

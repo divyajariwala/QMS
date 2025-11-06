@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 from decimal import Decimal
 
 # Add src directory to path for importing lambda_function
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'approve-complaints'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'approve_complaints'))
 import lambda_function
 
 
