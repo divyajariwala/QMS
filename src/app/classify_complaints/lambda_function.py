@@ -8,7 +8,7 @@ import boto3
 
 # Environment variables
 ENV = os.environ.get('env', 'dev')
-STEP_FUNCTION_BASE_NAME = os.environ.get('step_function_base_name', 'complaints')
+STEP_FUNCTION_BASE_NAME = os.environ.get('step_function_base_name', 'classify-complaints')
 STEP_FUNCTION_NAME = f"qms-{ENV}-{STEP_FUNCTION_BASE_NAME}"
 AWS_REGION = os.environ.get('aws_region', 'us-east-1')
 AUDIT_LOG_TABLE_BASE_NAME = os.environ.get('audit_log_table_base_name', 'complaints-audit-log')
