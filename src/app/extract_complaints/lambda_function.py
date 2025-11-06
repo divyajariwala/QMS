@@ -29,6 +29,11 @@ from PIL import Image
 import io
 import base64
 import logging
+import os
+import uuid
+import random
+import string
+from datetime import datetime, timezone
 
 # Configure logging for CloudWatch
 logger = logging.getLogger()
@@ -37,6 +42,7 @@ logger.setLevel(logging.INFO)
 # Configuration constants
 MAX_PDF_SIZE_MB = 50  # Maximum PDF file size in MB
 MAX_PAGES = 20        # Maximum number of pages to process
+SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME', 'qms-dev-preload-complaints')
 
 # Test event for local development
 # event = {"s3path" : "s3://qms-textract-staging-bucket/s3testsample.pdf"}
@@ -53,10 +59,6 @@ def validate_event(event):
         
     Raises:
         ValueError: If event structure is invalid or s3path is missing/malformed
-        
-    Example:
-        >>> validate_event({"s3path": "s3://bucket/file.pdf"})
-        "s3://bucket/file.pdf"
     """
     if not isinstance(event, dict) or 's3path' not in event:
         raise ValueError("Missing required field: s3path")
@@ -300,44 +302,80 @@ def process_with_bedrock_conversations(messages, bedrock_runtime):
         raise
 
 
+def generate_complaint_code(strategy='timestamp_random'):
+    """
+    Generate unique complaint code with timestamp and random digits.
+    """
+    now = datetime.now(timezone.utc)
+    timestamp = now.strftime('%Y%m%d%H%M%S')
+    microseconds = str(now.microsecond)[:3]
+    random_suffix = ''.join(random.choices(string.digits, k=3))
+    return f"CAS-{timestamp}{microseconds}{random_suffix}"
+
+def create_complaint_message_from_output(output_data, file_id, filename, created_by):
+    """
+    Create complaint message from PDF extraction output.
+    """
+    result = output_data
+    
+    # Use case_id from PDF as complaint_id, fallback to generated code if not available
+    case_id = result.get('case_id', '')
+    complaint_id = case_id if case_id and case_id != 'N/A' else generate_complaint_code()
+    now = datetime.now(timezone.utc)
+    
+    complaint_message = {
+        'complaint_id': complaint_id,
+        'narrative': result.get('narrative', ''),
+        'short_description': result.get('narrative', '')[:100],
+        'status': 'IN-REVIEW',
+        'caseStatus': 'pending',
+        'criticality': result.get('criticality', 'NA'),
+        'report_type': result.get('report_type', 'NA'),
+        'receipt_date': result.get('receipt_date', ''),
+        'category': result.get('category', []),
+        'case_type': result.get('case_type', []),
+        'primary_reporter': result.get('primary_reporter', {}),
+        'patient_name': result.get('patient_name', ''),
+        'physician_name': result.get('physician_name', ''),
+        'product_details': result.get('product_details', {}),
+        'created_at': now.isoformat(),
+        'updated_at': now.isoformat(),
+        'created_by': created_by,
+        'metadata': {
+            'source': 'PDF Extraction',
+            'version': '1.0',
+            'original_case_id': result.get('case_id', ''),
+            'file_id': file_id,
+            'filename': filename
+        }
+    }
+    
+    return complaint_message
+
 def lambda_handler(event, context):
     """
     Main Lambda function handler for PDF processing and data extraction.
+    Now includes SQS message sending for complaint data.
     
     Args:
         event (dict): Lambda event containing:
             - s3path (str): S3 URI of PDF file to process
+            - file_id (str): Unique file identifier
+            - filename (str): Original filename
+            - created_by (str): User who uploaded the file
         context: Lambda context object (unused)
         
     Returns:
-        dict: HTTP response with status code and JSON body containing:
-            - success (bool): Whether processing succeeded
-            - result (dict): Extracted data (on success)
-            - error (str): Error message (on failure)
-            
-    HTTP Status Codes:
-        - 200: Success
-        - 400: Bad Request (validation errors)
-        - 500: Internal Server Error
-        
-    Processing Flow:
-        1. Validate input event structure
-        2. Download PDF from S3 with size checks
-        3. Convert PDF pages to images
-        4. Encode images as base64
-        5. Construct Bedrock API messages
-        6. Process through Claude model with function calling
-        7. Return structured extraction results
-        
-    Error Handling:
-        - Validation errors return 400 status
-        - All other errors return 500 status
-        - Detailed logging for debugging
-        - User-friendly error messages
+        dict: HTTP response with status code and JSON body
     """
     try:
-        logger.info("Processing started")
+        logger.info("PDF extraction processing started")
         s3path = validate_event(event)
+        file_id = event.get('file_id', str(uuid.uuid4()))
+        filename = event.get('filename', 'unknown.pdf')
+        created_by = event.get('created_by', 'system')
+        
+        # Extract data from PDF
         pdf_data = fetch_pdf_from_s3(s3path)
         images = pdf_to_images(pdf_data)
         base64_images = images_to_base64(images)
@@ -345,9 +383,42 @@ def lambda_handler(event, context):
         bedrock_runtime = boto3.client('bedrock-runtime')
         output = process_with_bedrock_conversations(messages, bedrock_runtime)
         
+        # Create complaint message
+        complaint_message = create_complaint_message_from_output(output, file_id, filename, created_by)
+        
+        # Send complaint message to SQS
+        sqs_client = boto3.client('sqs')
+        queue_url = sqs_client.get_queue_url(QueueName=SQS_QUEUE_NAME)["QueueUrl"]
+        
+        sqs_response = sqs_client.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps(complaint_message),
+            MessageAttributes={
+                'Source': {
+                    'StringValue': 'PDF Extraction',
+                    'DataType': 'String'
+                },
+                'ComplaintCode': {
+                    'StringValue': complaint_message['complaint_id'],
+                    'DataType': 'String'
+                },
+                'CreatedBy': {
+                    'StringValue': created_by,
+                    'DataType': 'String'
+                }
+            }
+        )
+        
+        logger.info(f"Complaint message sent to SQS: {complaint_message['complaint_id']}, MessageId: {sqs_response['MessageId']}")
+        
         return {
             'statusCode': 200,
-            'body': json.dumps({'success': True, 'result': output})
+            'body': json.dumps({
+                'success': True, 
+                'result': output,
+                'complaint_id': complaint_message['complaint_id'],
+                'message_id': sqs_response['MessageId']
+            })
         }
     except ValueError as e:
         logger.error(f"Validation error: {str(e)}")
