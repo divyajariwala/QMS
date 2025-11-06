@@ -71,6 +71,9 @@ def lambda_handler(event, context):
         # Start with existing item and only update specific fields
         updated_item = existing_item.copy()
         
+        # Ensure case_id is properly set
+        updated_item['case_id'] = case_id
+        
         # Update status-related fields
         updated_item.update({
             'GSI1PK': 'STATUS#processed',  # Update GSI for status queries
