@@ -11,8 +11,8 @@ import {
   Typography,
 } from "@mui/material";
 import EditIcon from "../../assets/icons/pencil.svg";
-import CloseIcon from "../../assets/icons/closeCross.svg"; // Provide your close (X) icon path
-import CheckIcon from "../../assets/icons/greenTick.svg"; // Provide your checkmark (✓) icon path
+import CloseIcon from "../../assets/icons/closeCross.svg";
+import CheckIcon from "../../assets/icons/greenTick.svg";
 import styles from "./ComplaintCategory.module.scss";
 import { ComplaintCategoryProps, ComplaintCategoryItem } from "src/types";
 
@@ -23,25 +23,21 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedData, setEditedData] = useState<ComplaintCategoryItem | null>(null);
 
-  // Mapping colors to CSS classes (if you want to use colored badges)
-  const colorClassMap: Record<string, string> = {
-    "#43a047": styles.green,
-    "#f57c00": styles.orange,
-    "#e53935": styles.red,
-  };
-
   function getColorClassName(color: string): string {
+    const colorClassMap: Record<string, string> = {
+      "#43a047": styles.green,
+      "#f57c00": styles.orange,
+      "#e53935": styles.red,
+    };
     const normalizedColor = color.trim().toLowerCase();
     return colorClassMap[normalizedColor] || "";
   }
 
-  // Start editing
   const handleStartEdit = (item: ComplaintCategoryItem) => {
     setEditingId(item.id);
     setEditedData({ ...item });
   };
 
-  // Save edited data
   const handleConfirmEdit = () => {
     if (editedData) {
       const updatedCategories = complaintCategories.map((cat) =>
@@ -53,19 +49,27 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
     setEditedData(null);
   };
 
-  // Cancel edit (revert back)
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditedData(null);
   };
 
-  // Change field in edit inputs
   const handleEditChange = (
     field: keyof ComplaintCategoryItem,
     value: string | number
   ) => {
     if (!editedData) return;
     setEditedData((prev) => (prev ? { ...prev, [field]: value } : null));
+  };
+
+  const getPercentageClass = (percentage: number): string => {
+    if (percentage >= 85) {
+      return styles.percentageGreen;
+    } else if (percentage >= 60) {
+      return styles.percentageOrange;
+    } else {
+      return styles.percentageRed;
+    }
   };
 
   return (
@@ -82,7 +86,7 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
           return (
             <Paper key={item.id} className={styles.editModePaper} elevation={0}>
               {/* Top row: label select + percentage badge */}
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+              <Stack direction="row" justifyContent="flex-start" alignItems="center" sx={{ mb: 2 }}>
                 <Select
                   size="small"
                   value={editedData.label || ""}
@@ -97,14 +101,14 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                   ))}
                 </Select>
 
-                <Box className={`${styles.percentageBox} ${styles.percentageBadge}`}>
+                <Box className={`${styles.percentageBox} ${getPercentageClass(editedData.percentage)}`}>
                   {editedData.percentage}%
                 </Box>
               </Stack>
 
               {/* Fields grid */}
               <Grid container spacing={2} alignItems="center" className={styles.editGrid}>
-                <Grid item xs={2}>
+                <Grid item xs>
                   <Typography className={styles.editLabel}>Level</Typography>
                   <TextField
                     size="small"
@@ -112,30 +116,30 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     value={editedData.level}
                     onChange={(e) => handleEditChange("level", Number(e.target.value))}
                     fullWidth
-                    InputProps={{
-                      classes: { input: styles.inputBaseInput },
-                    }}
+                    InputProps={{ classes: { input: styles.inputBaseInput }, inputProps: { min: 1 } }}
                     variant="outlined"
                     className={styles.editField}
                   />
                 </Grid>
 
-                <Grid item xs={4}>
+                <Grid item xs>
                   <Typography className={styles.editLabel}>CRL</Typography>
-                  <TextField
+                  <Select
                     size="small"
                     value={editedData.crl}
                     onChange={(e) => handleEditChange("crl", e.target.value)}
                     fullWidth
-                    InputProps={{
-                      classes: { input: styles.inputBaseInput },
-                    }}
+                    className={styles.editSelectRoot}
                     variant="outlined"
-                    className={styles.editField}
-                  />
+                  >
+                    {/* Replace this with your real CRL options */}
+                    <MenuItem value="Needle was chipped">Needle was chipped</MenuItem>
+                    <MenuItem value="Other option 1">Other option 1</MenuItem>
+                    <MenuItem value="Other option 2">Other option 2</MenuItem>
+                  </Select>
                 </Grid>
 
-                <Grid item xs={2}>
+                <Grid item xs>
                   <Typography className={styles.editLabel}>Priority</Typography>
                   <Select
                     size="small"
@@ -151,7 +155,7 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                   </Select>
                 </Grid>
 
-                <Grid item xs={2}>
+                <Grid item xs>
                   <Typography className={styles.editLabel}>Unit</Typography>
                   <TextField
                     size="small"
@@ -159,17 +163,15 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     value={editedData.unit}
                     onChange={(e) => handleEditChange("unit", Number(e.target.value))}
                     fullWidth
-                    InputProps={{
-                      classes: { input: styles.inputBaseInput },
-                    }}
+                    InputProps={{ classes: { input: styles.inputBaseInput }, inputProps: { min: 1 } }}
                     variant="outlined"
                     className={styles.editField}
                   />
                 </Grid>
               </Grid>
 
-              {/* Buttons row below inputs */}
-              <Grid container justifyContent="flex-end" spacing={1} className={styles.buttonsRow}>
+              {/* Buttons row */}
+              <Grid container justifyContent="flex-end" mt={2} mr={2} spacing={1} className={styles.buttonsRow}>
                 <Grid item>
                   <IconButton
                     size="small"
@@ -195,13 +197,13 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
           );
         }
 
-        // Non-edit mode:
+        /* Non-edit mode */
         return (
           <Paper key={item.id} variant="outlined" className={styles.nonEditPaper}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
               <Typography className={styles.nonEditLabel}>{item.label}</Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <Box className={`${styles.percentageBox} ${styles.percentageBadge}`}>
+                <Box className={`${styles.percentageBox} ${getPercentageClass(item.percentage)}`}>
                   {item.percentage}%
                 </Box>
                 <IconButton
