@@ -432,6 +432,28 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'success': False, 'error': 'Internal error'})
         }
+
+
+def process_with_bedrock_conversations(messages, bedrock_runtime):
+    """
+    Process messages through Amazon Bedrock Claude model with function calling.
+    """
+    try:
+        response = bedrock_runtime.converse(
+            modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
+            messages=messages,
+            toolConfig={"tools": [load_tool_spec()]}
+        )
+        
+        content = response['output']['message']['content']
+        for item in content:
+            if isinstance(item, dict) and 'toolUse' in item:
+                return item['toolUse']['input']
+        
+        raise ValueError("No tool use found in response")
+    except Exception as e:
+        logger.error(f"Bedrock error: {str(e)}")
+        raise
     
 # def main():
 #     """
