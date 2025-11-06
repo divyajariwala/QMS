@@ -68,7 +68,7 @@ class TestBuildStepFunctionArn:
         """Test building Step Function ARN from Lambda context."""
         arn = classify_complaint_lambda.build_step_function_arn(mock_context)
 
-        assert arn == 'arn:aws:states:us-east-1:123456789012:stateMachine:qms-dev-classify-complaints'
+        assert arn == 'arn:aws:states:us-east-1:123456789012:stateMachine:qms-dev-complaints'
         assert 'stateMachine' in arn
         assert '123456789012' in arn
 
@@ -82,7 +82,7 @@ class TestBuildStepFunctionArn:
 
         arn = classify_complaint_lambda.build_step_function_arn(mock_context)
 
-        assert 'qms-prod-classify-complaints' in arn
+        assert 'qms-prod-complaints' in arn
 
 
 class TestValidateComplaint:

@@ -8,7 +8,8 @@ import boto3
 
 # Environment variables
 ENV = os.environ.get('env', 'dev')
-STEP_FUNCTION_BASE_NAME = os.environ.get('step_function_base_name', 'classify-complaints')
+STEP_FUNCTION_BASE_NAME = os.environ.get('step_function_base_name', 'complaints')
+STEP_FUNCTION_NAME = f"qms-{ENV}-{STEP_FUNCTION_BASE_NAME}"
 AWS_REGION = os.environ.get('aws_region', 'us-east-1')
 
 # Setup logging
@@ -144,11 +145,8 @@ def build_step_function_arn(context):
     lambda_arn = context.invoked_function_arn
     account_id = lambda_arn.split(':')[4]
 
-    # Build Step Function name
-    step_function_name = f"qms-{ENV}-{STEP_FUNCTION_BASE_NAME}"
-
     # Build complete ARN
-    step_function_arn = f"arn:aws:states:{AWS_REGION}:{account_id}:stateMachine:{step_function_name}"
+    step_function_arn = f"arn:aws:states:{AWS_REGION}:{account_id}:stateMachine:{STEP_FUNCTION_NAME}"
 
     return step_function_arn
 

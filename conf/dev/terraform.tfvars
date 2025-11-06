@@ -127,7 +127,7 @@ lambda_configs = [
     path = "src/app/classify_complaints"
     environment_variables = {
       env = "dev"
-      step_function_base_name = "classify-complaints"
+      step_function_base_name = "complaints"
       aws_region = "us-east-1"
     }
     sqs_trigger = [
