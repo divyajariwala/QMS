@@ -115,13 +115,14 @@ class TestLambdaHandler:
     @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_narrative_too_long(self, mock_boto3):
-        """Test: Error when narrative exceeds 420 characters"""
+        """Test: Error when narrative exceeds 1500 characters"""
         mock_sqs = Mock()
         mock_boto3.return_value = mock_sqs
         mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'test-message-123'}
 
-        # Create narrative with 421 characters (over limit)
-        long_narrative = 'a' * 421
+        # Create narrative with 1501 characters (over limit)
+        long_narrative = 'a' * 1501
 
         event = {
             'body': json.dumps({'narrative': long_narrative}),
@@ -139,14 +140,14 @@ class TestLambdaHandler:
     @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_narrative_at_max_length(self, mock_boto3):
-        """Test: Success when narrative is exactly 420 characters"""
+        """Test: Success when narrative is exactly 1500 characters"""
         mock_sqs = Mock()
         mock_boto3.return_value = mock_sqs
         mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
         mock_sqs.send_message.return_value = {'MessageId': 'msg-789'}
 
-        # Create narrative with exactly 420 characters
-        max_narrative = 'a' * 420
+        # Create narrative with exactly 1500 characters
+        max_narrative = 'a' * 1500
 
         event = {
             'body': json.dumps({'narrative': max_narrative}),
