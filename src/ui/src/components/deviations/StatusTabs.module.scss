@@ -2,7 +2,7 @@
   width: 100%;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Inter", sans-serif;
+ 
   margin-top: 16px;
   margin-bottom: 16px;
   border-bottom: 1px solid #e0e0e0;
@@ -58,7 +58,7 @@
   padding-bottom: 6px;
 
   span {
-    font-family: 'Inter';
+    ;
   }
 }
 
@@ -80,17 +80,17 @@
   white-space: nowrap;
   user-select: none;
   transition: all 0.2s ease;
-  font-family: 'Inter';
+  ;
 }
 
 .count {
   background-color: #e0e0e0;
   color: #858585;
-  font-family: 'Inter';
+  ;
 }
 
 .countActive {
   background-color: #2962ff;
   color: white;
-  font-family: 'Inter';
+  ;
 }

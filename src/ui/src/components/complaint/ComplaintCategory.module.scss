@@ -10,7 +10,6 @@
 }
 
 .headerTitle {
-  font-family: "Inter";
   font-weight: 600;
   font-size: 18px;
   line-height: 1;
@@ -20,7 +19,6 @@
 }
 
 .subtitleBox {
-  font-family: "Inter";
   font-weight: 400;
   font-size: 14px;
   line-height: 24px;
@@ -39,7 +37,6 @@
 }
 
 .nonEditLabel {
-  font-family: "Inter";
   font-weight: 600;
   font-size: 16px;
   color: #000;
@@ -48,44 +45,51 @@
 .percentageBox {
   font-weight: 600;
   font-size: 14px;
-  font-family: "Inter";
+
   padding: 4px 8px;
   border-radius: 6px;
   user-select: none;
-  margin-left: 24px; /* existing spacing */
+  margin-left: 24px;
+  /* existing spacing */
   display: inline-block;
   min-width: 40px;
   text-align: center;
 }
 
 .percentageGreen {
-  background-color: #d6f5d6; /* pale green */
-  color: #2e7d32; /* green */
+  background-color: #d6f5d6;
+  /* pale green */
+  color: #2e7d32;
+  /* green */
 }
 
 .percentageOrange {
-  background-color: #fff3e0; /* pale orange */
-  color: #ef6c00; /* orange */
+  background-color: #fff3e0;
+  /* pale orange */
+  color: #ef6c00;
+  /* orange */
 }
 
 .percentageRed {
-  background-color: #fbe9e7; /* pale red */
-  color: #d32f2f; /* red */
+  background-color: #fbe9e7;
+  /* pale red */
+  color: #d32f2f;
+  /* red */
 }
 
 .percentageBadge {
-  background-color: #d6f5d6; /* pale green */
-  color: #2e7d32; /* green */
+  background-color: #d6f5d6;
+  /* pale green */
+  color: #2e7d32;
+  /* green */
 }
 
 .nonEditGrid {
-  font-family: "Inter";
   font-size: 13px;
   margin-top: 8px;
 }
 
 .nonEditFieldLabel {
-  font-family: "Inter";
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
@@ -95,14 +99,14 @@
 }
 
 .nonEditFieldValue {
-  font-family: "Inter";
+
   font-weight: 600;
   font-size: 15px;
   color: #272d37;
 }
 
 .nonEditFieldValueBold {
-  font-family: "Inter";
+
   font-weight: 700;
   font-size: 15px;
   color: #272d37;
@@ -170,7 +174,6 @@
 }
 
 .editSelectRoot {
-  font-family: "Inter";
   font-weight: 600;
   font-size: 15px;
   line-height: 22px;
@@ -184,10 +187,12 @@
   width: 100%;
 }
 
-.editGrid > .MuiGrid-item {
+.editGrid>.MuiGrid-item {
   flex-grow: 1;
-  flex-basis: 0; /* allows items to shrink and grow evenly */
-  min-width: 120px; /* optional minimum width */
+  flex-basis: 0;
+  /* allows items to shrink and grow evenly */
+  min-width: 120px;
+  /* optional minimum width */
 }
 
 .editField,
@@ -197,8 +202,8 @@
   background: #fff;
   border-radius: 4px;
 }
+
 .editLabel {
-  font-family: "Inter";
   font-weight: 500;
   font-size: 13px;
   color: #5f6d7e;
@@ -206,7 +211,6 @@
 }
 
 .inputBaseInput {
-  font-family: "Inter";
   font-weight: 600;
   font-size: 15px;
   line-height: 22px;
@@ -228,17 +232,21 @@
 
 .cancelButton,
 .confirmButton {
-  width: 40px !important;    /* enforce fixed width */
-  height: 40px !important;   /* enforce fixed height */
+  width: 40px !important;
+  /* enforce fixed width */
+  height: 40px !important;
+  /* enforce fixed height */
   min-width: 40px !important;
   min-height: 40px !important;
   padding: 0 !important;
-  border-radius: 0 !important;  /* remove rounding for perfect square */
+  border-radius: 0 !important;
+  /* remove rounding for perfect square */
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #fff !important;
-  box-shadow: 0 0 0 1px #d1d9e6 !important; /* subtle border */
+  box-shadow: 0 0 0 1px #d1d9e6 !important;
+  /* subtle border */
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
   margin-left: 8px !important;
   overflow: visible !important;

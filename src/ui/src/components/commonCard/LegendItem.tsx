@@ -6,7 +6,7 @@ const LegendItem: React.FC<LegendItemProps> = ({ colorClass, label, value }) => 
   return (
     <div className={styles.legendItem}>
       <span className={styles.dotWithText}>
-        <span className={colorClass && `${styles.dot} ${styles[colorClass]}`} />
+        {!!colorClass && <span className={`${styles.dot} ${styles[colorClass]}`} />}
         <span>{label}</span>
       </span>
       <span className={styles.legendValue}>{value}</span>

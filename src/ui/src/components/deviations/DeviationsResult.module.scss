@@ -1,7 +1,7 @@
 .chipBase {
   border-radius: 5px;
   padding: 4px 10px;
-  font-family: 'Inter';
+  ;
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
@@ -48,7 +48,7 @@
 }
 
 .statusText {
-  font-family: 'Inter';
+  ;
   font-weight: 600;
   font-size: 12px;
   line-height: 24px;
@@ -59,7 +59,7 @@
 }
 
 .caseNumberText {
-  font-family: 'Inter';
+  ;
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
@@ -73,7 +73,7 @@
   display: flex;
   flex-direction: row;
   gap: 64px;
-  font-family: 'Inter';
+  ;
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
@@ -88,7 +88,7 @@
 }
 
 .infoItemLabel {
-  font-family: 'Inter';
+  ;
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
@@ -98,7 +98,7 @@
 }
 
 .infoItemValue {
-  font-family: 'Inter';
+  ;
   font-weight: 600;
   font-size: 16px;
   line-height: 22px;
@@ -126,7 +126,7 @@
 }
 
 .shortDescription {
-  font-family: 'Inter';
+  ;
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
@@ -136,7 +136,7 @@
 }
 
 .seeDetailsText {
-  font-family: 'Inter';
+  ;
   font-weight: 600;
   font-size: 14px;
   line-height: 20px;
@@ -188,7 +188,7 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  font-family: 'Inter';
+  ;
   font-size: 14px;
   color: #333;
   margin-top: 8px;
@@ -198,7 +198,7 @@
   color: #333;
   font-weight: 700;
   cursor: default;
-  font-family: 'Inter';
+  ;
 }
 
 .dateGroup {
@@ -213,11 +213,11 @@
 
   .label {
     color: #444;
-    font-family: 'Inter';
+    ;
   }
 
   .date {
     font-weight: 700;
-    font-family: 'Inter';
+    ;
   }
 }

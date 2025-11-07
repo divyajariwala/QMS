@@ -13,7 +13,7 @@ export const LEVELS: number[] = [1, 2, 3];
 
 export const TOTAL_FILES = 3;
 
-export const MAX_LENGTH = 420;
+export const MAX_LENGTH = 1500;
 
 export const mapped: { [key: number]: string } = {
   0: 'pending',

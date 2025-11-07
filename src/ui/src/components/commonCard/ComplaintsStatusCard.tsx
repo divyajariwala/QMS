@@ -1,34 +1,119 @@
 import React from "react";
 import styles from "./StatusCards.module.scss";
-
-import StatusCard from "./StatusCard";
-import { formatHoursToDays } from "src/helpers"
-import { complaintStatsProps } from "src/types";
 import DeviationsIcon from "../../assets/icons/deviationsCard.svg";
 import CycleIcon from "../../assets/icons/cycleTime.svg";
+import { complaintStatsProps } from "src/types";
+import { formatHoursToDays } from "src/helpers";
+import DonutChart from "./DonutChart";
 
 const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats }) => {
-  const { total_complaints, pending, processed, overdue, avg_cycle_time,
-    best_time, longest_time } = complaintStats || {}
+  const {
+    total_complaints = 0,
+    pending = 0,
+    processed = 0,
+    overdue = 0,
+    avg_cycle_time = 0,
+    longest_time = 0,
+  } = complaintStats || {};
+
+  const safePercent = (v: number, total: number) => (total > 0 ? (v / total) * 100 : 0);
+  const pendingPercent = safePercent(pending, total_complaints);
+  const processedPercent = safePercent(processed, total_complaints);
+  const overduePercent = safePercent(overdue, total_complaints);
+  const cycleTimeChangePercent = 12;
+
   return (
     <div className={styles.cardsContainer}>
-      <StatusCard
-        iconSrc={DeviationsIcon}
-        iconAlt="RCA"
-        title="Total Complaints"
-        cardValue={total_complaints}
-        legend={[
-          { colorClass: "dotPending", label: "Pending", value: pending as number },
-          { colorClass: "dotProcessed", label: "Processed", value: processed as number },
-          { colorClass: "dotOverdue", label: "Overdue", value: overdue as number },
-        ]}
-      />
+      <div className={styles.totalComplaintsCard}>
+        <div className={styles.leftSection}>
+          <div className={styles.iconWrapper}>
+            <img src={DeviationsIcon} alt="Total Complaints Icon" />
+          </div>
 
-      <StatusCard iconSrc={CycleIcon} iconAlt="Cycle Time" title="Cycle Time (Avg)" cardValue={formatHoursToDays(avg_cycle_time)} legend={[
-        { label: "Best Time", value: formatHoursToDays(best_time) },
-        { label: "Avg Time", value: formatHoursToDays(avg_cycle_time) },
-        { label: "Longest Time", value: formatHoursToDays(longest_time) },
-      ]} />
+          <div className={styles.totalContent}>
+            <div className={styles.title}>Total Complaints</div>
+            <div className={styles.totalValue}>{total_complaints.toLocaleString()}</div>
+
+            {/* NEW flex row: progress + donut */}
+            <div className={styles.metricsRow}>
+              <div className={styles.progressGroup}>
+                <div className={styles.progressItem}>
+                  <div className={styles.labelRow}>
+                    <span className={`${styles.dot} ${styles.dotPending}`} />
+                    <span>Pending</span>
+                    <span>{pending.toLocaleString()}</span>
+                  </div>
+                  <span className={styles.progressPercent}>{pendingPercent.toFixed(0)}%</span>
+                  <div className={styles.progressBarBackground}>
+                    <div className={styles.progressBar} style={{ width: `${pendingPercent}%`, backgroundColor: "#2369f0" }} />
+                  </div>
+                </div>
+
+                <div className={styles.progressItem}>
+                  <div className={styles.labelRow}>
+                    <span className={`${styles.dot} ${styles.dotProcessed}`} />
+                    <span>Processed</span>
+                    <span>{processed.toLocaleString()}</span>
+                  </div>
+                  <span className={styles.progressPercent}>{processedPercent.toFixed(0)}%</span>
+                  <div className={styles.progressBarBackground}>
+                    <div className={styles.progressBar} style={{ width: `${processedPercent}%`, backgroundColor: "#2b9e14" }} />
+                  </div>
+                </div>
+
+                <div className={styles.progressItem}>
+                  <div className={styles.labelRow}>
+                    <span className={`${styles.dot} ${styles.dotOverdue}`} />
+                    <span>Overdue</span>
+                    <span>{overdue.toLocaleString()}</span>
+                  </div>
+                  <span className={styles.progressPercent}>{overduePercent.toFixed(0)}%</span>
+                  <div className={styles.progressBarBackground}>
+                    <div className={styles.progressBar} style={{ width: `${overduePercent}%`, backgroundColor: "#f02424" }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* END metricsRow */}
+          </div>
+        </div>
+        <div className={styles.donutContainer}>
+                <DonutChart
+                  data={[pending, processed, overdue]}
+                  colors={["#2369f0", "#2b9e14", "#f02424"]}
+                  total={total_complaints}
+                  width={140}
+                  height={140}
+                />
+              </div>
+      </div>
+
+      <div className={styles.cycleTimeCard}>
+        <div className={styles.leftSection}>
+          <div className={styles.iconWrapperWhite}>
+            <img src={CycleIcon} alt="Cycle Time Icon" />
+          </div>
+
+          <div className={styles.cycleContent}>
+            <div className={styles.titleWhite}>Cycle Time (Avg)</div>
+            <div className={styles.cycleValue}>
+              {formatHoursToDays(avg_cycle_time)}
+              <span className={styles.cycleChange}>↑ {cycleTimeChangePercent}%</span>
+            </div>
+
+            <div className={styles.cycleDetails}>
+              <div>
+                <div>Avg Time</div>
+                <div>{formatHoursToDays(avg_cycle_time)}</div>
+              </div>
+              <div>
+                <div>Longest Time</div>
+                <div>{formatHoursToDays(longest_time)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

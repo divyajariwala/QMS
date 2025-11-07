@@ -10,7 +10,7 @@
   margin-top: 16px;
   box-sizing: border-box;
   height: 72px;
-  font-family: 'Inter';
+  ;
 }
 
 .inputWrapper {
@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   height: 100%;
-  font-family: 'Inter';
+  ;
 }
 
 .searchIcon {
@@ -45,7 +45,7 @@
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
   line-height: 24px;
-  font-family: 'Inter';
+  ;
 }
 
 .searchInput:focus {
@@ -68,7 +68,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Inter';
+  ;
   font-weight: 500;
   user-select: none;
   width: 126px;
@@ -91,7 +91,7 @@
 .searchButtonText {
   display: inline-block;
   margin-left: 0;
-  font-family: 'Inter';
+  ;
 }
 
 input[type="search"]::-webkit-search-cancel-button {

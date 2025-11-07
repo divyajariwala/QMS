@@ -1,16 +1,23 @@
-.searchBar {
+.container {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0;
+  width: 100%;
+  margin-top: 16px;
+ 
+}
+
+/* Search Bar with white background and subtle border */
+.searchBar {
+  flex: 1;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
-  width: 100%;
-  margin-top: 16px;
-  box-sizing: border-box;
   height: 72px;
-  font-family: 'Inter';
+  display: flex;
+  align-items: center;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .inputWrapper {
@@ -19,7 +26,6 @@
   display: flex;
   align-items: center;
   height: 100%;
-  font-family: 'Inter';
 }
 
 .searchIcon {
@@ -45,7 +51,6 @@
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
   line-height: 24px;
-  font-family: 'Inter';
 }
 
 .searchInput:focus {
@@ -68,7 +73,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Inter';
   font-weight: 500;
   user-select: none;
   width: 126px;
@@ -91,30 +95,29 @@
 .searchButtonText {
   display: inline-block;
   margin-left: 0;
-  font-family: 'Inter';
 }
 
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }
 
+/* Advanced Search Button with independent gray background */
 .advancedButton {
   font-weight: 600;
   font-size: 14px;
   border: none;
   background-color: #437EF7;
   color: white;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
   width: 177px;
-  height: 100%;
+  height: 72px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 16px;
-  font-family: 'Inter';
   white-space: nowrap;
 }
 
