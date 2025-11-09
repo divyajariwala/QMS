@@ -3,10 +3,9 @@ import { Box, Stack, Button } from "@mui/material";
 import DeviationsResult from "./DeviationsResult";
 import DeviationsFilter from "@components/deviations/DeviationsFilter";
 import styles from "./Deviations.module.scss";
-import { deviationsData } from 'src/mockData/mockData';
+import { deviationsData, caseStatsMock } from 'src/mockData/mockData';
 import StatusTabs from './StatusTabs';
 import DeviationsStatusCard from '@components/commonCard/DeviationsStatusCard';
-import ButtonGroup from './ButtonGroup';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import { useAuth } from "../../auth/useAuth";
 
@@ -40,10 +39,7 @@ const Deviations = () => {
             </Button>
           </Stack>
         </Stack>
-        <div>
-      <ButtonGroup selected={selected} onSelect={setSelected} />
-    </div>
-        <div className={styles.statusCards}> <DeviationsStatusCard /></div>
+        <div className={styles.statusCards}> <DeviationsStatusCard complaintStats={caseStatsMock} /></div>
         <div className={styles.statusTabs}> <StatusTabs /></div>
       </Stack>
       <DeviationsFilter />

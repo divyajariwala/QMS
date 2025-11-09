@@ -118,8 +118,6 @@
   /* Left column can shrink to 0; right column sizes to its content */
   grid-template-columns: minmax(0, 1fr) max-content;
   grid-template-rows: auto 12px;
-  /* row 1: labels/percent, row 2: bar */
-  column-gap: 12px;
   row-gap: 4px;
   align-items: center;
   font-size: 14px;
@@ -152,15 +150,19 @@
 }
 
 .dotPending {
-  background-color: #2369f0;
+  background-color: #155DFC;
 }
 
 .dotProcessed {
-  background-color: #2b9e14;
+  background-color: #00A63E;
 }
 
 .dotOverdue {
-  background-color: #f02424;
+  background-color: #E7000B;
+}
+
+.dotRca {
+  background-color: rgba(152, 16, 250, 1);
 }
 
 /* Middle label contracts with ellipsis */
@@ -184,10 +186,22 @@
 .progressPercent {
   grid-column: 2;
   text-align: right;
-  color: #7d8590;
-  font-variant-numeric: tabular-nums;
+  color: #6A7282;
   white-space: nowrap;
-  min-width: 18px;
+  min-width: 27px;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0px;
+}
+
+.value {
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 14px;
+  color: #101828;
+  line-height: 20px;
+  letter-spacing: -0.15px;
 }
 
 /* Bar spans both columns */
@@ -228,37 +242,69 @@
 }
 
 .titleWhite {
-  font-weight: 500;
+  font-weight: 400;
+  font-style: Regular;
   font-size: 14px;
-  margin-bottom: 8px;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+  color: #DBEAFE;
 }
 
 .cycleValue {
-  font-weight: 700;
-  font-size: 36px;
   display: flex;
   align-items: center;
   gap: 10px;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 30px;
+  line-height: 36px;
+  letter-spacing: 0.4px;
+  color: #ffffff;
 }
 
 .cycleChange {
-  background-color: #92d050;
+  width: 56px;
+  height: 20px;
+  background-color: rgba(0, 201, 80, 0.2);
   border-radius: 6px;
-  padding: 3px 8px;
-  font-size: 14px;
-  font-weight: 600;
+  padding-left: 12px;
   color: #123e00;
+  display: flex;
+  align-items: center;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0px;
+  color: rgba(123, 241, 168, 1);
 }
 
 .cycleDetails {
-  margin-top: 16px;
-  font-size: 14px;
+  margin-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
 .cycleDetails>div {
   display: flex;
   justify-content: space-between;
+}
+
+.cycleDetailsFirst {
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0px;
+  color: rgba(219, 234, 254, 1);
+}
+
+.cycleDetailsSecond {
+  color: rgba(255, 255, 255, 1);
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.15px;
 }

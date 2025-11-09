@@ -242,3 +242,13 @@ export const complaintHeaderData = {
   expirationDate: "Aug 04 2023",
   partNumber: "#",
 };
+
+export const caseStatsMock = {
+    "total_complaints": 7,
+    "pending": 5,
+    "processed": 1,
+    "overdue": 1,
+    "avg_cycle_time": 24,
+    "best_time": 7,
+    "longest_time": 72
+}

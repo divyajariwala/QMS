@@ -41,11 +41,11 @@ const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
                   <div className={styles.labelRow}>
                     <span className={`${styles.dot} ${styles.dotPending}`} />
                     <span>Pending</span>
-                    <span>{pending.toLocaleString()}</span>
+                    <span className={styles.value}>{pending.toLocaleString()}</span>
+                    <span className={styles.progressPercent}>{pendingPercent.toFixed(0)}%</span>
                   </div>
-                  <span className={styles.progressPercent}>{pendingPercent.toFixed(0)}%</span>
                   <div className={styles.progressBarBackground}>
-                    <div className={styles.progressBar} style={{ width: `${pendingPercent}%`, backgroundColor: "#2369f0" }} />
+                    <div className={styles.progressBar} style={{ width: `${pendingPercent}%`, backgroundColor: "#155DFC" }} />
                   </div>
                 </div>
 
@@ -53,11 +53,11 @@ const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
                   <div className={styles.labelRow}>
                     <span className={`${styles.dot} ${styles.dotProcessed}`} />
                     <span>Processed</span>
-                    <span>{processed.toLocaleString()}</span>
+                    <span className={styles.value}>{processed.toLocaleString()}</span>
+                    <span className={styles.progressPercent}>{processedPercent.toFixed(0)}%</span>
                   </div>
-                  <span className={styles.progressPercent}>{processedPercent.toFixed(0)}%</span>
                   <div className={styles.progressBarBackground}>
-                    <div className={styles.progressBar} style={{ width: `${processedPercent}%`, backgroundColor: "#2b9e14" }} />
+                    <div className={styles.progressBar} style={{ width: `${processedPercent}%`, backgroundColor: "#00A63E" }} />
                   </div>
                 </div>
 
@@ -65,11 +65,11 @@ const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
                   <div className={styles.labelRow}>
                     <span className={`${styles.dot} ${styles.dotOverdue}`} />
                     <span>Overdue</span>
-                    <span>{overdue.toLocaleString()}</span>
+                    <span className={styles.value}>{overdue.toLocaleString()}</span>
+                    <span className={styles.progressPercent}>{overduePercent.toFixed(0)}%</span>
                   </div>
-                  <span className={styles.progressPercent}>{overduePercent.toFixed(0)}%</span>
                   <div className={styles.progressBarBackground}>
-                    <div className={styles.progressBar} style={{ width: `${overduePercent}%`, backgroundColor: "#f02424" }} />
+                    <div className={styles.progressBar} style={{ width: `${overduePercent}%`, backgroundColor: "#E7000B" }} />
                   </div>
                 </div>
               </div>
@@ -80,7 +80,7 @@ const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
         <div className={styles.donutContainer}>
           <DonutChart
             data={[pending, processed, overdue]}
-            colors={["#2369f0", "#2b9e14", "#f02424"]}
+            colors={["#155DFC", "#00A63E", "#E7000B"]}
             total={total_complaints}
             width={140}
             height={140}
@@ -103,12 +103,12 @@ const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
 
             <div className={styles.cycleDetails}>
               <div>
-                <div>Avg Time</div>
-                <div>{formatHoursToDays(avg_cycle_time)}</div>
+                <div className={styles.cycleDetailsFirst}>Avg Time</div>
+                <div className={styles.cycleDetailsSecond}>{formatHoursToDays(avg_cycle_time)}</div>
               </div>
               <div>
-                <div>Longest Time</div>
-                <div>{formatHoursToDays(longest_time)}</div>
+                <div className={styles.cycleDetailsFirst}>Longest Time</div>
+                <div className={styles.cycleDetailsSecond}>{formatHoursToDays(longest_time)}</div>
               </div>
             </div>
           </div>

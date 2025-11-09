@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./StatusCards.module.scss";
 import DeviationsIcon from "../../assets/icons/container.svg";
 import CycleIcon from "../../assets/icons/cycleTime.svg";
+import RcaIcon from "../../assets/icons/rcaIcon.svg"
 import { complaintStatsProps } from "src/types";
 import { formatHoursToDays } from "src/helpers";
 import DonutChart from "./DonutChart";
@@ -41,11 +42,11 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
                   <div className={styles.labelRow}>
                     <span className={`${styles.dot} ${styles.dotPending}`} />
                     <span>Pending</span>
-                    <span>{pending.toLocaleString()}</span>
+                    <span className={styles.value}>{pending.toLocaleString()}</span>
+                    <span className={styles.progressPercent}>{pendingPercent.toFixed(0)}%</span>
                   </div>
-                  <span className={styles.progressPercent}>{pendingPercent.toFixed(0)}%</span>
                   <div className={styles.progressBarBackground}>
-                    <div className={styles.progressBar} style={{ width: `${pendingPercent}%`, backgroundColor: "#2369f0" }} />
+                    <div className={styles.progressBar} style={{ width: `${pendingPercent}%`, backgroundColor: "#155DFC" }} />
                   </div>
                 </div>
 
@@ -53,11 +54,11 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
                   <div className={styles.labelRow}>
                     <span className={`${styles.dot} ${styles.dotProcessed}`} />
                     <span>Processed</span>
-                    <span>{processed.toLocaleString()}</span>
+                    <span className={styles.value}>{processed.toLocaleString()}</span>
+                    <span className={styles.progressPercent}>{processedPercent.toFixed(0)}%</span>
                   </div>
-                  <span className={styles.progressPercent}>{processedPercent.toFixed(0)}%</span>
                   <div className={styles.progressBarBackground}>
-                    <div className={styles.progressBar} style={{ width: `${processedPercent}%`, backgroundColor: "#2b9e14" }} />
+                    <div className={styles.progressBar} style={{ width: `${processedPercent}%`, backgroundColor: "#00A63E" }} />
                   </div>
                 </div>
 
@@ -65,11 +66,11 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
                   <div className={styles.labelRow}>
                     <span className={`${styles.dot} ${styles.dotOverdue}`} />
                     <span>Overdue</span>
-                    <span>{overdue.toLocaleString()}</span>
+                    <span className={styles.value}>{overdue.toLocaleString()}</span>
+                    <span className={styles.progressPercent}>{overduePercent.toFixed(0)}%</span>
                   </div>
-                  <span className={styles.progressPercent}>{overduePercent.toFixed(0)}%</span>
                   <div className={styles.progressBarBackground}>
-                    <div className={styles.progressBar} style={{ width: `${overduePercent}%`, backgroundColor: "#f02424" }} />
+                    <div className={styles.progressBar} style={{ width: `${overduePercent}%`, backgroundColor: "#E7000B" }} />
                   </div>
                 </div>
               </div>
@@ -87,7 +88,57 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
           />
         </div>
       </div>
+      <div className={styles.totalComplaintsCard}>
+        <div className={styles.leftSectionComplaints}>
+          <div className={styles.iconWrapper}>
+            <img src={RcaIcon} alt="Total Complaints Icon" />
+          </div>
 
+          <div className={styles.totalContent}>
+            <div className={styles.title}>Workflow Progress</div>
+            <div className={styles.totalValue}>{total_complaints.toLocaleString()}</div>
+
+            {/* NEW flex row: progress + donut */}
+            <div className={styles.metricsRow}>
+              <div className={styles.progressGroup}>
+                <div className={styles.progressItem}>
+                  <div className={styles.labelRow}>
+                    <span className={`${styles.dot} ${styles.dotPending}`} />
+                    <span>RCA Pending</span>
+                    <span className={styles.value}>{pending.toLocaleString()}</span>
+                  </div>
+                  <div className={styles.progressBarBackground}>
+                    <div className={styles.progressBar} style={{ width: `${pendingPercent}%`, backgroundColor: "#155DFC" }} />
+                  </div>
+                </div>
+
+                <div className={styles.progressItem}>
+                  <div className={styles.labelRow}>
+                    <span className={`${styles.dot} ${styles.dotProcessed}`} />
+                    <span>RCA Done</span>
+                    <span className={styles.value}>{processed.toLocaleString()}</span>
+                  </div>
+                  <div className={styles.progressBarBackground}>
+                    <div className={styles.progressBar} style={{ width: `${processedPercent}%`, backgroundColor: "#00A63E" }} />
+                  </div>
+                </div>
+
+                <div className={styles.progressItem}>
+                  <div className={styles.labelRow}>
+                    <span className={`${styles.dot} ${styles.dotRca}`} />
+                    <span>Grading Pending</span>
+                    <span className={styles.value}>{overdue.toLocaleString()}</span>
+                  </div>
+                  <div className={styles.progressBarBackground}>
+                    <div className={styles.progressBar} style={{ width: `${overduePercent}%`, backgroundColor: 'rgba(152, 16, 250, 1)' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* END metricsRow */}
+          </div>
+        </div>
+      </div>
       <div className={styles.cycleTimeCard}>
         <div className={styles.leftSectionCycleTime}>
           <div className={styles.iconWrapperWhite}>
@@ -103,12 +154,12 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
 
             <div className={styles.cycleDetails}>
               <div>
-                <div>Avg Time</div>
-                <div>{formatHoursToDays(avg_cycle_time)}</div>
+                <div className={styles.cycleDetailsFirst}>Avg Time</div>
+                <div className={styles.cycleDetailsSecond}>{formatHoursToDays(avg_cycle_time)}</div>
               </div>
               <div>
-                <div>Longest Time</div>
-                <div>{formatHoursToDays(longest_time)}</div>
+                <div className={styles.cycleDetailsFirst}>Longest Time</div>
+                <div className={styles.cycleDetailsSecond}>{formatHoursToDays(longest_time)}</div>
               </div>
             </div>
           </div>
