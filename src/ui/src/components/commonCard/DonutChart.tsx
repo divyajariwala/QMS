@@ -1,4 +1,14 @@
 import React from "react";
+import { Doughnut } from "react-chartjs-2";
+import { Box } from "@mui/material";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface DonutChartProps {
   data: number[];
@@ -12,61 +22,75 @@ const DonutChart: React.FC<DonutChartProps> = ({
   data,
   colors,
   total,
-  width = 140,
-  height = 140,
+  width,
+  height,
 }) => {
-  const radius = 42;
-  const strokeWidth = 12;
-  const cx = 70;
-  const cy = 70;
-  const viewBox = "0 0 140 140";
-  const circumference = 2 * Math.PI * radius;
-
   const sum = data.reduce((a, b) => a + b, 0);
 
+  // Center total display (e.g., 27.3K)
+  const displayTotal =
+    total >= 1000 ? `${(total / 1000).toFixed(1)}K` : String(total);
+
+  // Chart data with white gaps between segments
+  const chartData = {
+    datasets: [
+      {
+        data,
+        backgroundColor: colors,
+        borderWidth: 6,        // create white gaps between segments
+        borderColor: "#fff",     // white gaps
+        hoverBorderColor: "#fff",
+      },
+    ],
+  };
+
+  // Chart options to match SS2 look
+  const options = {
+    responsive: false,
+    maintainAspectRatio: false,
+    cutout: "68%", // thick ring
+    rotation: -Math.PI / 2, // start from top
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: false },
+    },
+    animation: { animateRotate: true, duration: 300 },
+  };
+
+  // No data placeholder
   if (!total || total <= 0 || sum <= 0) {
     return (
-      <svg width={width} height={height} viewBox={viewBox} style={{ display: "block" }}>
-        <circle r={radius} cx={cx} cy={cy} fill="transparent" stroke="#e9edf3" strokeWidth={strokeWidth} />
-        <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fontSize={12} fill="#666">No data</text>
-      </svg>
+      <Box sx={{ width, height, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        <Doughnut data={chartData} options={options} width={width} height={height} />
+        <Box sx={{ position: "absolute", textAlign: "center" }}>
+          <Box sx={{ fontSize: 12, color: "text.secondary" }}>Total</Box>
+          <Box sx={{ fontSize: 14, fontWeight: 700, color: "text.primary" }}>0</Box>
+        </Box>
+      </Box>
     );
   }
 
-  const percentages = data.map((v) => (total > 0 ? v / total : 0));
-  const cumulative = percentages.reduce<number[]>((acc, _, idx) => {
-    if (idx === 0) return [0];
-    acc.push(acc[idx - 1] + percentages[idx - 1]);
-    return acc;
-  }, []);
-  const displayTotal = total >= 1000 ? `${(total / 1000).toFixed(1)}K` : total.toString();
-
   return (
-    <svg width={width} height={height} viewBox={viewBox} style={{ display: "block", userSelect: "none" }}>
-      <circle r={radius} cx={cx} cy={cy} fill="transparent" stroke="#e9edf3" strokeWidth={strokeWidth} />
-      {percentages.map((pct, i) => {
-        const color = colors[i % colors.length];
-        const dashArray = circumference * pct;
-        const dashOffset = circumference * (1 - cumulative[i] - pct);
-        return (
-          <circle
-            key={i}
-            r={radius}
-            cx={cx}
-            cy={cy}
-            fill="transparent"
-            stroke={color}
-            strokeWidth={strokeWidth}
-            strokeDasharray={`${dashArray} ${circumference}`}
-            strokeDashoffset={dashOffset}
-            strokeLinecap="round"
-            transform={`rotate(-90 ${cx} ${cy})`}
-          />
-        );
-      })}
-      <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" fontSize={12} fill="#666">Total</text>
-      <text x="50%" y="60%" textAnchor="middle" dominantBaseline="middle" fontSize={18} fontWeight="700" fill="#000">{displayTotal}</text>
-    </svg>
+    <Box sx={{ width, height, position: "relative", display: "inline-block" }}>
+      <Doughnut data={chartData} options={options} width={width} height={height} />
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          textAlign: "center",
+          userSelect: "none",
+        }}
+      >
+        <Box component="div" sx={{ fontSize: 12, color: "text.secondary" }}>
+          Total
+        </Box>
+        <Box component="div" sx={{ fontSize: 18, fontWeight: 700, color: "text.primary" }}>
+          {displayTotal}
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

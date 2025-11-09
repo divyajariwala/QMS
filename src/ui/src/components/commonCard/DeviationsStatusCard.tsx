@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./StatusCards.module.scss";
-import DeviationsIcon from "../../assets/icons/deviationsCard.svg";
+import DeviationsIcon from "../../assets/icons/container.svg";
 import CycleIcon from "../../assets/icons/cycleTime.svg";
 import { complaintStatsProps } from "src/types";
 import { formatHoursToDays } from "src/helpers";
@@ -25,7 +25,7 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
   return (
     <div className={styles.cardsContainer}>
       <div className={styles.totalComplaintsCard}>
-        <div className={styles.leftSection}>
+        <div className={styles.leftSectionComplaints}>
           <div className={styles.iconWrapper}>
             <img src={DeviationsIcon} alt="Total Complaints Icon" />
           </div>
@@ -73,24 +73,23 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
                   </div>
                 </div>
               </div>
-
-              <div className={styles.donutContainer}>
-                <DonutChart
-                  data={[pending, processed, overdue]}
-                  colors={["#2369f0", "#2b9e14", "#f02424"]}
-                  total={total_complaints}
-                  width={140}
-                  height={140}
-                />
-              </div>
             </div>
             {/* END metricsRow */}
           </div>
         </div>
+        <div className={styles.donutContainer}>
+          <DonutChart
+            data={[pending, processed, overdue]}
+            colors={["#2369f0", "#2b9e14", "#f02424"]}
+            total={total_complaints}
+            width={140}
+            height={140}
+          />
+        </div>
       </div>
 
       <div className={styles.cycleTimeCard}>
-        <div className={styles.leftSection}>
+        <div className={styles.leftSectionCycleTime}>
           <div className={styles.iconWrapperWhite}>
             <img src={CycleIcon} alt="Cycle Time Icon" />
           </div>

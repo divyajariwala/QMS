@@ -3,6 +3,7 @@
   border-radius: 16px;
   height: 100%;
   background-color: #fff;
+  font-family: inherit;
 }
 
 .headerStack {
@@ -34,18 +35,20 @@
   border-radius: 8px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
+  font-family: inherit;
 }
 
 .nonEditLabel {
   font-weight: 600;
   font-size: 16px;
   color: #000;
+  font-family: inherit; 
 }
 
 .percentageBox {
   font-weight: 600;
   font-size: 14px;
-
+  font-family: inherit;  
   padding: 4px 8px;
   border-radius: 6px;
   user-select: none;
@@ -87,6 +90,7 @@
 .nonEditGrid {
   font-size: 13px;
   margin-top: 8px;
+  font-family: inherit; 
 }
 
 .nonEditFieldLabel {
@@ -96,6 +100,7 @@
   letter-spacing: -0.1px;
   color: #5f6d7e;
   margin-bottom: 4px;
+  font-family: inherit; 
 }
 
 .nonEditFieldValue {
@@ -106,7 +111,7 @@
 }
 
 .nonEditFieldValueBold {
-
+  font-family: inherit; 
   font-weight: 700;
   font-size: 15px;
   color: #272d37;
@@ -132,6 +137,7 @@
   border-radius: 8px;
   background-color: #f5f6f7 !important;
   box-shadow: none;
+  font-family: inherit; 
 
   input,
   textarea,
@@ -185,6 +191,7 @@
   display: flex;
   gap: 16px;
   width: 100%;
+  font-family: inherit; 
 }
 
 .editGrid>.MuiGrid-item {
@@ -216,6 +223,7 @@
   line-height: 22px;
   letter-spacing: -0.1px;
   padding: 6px 8px;
+  font-family: inherit; 
 }
 
 .editField,

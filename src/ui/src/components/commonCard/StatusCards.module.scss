@@ -2,7 +2,7 @@
   display: flex;
   gap: 24px;
   width: 100%;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   margin-top: 16px;
 }
 
@@ -14,40 +14,40 @@
   height: 246px;
   box-sizing: border-box;
   border-radius: 12px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Total Complaints Card */
 .totalComplaintsCard {
   display: flex;
-  align-items: center;
-  justify-content: flex-start; /* donut now inside left side */
+  justify-content: flex-start;
+  /* donut now inside left side */
   background: #fff;
-  padding: 24px 32px;
+  padding: 24px;
 }
 
-.leftSection {
+.leftSectionComplaints {
   display: flex;
-  gap: 24px;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+  align-items: flex-start;
+}
+
+.leftSectionCycleTime {
+  display: flex;
   min-width: 0;
   flex: 1;
   align-items: flex-start;
 }
 
 .iconWrapper {
-  background-color: #e8eeff;
-  border-radius: 8px;
-  width: 56px;
-  height: 56px;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
 }
-.iconWrapper img {
-  width: 24px;
-  height: 24px;
-}
+
 
 .totalContent {
   display: flex;
@@ -57,26 +57,39 @@
 }
 
 .title {
-  font-weight: 500;
-  font-size: 14px;
-  color: #656b73;
   margin-bottom: 6px;
   display: flex;
+  width: 355px;
+  height: 20px;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+  color: #4A5565;
 }
 
 .totalValue {
-  font-weight: 700;
-  font-size: 32px;
-  margin-bottom: 12px;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 30px;
+  line-height: 36px;
+  letter-spacing: 0.4px;
+  color: #101828;
+  width: 355px;
+  height: 36px;
 }
 
 /* New: progress + donut row */
 .metricsRow {
   display: flex;
-  align-items: flex-start; /* top-align donut with progress group */
+  align-items: flex-start;
+  /* top-align donut with progress group */
   gap: 24px;
-  min-width: 0;       /* allow progress side to shrink */
-  flex-wrap: nowrap;  /* keep in one row */
+  min-width: 0;
+  /* allow progress side to shrink */
+  flex-wrap: nowrap;
+  /* keep in one row */
 }
 
 /* Progress column (contracts) */
@@ -86,19 +99,17 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 100%;
+  width: 355px;
 }
 
 /* Donut remains fixed size and pinned to top */
 .donutContainer {
-  flex-shrink: 0;
-  width: 140px;
-  height: 140px;
   display: flex;
+  flex-shrink: 1;
   flex-direction: column;
   align-self: start;
-  margin-left: 24px;
-   /* ensure donut sits at top of the row */
+  margin-left: 12px;
+  /* ensure donut sits at top of the row */
 }
 
 /* Contract-friendly progress row */
@@ -106,12 +117,14 @@
   display: grid;
   /* Left column can shrink to 0; right column sizes to its content */
   grid-template-columns: minmax(0, 1fr) max-content;
-  grid-template-rows: auto 12px; /* row 1: labels/percent, row 2: bar */
+  grid-template-rows: auto 12px;
+  /* row 1: labels/percent, row 2: bar */
   column-gap: 12px;
-  row-gap: 8px;
+  row-gap: 4px;
   align-items: center;
   font-size: 14px;
   color: #3b3f44;
+  height: 32px;
 }
 
 .labelRow {
@@ -119,7 +132,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 0; /* critical for ellipsis */
+  min-width: 0;
+  height: 20px;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+  color: #4A5565;
+
+  /* critical for ellipsis */
 }
 
 .dot {
@@ -128,9 +150,18 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
-.dotPending { background-color: #2369f0; }
-.dotProcessed { background-color: #2b9e14; }
-.dotOverdue { background-color: #f02424; }
+
+.dotPending {
+  background-color: #2369f0;
+}
+
+.dotProcessed {
+  background-color: #2b9e14;
+}
+
+.dotOverdue {
+  background-color: #f02424;
+}
 
 /* Middle label contracts with ellipsis */
 .labelRow span:nth-child(2) {
@@ -156,6 +187,7 @@
   color: #7d8590;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  min-width: 18px;
 }
 
 /* Bar spans both columns */
@@ -165,9 +197,11 @@
   background: #eef0f3;
   border-radius: 6px;
   overflow: hidden;
+  height: 6px;
 }
+
 .progressBar {
-  height: 100%;
+  height: 6px;
   border-radius: 6px;
   transition: width 0.3s ease;
 }
@@ -175,25 +209,16 @@
 /* Cycle Time Card */
 .cycleTimeCard {
   display: flex;
-  align-items: center;
   color: #ffffff;
   background: linear-gradient(135deg, #2369f0 0%, #1e5ee3 100%);
-  padding: 24px 32px;
+  padding: 24px;
 }
 
 .iconWrapperWhite {
-  background-color: rgba(255,255,255,0.2);
-  border-radius: 8px;
-  width: 56px;
-  height: 56px;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
-}
-.iconWrapperWhite img {
-  width: 24px;
-  height: 24px;
 }
 
 .cycleContent {
@@ -232,63 +257,8 @@
   flex-direction: column;
   gap: 10px;
 }
-.cycleDetails > div {
+
+.cycleDetails>div {
   display: flex;
   justify-content: space-between;
-  max-width: 220px;
-}
-
-/* ——— Responsive compression ——— */
-@media (max-width: 1280px) {
-  .cardsContainer { gap: 20px; }
-
-  .totalComplaintsCard,
-  .cycleTimeCard { padding: 20px 24px; }
-
-  .leftSection { gap: 16px; }
-  .cycleContent { margin-left: 16px; }
-
-  .metricsRow { gap: 20px; }
-
-  .totalValue { font-size: 28px; }
-  .cycleValue { font-size: 32px; }
-
-  .progressItem { row-gap: 6px; }
-  .progressBarBackground { height: 10px; }
-}
-
-@media (max-width: 1024px) {
-  .cardsContainer { gap: 16px; }
-
-  .totalComplaintsCard,
-  .cycleTimeCard { padding: 16px 20px; }
-
-  .iconWrapper,
-  .iconWrapperWhite { width: 48px; height: 48px; }
-  .iconWrapper img,
-  .iconWrapperWhite img { width: 20px; height: 20px; }
-
-  .leftSection { gap: 12px; }
-  .cycleContent { margin-left: 12px; }
-
-  .metricsRow { gap: 16px; }
-
-  .title,
-  .titleWhite { font-size: 13px; }
-
-  .totalValue { font-size: 24px; }
-  .cycleValue { font-size: 28px; }
-
-  .progressItem {
-    column-gap: 8px;
-    font-size: 13px;
-    grid-template-rows: auto 10px;
-  }
-  .progressPercent { font-size: 12px; }
-  .labelRow { gap: 6px; }
-
-  /* further limit label width on very tight cards */
-  .labelRow span:nth-child(2) { max-width: 60%; }
-
-  .progressBarBackground { height: 8px; }
 }
