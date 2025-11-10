@@ -124,7 +124,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected }) => 
                 className={styles.adverseEventChip}
               />
             )}
-            {!(complaint.case_type.includes("PC") && complaint.case_type.includes("PC")) && 'NA'}
+            {!(complaint.case_type.includes("PC") && complaint.case_type.includes("PC")) && <Box className={styles.infoItemValue}>NA</Box>}
           </div>
         </div>
       </div>

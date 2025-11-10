@@ -83,11 +83,11 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
         </div>
         <div className={styles.donutContainer}>
           <DonutChart
-            data={[pending, processed, overdue]}
-            colors={["#2369f0", "#2b9e14", "#f02424"]}
+            data={[pending, overdue, processed]}
+            colors={["#155DFC", "#E7000B", "#00A63E"]}
             total={total_complaints}
-            width={140}
-            height={140}
+            width={130}
+            height={130}
           />
         </div>
       </div>

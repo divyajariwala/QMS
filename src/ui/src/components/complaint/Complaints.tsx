@@ -77,7 +77,7 @@ const Complaints = () => {
 }, []);
 
 const complaints = caseStatus?.[selected as CaseStatusKey];
-console.log(caseStats);
+
 if (loading) return <p>Loading complaints...</p>;
 
   return (

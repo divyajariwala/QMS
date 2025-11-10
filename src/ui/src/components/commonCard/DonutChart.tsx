@@ -3,12 +3,10 @@ import { Doughnut } from "react-chartjs-2";
 import { Box } from "@mui/material";
 import {
   Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
+  registerables
 } from "chart.js";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(...registerables);
 
 interface DonutChartProps {
   data: number[];
@@ -22,8 +20,8 @@ const DonutChart: React.FC<DonutChartProps> = ({
   data,
   colors,
   total,
-  width,
-  height,
+  width = 130,   // default to 130
+  height = 130,  // default to 130
 }) => {
   const sum = data.reduce((a, b) => a + b, 0);
 
@@ -31,25 +29,26 @@ const DonutChart: React.FC<DonutChartProps> = ({
   const displayTotal =
     total >= 1000 ? `${(total / 1000).toFixed(1)}K` : String(total);
 
-  // Chart data with white gaps between segments
+  // compute a reasonable borderWidth for the smaller donut (avoid visual overlap)
+  const borderWidth = Math.max(3, Math.round(Math.min(width, height) / 26)); // ~5 for 130px
+
   const chartData = {
     datasets: [
       {
         data,
         backgroundColor: colors,
-        borderWidth: 6,        // create white gaps between segments
-        borderColor: "#fff",     // white gaps
+        borderWidth,        // white gaps between segments
+        borderColor: "#fff",
         hoverBorderColor: "#fff",
       },
     ],
   };
 
-  // Chart options to match SS2 look
   const options = {
     responsive: false,
     maintainAspectRatio: false,
-    cutout: "68%", // thick ring
-    rotation: -Math.PI / 2, // start from top
+    cutout: "68%", // thick ring, adjust if you want thicker/thinner
+    rotation: 270, // 180 degrees (left). Change if you want a different start angle
     plugins: {
       legend: { display: false },
       tooltip: { enabled: false },
@@ -57,22 +56,18 @@ const DonutChart: React.FC<DonutChartProps> = ({
     animation: { animateRotate: true, duration: 300 },
   };
 
-  // No data placeholder
-  if (!total || total <= 0 || sum <= 0) {
-    return (
-      <Box sx={{ width, height, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-        <Doughnut data={chartData} options={options} width={width} height={height} />
-        <Box sx={{ position: "absolute", textAlign: "center" }}>
-          <Box sx={{ fontSize: 12, color: "text.secondary" }}>Total</Box>
-          <Box sx={{ fontSize: 14, fontWeight: 700, color: "text.primary" }}>0</Box>
-        </Box>
-      </Box>
-    );
-  }
+  const wrapperStyle = { width: `${width}px`, height: `${height}px`, position: "relative", display: "inline-block" };
 
+  // Render donut (even with zero data to keep layout consistent)
   return (
-    <Box sx={{ width, height, position: "relative", display: "inline-block" }}>
-      <Doughnut data={chartData} options={options} width={width} height={height} />
+    <Box sx={wrapperStyle}>
+      <Doughnut
+        data={chartData}
+        options={options}
+        width={width}
+        height={height}
+        style={{ width: `${width}px`, height: `${height}px` }}
+      />
       <Box
         sx={{
           position: "absolute",
@@ -81,6 +76,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
           transform: "translate(-50%, -50%)",
           textAlign: "center",
           userSelect: "none",
+          pointerEvents: "none",
         }}
       >
         <Box component="div" sx={{ fontSize: 12, color: "text.secondary" }}>
