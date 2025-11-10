@@ -100,6 +100,7 @@
   flex-direction: column;
   gap: 16px;
   width: 355px;
+  margin-top: 4px;
 }
 
 /* Donut remains fixed size and pinned to top */
@@ -280,7 +281,7 @@
 }
 
 .cycleDetails {
-  margin-top: 4px;
+  margin-top: 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;

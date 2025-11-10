@@ -3,6 +3,9 @@ import styles from "./StatusCards.module.scss";
 import DeviationsIcon from "../../assets/icons/container.svg";
 import CycleIcon from "../../assets/icons/cycleTime.svg";
 import RcaIcon from "../../assets/icons/rcaIcon.svg"
+import blueTick from "../../assets/icons/blueTick.svg";
+import purpleTick from "../../assets/icons/purpleTick.svg";
+import greenTickSmall from "../../assets/icons/greenTickSmall.svg";
 import { complaintStatsProps } from "src/types";
 import { formatHoursToDays } from "src/helpers";
 import DonutChart from "./DonutChart";
@@ -103,7 +106,7 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
               <div className={styles.progressGroup}>
                 <div className={styles.progressItem}>
                   <div className={styles.labelRow}>
-                    <span className={`${styles.dot} ${styles.dotPending}`} />
+                    <img src={blueTick} alt="blue tick" />
                     <span>RCA Pending</span>
                     <span className={styles.value}>{pending.toLocaleString()}</span>
                   </div>
@@ -114,7 +117,7 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
 
                 <div className={styles.progressItem}>
                   <div className={styles.labelRow}>
-                    <span className={`${styles.dot} ${styles.dotProcessed}`} />
+                    <img src={greenTickSmall} alt="green tick" />
                     <span>RCA Done</span>
                     <span className={styles.value}>{processed.toLocaleString()}</span>
                   </div>
@@ -125,7 +128,7 @@ const DeviationsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
 
                 <div className={styles.progressItem}>
                   <div className={styles.labelRow}>
-                    <span className={`${styles.dot} ${styles.dotRca}`} />
+                    <img src={purpleTick} alt="purple tick" />
                     <span>Grading Pending</span>
                     <span className={styles.value}>{overdue.toLocaleString()}</span>
                   </div>

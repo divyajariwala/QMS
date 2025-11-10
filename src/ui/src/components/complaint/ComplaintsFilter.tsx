@@ -8,7 +8,7 @@ const ComplaintsFilter: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.searchBar}>
-        <div className={styles.inputWrapper}>
+        <form className={styles.inputWrapper}>
           <span className={styles.searchIcon}>
             <SearchSvg />
           </span>
@@ -28,7 +28,7 @@ const ComplaintsFilter: React.FC = () => {
             </span>
             <span className={styles.searchButtonText}>Search</span>
           </button>
-        </div>
+        </form>
       </div>
 
       <button type="button" className={styles.advancedButton}>
