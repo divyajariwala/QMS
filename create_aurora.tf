@@ -24,7 +24,7 @@ resource "aws_secretsmanager_secret_version" "aurora_master" {
 
 resource "aws_db_subnet_group" "subnet_group" {
   name       = "${var.short_name}-${var.environment}-db-subnet-group"
-  subnet_ids = [var.subnet1, var.subnet2. var.subnet3, var.subnet4]
+  subnet_ids = [var.subnet1, var.subnet2, var.subnet3, var.subnet4]
 }
 
 resource "aws_rds_cluster" "rds_cluster" {
