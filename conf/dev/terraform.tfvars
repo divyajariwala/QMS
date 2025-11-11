@@ -131,7 +131,7 @@ lambda_configs = [
     path = "src/app/classify_complaints"
     environment_variables = {
       env = "dev"
-      step_function_base_name = "complaints"
+      step_function_base_name = "classify-complaints"
       aws_region = "us-east-1"
       audit_log_table_base_name = "complaints-audit-log"
     }
