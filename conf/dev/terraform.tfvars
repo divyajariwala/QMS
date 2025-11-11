@@ -17,63 +17,67 @@ static_website = "ui"
 lambda_execution_role_arn = "arn:aws:iam::120569648189:role/qms-dev-lambda-role"
 step_function_role_arn = "arn:aws:iam::120569648189:role/qms-dev-step-function-role"
 event_bridge_role_arn = "arn:aws:iam::120569648189:role/qms-dev-events-role"
-dynamodb_configs = [
-  {
-    table_name = "complaints-metadata"
-    part_key = {
-      key_name = "PK"
-      key_type = "S"
-    }
-    sort_key = {
-      key_name = "SK"
-      key_type = "S"
-    }
-    global_secondary_indexes = [
-      {
-        name = "GSI1"
-        hash_key = "GSI1PK"
-        range_key = "GSI1SK"
-        projection_type = "ALL"
-      }
-    ]
-  },
-  {
-    table_name = "complaints-audit-log"
-    part_key = {
-      key_name = "PK"
-      key_type = "S"
-    }
-    sort_key = {
-      key_name = "SK"
-      key_type = "S"
-    }
-    global_secondary_indexes = [
-      {
-        name = "GSI1"
-        hash_key = "GSI1PK"
-        range_key = "GSI1SK"
-        projection_type = "ALL"
-      },
-      {
-        name = "GSI2"
-        hash_key = "GSI2PK"
-        range_key = "GSI2SK"
-        projection_type = "ALL"
-      }
-    ]
-  },
-  {
-    table_name = "complaints-unified-lookup"
-    part_key = {
-      key_name = "PK"
-      key_type = "S"
-    }
-    sort_key = {
-      key_name = "SK"
-      key_type = "S"
-    }
-  }
-]
+serverless_min_acu = "2"
+serverless_max_acu = "16"
+
+# dynamodb_configs = [
+#   {
+#     table_name = "complaints-metadata"
+#     part_key = {
+#       key_name = "PK"
+#       key_type = "S"
+#     }
+#     sort_key = {
+#       key_name = "SK"
+#       key_type = "S"
+#     }
+#     global_secondary_indexes = [
+#       {
+#         name = "GSI1"
+#         hash_key = "GSI1PK"
+#         range_key = "GSI1SK"
+#         projection_type = "ALL"
+#       }
+#     ]
+#   },
+#   {
+#     table_name = "complaints-audit-log"
+#     part_key = {
+#       key_name = "PK"
+#       key_type = "S"
+#     }
+#     sort_key = {
+#       key_name = "SK"
+#       key_type = "S"
+#     }
+#     global_secondary_indexes = [
+#       {
+#         name = "GSI1"
+#         hash_key = "GSI1PK"
+#         range_key = "GSI1SK"
+#         projection_type = "ALL"
+#       },
+#       {
+#         name = "GSI2"
+#         hash_key = "GSI2PK"
+#         range_key = "GSI2SK"
+#         projection_type = "ALL"
+#       }
+#     ]
+#   },
+#   {
+#     table_name = "complaints-unified-lookup"
+#     part_key = {
+#       key_name = "PK"
+#       key_type = "S"
+#     }
+#     sort_key = {
+#       key_name = "SK"
+#       key_type = "S"
+#     }
+#   }
+# ]
+
 lambda_configs = [
   {
     function_name = "create-complaint"
