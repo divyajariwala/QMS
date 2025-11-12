@@ -19,5 +19,5 @@ variable "lambda_name" {
 }
 
 variable "trigger_path" {
-    type = string
+  type = string
 }

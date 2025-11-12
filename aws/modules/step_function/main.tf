@@ -18,7 +18,7 @@ resource "aws_sfn_state_machine" "state_machine" {
     level                  = "ALL"
     include_execution_data = true
     # Step Functions requires the :* suffix
-    log_destination        = "${aws_cloudwatch_log_group.log_group_for_sfn.arn}:*"
+    log_destination = "${aws_cloudwatch_log_group.log_group_for_sfn.arn}:*"
   }
 
   tracing_configuration {

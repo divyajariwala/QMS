@@ -7,21 +7,21 @@ variable "visibility_timeout" {
 }
 
 variable "max_receive_count" {
-    type = number
+  type = number
 }
 
 variable "lambda_function_name" {
-    type = string
+  type = string
 }
 
 variable "batch_size" {
-    type = number
+  type = number
 }
 
 variable "max_batch_window" {
-    type = number
+  type = number
 }
 
 variable "max_concurrency" {
-    type = number
+  type = number
 }

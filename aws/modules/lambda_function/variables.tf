@@ -39,7 +39,7 @@ variable "subnet4" {
 }
 
 variable "environment_variables" {
-  type = map(string)
+  type    = map(string)
   default = {}
 }
 

@@ -7,15 +7,15 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
     create_before_destroy = true
   }
   binary_media_types = [
-      "multipart/form-data",
-      "image/png",
-      "application/pdf",
-      "application/octet-stream"
+    "multipart/form-data",
+    "image/png",
+    "application/pdf",
+    "application/octet-stream"
   ]
 }
 
 resource "aws_api_gateway_deployment" "api_deployment" {
-  depends_on = [module.create_api]
+  depends_on  = [module.create_api]
   rest_api_id = aws_api_gateway_rest_api.api_gateway.id
   lifecycle {
     create_before_destroy = true
@@ -27,6 +27,6 @@ resource "aws_api_gateway_deployment" "api_deployment" {
 
 resource "aws_api_gateway_stage" "api_stage" {
   deployment_id = aws_api_gateway_deployment.api_deployment.id
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  stage_name = var.environment
+  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  stage_name    = var.environment
 }

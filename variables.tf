@@ -68,27 +68,27 @@ variable "security_group_id" {
 
 variable "lambda_configs" {
   type = list(object({
-    function_name = string
-    path = string
+    function_name         = string
+    path                  = string
     environment_variables = map(string)
     api_gateway_paths = optional(list(object({
-      path_name = string
+      path_name   = string
       http_method = string
     })))
     event_trigger = optional(list(object({
-      trigger_name = string
+      trigger_name        = string
       trigger_description = string
-      trigger_bucket = string
-      trigger_path = string
+      trigger_bucket      = string
+      trigger_path        = string
     })))
     sqs_trigger = optional(list(object({
-      queue_name = string
+      queue_name         = string
       visibility_timeout = number
-      max_receive_count = number
-      batch_size = number
-      max_batch_window = number
-      max_concurrency = number
-    }))) 
+      max_receive_count  = number
+      batch_size         = number
+      max_batch_window   = number
+      max_concurrency    = number
+    })))
   }))
 }
 
