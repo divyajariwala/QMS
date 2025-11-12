@@ -30,7 +30,6 @@ resource "aws_db_subnet_group" "subnet_group" {
 resource "aws_rds_cluster" "rds_cluster" {
   cluster_identifier                  = "${var.short_name}-${var.environment}-aurora-cluster"
   engine                               = "aurora-postgresql"
-  engine_version                       = "15.4"
   database_name                        = "qms"
   master_username                      = "postgres"
   master_password                      = random_password.aurora_master_password.result
@@ -55,7 +54,6 @@ resource "aws_rds_cluster_instance" "cluster_instance" {
   identifier          = "${var.short_name}-${var.environment}-aurora-cluster-instance-1"
   cluster_identifier  = aws_rds_cluster.rds_cluster.id
   engine              = aws_rds_cluster.rds_cluster.engine
-  engine_version      = aws_rds_cluster.rds_cluster.engine_version
   instance_class      = "db.serverless"
 
   publicly_accessible = false
