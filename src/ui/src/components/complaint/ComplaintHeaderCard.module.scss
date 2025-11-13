@@ -52,7 +52,6 @@
 }
 
 .caseIdText {
-
   font-weight: 600;
   font-size: 28px;
   line-height: 38px;
@@ -119,6 +118,38 @@
 
   &:hover {
     background-color: #0050b5;
+  }
+
+  svg {
+    font-size: 18px;
+    color: #fff;
+  }
+}
+
+
+
+.modifyButton {
+  text-transform: none;
+  background-color: #ffffff;
+
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: #000;
+  height: 32px;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: grey;
   }
 
   svg {

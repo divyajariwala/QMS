@@ -1,311 +1,124 @@
 .cardsContainer {
   display: flex;
-  gap: 24px;
+  gap: 16px;
   width: 100%;
-  font-family: inherit;
   margin-top: 16px;
 }
 
-/* Shared card constraints */
-.totalComplaintsCard,
-.cycleTimeCard {
-  flex: 1 1 0;
-  min-width: 0;
-  height: 246px;
-  box-sizing: border-box;
-  border-radius: 12px;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Total Complaints Card */
-.totalComplaintsCard {
-  display: flex;
-  justify-content: flex-start;
-  /* donut now inside left side */
+.card {
   background: #fff;
-  padding: 24px;
-}
-
-.leftSectionComplaints {
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgb(0 0 0 / 0.12);
+  flex: 1 1 0%;
+  max-width: none;
   display: flex;
-  gap: 16px;
-  min-width: 0;
-  flex: 1;
-  align-items: flex-start;
-}
-
-.leftSectionCycleTime {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  align-items: flex-start;
-}
-
-.iconWrapper {
-  display: flex;
-  justify-content: center;
+  flex-direction: row;
+  padding: 16px 20px;
   align-items: center;
+  justify-content: space-between;
+  height: 146px;
+}
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #5F6D7E;
+    margin: 0;
+    white-space: nowrap;
+    font-family: 'Inter';
+    line-height: 20px;
+    letter-spacing: -0.1px;
+  }
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
 }
 
+.cardValue {
+  font-family: 'Inter';
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 30px;
+  letter-spacing: -1%;
+  color: #272D37;
+}
 
-.totalContent {
+.legendColumn {
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  flex: 1;
+  width: 40%;
 }
 
-.title {
-  margin-bottom: 6px;
-  display: flex;
-  width: 355px;
-  height: 20px;
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.15px;
-  color: #4A5565;
-}
-
-.totalValue {
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 30px;
-  line-height: 36px;
-  letter-spacing: 0.4px;
-  color: #101828;
-  width: 355px;
-  height: 36px;
-}
-
-/* New: progress + donut row */
-.metricsRow {
-  display: flex;
-  align-items: flex-start;
-  /* top-align donut with progress group */
-  gap: 24px;
-  min-width: 0;
-  /* allow progress side to shrink */
-  flex-wrap: nowrap;
-  /* keep in one row */
-}
-
-/* Progress column (contracts) */
-.progressGroup {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 355px;
-  margin-top: 4px;
-}
-
-/* Donut remains fixed size and pinned to top */
-.donutContainer {
-  display: flex;
-  flex-shrink: 1;
-  flex-direction: column;
-  align-self: start;
-  margin-left: 12px;
-  /* ensure donut sits at top of the row */
-}
-
-/* Contract-friendly progress row */
-.progressItem {
-  display: grid;
-  /* Left column can shrink to 0; right column sizes to its content */
-  grid-template-columns: minmax(0, 1fr) max-content;
-  grid-template-rows: auto 12px;
-  row-gap: 4px;
-  align-items: center;
-  font-size: 14px;
-  color: #3b3f44;
-  height: 32px;
-}
-
-.labelRow {
-  grid-column: 1;
+.legendItem {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  min-width: 0;
-  height: 20px;
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.15px;
-  color: #4A5565;
+  color: #000000;
+  white-space: nowrap;
+  padding: 0;
+  font-family: 'Inter';
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
 
-  /* critical for ellipsis */
+  &:not(:last-child) {
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  &:only-child {
+    border-bottom: 1px solid #e0e0e0;
+  }
+}
+
+.legendValue {
+  color: #222;
+  font-weight: 600;
+  margin-left: 6px;
+  font-family: 'Inter';
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+  width: 8px;
+  height: 8px;
   flex-shrink: 0;
+  border-radius: 3px;
 }
 
 .dotPending {
-  background-color: #155DFC;
+  background-color: #0060D7;
 }
 
 .dotProcessed {
-  background-color: #00A63E;
+  background-color: #4EB523;
 }
 
 .dotOverdue {
-  background-color: #E7000B;
+  background-color: #F7C8C4;
 }
 
-.dotRca {
-  background-color: rgba(152, 16, 250, 1);
-}
-
-/* Middle label contracts with ellipsis */
-.labelRow span:nth-child(2) {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.dotWithText {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   white-space: nowrap;
-}
 
-/* Count on far right within labelRow */
-.labelRow span:last-child {
-  margin-left: auto;
-  color: #1f2328;
-  font-variant-numeric: tabular-nums;
-  flex: 0 0 auto;
-}
-
-/* Percent column on the right */
-.progressPercent {
-  grid-column: 2;
-  text-align: right;
-  color: #6A7282;
-  white-space: nowrap;
-  min-width: 27px;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0px;
-}
-
-.value {
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 14px;
-  color: #101828;
-  line-height: 20px;
-  letter-spacing: -0.15px;
-}
-
-/* Bar spans both columns */
-.progressBarBackground {
-  grid-column: 1 / span 2;
-  height: 12px;
-  background: #eef0f3;
-  border-radius: 6px;
-  overflow: hidden;
-  height: 6px;
-}
-
-.progressBar {
-  height: 6px;
-  border-radius: 6px;
-  transition: width 0.3s ease;
-}
-
-/* Cycle Time Card */
-.cycleTimeCard {
-  display: flex;
-  color: #ffffff;
-  background: linear-gradient(135deg, #2369f0 0%, #1e5ee3 100%);
-  padding: 24px;
-}
-
-.iconWrapperWhite {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.cycleContent {
-  margin-left: 24px;
-  flex: 1;
-  min-width: 0;
-}
-
-.titleWhite {
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.15px;
-  color: #DBEAFE;
-}
-
-.cycleValue {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 30px;
-  line-height: 36px;
-  letter-spacing: 0.4px;
-  color: #ffffff;
-}
-
-.cycleChange {
-  width: 56px;
-  height: 20px;
-  background-color: rgba(0, 201, 80, 0.2);
-  border-radius: 6px;
-  padding-left: 12px;
-  color: #123e00;
-  display: flex;
-  align-items: center;
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0px;
-  color: rgba(123, 241, 168, 1);
-}
-
-.cycleDetails {
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.cycleDetails>div {
-  display: flex;
-  justify-content: space-between;
-}
-
-.cycleDetailsFirst {
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0px;
-  color: rgba(219, 234, 254, 1);
-}
-
-.cycleDetailsSecond {
-  color: rgba(255, 255, 255, 1);
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.15px;
+  span {
+    font-family: 'Inter';
+  }
 }

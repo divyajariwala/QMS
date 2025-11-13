@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Box, Grid } from '@mui/material';
 import ProductComplaintIcon from "../../assets/icons/productComplaint.svg";
 import AdverseEventIcon from "../../assets/icons/adverseEvent.svg";
-import ComplaintHeaderCard from './ComplaintHeaderCard';
+import ComplaintInterHeaderCard from './ComplaintInterHeaderCard';
 import ComplaintSecondaryInfo from './ComplaintSecondaryInfo';
 import ComplaintAISummary from './ComplaintAISummary';
 import ComplaintNarrative from './ComplaintNarrative';
@@ -21,7 +21,7 @@ import Notification from '@components/Notification/Notification';
 import { MockComplaintDetailApiResponse } from 'src/mockData/mockData';
 import styles from "./ComplaintsResult.module.scss";
 
-const ComplaintsDetails: React.FC = () => {
+const ComplaintsIntermediate: React.FC = () => {
   const [open, setOpen] = useState(false);
   //const [complaints, setComplaints] = useState<ComplaintCategoryItem[]>(complaintCategories);
   const [complaintDetails, setComplaintDetails] = useState<ComplaintDetail | null>(null);
@@ -107,6 +107,13 @@ const ComplaintsDetails: React.FC = () => {
     },
   ];
 
+  const navigate = useNavigate();
+  
+    const handleClassify = () => {
+      console.log('clicked')
+      navigate(`/approveComplaints/${complaintDetails?.case_id}`);
+    };
+
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -126,9 +133,9 @@ const ComplaintsDetails: React.FC = () => {
   return (
     <Box className={styles.rootBox}>
       <CommonBreadcrumbs items={items} />
-      <ComplaintHeaderCard
+      <ComplaintInterHeaderCard
         complaintData={complaintHeaderData}
-        onApproveAndSend={handleSubmit}
+        onApproveAndSend={() => {}}
         caseStatus={complaintDetails?.caseStatus}
         isApproved={isApproved}
       />
@@ -140,26 +147,21 @@ const ComplaintsDetails: React.FC = () => {
         adverseEventChipClassName={styles.adverseEventChip}
         caseType={complaintDetails?.case_type as string[]}
       />
-      <ComplaintAISummary ai_summary={complaintDetails?.ai_summary as string} />
-      <Grid container spacing={3} className={styles.gridWithMarginTop}>
+      <Grid container spacing={3} className={styles.gridWithMarginTop} mt={1}>
         <Grid item xs={12} md={4.9}>
           <ComplaintNarrative narrative={complaintDetails?.narrative as string} />
         </Grid>
         <Grid item xs={12} md={7.1}>
-          <ComplaintCategory
-            complaintCategories={complaintDetails?.category_details || []}
-            setComplaintCategories={(newCategoryDetails) => {
-              setComplaintDetails((prev) => {
-                if (!prev) return prev;
-                // Force deep clone
-                const clonedPrev = JSON.parse(JSON.stringify(prev));
-                clonedPrev.category_details = newCategoryDetails;
-                console.log("Setting complaintDetails with cloned data:", clonedPrev);
-                return clonedPrev;
-              });
-            }}
-
-          />
+          <div className={styles.cardBox}> 
+            <h3 className={styles.cardTitle}>Complaint Category</h3> 
+            <p className={styles.cardSubtitle}>Please review and modify.</p>
+          <div className={styles.emptyCategory}>
+            <p className={styles.emptyCategoryText}>There is no complaint category created.</p>
+            <button className={styles.classifyBtn} onClick={handleClassify}>
+              Classify Complaint →
+            </button>
+          </div>
+          </div>
         </Grid>
       </Grid>
       <Notification open={open} onClose={handleCloseNotification} />
@@ -167,4 +169,4 @@ const ComplaintsDetails: React.FC = () => {
   );
 };
 
-export default ComplaintsDetails;
+export default ComplaintsIntermediate;

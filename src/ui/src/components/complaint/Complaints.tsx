@@ -14,6 +14,7 @@ import ComplaintsStatusCard from '@components/commonCard/ComplaintsStatusCard';
 import { createComplaint } from 'src/services/api.service';
 import { fetchComplaints } from 'src/services/api.service';
 import { getComplaintsApiResponse, CaseStatusKey } from 'src/types';
+import { MockComplaintsApiResponse } from 'src/mockData/mockData';
 import { mapped } from 'src/constants';
 import { useAuth } from "../../auth/useAuth";
 
@@ -64,8 +65,8 @@ const Complaints = () => {
   useEffect(() => {
   const fetchData = async () => {
     try {
-      const res = await fetchComplaints();
-      setData(res);
+      // const res = await fetchComplaints();
+      setData(MockComplaintsApiResponse);
     } catch (err: any) {
       console.log(err.message)
     } finally {

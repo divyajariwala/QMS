@@ -20,6 +20,7 @@ import { COMPLAINT_ID_NAME, COMPLAINT_SESSION_ID } from "./constants";
 import Deviations from "@components/deviations/Deviations";
 import CreateNarrative from "@components/Complaints/createNarrative";
 import Complaints from "@components/complaint/Complaints";
+import ComplaintsIntermediate from "@components/complaint/ComplaintsIntermediate";
 import ComplaintsDetails from "@components/complaint/ComplaintsDetails";
 // import Unauthorized from './components/Unauthorized';
 
@@ -102,6 +103,14 @@ const App = () => {
                 />
                 <Route
                   path="/complaints/:complaintId"
+                  element={
+                    <ProtectedRoute>
+                      <ComplaintsIntermediate />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/approveComplaints/:complaintId"
                   element={
                     <ProtectedRoute>
                       <ComplaintsDetails />

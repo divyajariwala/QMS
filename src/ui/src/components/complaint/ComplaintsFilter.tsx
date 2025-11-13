@@ -30,10 +30,6 @@ const ComplaintsFilter: React.FC = () => {
           </button>
         </form>
       </div>
-
-      <button type="button" className={styles.advancedButton}>
-        Advanced Search
-      </button>
     </div>
   );
 };

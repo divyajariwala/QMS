@@ -61,7 +61,6 @@
 }
 
 .caseNumberText {
-
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
@@ -183,4 +182,46 @@
   font-size: 14px;
   line-height: 20px;
   letter-spacing: -0.1px;
+}
+
+.emptyCategory {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #eef2f6;
+  border-radius: 6px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.emptyCategoryText {
+  color: #7b8794;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+
+.classifyBtn {
+  background: #1e73ff;
+  /* primary blue */
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(30, 115, 255, 0.18);
+}
+
+.classifyBtn {
+  filter: brightness(0.95);
+}
+
+.cardBox {
+  padding: 16px;
+  border-radius: 16px;
+  height: 100%;
+  background-color: #fff;
+  font-family: inherit;
 }

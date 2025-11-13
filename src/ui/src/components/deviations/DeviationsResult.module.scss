@@ -1,223 +1,264 @@
-.chipBase {
-  border-radius: 5px;
-  padding: 4px 10px;
-  ;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.1px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.adverseEventChip {
-  @extend .chipBase;
-  color: #eea23e;
-  background-color: #fff8eb;
-}
-
-.rootBox {
-  min-height: 100vh;
-}
-
-.gridWithMarginTop {
-  margin-top: 16px;
-}
-
-
-.complaintsCardContainer {
-  background-color: #fff;
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+.card {
+  background: #fff;
+  border-radius: 8px;
   padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
 
-.headerRow {
-  width: 100%;
+.headerRight {
   display: flex;
-  flex-direction: row;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  margin-left: 12px;
 }
 
-.statusText {
-  ;
-  font-weight: 600;
+/* Header row */
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status {
   font-size: 12px;
-  line-height: 24px;
-  letter-spacing: -0.1px;
-  text-transform: uppercase;
-  color: #3b3b3b;
-  margin: 0;
-}
-
-.caseNumberText {
-  ;
   font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
-  letter-spacing: -0.1px;
+  color: #6b7280;
+  /* grey */
   text-transform: uppercase;
-  color: #0089eb;
-  margin: 0;
 }
 
-.infoRow {
-  display: flex;
-  flex-direction: row;
-  gap: 64px;
-  ;
-  font-weight: 400;
+.caseNumber {
   font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.1px;
-  color: #5F6D7E;
-}
-
-.infoItemColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.infoItemLabel {
-  ;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.1px;
-  color: #5f6d7e;
-  margin: 0;
-}
-
-.infoItemValue {
-  ;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 22px;
-  letter-spacing: -0.1px;
-  color: #272d37;
-  margin: 0;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.caseTypeRow {
-  display: flex;
-  flex-direction: row;
-  gap: 4px;
-  align-items: center;
-}
-
-.bottomRow {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+  font-weight: 700;
+  color: #0b69d3;
+  /* blue */
   cursor: pointer;
+  text-decoration: none;
 }
 
-.shortDescription {
-  ;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.1px;
-  color: #5f6d7e;
-  margin: 0;
-}
-
-.seeDetailsText {
-  ;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 20px;
-  color: #437ef7;
-  margin-right: 4px;
-}
-
-.seeDetailsRow {
+/* Received date inline */
+.receivedDate {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  margin-left: 8px;
+  color: #475569;
+  font-size: 13px;
 }
 
-.stackColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.dateIcon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
 }
 
-.iconValueRow {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 4px;
+.receivedLabel {
+  color: #475569;
 }
 
-.infoItemIcon {
-  vertical-align: middle;
+.receivedValue {
+  font-weight: 700;
+  color: #1f2937;
 }
 
-.productComplaintsChip {
-  @extend .chipBase;
-  color: #2a82f8;
-  background-color: #e3f0ff;
-  border-radius: 5px;
-  padding: 2px 8px;
+/* Small top-right chip */
+.dueChip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-family: Inter, sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.1px;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 28px;
 }
 
-.container {
+.dueIcon {
+  display: inline-block;
+}
+
+.dueOverdue {
+  background: #fff1f0;
+  color: #d33;
+}
+
+.dueToday {
+  background: #fff7ed;
+  color: #b04f00;
+}
+
+.dueUpcoming {
+  background: #fff8e6;
+  color: #b36b00;
+}
+
+/* Description */
+.description {
+  margin: 0;
+  color: #5f6d7e;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Progress section */
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progressLabel {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.progressPercent {
+  color: #586069;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.progressBar {
+  height: 8px;
+  border-radius: 6px;
+  background-color: #f1f5f9;
+}
+
+/* Steps row */
+.stepsRow {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: start;
+  width: 100%;
+}
+
+.stepColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 50%;
+}
+
+.stepHeader {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  ;
+  gap: 8px;
+}
+
+.stepLabel {
   font-size: 14px;
-  color: #333;
-  margin-top: 8px;
+  color: #39404a;
 }
 
-.idText {
-  color: #333;
-  font-weight: 700;
-  cursor: default;
-  ;
+/* Start button style to look like screenshot (outlined blue) */
+.startButton {
+  border-radius: 6px;
+  text-transform: none;
+  color: #0b69d3;
+  border-color: rgba(11, 105, 211, 0.2);
+  justify-content: flex-start;
 }
 
-.dateGroup {
-  display: flex;
+/* Waiting pill */
+.waitingPill {
+  display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
+  gap: 8px;
+  background: #f3f4f6;
+  color: #64748b;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  height: 36px;
+}
 
-  .dateIcon {
-    color: #666;
-    font-size: 20px;
+/* responsive */
+@media (max-width: 720px) {
+  .headerTop {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
-  .label {
-    color: #444;
-    ;
+  .stepsRow {
+    flex-direction: column;
+    gap: 12px;
   }
+}
 
-  .date {
-    font-weight: 700;
-    ;
-  }
+.progressBarDark {
+  /* override MUI inner bar */
+}
+.progressBarDark .MuiLinearProgress-bar {
+  background-color: #0b0b0b !important; /* dark fill like screenshot */
+}
+.progressBar {
+  height: 8px;
+  border-radius: 6px;
+  background-color: #f1f5f9;
+}
+
+/* Completed green pill */
+.completedPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #e6f9ee;
+  color: #0f9d57;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  height: 36px;
+}
+.completedIcon {
+  color: #0f9d57;
+  font-size: 18px;
+}
+
+/* Purple outlined Start Grading button */
+.startGradingButton {
+  border-radius: 6px;
+  text-transform: none;
+  color: #6b21a8; /* purple text */
+  border: 1px solid rgba(107,33,168,0.4);
+  justify-content: center;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* keep existing waitingPill and startButton classes from prior file */
+
+/* small responsive tweak */
+@media (max-width: 720px) {
+  .stepsRow { flex-direction: column; gap: 12px; }
 }

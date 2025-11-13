@@ -16,13 +16,11 @@ const StatusCard: React.FC<StatusCardProps> = ({ iconSrc, iconAlt, title, cardVa
         </div>
       </div>
 
-      {legend && (
-        <div className={styles.cardLegend}>
+      {legend && (      
           <div className={styles.legendColumn}>
             {legend.map(({ colorClass, label, value }) => (
               <LegendItem key={label} colorClass={colorClass} label={label} value={value} />
             ))}
-          </div>
         </div>
       )}
     </div>
