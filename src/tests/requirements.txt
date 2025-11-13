@@ -11,3 +11,4 @@ pandas==2.3.3
 pylint
 PyMuPDF==1.26.5
 Pillow==10.4.0
+psycopg==3.2.12
