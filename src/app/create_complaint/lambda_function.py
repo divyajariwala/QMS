@@ -6,17 +6,32 @@ import string
 from datetime import datetime, timezone
 
 import boto3
+import psycopg
+from psycopg.rows import dict_row
+
+try:
+    from secrets_util import get_secret
+except ImportError:
+    from .secrets_util import get_secret
+
 
 # Environment variables
 ENV = os.environ.get('env', 'dev')
 CODE_STRATEGY = os.environ.get('CODE_STRATEGY', 'timestamp_random')
 SQS_QUEUE_BASE_NAME = os.environ.get('sqs_queue_base_name', 'preload-complaints')
 SQS_QUEUE_NAME = f"qms-{ENV}-{SQS_QUEUE_BASE_NAME}"
+DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
+DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
+DB_REGION = os.environ.get('db_region', 'us-east-1')
 
 
 # Setup logging
 logger = logging.getLogger("create_complaint_lambda")
 logger.setLevel(logging.INFO)
+
+# Cache for database credentials and connection string
+_db_credentials = None
+_connection_string = None
 
 
 def lambda_handler(event, context):
@@ -56,11 +71,14 @@ def lambda_handler(event, context):
         if not narrative:
             return _response(400, "Narrative is required")
 
-        if len(narrative) > 1500:
-            return _response(400, "Narrative exceeds maximum length of 1500 characters")
-
         # Generate unique complaint code
         complaint_code = generate_complaint_code(CODE_STRATEGY)
+        created_by = _get_user_from_event(event)
+        now = datetime.now(timezone.utc)
+
+        # Get database connection string
+        conninfo = get_connection_string()
+        logger.info(conninfo)
 
         # Create complaint message
         now = datetime.now(timezone.utc)
@@ -124,6 +142,41 @@ def lambda_handler(event, context):
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
         return _response(500, f"Internal server error: {str(e)}")
+
+
+def get_connection_string():
+    """
+    Build PostgreSQL connection string from credentials in Secrets Manager.
+    Credentials are cached to avoid repeated API calls.
+
+    Returns:
+        str: PostgreSQL connection string in format:
+             "postgresql://user:password@host:port/dbname"
+    """
+    global _connection_string, _db_credentials
+
+    if _connection_string is not None:
+        return _connection_string
+
+    try:
+        # Use the existing secrets_util function
+        _db_credentials = get_secret(DB_SECRET_NAME, DB_REGION)
+
+        # Build connection string
+        host = _db_credentials['host']
+        port = _db_credentials.get('port', 5432)
+        dbname = _db_credentials['dbname']
+        user = _db_credentials['username']
+        password = _db_credentials['password']
+
+        _connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+
+        logger.info(f"Database connection string built from secret: {DB_SECRET_NAME}")
+        return _connection_string
+
+    except Exception as e:
+        logger.error(f"Error building connection string: {str(e)}")
+        raise
 
 
 def generate_complaint_code(strategy='timestamp_random'):

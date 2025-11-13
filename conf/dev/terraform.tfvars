@@ -85,6 +85,8 @@ lambda_configs = [
     environment_variables = {
       env                 = "dev"
       sqs_queue_base_name = "preload-complaints"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region = "us-east-1"
     }
     api_gateway_paths = [
       {

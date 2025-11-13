@@ -10,12 +10,53 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app'))
 from create_complaint import lambda_function
 
 
+@pytest.fixture(autouse=True)
+def mock_all_external_dependencies():
+    """
+    Auto-mock all external dependencies for ALL tests.
+    This fixture runs automatically for every test.
+    """
+    with patch('create_complaint.lambda_function.get_secret') as mock_get_secret, \
+            patch('create_complaint.lambda_function.psycopg.connect') as mock_psycopg_connect:
+        # Mock Secrets Manager response
+        mock_get_secret.return_value = {
+            'host': 'test-db.cluster-xxxxx.us-east-1.rds.amazonaws.com',
+            'port': 5432,
+            'dbname': 'test_qms',
+            'username': 'test_user',
+            'password': 'test_password'
+        }
+
+        # Mock PostgreSQL connection (psycopg3 style with context managers)
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = {
+            'complaint_id': 'CAS-20241030154523789456',
+            'narrative': 'Test narrative',
+            'created_at': datetime.now(timezone.utc),
+            'created_by': 'test@example.com'
+        }
+
+        mock_conn = MagicMock()
+        mock_conn.__enter__ = Mock(return_value=mock_conn)
+        mock_conn.__exit__ = Mock(return_value=False)
+        mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+        mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+
+        mock_psycopg_connect.return_value = mock_conn
+
+        # Reset cache before each test
+        from create_complaint import lambda_function
+        lambda_function._db_credentials = None
+        lambda_function._connection_string = None
+
+        yield
+
+
 class TestLambdaHandler:
     """Unit tests for the main lambda_handler function"""
-
+    @patch('create_complaint.lambda_function.boto3.client')
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
     @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
-    @patch('boto3.client')
     def test_successful_complaint_creation(self, mock_boto3):
         """Test: Successful complaint creation with valid narrative"""
         # Mock SQS client
@@ -114,27 +155,42 @@ class TestLambdaHandler:
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
     @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
-    def test_narrative_too_long(self, mock_boto3):
-        """Test: Error when narrative exceeds 1500 characters"""
+    def test_narrative_no_length_limit(self, mock_boto3):
+        """Test: Success with very long narrative (no length limit)"""
         mock_sqs = Mock()
         mock_boto3.return_value = mock_sqs
         mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
-        mock_sqs.send_message.return_value = {'MessageId': 'test-message-123'}
+        mock_sqs.send_message.return_value = {'MessageId': 'test-message-long'}
 
-        # Create narrative with 1501 characters (over limit)
-        long_narrative = 'a' * 1501
+        # Create narrative with 5000 characters (well beyond old 1500 limit)
+        very_long_narrative = 'a' * 5000
 
         event = {
-            'body': json.dumps({'narrative': long_narrative}),
+            'body': json.dumps({'narrative': very_long_narrative}),
             'headers': {'content-type': 'application/json'}
         }
 
-        result = lambda_function.lambda_handler(event, None)
+        context = Mock()
+        context.request_id = 'req-long'
 
-        assert result['statusCode'] == 400
+        result = lambda_function.lambda_handler(event, context)
+
+        # Should succeed with no length limit
+        assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['success'] is False
-        assert "exceeds maximum length" in body['message']
+        assert body['success'] is True
+        assert body['message'] == "Complaint created and queued for processing"
+
+        # Verify the full narrative was preserved
+        assert body['data']['complaint']['narrative'] == very_long_narrative
+        assert len(body['data']['complaint']['narrative']) == 5000
+
+        # Verify SQS was called with the full narrative
+        call_args = mock_sqs.send_message.call_args
+        message_body = json.loads(call_args[1]['MessageBody'])
+        assert message_body['narrative'] == very_long_narrative
+        assert len(message_body['narrative']) == 5000
+
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
     @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
