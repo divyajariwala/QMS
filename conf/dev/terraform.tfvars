@@ -189,6 +189,19 @@ lambda_configs = [
         http_method = "POST"
       }
     ]
+  },
+  {
+    function_name = "auth-callback"
+    path          = "src/app/auth_callback"
+    environment_variables = {
+      env                 = "dev"
+    }
+    api_gateway_paths = [
+      {
+        path_name   = "authCallback"
+        http_method = "POST"
+      }
+    ]
   }
 ]
 
