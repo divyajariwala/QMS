@@ -7,8 +7,8 @@ boto3
 freezegun
 requests-mock
 openpyxl==3.1.2
-pandas==2.3.3
+pandas==2.3.2
 pylint
-PyMuPDF==1.26.5
+PyMuPDF==1.26.0
 Pillow==10.4.0
-psycopg==3.2.12
+psycopg[binary]==3.2.12

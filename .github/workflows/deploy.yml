@@ -32,7 +32,7 @@ jobs:
       - name: Download manylinux wheels for all functions
         env:
           PYDIGITS: "312"
-          PLATFORM: "manylinux_2_28_x86_64"
+          PLATFORM: "manylinux2014_x86_64"
         shell: bash
         run: |
           set -euo pipefail
