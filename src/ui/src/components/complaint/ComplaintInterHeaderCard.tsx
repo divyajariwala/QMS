@@ -1,21 +1,19 @@
 import React from 'react';
 import styles from './ComplaintHeaderCard.module.scss';
-import CheckIcon from '@mui/icons-material/Check';
+import Edit from '../../assets/icons/edit.svg'
+
 import { Paper, Box, Stack, Grid } from '@mui/material';
 import ComplaintsDueDateChip from './ComplaintsDueDateChip';
-import { ComplaintHeaderCardProps } from 'src/types';
+import { ComplaintInterHeaderCardProps } from 'src/types';
 import { getDueStatus } from 'src/helpers';
 
-const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
+const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
   complaintData,
-  onApproveAndSend,
   caseStatus,
-  isApproved
+  setOpenModifyDetails
 }) => {
   const {
-    status,
     caseId,
-    overdueDays,
     primaryReporter,
     patientName,
     physicianName,
@@ -27,18 +25,14 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
     receipt_date
   } = complaintData || {};
 
+  console.log(complaintData);
+
   return (
     <Paper className={styles.paper}>
       <Box className={styles.flexContainer}>
         <Box className={styles.leftSide}>
           <Stack spacing={0.5} className={styles.stackCustom}>
-            {caseStatus === 'processed' ? (
-              isApproved ? (
-                <Box className={styles.statusTextGreen}>PROCESSED AND SENT TO QMS</Box>
-              ) : (
-                <Box className={styles.statusText}>{caseStatus.toUpperCase()}</Box>
-              )
-            ) : caseStatus === 'pending' ? (
+            {caseStatus === 'pending' ? (
               <Box className={styles.statusText}>IN REVIEW</Box>
             ) : (
               <Box className={styles.statusText}>{caseStatus?.toUpperCase()}</Box>
@@ -50,9 +44,12 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
                 label={receipt_date && getDueStatus(receipt_date).label}
               />
               <Box className={styles.flexGrow} />
-              {(caseStatus !== 'processed') && <button type="button" className={styles.modifyButton} onClick={onApproveAndSend}>
-                <CheckIcon />
-                Modify details
+              {(caseStatus !== 'processed') && <button
+                type="button"
+                className={`${styles.modifyBtn}`}
+                onClick={() => setOpenModifyDetails(true)}
+              >
+                <img src={Edit}/><span className={styles.label}>Modify Details</span>
               </button>}
             </Stack>
           </Stack>
@@ -111,4 +108,4 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
   );
 };
 
-export default ComplaintHeaderCard;
+export default ComplaintInterHeaderCard;

@@ -190,6 +190,25 @@ export interface ComplaintHeaderCardProps {
   isApproved: boolean
 }
 
+export interface ComplaintInterHeaderCardProps {
+  complaintData: {
+    status?: string | undefined;
+    caseId?: string | undefined;
+    overdueDays?: number | undefined;
+    primaryReporter?: Record<string, any> | undefined;
+    patientName?: string | undefined;
+    physicianName?: string | undefined;
+    drug?: string | undefined;
+    lotNumber?: string | undefined;
+    doseAmount?: string | undefined;
+    expirationDate?: string | undefined;
+    partNumber?: string | undefined;
+    receipt_date: string | undefined;
+  };
+  caseStatus: string | undefined;
+  setOpenModifyDetails: (val: boolean) => void;
+}
+
 export interface ComplaintsDueDateChipProps {
   type: "Overdue" | "Today" | "Tomorrow" | "Due" | "" | undefined;
   label: string | undefined;
