@@ -20,7 +20,7 @@ const Deviations = () => {
 
   return (
     <Box component="main">
-      <Stack direction="column" gap={2.5}>
+      <Stack direction="column" gap={1}>
         <CommonBreadcrumbs items={items} />
         <Stack
           direction="row"
@@ -33,7 +33,7 @@ const Deviations = () => {
               Welcome to Deviations dashboard!
             </Box>
           </Box>
-          <Stack className={styles.actions} direction="row" spacing={2}>
+          <Stack className={styles.actions} direction="row" spacing={1}>
             <Button variant="contained" className={styles.primaryImportButton}>
               Import
             </Button>

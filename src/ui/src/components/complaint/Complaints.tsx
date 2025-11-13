@@ -83,7 +83,7 @@ if (loading) return <p>Loading complaints...</p>;
 
   return (
     <Box component="main">
-      <Stack direction="column" gap={2.5}>
+      <Stack direction="column" gap={1}>
         <CommonBreadcrumbs items={items} />
         <Stack
           direction="row"
@@ -103,7 +103,6 @@ if (loading) return <p>Loading complaints...</p>;
               Add Manually
             </Button>
             <Button variant="contained" className={styles.primaryImportButton} onClick={() => setOpenFileUpload(true)}>
-              <img src={ImportIcon} alt="import" />
               Import
             </Button>
           </Stack>
@@ -112,7 +111,7 @@ if (loading) return <p>Loading complaints...</p>;
       {/* For empty state */}
       {/* <ComplaintsEmptyState /> */}
       <ComplaintsStatusCard complaintStats={caseStats} />
-      <div className={styles.statusTabs}> <StatusTabs activeIndex={activeIndex} setActiveIndex={setActiveIndex} pending={pending} processed={processed} overdue={overdue} /></div>
+       <StatusTabs activeIndex={activeIndex} setActiveIndex={setActiveIndex} pending={pending} processed={processed} overdue={overdue} />
       <ComplaintsFilter />
       {caseStats && complaints?.map((complaint, index) => (
         <ComplaintsResult key={index} complaint={complaint} selected={selected}/>

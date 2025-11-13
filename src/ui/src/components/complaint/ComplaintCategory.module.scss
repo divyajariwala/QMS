@@ -3,7 +3,7 @@
   border-radius: 16px;
   height: 100%;
   background-color: #fff;
-  font-family: inherit;
+  font-family: inherit !important;
 }
 
 .headerStack {
@@ -17,6 +17,7 @@
   letter-spacing: 0.04em;
   vertical-align: bottom;
   color: #000000;
+  font-family: inherit !important;
 }
 
 .subtitleBox {
@@ -26,6 +27,7 @@
   letter-spacing: -0.1px;
   color: #5f6d7e;
   margin-bottom: 16px;
+  font-family: inherit !important;
 }
 
 /* Non-edit mode styles */
@@ -35,20 +37,20 @@
   border-radius: 8px;
   background-color: #fff;
   box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
-  font-family: inherit;
+  font-family: inherit !important;
 }
 
 .nonEditLabel {
   font-weight: 600;
   font-size: 16px;
   color: #000;
-  font-family: inherit; 
+  font-family: inherit !important; 
 }
 
 .percentageBox {
   font-weight: 600;
-  font-size: 14px;
-  font-family: inherit;  
+  font-size: 14px; 
+  font-family: inherit !important;  
   padding: 4px 8px;
   border-radius: 6px;
   user-select: none;
@@ -90,7 +92,7 @@
 .nonEditGrid {
   font-size: 13px;
   margin-top: 8px;
-  font-family: inherit; 
+   font-family: inherit !important;
 }
 
 .nonEditFieldLabel {
@@ -100,18 +102,18 @@
   letter-spacing: -0.1px;
   color: #5f6d7e;
   margin-bottom: 4px;
-  font-family: inherit; 
+  font-family: inherit !important;  
 }
 
 .nonEditFieldValue {
-
+ font-family: inherit !important;
   font-weight: 600;
   font-size: 15px;
   color: #272d37;
 }
 
 .nonEditFieldValueBold {
-  font-family: inherit; 
+  font-family: inherit !important;
   font-weight: 700;
   font-size: 15px;
   color: #272d37;
@@ -137,7 +139,7 @@
   border-radius: 8px;
   background-color: #f5f6f7 !important;
   box-shadow: none;
-  font-family: inherit; 
+  font-family: inherit !important;
 
   input,
   textarea,
@@ -145,29 +147,34 @@
   .MuiOutlinedInput-root {
     background-color: #fff !important;
     color: #272d37 !important;
+    font-family: inherit !important;
   }
 
   .MuiSelect-select {
     background-color: #fff !important;
     color: #272d37 !important;
+    font-family: inherit !important;
   }
 
   .MuiOutlinedInput-root.Mui-focused,
   .MuiOutlinedInput-root {
     background-color: #fff !important;
     color: #272d37 !important;
+    font-family: inherit !important;
   }
 
   .MuiPopover-paper,
   .MuiPaper-root {
     background-color: #fff !important;
     color: #272d37 !important;
+    font-family: inherit !important;
   }
 
   label,
   .MuiInputLabel-root,
   .MuiFormLabel-root {
     color: #5f6d7e !important;
+    font-family: inherit !important;
   }
 }
 
@@ -177,6 +184,7 @@
   background-color: #fff !important;
   color: #272d37;
   border-radius: 4px;
+  font-family: inherit !important;
 }
 
 .editSelectRoot {
@@ -184,6 +192,7 @@
   font-size: 15px;
   line-height: 22px;
   letter-spacing: -0.1px;
+  font-family: inherit !important;
 }
 
 .editGrid {
@@ -191,7 +200,7 @@
   display: flex;
   gap: 16px;
   width: 100%;
-  font-family: inherit; 
+  font-family: inherit !important;
 }
 
 .editGrid>.MuiGrid-item {
@@ -199,6 +208,7 @@
   flex-basis: 0;
   /* allows items to shrink and grow evenly */
   min-width: 120px;
+  font-family: inherit !important;
   /* optional minimum width */
 }
 
@@ -208,6 +218,7 @@
   box-sizing: border-box;
   background: #fff;
   border-radius: 4px;
+  font-family: inherit !important;
 }
 
 .editLabel {
@@ -215,6 +226,7 @@
   font-size: 13px;
   color: #5f6d7e;
   margin-bottom: 4px;
+  font-family: inherit !important;
 }
 
 .inputBaseInput {
@@ -223,7 +235,7 @@
   line-height: 22px;
   letter-spacing: -0.1px;
   padding: 6px 8px;
-  font-family: inherit; 
+  font-family: inherit !important;
 }
 
 .editField,
@@ -232,6 +244,7 @@
   box-sizing: border-box;
   background: #fff;
   border-radius: 4px;
+  font-family: inherit !important;
 }
 
 .buttonsRow {
