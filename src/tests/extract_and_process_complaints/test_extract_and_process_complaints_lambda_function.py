@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch, MagicMock, mock_open
 from datetime import datetime, timezone
 import io
 import base64
+import importlib.util
 
 # Mock dependencies before importing
 sys.modules['fitz'] = Mock()
@@ -15,10 +16,20 @@ sys.modules['psycopg'] = mock_psycopg
 sys.modules['PIL'] = Mock()
 sys.modules['PIL.Image'] = Mock()
 
-# Add src directory to path for importing lambda_function
-extract_complaints_path = os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'extract_and_process_complaints')
-sys.path.insert(0, extract_complaints_path)
-import lambda_function
+# Get the absolute path to the lambda_function.py file
+lambda_function_path = os.path.join(
+    os.path.dirname(__file__), 
+    '..', '..', 'app', 'extract_and_process_complaints', 'lambda_function.py'
+)
+lambda_function_path = os.path.abspath(lambda_function_path)
+
+# Load the module using importlib
+spec = importlib.util.spec_from_file_location("lambda_function", lambda_function_path)
+lambda_function = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(lambda_function)
+
+# Add to sys.modules so patches can find it
+sys.modules['lambda_function'] = lambda_function
 
 
 @pytest.fixture
