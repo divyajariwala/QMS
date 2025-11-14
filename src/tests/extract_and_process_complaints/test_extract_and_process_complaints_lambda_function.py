@@ -16,7 +16,8 @@ sys.modules['PIL'] = Mock()
 sys.modules['PIL.Image'] = Mock()
 
 # Add src directory to path for importing lambda_function
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'extract_and_process_complaints'))
+extract_complaints_path = os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'extract_and_process_complaints')
+sys.path.insert(0, extract_complaints_path)
 import lambda_function
 
 
