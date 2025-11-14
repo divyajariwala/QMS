@@ -1,0 +1,70 @@
+{
+    "toolSpec": {
+        "name": "extract_narrative_info",
+        "description": "Extract case information from direct narrative text",
+        "inputSchema": {
+            "json": {
+                "type": "object",
+                "properties": {
+                    "case_id": {
+                        "type": "string",
+                        "description": "Unique case identifier if mentioned, otherwise 'N/A'"
+                    },
+                    "receipt_date": {
+                        "type": "string",
+                        "description": "Date of receiving report if mentioned, otherwise 'N/A'"
+                    },
+                    "criticality": {
+                        "type": "string",
+                        "description": "Case criticality level inferred from narrative"
+                    },
+                    "category": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Category of the complaint inferred from narrative"
+                    },
+                    "case_type": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Product Complaint or Adverse Event inferred from narrative"
+                    },
+                    "report_type": {
+                        "type": "string",
+                        "description": "Type of report inferred from narrative"
+                    },
+                    "narrative": {
+                        "type": "string",
+                        "description": "The complete narrative text"
+                    },
+                    "primary_reporter": {
+                        "type": "object",
+                        "description": "Name and address of primary reporter if mentioned",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "address": {"type": "string"}
+                        }
+                    },
+                    "patient_name": {
+                        "type": "string",
+                        "description": "Name of the patient if mentioned, otherwise 'N/A'"
+                    },
+                    "physician_name": {
+                        "type": "string",
+                        "description": "Name of the physician if mentioned, otherwise 'N/A'"
+                    },
+                    "product_details": {
+                        "type": "object",
+                        "description": "Product information extracted from narrative",
+                        "properties": {
+                            "drug_name": {"type": "string"},
+                            "dosage": {"type": "string"},
+                            "lot_no": {"type": "string"},
+                            "expiration_date": {"type": "string"}
+                        }
+                    }
+                },
+                "required": ["case_id", "receipt_date", "criticality", "category", "case_type", "report_type", "narrative", "primary_reporter", "patient_name", "physician_name", "product_details"]
+            }
+        }
+    }
+}

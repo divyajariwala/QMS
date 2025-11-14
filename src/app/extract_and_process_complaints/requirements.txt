@@ -1,0 +1,4 @@
+# Core dependencies for refactored lambda_function.py
+PyMuPDF==1.26.5
+Pillow==10.4.0
+psycopg==3.2.12
