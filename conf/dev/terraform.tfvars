@@ -110,12 +110,14 @@ lambda_configs = [
     ]
   },
   {
-    function_name = "process-complaints"
-    path          = "src/app/process_complaints"
+    function_name = "extract-and-process-complaints"
+    path          = "src/app/extract_and_process_complaints"
     environment_variables = {
       env                          = "dev"
       dynamodb_table_base_name     = "complaints-metadata"
       classify_sqs_queue_base_name = "classify-complaints"
+      model_id = "arn:aws:bedrock:us-east-1:120569648189:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
+      DB_SECRET_ARN = "arn:aws:secretsmanager:us-east-1:120569648189:secret:qms-dev-aurora-postgres-master-RoDoU3"
     }
     sqs_trigger = [
       {
@@ -147,22 +149,6 @@ lambda_configs = [
         max_concurrency    = 10
       }
     ]
-  },
-  {
-    function_name = "aepc-detector"
-    path          = "src/app/aepc_detector"
-    environment_variables = {
-      env      = "dev"
-      model_id = "arn:aws:bedrock:us-east-1:120569648189:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
-    }
-  },
-  {
-    function_name = "extract-complaints"
-    path          = "src/app/extract_complaints"
-    environment_variables = {
-      env      = "dev"
-      model_id = "arn:aws:bedrock:us-east-1:120569648189:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
-    }
   },
   {
     function_name = "get-complaints"
@@ -204,7 +190,7 @@ lambda_configs = [
         http_method = "POST"
       }
     ]
-  }
+  },
 ]
 
 
