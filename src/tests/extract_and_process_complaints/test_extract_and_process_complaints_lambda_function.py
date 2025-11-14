@@ -7,6 +7,12 @@ from datetime import datetime, timezone
 import io
 import base64
 
+# Mock dependencies before importing
+sys.modules['fitz'] = Mock()
+sys.modules['psycopg'] = Mock()
+sys.modules['PIL'] = Mock()
+sys.modules['PIL.Image'] = Mock()
+
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'extract_and_process_complaints'))
 import lambda_function
@@ -171,7 +177,7 @@ class TestLoadToolSpec:
         assert result == {"toolSpec": {"name": "narrative"}}
 
     @patch('builtins.open', side_effect=FileNotFoundError())
-    def test_load_tool_spec_file_not_found(self):
+    def test_load_tool_spec_file_not_found(self, mock_open):
         """Test: FileNotFoundError when tool spec not found"""
         with pytest.raises(FileNotFoundError):
             lambda_function.load_tool_spec('pdf')
