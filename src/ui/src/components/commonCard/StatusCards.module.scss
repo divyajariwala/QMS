@@ -1,22 +1,22 @@
 .cardsContainer {
-  display: flex;
+  display: grid;
   gap: 16px;
   width: 100%;
   margin-top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(334px, 1fr));
 }
 
 .card {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 1px 6px rgb(0 0 0 / 0.12);
-  flex: 1 1 0%;
-  max-width: none;
   display: flex;
   flex-direction: row;
   padding: 16px 20px;
   align-items: center;
   justify-content: space-between;
   height: 146px;
+  box-sizing: border-box;
 }
 
 .cardInfo {
@@ -55,20 +55,28 @@
   color: #272D37;
 }
 
-.legendColumn {
-  display: flex;
-  flex-direction: column;
-  width: 40%;
+.legendColumnComplaints {
+  flex: 0 1 272px;
+  min-width: 140px;
+  box-sizing: border-box;
+  margin-left: 8px;
+}
+
+.legendColumnDeviations {
+  flex: 0 1 170px;
+  min-width: 140px;
+  box-sizing: border-box;
+  margin-left: 8px;
 }
 
 .legendItem {
-  display: flex;
-  height: 38px;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
-  color: #000000;
-  white-space: nowrap;
+  align-items: center;
+  height: 38px;
+  padding: 0;
+  width: 100%;
   padding: 0;
   font-weight: 500;
   font-size: 15px;
@@ -92,6 +100,8 @@
   line-height: 22px;
   letter-spacing: -0.1px;
   color: #000000;
+  text-align: right;
+  min-width: 20px;
 }
 
 .dot {
@@ -124,4 +134,12 @@
   line-height: 22px;
   letter-spacing: -0.1px;
   color: #000000;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dotWithText>span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -154,6 +154,7 @@ export interface StatusCardProps {
   title: string;
   cardValue?: string | number | undefined;
   legend?: LegendData[];
+  page: string;
 }
 
 export interface ComplaintCategoryItem {

@@ -16,6 +16,7 @@ const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
         iconAlt="RCA"
         title="Total Complaints"
         cardValue={total_complaints}
+        page="complaints"
         legend={[
           { colorClass: "dotPending", label: "Pending", value: pending as number },
           { colorClass: "dotProcessed", label: "Processed", value: processed as number },
@@ -23,7 +24,7 @@ const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
         ]}
       />
 
-      <StatusCard iconSrc={CycleIcon} iconAlt="Cycle Time" title="Cycle Time (Avg)" cardValue={formatHoursToDays(avg_cycle_time)} legend={[
+      <StatusCard iconSrc={CycleIcon} iconAlt="Cycle Time" title="Cycle Time (Avg)" page="complaints" cardValue={formatHoursToDays(avg_cycle_time)} legend={[
         { label: "Avg Time", value: formatHoursToDays(avg_cycle_time) }
       ]} />
     </div>
