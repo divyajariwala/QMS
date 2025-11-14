@@ -5,7 +5,7 @@ import ReceiptDateIcon from "../../src/assets/icons/receiptDate.svg";
 import { StatusTabItem } from "src/types";
 
 export const statuses: StatusTabItem[] = [
-  { label: "In Review", count: 14000},
+  { label: "In Review", count: 14000 },
   { label: "Overdue", count: 2000 },
   { label: "Processed", count: 7123 },
 ];
@@ -95,85 +95,32 @@ export const complaintsData = [
 
 export const deviationsData = [
   {
+    "status": "in-review",
+    "rcaStatus": "ACTIVE",
+    "gradingStatus": "ACTIVE",
+    "progress": 0,
     "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
     "Due Date": "Oct 02 2025",
-    "rcaStatus": "active",
-    "gradingStatus": "inactive",
-    "status": "IN-REVIEW"
+    "Case Number": "DV-10001"
   },
   {
+    "Case Number": "DV-20001",
     "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
-    "Due Date": "Oct 09 2025",
-    "rcaStatus": "inactive",
-    "gradingStatus": "inactive",
-    "status": "Grading-pending"
+    "Due Date": "Oct 02 2025",
+    "status": "Grading-pending",
+    "rcaStatus": "COMPLETED",
+    "gradingStatus": "PENDING",
+    "progress": 50,
   },
   {
+    "status": "in-review",
+    "rcaStatus": "ACTIVE",
+    "gradingStatus": "ACTIVE",
+    "progress": 0,
     "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
-    "Due Date": "Oct 10 2025",
-    "rcaStatus": "completed",
-    "gradingStatus": "completed",
-    "status": "IN-REVIEW"
-  },
-  {
-    "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
-    "Due Date": "Oct 11 2025",
-    "rcaStatus": "active",
-    "gradingStatus": "active",
-    "status": "IN-REVIEW"
-  },
-  {
-    "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
-    "Due Date": "Oct 12 2025",
-    "rcaStatus": "active",
-    "gradingStatus": "active",
-    "status": "IN-REVIEW"
-  },
-  {
-    "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
-    "Due Date": "Oct 13 2025",
-    "rcaStatus": "active",
-    "gradingStatus": "active",
-    "status": "IN-REVIEW"
-  },
-  {
-    "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
-    "Due Date": "Oct 14 2025",
-    "rcaStatus": "active",
-    "gradingStatus": "active",
-    "status": "IN-REVIEW"
-  },
-  {
-    "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
-    "Due Date": "Oct 15 2025",
-    "rcaStatus": "active",
-    "gradingStatus": "active",
-    "status": "IN-REVIEW"
-  },
-  {
-    "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
-    "Due Date": "Oct 16 2025",
-    "rcaStatus": "active",
-    "gradingStatus": "active",
-    "status": "IN-REVIEW"
-  },
-  {
-    "Recieved Date": "Aug 04 2025",
-    "Processed Date": "Aug 10 2025",
-    "Due Date": "Oct 17 2025",
-    "rcaStatus": "active",
-    "gradingStatus": "active",
-    "status": "IN-REVIEW"
-  },
+    "Due Date": "Oct 02 2025",
+    "Case Number": "DV-30001"
+  }
 ];
 
 export const complaintCategories = [
@@ -254,13 +201,13 @@ export const complaintHeaderData = {
 };
 
 export const caseStatsMock = {
-    "total_complaints": 7,
-    "pending": 5,
-    "processed": 1,
-    "overdue": 1,
-    "avg_cycle_time": 24,
-    "best_time": 7,
-    "longest_time": 72
+  "total_complaints": 7,
+  "pending": 5,
+  "processed": 1,
+  "overdue": 1,
+  "avg_cycle_time": 24,
+  "best_time": 7,
+  "longest_time": 72
 }
 
 

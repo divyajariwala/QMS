@@ -272,7 +272,10 @@ export interface DeviationProps {
     "Processed Date": string,
     "Due Date": string,
     "rcaStatus": string,
-    "gradingStatus": string
+    "gradingStatus": string,
+    "status": string,
+    "progress": number;
+    "Case Number": string;
   };
 }
 

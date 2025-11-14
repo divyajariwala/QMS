@@ -54,7 +54,7 @@ const Header = () => {
 
   const displayName = `${user?.profile?.given_name ?? ""} ${
     user?.profile?.family_name ?? ""
-  }`.trim();
+    }`.trim();
 
   const navLinks = [
     { label: "Dashboard", path: "/" },
@@ -63,9 +63,15 @@ const Header = () => {
   ];
 
   // Find the index of current tab by checking if location pathname starts with path
-  const currentTab = navLinks.findIndex(({ path }) =>
-    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path)
-  );
+  const currentTab =
+    location.pathname === "/"
+      ? 0
+      : (location.pathname.startsWith("/complaints") ||
+        location.pathname.startsWith("/approveComplaints"))
+        ? 1
+        : location.pathname.startsWith("/deviations")
+          ? 2
+          : -1;
 
   return (
     <header className="qms-header">

@@ -29,7 +29,7 @@ const DeviationsStatusCard: React.FC = () => {
         cardValue="27,340"
         legend={[
           { colorClass: "dotPending", label: "RCA Pending", value: 14000 },
-          { colorClass: "dotOverdue", label: "RCA Done", value: 13340 },
+          { colorClass: "dotProcessed", label: "RCA Done", value: 13340 },
           { colorClass: "dotOverdue", label: "Grading Pending", value: 13340 },
         ]}
       />
