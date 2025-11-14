@@ -95,102 +95,102 @@ lambda_configs = [
       }
     ]
   },
-  {
-    function_name = "upload-complaints"
-    path          = "src/app/upload_complaints"
-    environment_variables = {
-      env                 = "dev"
-      metadata_table_name = "complaints-metadata"
-    }
-    api_gateway_paths = [
-      {
-        path_name   = "uploadComplaints"
-        http_method = "POST"
-      }
-    ]
-  },
-  {
-    function_name = "extract-and-process-complaints"
-    path          = "src/app/extract_and_process_complaints"
-    environment_variables = {
-      env                          = "dev"
-      dynamodb_table_base_name     = "complaints-metadata"
-      classify_sqs_queue_base_name = "classify-complaints"
-      model_id = "arn:aws:bedrock:us-east-1:120569648189:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
-      DB_SECRET_ARN = "arn:aws:secretsmanager:us-east-1:120569648189:secret:qms-dev-aurora-postgres-master-RoDoU3"
-    }
-    sqs_trigger = [
-      {
-        queue_name         = "preload-complaints"
-        visibility_timeout = 5000
-        max_receive_count  = 1000
-        batch_size         = 500
-        max_batch_window   = 20
-        max_concurrency    = 10
-      }
-    ]
-  },
-  {
-    function_name = "classify-complaints"
-    path          = "src/app/classify_complaints"
-    environment_variables = {
-      env                       = "dev"
-      step_function_base_name   = "classify-complaints"
-      aws_region                = "us-east-1"
-      audit_log_table_base_name = "complaints-audit-log"
-    }
-    sqs_trigger = [
-      {
-        queue_name         = "classify-complaints"
-        visibility_timeout = 5000
-        max_receive_count  = 1000
-        batch_size         = 500
-        max_batch_window   = 20
-        max_concurrency    = 10
-      }
-    ]
-  },
-  {
-    function_name = "get-complaints"
-    path          = "src/app/get_complaints"
-    environment_variables = {
-      env                 = "dev"
-      DYNAMODB_TABLE_NAME = "qms-dev-complaints-metadata"
-    }
-    api_gateway_paths = [
-      {
-        path_name   = "getComplaints"
-        http_method = "GET"
-      }
-    ]
-  },
-  {
-    function_name = "approve-complaints"
-    path          = "src/app/approve_complaints"
-    environment_variables = {
-      env                 = "dev"
-      DYNAMODB_TABLE_NAME = "qms-dev-complaints-metadata"
-    }
-    api_gateway_paths = [
-      {
-        path_name   = "approveComplaints"
-        http_method = "POST"
-      }
-    ]
-  },
-  {
-    function_name = "auth-callback"
-    path          = "src/app/auth_callback"
-    environment_variables = {
-      env                 = "dev"
-    }
-    api_gateway_paths = [
-      {
-        path_name   = "authCallback"
-        http_method = "POST"
-      }
-    ]
-  },
+  # {
+  #   function_name = "upload-complaints"
+  #   path          = "src/app/upload_complaints"
+  #   environment_variables = {
+  #     env                 = "dev"
+  #     metadata_table_name = "complaints-metadata"
+  #   }
+  #   api_gateway_paths = [
+  #     {
+  #       path_name   = "uploadComplaints"
+  #       http_method = "POST"
+  #     }
+  #   ]
+  # },
+  # {
+  #   function_name = "extract-and-process-complaints"
+  #   path          = "src/app/extract_and_process_complaints"
+  #   environment_variables = {
+  #     env                          = "dev"
+  #     dynamodb_table_base_name     = "complaints-metadata"
+  #     classify_sqs_queue_base_name = "classify-complaints"
+  #     model_id = "arn:aws:bedrock:us-east-1:120569648189:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
+  #     DB_SECRET_ARN = "arn:aws:secretsmanager:us-east-1:120569648189:secret:qms-dev-aurora-postgres-master-RoDoU3"
+  #   }
+  #   sqs_trigger = [
+  #     {
+  #       queue_name         = "preload-complaints"
+  #       visibility_timeout = 5000
+  #       max_receive_count  = 1000
+  #       batch_size         = 500
+  #       max_batch_window   = 20
+  #       max_concurrency    = 10
+  #     }
+  #   ]
+  # },
+  # {
+  #   function_name = "classify-complaints"
+  #   path          = "src/app/classify_complaints"
+  #   environment_variables = {
+  #     env                       = "dev"
+  #     step_function_base_name   = "classify-complaints"
+  #     aws_region                = "us-east-1"
+  #     audit_log_table_base_name = "complaints-audit-log"
+  #   }
+  #   sqs_trigger = [
+  #     {
+  #       queue_name         = "classify-complaints"
+  #       visibility_timeout = 5000
+  #       max_receive_count  = 1000
+  #       batch_size         = 500
+  #       max_batch_window   = 20
+  #       max_concurrency    = 10
+  #     }
+  #   ]
+  # },
+  # {
+  #   function_name = "get-complaints"
+  #   path          = "src/app/get_complaints"
+  #   environment_variables = {
+  #     env                 = "dev"
+  #     DYNAMODB_TABLE_NAME = "qms-dev-complaints-metadata"
+  #   }
+  #   api_gateway_paths = [
+  #     {
+  #       path_name   = "getComplaints"
+  #       http_method = "GET"
+  #     }
+  #   ]
+  # },
+  # {
+  #   function_name = "approve-complaints"
+  #   path          = "src/app/approve_complaints"
+  #   environment_variables = {
+  #     env                 = "dev"
+  #     DYNAMODB_TABLE_NAME = "qms-dev-complaints-metadata"
+  #   }
+  #   api_gateway_paths = [
+  #     {
+  #       path_name   = "approveComplaints"
+  #       http_method = "POST"
+  #     }
+  #   ]
+  # },
+  # {
+  #   function_name = "auth-callback"
+  #   path          = "src/app/auth_callback"
+  #   environment_variables = {
+  #     env                 = "dev"
+  #   }
+  #   api_gateway_paths = [
+  #     {
+  #       path_name   = "authCallback"
+  #       http_method = "POST"
+  #     }
+  #   ]
+  # },
 ]
 
 
