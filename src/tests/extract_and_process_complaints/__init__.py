@@ -1,0 +1,1 @@
+# Test package for extract_and_process_complaints lambda function

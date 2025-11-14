@@ -1,3 +1,0 @@
-# Core dependencies for lambda_function.py
-PyMuPDF==1.26.0
-Pillow==10.4.0

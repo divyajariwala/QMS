@@ -5,6 +5,10 @@ import sys
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime, timezone
 
+# Mock dependencies before importing
+sys.modules['psycopg'] = Mock()
+sys.modules['psycopg.rows'] = Mock()
+
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app'))
 from create_complaint import lambda_function
