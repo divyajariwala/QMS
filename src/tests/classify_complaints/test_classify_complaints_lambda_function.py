@@ -1,11 +1,14 @@
 import json
 import pytest
+import os
+import sys
 from datetime import datetime, timezone
 from decimal import Decimal
 from unittest.mock import Mock, patch, MagicMock, call
 import boto3
 
-# Import the lambda function
+# Add src directory to path for importing lambda_function
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app'))
 from classify_complaints import lambda_function as classify_complaint_lambda
 
 

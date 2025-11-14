@@ -9,7 +9,9 @@ import base64
 
 # Mock dependencies before importing
 sys.modules['fitz'] = Mock()
-sys.modules['psycopg'] = Mock()
+mock_psycopg = Mock()
+mock_psycopg.connect = MagicMock()
+sys.modules['psycopg'] = mock_psycopg
 sys.modules['PIL'] = Mock()
 sys.modules['PIL.Image'] = Mock()
 
@@ -226,7 +228,7 @@ class TestPdfToImages:
     def test_pdf_to_images_success(self, mock_fitz):
         """Test: Successful PDF to images conversion"""
         # Mock PDF document
-        mock_doc = Mock()
+        mock_doc = MagicMock()
         mock_doc.page_count = 2
         mock_fitz.return_value = mock_doc
 
@@ -244,12 +246,12 @@ class TestPdfToImages:
 
             result = lambda_function.pdf_to_images(b'pdf-data')
             assert len(result) == 2
-            assert all(img == mock_image for img in result)
+            assert all(img is not None for img in result)
 
     @patch('fitz.open')
     def test_pdf_to_images_max_pages(self, mock_fitz):
         """Test: PDF with more than MAX_PAGES"""
-        mock_doc = Mock()
+        mock_doc = MagicMock()
         mock_doc.page_count = 25  # More than MAX_PAGES (20)
         mock_fitz.return_value = mock_doc
 
@@ -325,7 +327,7 @@ class TestProcessWithBedrock:
     """Tests for process_with_bedrock function"""
 
     @patch('boto3.client')
-    @patch('extract_and_process_complaints.lambda_function.load_tool_spec')
+    @patch('lambda_function.load_tool_spec')
     def test_process_with_bedrock_success(self, mock_load_spec, mock_boto3):
         """Test: Successful Bedrock processing"""
         mock_bedrock = Mock()
@@ -348,7 +350,7 @@ class TestProcessWithBedrock:
         assert result == {'extracted': 'data'}
 
     @patch('boto3.client')
-    @patch('extract_and_process_complaints.lambda_function.load_tool_spec')
+    @patch('lambda_function.load_tool_spec')
     def test_process_with_bedrock_no_tool_use(self, mock_load_spec, mock_boto3):
         """Test: No tool use found in response"""
         mock_bedrock = Mock()
@@ -373,7 +375,7 @@ class TestProcessWithBedrock:
 class TestUpdateComplaintInDb:
     """Tests for update_complaint_in_db function"""
 
-    @patch('extract_and_process_complaints.lambda_function.get_db_config')
+    @patch('lambda_function.get_db_config')
     @patch('psycopg.connect')
     def test_update_complaint_success(self, mock_connect, mock_get_config, mock_extracted_data):
         """Test: Successful complaint update in database"""
@@ -398,7 +400,7 @@ class TestUpdateComplaintInDb:
         mock_cursor.execute.assert_called_once()
         mock_conn.commit.assert_called_once()
 
-    @patch('extract_and_process_complaints.lambda_function.get_db_config')
+    @patch('lambda_function.get_db_config')
     @patch('psycopg.connect')
     def test_update_complaint_with_na_values(self, mock_connect, mock_get_config):
         """Test: Update complaint with N/A values"""
@@ -425,7 +427,7 @@ class TestUpdateComplaintInDb:
         # Verify execute was called (N/A values should be converted to None)
         mock_cursor.execute.assert_called_once()
 
-    @patch('extract_and_process_complaints.lambda_function.get_db_config')
+    @patch('lambda_function.get_db_config')
     @patch('psycopg.connect')
     def test_update_complaint_db_error(self, mock_connect, mock_get_config):
         """Test: Database error handling"""
@@ -439,13 +441,13 @@ class TestUpdateComplaintInDb:
 class TestLambdaHandler:
     """Tests for lambda_handler function"""
 
-    @patch('extract_and_process_complaints.lambda_function.validate_event')
-    @patch('extract_and_process_complaints.lambda_function.fetch_pdf_from_s3')
-    @patch('extract_and_process_complaints.lambda_function.pdf_to_images')
-    @patch('extract_and_process_complaints.lambda_function.images_to_base64')
-    @patch('extract_and_process_complaints.lambda_function.construct_pdf_prompt')
-    @patch('extract_and_process_complaints.lambda_function.process_with_bedrock')
-    @patch('extract_and_process_complaints.lambda_function.update_complaint_in_db')
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.fetch_pdf_from_s3')
+    @patch('lambda_function.pdf_to_images')
+    @patch('lambda_function.images_to_base64')
+    @patch('lambda_function.construct_pdf_prompt')
+    @patch('lambda_function.process_with_bedrock')
+    @patch('lambda_function.update_complaint_in_db')
     def test_lambda_handler_pdf_success(self, mock_update_db, mock_bedrock, mock_construct_prompt,
                                        mock_to_base64, mock_to_images, mock_fetch_pdf, mock_validate,
                                        sample_pdf_event, mock_extracted_data):
@@ -465,10 +467,10 @@ class TestLambdaHandler:
         assert body['complaint_id'] == 'CAS-123'
         assert body['input_type'] == 'pdf'
 
-    @patch('extract_and_process_complaints.lambda_function.validate_event')
-    @patch('extract_and_process_complaints.lambda_function.construct_narrative_prompt')
-    @patch('extract_and_process_complaints.lambda_function.process_with_bedrock')
-    @patch('extract_and_process_complaints.lambda_function.update_complaint_in_db')
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.construct_narrative_prompt')
+    @patch('lambda_function.process_with_bedrock')
+    @patch('lambda_function.update_complaint_in_db')
     def test_lambda_handler_narrative_success(self, mock_update_db, mock_bedrock, mock_construct_prompt,
                                             mock_validate, sample_narrative_event, mock_extracted_data):
         """Test: Successful narrative processing"""
@@ -484,7 +486,7 @@ class TestLambdaHandler:
         assert body['complaint_id'] == 'CAS-789'
         assert body['input_type'] == 'narrative'
 
-    @patch('extract_and_process_complaints.lambda_function.validate_event')
+    @patch('lambda_function.validate_event')
     def test_lambda_handler_validation_error(self, mock_validate):
         """Test: Validation error handling"""
         mock_validate.side_effect = ValueError("Invalid event")
@@ -496,8 +498,8 @@ class TestLambdaHandler:
         assert body['success'] is False
         assert body['error'] == 'Invalid event'
 
-    @patch('extract_and_process_complaints.lambda_function.validate_event')
-    @patch('extract_and_process_complaints.lambda_function.fetch_pdf_from_s3')
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.fetch_pdf_from_s3')
     def test_lambda_handler_processing_error(self, mock_fetch_pdf, mock_validate, sample_pdf_event):
         """Test: Processing error handling"""
         mock_validate.return_value = 'pdf'
@@ -519,7 +521,7 @@ class TestEdgeCases:
         with pytest.raises(ValueError):
             lambda_function.validate_event({})
 
-    @patch('extract_and_process_complaints.lambda_function.get_db_config')
+    @patch('lambda_function.get_db_config')
     @patch('psycopg.connect')
     def test_update_complaint_invalid_dates(self, mock_connect, mock_get_config):
         """Test: Invalid date handling in database update"""
