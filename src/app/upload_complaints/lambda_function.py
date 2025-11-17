@@ -4,18 +4,30 @@ import base64
 import os
 import uuid
 import re
-import random
-import string
 import io
 from datetime import datetime, timezone
 import pandas as pd
+import psycopg
+from psycopg.rows import dict_row
+
+try:
+    from secrets_util import get_secret
+except ImportError:
+    from .secrets_util import get_secret
 
 # Environment variables
+ENV = os.environ.get('env', 'dev')
 S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'qms-dev-initial-files')
 SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME', 'qms-dev-preload-complaints')
+DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
+DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
+DB_REGION = os.environ.get('db_region', 'us-east-1')
 ALLOWED_EXTENSIONS = {'.csv', '.xlsx', '.pdf', '.xls'}
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
-CODE_STRATEGY = os.environ.get('CODE_STRATEGY', 'timestamp_random')
+
+# Cache for database credentials and connection string
+_db_credentials = None
+_connection_string = None
 
 
 def lambda_handler(event, context):
@@ -23,7 +35,6 @@ def lambda_handler(event, context):
         # Initialize AWS clients
         s3_client = boto3.client('s3')
         sqs_client = boto3.client('sqs')
-        lambda_client = boto3.client('lambda')
 
         # Resolve Queue URL from name
         try:
@@ -123,6 +134,7 @@ def lambda_handler(event, context):
         s3_key = f"uploads/{timestamp}/{file_id}_{safe_filename}"
 
         # Upload to S3
+        s3_uri = f"s3://{S3_BUCKET_NAME}/{s3_key}"
         s3_client.put_object(
             Bucket=S3_BUCKET_NAME,
             Key=s3_key,
@@ -135,41 +147,60 @@ def lambda_handler(event, context):
                 "file_id": file_id
             }
         )
+        
+        # Create record in files table
+        create_file_record(file_id, filename, s3_uri, _get_user_from_event(event))
 
         # Process files based on type
         file_extension = _get_file_extension(filename)
         
         if file_extension == 'pdf':
-            # For PDFs: Upload to S3 and invoke extract complaints lambda asynchronously
-            s3_uri = f"s3://{S3_BUCKET_NAME}/{s3_key}"
-            lambda_payload = {
-                "s3path": s3_uri,
-                "file_id": file_id,
-                "filename": filename,
-                "created_by": _get_user_from_event(event)
+            # For PDFs: Create complaint record and send to SQS
+            complaint_id = create_complaint_in_db(file_id)
+            
+            # Create SQS message for extract and process complaints lambda
+            complaint_message = {
+                'complaint_id': complaint_id,
+                'file_id': file_id,
+                's3_uri': s3_uri
             }
             
-            # Invoke extract complaints lambda asynchronously
-            lambda_client.invoke(
-                FunctionName='qms-dev-extract-complaints',
-                InvocationType='Event',  # Async invocation
-                Payload=json.dumps(lambda_payload)
+            # Send to SQS for processing
+            sqs_response = sqs_client.send_message(
+                QueueUrl=queue_url,
+                MessageBody=json.dumps(complaint_message),
+                MessageAttributes={
+                    'Source': {
+                        'StringValue': 'PDF Upload',
+                        'DataType': 'String'
+                    },
+                    'ComplaintId': {
+                        'StringValue': complaint_id,
+                        'DataType': 'String'
+                    },
+                    'CreatedBy': {
+                        'StringValue': _get_user_from_event(event),
+                        'DataType': 'String'
+                    }
+                }
             )
             
-            print(f"PDF uploaded to S3 and extract complaints lambda invoked asynchronously for file: {filename}")
+            print(f"PDF uploaded to S3 and complaint queued for processing: {complaint_id}")
             
             return _response(200, "PDF file uploaded and queued for processing successfully", {
                 "file_id": file_id,
+                "complaint_id": complaint_id,
                 "filename": filename,
                 "file_size": len(file_content),
                 "s3_key": s3_key,
-                "status": "processing"
+                "status": "processing",
+                "message_id": sqs_response['MessageId']
             })
         # Process CSV/Excel files
         elif file_extension in ['csv', 'xlsx', 'xls']:
             try:
                 # Process CSV/Excel file
-                complaints_data = process_csv_excel_file(file_content, file_extension)
+                complaints_data = process_csv_excel_file(file_content, file_extension, file_id)
                 
                 if not complaints_data['success']:
                     return _response(400, complaints_data['message'])
@@ -184,10 +215,10 @@ def lambda_handler(event, context):
                         MessageBody=json.dumps(complaint_message),
                         MessageAttributes={
                             'Source': {
-                                'StringValue': f'{file_extension.upper()} Extraction',
+                                'StringValue': f'{file_extension.upper()} Upload',
                                 'DataType': 'String'
                             },
-                            'ComplaintCode': {
+                            'ComplaintId': {
                                 'StringValue': complaint_message['complaint_id'],
                                 'DataType': 'String'
                             },
@@ -386,81 +417,97 @@ def _is_allowed_file(filename):
     ext = os.path.splitext(filename)[-1].lower()
     return ext in ALLOWED_EXTENSIONS
 
-def generate_complaint_code(strategy='timestamp_random'):
+
+def get_connection_string():
     """
-    Generate unique complaint code with different strategies
-
-    Strategies:
-    - timestamp_random: CAS-20241030154523789 (timestamp + 3 random digits)
-    - ulid: CAS-01HQZP2N7V8CHJ... (ULID format)
-    - uuid_short: CAS-A7B2C9D4 (8 chars from UUID)
-    - nanoid: CAS-V1StGXR8 (8 random alphanumeric)
+    Build PostgreSQL connection string from credentials in Secrets Manager.
+    Credentials are cached to avoid repeated API calls.
     """
+    global _connection_string, _db_credentials
 
-    if strategy == 'timestamp_random':
-        # CAS-20241030154523789456 (timestamp with microseconds + 3 random digits)
-        now = datetime.now(timezone.utc)
-        timestamp = now.strftime('%Y%m%d%H%M%S')
-        microseconds = str(now.microsecond)[:3]  # First 3 digits of microseconds
-        random_suffix = ''.join(random.choices(string.digits, k=3))
-        return f"CAS-{timestamp}{microseconds}{random_suffix}"
+    if _connection_string is not None:
+        return _connection_string
 
-    elif strategy == 'ulid':
-        # CAS-01HQZP2N7V8CHJ9K3T2W4X5Y6Z
-        ulid = generate_ulid()
-        return f"CAS-{ulid}"
+    try:
+        _db_credentials = get_secret(DB_SECRET_NAME, DB_REGION)
 
-    elif strategy == 'uuid_short':
-        # CAS-A7B2C9D4
-        import uuid
-        short_uuid = str(uuid.uuid4()).replace('-', '')[:8].upper()
-        return f"CAS-{short_uuid}"
+        host = _db_credentials['host']
+        port = _db_credentials.get('port', 5432)
+        dbname = _db_credentials['dbname']
+        user = _db_credentials['username']
+        password = _db_credentials['password']
 
-    elif strategy == 'nanoid':
-        # CAS-V1StGXR8
-        nanoid = generate_nanoid(8)
-        return f"CAS-{nanoid}"
+        _connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+        return _connection_string
 
-    else:
-        # Default: timestamp_random
-        return generate_complaint_code('timestamp_random')
+    except Exception as e:
+        print(f"Error building connection string: {str(e)}")
+        raise
 
 
-def generate_ulid():
+def create_file_record(file_id, filename, s3_url, upload_by):
     """
-    Generate ULID (Universally Unique Lexicographically Sortable Identifier)
-    Format: 26 characters, time-sortable
+    Create file record in database
     """
-    # Timestamp part (10 chars, 48 bits)
-    timestamp = int(datetime.now(timezone.utc).timestamp() * 1000)
+    try:
+        conninfo = get_connection_string()
+        
+        with psycopg.connect(conninfo) as conn:
+            with conn.cursor() as cur:
+                insert_query = """
+                INSERT INTO files (file_id, file_name, s3_url, upload_by) 
+                VALUES (%s, %s, %s, %s)
+                """
+                
+                cur.execute(insert_query, (file_id, filename, s3_url, upload_by))
+                conn.commit()
+                print(f"Created file record with ID: {file_id}")
+                
+    except Exception as e:
+        print(f"Database error creating file record: {str(e)}")
+        raise
 
-    # Crockford's Base32 encoding
-    encoding = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 
-    # Encode timestamp (10 characters)
-    time_part = ""
-    for _ in range(10):
-        time_part = encoding[timestamp % 32] + time_part
-        timestamp //= 32
-
-    # Random part (16 chars, 80 bits)
-    random_part = ''.join(random.choices(encoding, k=16))
-
-    return time_part + random_part
-
-
-def generate_nanoid(length=8):
+def create_complaint_in_db(file_id, narrative=None):
     """
-    Generate Nanoid-style identifier
-    URL-safe, readable, no ambiguous characters
+    Create complaint record in database and return auto-generated complaint_id
     """
-    # Exclude similar looking characters: 0/O, 1/I/l
-    alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz"
-    return ''.join(random.choices(alphabet, k=length))
+    try:
+        conninfo = get_connection_string()
+        
+        with psycopg.connect(conninfo) as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                if narrative:
+                    insert_query = """
+                    INSERT INTO complaints (file_id, narrative, status) 
+                    VALUES (%s, %s, 'Pending') 
+                    RETURNING complaint_id
+                    """
+                    cur.execute(insert_query, (file_id, narrative))
+                else:
+                    insert_query = """
+                    INSERT INTO complaints (file_id, status) 
+                    VALUES (%s, 'Pending') 
+                    RETURNING complaint_id
+                    """
+                    cur.execute(insert_query, (file_id,))
+                
+                result = cur.fetchone()
+                complaint_id = result['complaint_id']
+                
+                conn.commit()
+                print(f"Created complaint in database with ID: {complaint_id}")
+                return complaint_id
+                
+    except Exception as e:
+        print(f"Database error creating complaint: {str(e)}")
+        raise
 
 
 
-def process_csv_excel_file(file_content, file_extension):
+
+
+def process_csv_excel_file(file_content, file_extension, file_id):
     """Process CSV/Excel file and extract complaints"""
     try:
         # Read file into pandas DataFrame
@@ -475,48 +522,38 @@ def process_csv_excel_file(file_content, file_extension):
         if len(df) > 20:
             return {'success': False, 'message': f'File has {len(df)} rows. Maximum allowed is 20 rows.'}
         
-        # Validate structure - expect Case ID as first column, Narrative Text as second
-        if len(df.columns) < 2:
-            return {'success': False, 'message': 'File must have at least 2 columns: Case ID and Narrative Text'}
+        # Check column limit
+        if len(df.columns) > 2:
+            return {'success': False, 'message': f'File has {len(df.columns)} columns. Maximum allowed is 2 columns.'}
+        
+        # Validate structure - expect exactly 2 columns: complaint_id and narrative_text
+        if len(df.columns) != 2:
+            return {'success': False, 'message': 'File must have exactly 2 columns: complaint_id and narrative_text'}
         
         # Get column names (first two columns)
-        case_id_col = df.columns[0]
+        complaint_id_col = df.columns[0]
         narrative_col = df.columns[1]
         
         complaints = []
-        now = datetime.now(timezone.utc)
         
         # Process each row
         for index, row in df.iterrows():
-            original_case_id = str(row[case_id_col]).strip() if pd.notna(row[case_id_col]) else ''
+            original_complaint_id = str(row[complaint_id_col]).strip() if pd.notna(row[complaint_id_col]) else ''
             narrative = str(row[narrative_col]).strip() if pd.notna(row[narrative_col]) else ''
             
             # Skip empty narratives
             if not narrative:
                 continue
             
-            # Generate unique complaint code
-            complaint_code = generate_complaint_code('timestamp_random')
+            # Create complaint record in database and get auto-generated ID
+            complaint_id = create_complaint_in_db(file_id, narrative)
             
-            # Create complaint message
+            # Create complaint message for SQS (compatible with extract and process lambda)
             complaint_message = {
-                'complaint_id': complaint_code,
-                'case_id': original_case_id,
-                'narrative': narrative,
-                'short_description': narrative[:100],
-                'status': 'IN-REVIEW',
-                'caseStatus': 'pending',
-                'criticality': 'NA',
-                'report_type': 'NA',
-                'created_at': now.isoformat(),
-                'updated_at': now.isoformat(),
-                'created_by': 'system',
-                'metadata': {
-                    'source': f'{file_extension.upper()} Import',
-                    'version': '1.0',
-                    'original_case_id': original_case_id,
-                    'row_number': index + 1
-                }
+                'complaint_id': complaint_id,
+                'file_id': file_id,
+                'narrative_text': narrative,
+                'original_complaint_id': original_complaint_id
             }
             
             complaints.append(complaint_message)
