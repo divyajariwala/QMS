@@ -139,15 +139,13 @@ lambda_configs = [
       step_function_base_name   = "classify-complaints"
       aws_region                = "us-east-1"
       audit_log_table_base_name = "complaints-audit-log"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region = "us-east-1"
     }
-    sqs_trigger = [
+    api_gateway_paths = [
       {
-        queue_name         = "classify-complaints"
-        visibility_timeout = 5000
-        max_receive_count  = 1000
-        batch_size         = 500
-        max_batch_window   = 20
-        max_concurrency    = 10
+        path_name   = "classifyComplaints"
+        http_method = "POST"
       }
     ]
   },
