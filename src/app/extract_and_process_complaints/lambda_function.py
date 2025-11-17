@@ -18,6 +18,12 @@ import logging
 import os
 import uuid
 from datetime import datetime, timezone
+from psycopg.rows import dict_row
+
+try:
+    from secrets_util import get_secret
+except ImportError:
+    from .secrets_util import get_secret
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -25,20 +31,44 @@ logger.setLevel(logging.INFO)
 # Configuration
 MAX_PDF_SIZE_MB = 50
 MAX_PAGES = 20
-SECRET_ARN = os.environ.get('DB_SECRET_ARN')
+ENV = os.environ.get('env', 'dev')
+DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
+DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
+DB_REGION = os.environ.get('db_region', 'us-east-1')
 
-def get_db_config():
-    """Retrieve database configuration from AWS Secrets Manager"""
-    secrets_client = boto3.client('secretsmanager')
-    response = secrets_client.get_secret_value(SecretId=SECRET_ARN)
-    secret = json.loads(response['SecretString'])
-    return {
-        'host': secret['host'],
-        'port': secret.get('port', 5432),
-        'database': secret['dbname'],
-        'user': secret['username'],
-        'password': secret['password']
-    }
+# Cache for database credentials and connection string
+_db_credentials = None
+_connection_string = None
+
+def get_connection_string():
+    """
+    Build PostgreSQL connection string from credentials in Secrets Manager.
+    Credentials are cached to avoid repeated API calls.
+    """
+    global _connection_string, _db_credentials
+
+    if _connection_string is not None:
+        return _connection_string
+
+    try:
+        # Use the superior secrets_util function
+        _db_credentials = get_secret(DB_SECRET_NAME, DB_REGION)
+
+        # Build connection string
+        host = _db_credentials['host']
+        port = _db_credentials.get('port', 5432)
+        dbname = _db_credentials['dbname']
+        user = _db_credentials['username']
+        password = _db_credentials['password']
+
+        _connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+
+        logger.info(f"Database connection string built from secret: {DB_SECRET_NAME}")
+        return _connection_string
+
+    except Exception as e:
+        logger.error(f"Error building connection string: {str(e)}")
+        raise
 
 def validate_event(event):
     """Validate event structure for different input types"""
@@ -170,8 +200,8 @@ def process_with_bedrock(messages, spec_type='pdf'):
 def update_complaint_in_db(complaint_id, extracted_data):
     """Update complaint record in PostgreSQL database"""
     try:
-        db_config = get_db_config()
-        with psycopg.connect(**db_config) as conn:
+        conninfo = get_connection_string()
+        with psycopg.connect(conninfo) as conn:
             with conn.cursor() as cur:
                 # Parse extracted data
                 result = extracted_data
@@ -247,18 +277,61 @@ def update_complaint_in_db(complaint_id, extracted_data):
         raise
 
 def lambda_handler(event, context):
-    """Main Lambda handler for multiple input types"""
+    """Main Lambda handler for SQS-triggered complaint processing"""
     try:
         logger.info("Complaint processing started")
+        logger.info(f"Received event: {json.dumps(event)}")
         
+        # Handle SQS batch events
+        if 'Records' in event:
+            results = []
+            for record in event['Records']:
+                try:
+                    # Parse SQS message body
+                    message_body = json.loads(record['body'])
+                    result = process_single_complaint(message_body)
+                    results.append(result)
+                except Exception as e:
+                    logger.error(f"Error processing record: {str(e)}")
+                    results.append({'success': False, 'error': str(e)})
+            
+            return {
+                'statusCode': 200,
+                'body': json.dumps({
+                    'success': True,
+                    'processed_count': len(results),
+                    'results': results
+                })
+            }
+        else:
+            # Direct invocation (for testing)
+            result = process_single_complaint(event)
+            return {
+                'statusCode': 200,
+                'body': json.dumps(result)
+            }
+        
+    except Exception as e:
+        logger.error(f"Processing error: {str(e)}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'success': False, 'error': 'Internal error'})
+        }
+
+
+def process_single_complaint(message_data):
+    """Process a single complaint from SQS message"""
+    try:
         # Validate and determine input type
-        input_type = validate_event(event)
-        complaint_id = event['complaint_id']
+        input_type = validate_event(message_data)
+        complaint_id = message_data['complaint_id']
+        
+        logger.info(f"Processing complaint {complaint_id} with input type: {input_type}")
         
         # Process based on input type
         if input_type == 'pdf':
             # PDF processing
-            pdf_data = fetch_pdf_from_s3(event['s3path'])
+            pdf_data = fetch_pdf_from_s3(message_data['s3path'])
             images = pdf_to_images(pdf_data)
             base64_images = images_to_base64(images)
             messages = construct_pdf_prompt(base64_images)
@@ -266,31 +339,22 @@ def lambda_handler(event, context):
             
         elif input_type == 'narrative':
             # Direct narrative processing
-            messages = construct_narrative_prompt(event['narrative_text'])
+            messages = construct_narrative_prompt(message_data['narrative_text'])
             extracted_data = process_with_bedrock(messages, 'narrative')
         
         # Update database
         update_complaint_in_db(complaint_id, extracted_data)
         
         return {
-            'statusCode': 200,
-            'body': json.dumps({
-                'success': True,
-                'complaint_id': complaint_id,
-                'input_type': input_type,
-                'extracted_data': extracted_data
-            })
+            'success': True,
+            'complaint_id': complaint_id,
+            'input_type': input_type,
+            'extracted_data': extracted_data
         }
         
     except ValueError as e:
-        logger.error(f"Validation error: {str(e)}")
-        return {
-            'statusCode': 400,
-            'body': json.dumps({'success': False, 'error': str(e)})
-        }
+        logger.error(f"Validation error for complaint {message_data.get('complaint_id', 'unknown')}: {str(e)}")
+        raise
     except Exception as e:
-        logger.error(f"Processing error: {str(e)}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'success': False, 'error': 'Internal error'})
-        }
+        logger.error(f"Processing error for complaint {message_data.get('complaint_id', 'unknown')}: {str(e)}")
+        raise
