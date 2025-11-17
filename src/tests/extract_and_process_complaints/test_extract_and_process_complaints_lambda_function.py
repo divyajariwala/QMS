@@ -12,9 +12,17 @@ import importlib.util
 sys.modules['fitz'] = Mock()
 mock_psycopg = Mock()
 mock_psycopg.connect = MagicMock()
+mock_psycopg_rows = Mock()
+mock_psycopg_rows.dict_row = Mock()
 sys.modules['psycopg'] = mock_psycopg
+sys.modules['psycopg.rows'] = mock_psycopg_rows
 sys.modules['PIL'] = Mock()
 sys.modules['PIL.Image'] = Mock()
+
+# Mock secrets_util
+mock_secrets_util = Mock()
+mock_secrets_util.get_secret = Mock()
+sys.modules['secrets_util'] = mock_secrets_util
 
 # Get the absolute path to the lambda_function.py file
 lambda_function_path = os.path.join(
@@ -129,50 +137,41 @@ class TestValidateEvent:
         assert "Must provide either 'narrative_text' or 's3path'" in str(exc_info.value)
 
 
-class TestGetDbConfig:
-    """Tests for get_db_config function"""
+class TestGetConnectionString:
+    """Tests for get_connection_string function"""
 
-    @patch.dict(os.environ, {'DB_SECRET_ARN': 'test-secret-arn'})
-    @patch('boto3.client')
-    def test_get_db_config_success(self, mock_boto3):
-        """Test: Successful database config retrieval"""
-        mock_secrets = Mock()
-        mock_boto3.return_value = mock_secrets
-        mock_secrets.get_secret_value.return_value = {
-            'SecretString': json.dumps({
-                'host': 'test-host',
-                'port': 5432,
-                'dbname': 'test_db',
-                'username': 'test_user',
-                'password': 'test_pass'
-            })
+    @patch.dict(os.environ, {'env': 'dev', 'db_secret_base_name': 'aurora-postgres-master', 'db_region': 'us-east-1'})
+    @patch('lambda_function.get_secret')
+    def test_get_connection_string_success(self, mock_get_secret):
+        """Test: Successful connection string building"""
+        mock_get_secret.return_value = {
+            'host': 'test-host',
+            'port': 5432,
+            'dbname': 'test_db',
+            'username': 'test_user',
+            'password': 'test_pass'
         }
 
-        result = lambda_function.get_db_config()
+        # Reset cache
+        lambda_function._connection_string = None
+        lambda_function._db_credentials = None
 
-        assert result['host'] == 'test-host'
-        assert result['port'] == 5432
-        assert result['database'] == 'test_db'
-        assert result['user'] == 'test_user'
-        assert result['password'] == 'test_pass'
+        result = lambda_function.get_connection_string()
 
-    @patch.dict(os.environ, {'DB_SECRET_ARN': 'test-secret-arn'})
-    @patch('boto3.client')
-    def test_get_db_config_default_port(self, mock_boto3):
-        """Test: Default port when not specified"""
-        mock_secrets = Mock()
-        mock_boto3.return_value = mock_secrets
-        mock_secrets.get_secret_value.return_value = {
-            'SecretString': json.dumps({
-                'host': 'test-host',
-                'dbname': 'test_db',
-                'username': 'test_user',
-                'password': 'test_pass'
-            })
-        }
+        assert result == 'postgresql://test_user:test_pass@test-host:5432/test_db'
+        mock_get_secret.assert_called_once_with('qms-dev-aurora-postgres-master', 'us-east-1')
 
-        result = lambda_function.get_db_config()
-        assert result['port'] == 5432
+    @patch.dict(os.environ, {'env': 'dev', 'db_secret_base_name': 'aurora-postgres-master', 'db_region': 'us-east-1'})
+    @patch('lambda_function.get_secret')
+    def test_get_connection_string_cached(self, mock_get_secret):
+        """Test: Connection string caching"""
+        # Set cache
+        lambda_function._connection_string = 'cached://connection'
+        
+        result = lambda_function.get_connection_string()
+        
+        assert result == 'cached://connection'
+        mock_get_secret.assert_not_called()
 
 
 class TestLoadToolSpec:
@@ -387,17 +386,11 @@ class TestProcessWithBedrock:
 class TestUpdateComplaintInDb:
     """Tests for update_complaint_in_db function"""
 
-    @patch('lambda_function.get_db_config')
+    @patch('lambda_function.get_connection_string')
     @patch('psycopg.connect')
-    def test_update_complaint_success(self, mock_connect, mock_get_config, mock_extracted_data):
+    def test_update_complaint_success(self, mock_connect, mock_get_connection, mock_extracted_data):
         """Test: Successful complaint update in database"""
-        mock_get_config.return_value = {
-            'host': 'test-host',
-            'port': 5432,
-            'database': 'test_db',
-            'user': 'test_user',
-            'password': 'test_pass'
-        }
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
         mock_conn = Mock()
         mock_cursor = Mock()
@@ -412,11 +405,11 @@ class TestUpdateComplaintInDb:
         mock_cursor.execute.assert_called_once()
         mock_conn.commit.assert_called_once()
 
-    @patch('lambda_function.get_db_config')
+    @patch('lambda_function.get_connection_string')
     @patch('psycopg.connect')
-    def test_update_complaint_with_na_values(self, mock_connect, mock_get_config):
+    def test_update_complaint_with_na_values(self, mock_connect, mock_get_connection):
         """Test: Update complaint with N/A values"""
-        mock_get_config.return_value = {'host': 'test'}
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
         mock_conn = Mock()
         mock_cursor = Mock()
@@ -439,11 +432,11 @@ class TestUpdateComplaintInDb:
         # Verify execute was called (N/A values should be converted to None)
         mock_cursor.execute.assert_called_once()
 
-    @patch('lambda_function.get_db_config')
+    @patch('lambda_function.get_connection_string')
     @patch('psycopg.connect')
-    def test_update_complaint_db_error(self, mock_connect, mock_get_config):
+    def test_update_complaint_db_error(self, mock_connect, mock_get_connection):
         """Test: Database error handling"""
-        mock_get_config.return_value = {'host': 'test'}
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         mock_connect.side_effect = Exception("Database connection failed")
 
         with pytest.raises(Exception):
@@ -453,39 +446,50 @@ class TestUpdateComplaintInDb:
 class TestLambdaHandler:
     """Tests for lambda_handler function"""
 
-    @patch('lambda_function.validate_event')
-    @patch('lambda_function.fetch_pdf_from_s3')
-    @patch('lambda_function.pdf_to_images')
-    @patch('lambda_function.images_to_base64')
-    @patch('lambda_function.construct_pdf_prompt')
-    @patch('lambda_function.process_with_bedrock')
-    @patch('lambda_function.update_complaint_in_db')
-    def test_lambda_handler_pdf_success(self, mock_update_db, mock_bedrock, mock_construct_prompt,
-                                       mock_to_base64, mock_to_images, mock_fetch_pdf, mock_validate,
-                                       sample_pdf_event, mock_extracted_data):
-        """Test: Successful PDF processing"""
-        mock_validate.return_value = 'pdf'
-        mock_fetch_pdf.return_value = b'pdf-data'
-        mock_to_images.return_value = [Mock(), Mock()]
-        mock_to_base64.return_value = ['base64-1', 'base64-2']
-        mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
-        mock_bedrock.return_value = mock_extracted_data
+    @patch('lambda_function.process_single_complaint')
+    def test_lambda_handler_sqs_batch_success(self, mock_process_single):
+        """Test: Successful SQS batch processing"""
+        mock_process_single.return_value = {
+            'success': True,
+            'complaint_id': 'CAS-123',
+            'input_type': 'narrative'
+        }
 
-        result = lambda_function.lambda_handler(sample_pdf_event, {})
+        sqs_event = {
+            'Records': [
+                {
+                    'body': json.dumps({
+                        'complaint_id': 'CAS-123',
+                        'file_id': 'file-456',
+                        'narrative_text': 'Test narrative'
+                    })
+                },
+                {
+                    'body': json.dumps({
+                        'complaint_id': 'CAS-124',
+                        'file_id': 'file-457',
+                        'narrative_text': 'Another narrative'
+                    })
+                }
+            ]
+        }
+
+        result = lambda_function.lambda_handler(sqs_event, {})
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
         assert body['success'] is True
-        assert body['complaint_id'] == 'CAS-123'
-        assert body['input_type'] == 'pdf'
+        assert body['processed_count'] == 2
+        assert len(body['results']) == 2
+        assert mock_process_single.call_count == 2
 
     @patch('lambda_function.validate_event')
     @patch('lambda_function.construct_narrative_prompt')
     @patch('lambda_function.process_with_bedrock')
     @patch('lambda_function.update_complaint_in_db')
-    def test_lambda_handler_narrative_success(self, mock_update_db, mock_bedrock, mock_construct_prompt,
+    def test_lambda_handler_direct_invocation(self, mock_update_db, mock_bedrock, mock_construct_prompt,
                                             mock_validate, sample_narrative_event, mock_extracted_data):
-        """Test: Successful narrative processing"""
+        """Test: Direct invocation (non-SQS)"""
         mock_validate.return_value = 'narrative'
         mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
         mock_bedrock.return_value = mock_extracted_data
@@ -498,31 +502,77 @@ class TestLambdaHandler:
         assert body['complaint_id'] == 'CAS-789'
         assert body['input_type'] == 'narrative'
 
-    @patch('lambda_function.validate_event')
-    def test_lambda_handler_validation_error(self, mock_validate):
-        """Test: Validation error handling"""
-        mock_validate.side_effect = ValueError("Invalid event")
+    @patch('lambda_function.process_single_complaint')
+    def test_lambda_handler_sqs_processing_error(self, mock_process_single):
+        """Test: SQS processing error handling"""
+        mock_process_single.side_effect = Exception("Processing failed")
 
-        result = lambda_function.lambda_handler({}, {})
+        sqs_event = {
+            'Records': [
+                {
+                    'body': json.dumps({
+                        'complaint_id': 'CAS-123',
+                        'file_id': 'file-456',
+                        'narrative_text': 'Test narrative'
+                    })
+                }
+            ]
+        }
 
-        assert result['statusCode'] == 400
+        result = lambda_function.lambda_handler(sqs_event, {})
+
+        assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['success'] is False
-        assert body['error'] == 'Invalid event'
+        assert body['success'] is True
+        assert body['processed_count'] == 1
+        assert body['results'][0]['success'] is False
 
-    @patch('lambda_function.validate_event')
-    @patch('lambda_function.fetch_pdf_from_s3')
-    def test_lambda_handler_processing_error(self, mock_fetch_pdf, mock_validate, sample_pdf_event):
-        """Test: Processing error handling"""
-        mock_validate.return_value = 'pdf'
-        mock_fetch_pdf.side_effect = Exception("Processing failed")
-
-        result = lambda_function.lambda_handler(sample_pdf_event, {})
+    def test_lambda_handler_general_error(self):
+        """Test: General error handling"""
+        # Invalid event structure
+        result = lambda_function.lambda_handler(None, {})
 
         assert result['statusCode'] == 500
         body = json.loads(result['body'])
         assert body['success'] is False
         assert body['error'] == 'Internal error'
+
+
+class TestProcessSingleComplaint:
+    """Tests for process_single_complaint function"""
+
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.construct_narrative_prompt')
+    @patch('lambda_function.process_with_bedrock')
+    @patch('lambda_function.update_complaint_in_db')
+    def test_process_single_complaint_narrative(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_validate, mock_extracted_data):
+        """Test: Process single narrative complaint"""
+        mock_validate.return_value = 'narrative'
+        mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
+        mock_bedrock.return_value = mock_extracted_data
+
+        message_data = {
+            'complaint_id': 'CAS-123',
+            'file_id': 'file-456',
+            'narrative_text': 'Test narrative'
+        }
+
+        result = lambda_function.process_single_complaint(message_data)
+
+        assert result['success'] is True
+        assert result['complaint_id'] == 'CAS-123'
+        assert result['input_type'] == 'narrative'
+        mock_update_db.assert_called_once()
+
+    @patch('lambda_function.validate_event')
+    def test_process_single_complaint_validation_error(self, mock_validate):
+        """Test: Process single complaint validation error"""
+        mock_validate.side_effect = ValueError("Invalid event")
+
+        message_data = {'invalid': 'data'}
+
+        with pytest.raises(ValueError):
+            lambda_function.process_single_complaint(message_data)
 
 
 class TestEdgeCases:
@@ -533,11 +583,11 @@ class TestEdgeCases:
         with pytest.raises(ValueError):
             lambda_function.validate_event({})
 
-    @patch('lambda_function.get_db_config')
+    @patch('lambda_function.get_connection_string')
     @patch('psycopg.connect')
-    def test_update_complaint_invalid_dates(self, mock_connect, mock_get_config):
+    def test_update_complaint_invalid_dates(self, mock_connect, mock_get_connection):
         """Test: Invalid date handling in database update"""
-        mock_get_config.return_value = {'host': 'test'}
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
         mock_conn = Mock()
         mock_cursor = Mock()
