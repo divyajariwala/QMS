@@ -34,10 +34,7 @@ def mock_all_external_dependencies():
         # Mock PostgreSQL connection (psycopg3 style with context managers)
         mock_cursor = MagicMock()
         mock_cursor.fetchone.return_value = {
-            'complaint_id': 'CAS-20241030154523789456',
-            'narrative': 'Test narrative',
-            'created_at': datetime.now(timezone.utc),
-            'created_by': 'test@example.com'
+            'complaint_id': 'CAS-00001'
         }
 
         mock_conn = MagicMock()
@@ -60,7 +57,6 @@ class TestLambdaHandler:
     """Unit tests for the main lambda_handler function"""
     @patch('create_complaint.lambda_function.boto3.client')
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     def test_successful_complaint_creation(self, mock_boto3):
         """Test: Successful complaint creation with valid narrative"""
         # Mock SQS client
@@ -92,7 +88,7 @@ class TestLambdaHandler:
         assert body['success'] is True
         assert body['message'] == "Complaint created and queued for processing"
         assert 'complaint' in body['data']
-        assert 'CAS-' in body['data']['complaint']['code']
+        assert 'CAS-' in body['data']['complaint']['complaint_id']
         assert body['data']['message_id'] == 'test-message-123'
 
         # Verify SQS was called
@@ -101,7 +97,6 @@ class TestLambdaHandler:
         assert call_args[1]['QueueUrl'] == 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_successful_with_cognito_user(self, mock_boto3):
         """Test: Successful complaint with Cognito user info"""
@@ -130,13 +125,13 @@ class TestLambdaHandler:
 
         assert result['statusCode'] == 200
 
-        # Verify the message sent to SQS contains the correct user
+        # Verify the message sent to SQS contains the correct structure
         call_args = mock_sqs.send_message.call_args
         message_body = json.loads(call_args[1]['MessageBody'])
-        assert message_body['created_by'] == 'cognito-user@example.com'
+        assert message_body['complaint_id'] == 'CAS-00001'
+        assert message_body['narrative_text'] == 'Product defect reported'
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_empty_narrative(self, mock_boto3):
         """Test: Error when narrative is empty"""
@@ -157,7 +152,6 @@ class TestLambdaHandler:
         assert body['message'] == "Narrative is required"
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_narrative_no_length_limit(self, mock_boto3):
         """Test: Success with very long narrative (no length limit)"""
@@ -192,12 +186,11 @@ class TestLambdaHandler:
         # Verify SQS was called with the full narrative
         call_args = mock_sqs.send_message.call_args
         message_body = json.loads(call_args[1]['MessageBody'])
-        assert message_body['narrative'] == very_long_narrative
-        assert len(message_body['narrative']) == 5000
+        assert message_body['narrative_text'] == very_long_narrative
+        assert len(message_body['narrative_text']) == 5000
 
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_narrative_at_max_length(self, mock_boto3):
         """Test: Success when narrative is exactly 1500 characters"""
@@ -224,7 +217,6 @@ class TestLambdaHandler:
         assert body['success'] is True
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_missing_body(self, mock_boto3):
         """Test: Error when body is missing"""
@@ -243,7 +235,6 @@ class TestLambdaHandler:
         assert body['success'] is False
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_invalid_json_body(self, mock_boto3):
         """Test: Error when body has invalid JSON"""
@@ -263,7 +254,6 @@ class TestLambdaHandler:
         assert body['success'] is False
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'non-existent-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_queue_not_found(self, mock_boto3):
         """Test: Error when SQS queue doesn't exist"""
@@ -289,7 +279,6 @@ class TestLambdaHandler:
         assert "not found" in body['message']
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_sqs_send_message_failure(self, mock_boto3):
         """Test: Error when SQS send_message fails"""
@@ -314,128 +303,43 @@ class TestLambdaHandler:
         body = json.loads(result['body'])
         assert body['success'] is False
 
-    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'ulid')
-    @patch('boto3.client')
-    def test_ulid_code_strategy(self, mock_boto3):
-        """Test: Complaint creation with ULID strategy"""
-        mock_sqs = Mock()
-        mock_boto3.return_value = mock_sqs
-        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
-        mock_sqs.send_message.return_value = {'MessageId': 'msg-ulid'}
-
-        event = {
-            'body': json.dumps({'narrative': 'Test with ULID'}),
-            'headers': {'content-type': 'application/json'}
-        }
-
-        context = Mock()
-        context.request_id = 'req-ulid'
-
-        result = lambda_function.lambda_handler(event, context)
-
-        assert result['statusCode'] == 200
-        body = json.loads(result['body'])
-
-        # ULID codes are 26 chars + 'CAS-' prefix = 30 chars
-        assert len(body['data']['complaint']['code']) == 30
-
-    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'uuid_short')
-    @patch('boto3.client')
-    def test_uuid_short_strategy(self, mock_boto3):
-        """Test: Complaint creation with UUID short strategy"""
-        mock_sqs = Mock()
-        mock_boto3.return_value = mock_sqs
-        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
-        mock_sqs.send_message.return_value = {'MessageId': 'msg-uuid'}
-
-        event = {
-            'body': json.dumps({'narrative': 'Test with UUID'}),
-            'headers': {'content-type': 'application/json'}
-        }
-
-        context = Mock()
-        context.request_id = 'req-uuid'
-
-        result = lambda_function.lambda_handler(event, context)
-
-        assert result['statusCode'] == 200
-        body = json.loads(result['body'])
-
-        # UUID short codes are 8 chars + 'CAS-' prefix = 12 chars
-        assert len(body['data']['complaint']['code']) == 12
 
 
-class TestCodeGeneration:
-    """Tests for complaint code generation functions"""
 
-    def test_timestamp_random_strategy(self):
-        """Test: timestamp_random code generation"""
-        code = lambda_function.generate_complaint_code('timestamp_random')
+class TestDatabaseIntegration:
+    """Tests for database integration functions"""
 
-        assert code.startswith('CAS-')
-        assert len(code) == 24  # CAS- (4) + YYYYMMDDHHMMSS (17) + RRR (3)
+    @patch('create_complaint.lambda_function.get_connection_string')
+    @patch('create_complaint.lambda_function.psycopg.connect')
+    def test_create_complaint_in_db_success(self, mock_connect, mock_get_connection):
+        """Test: Successful complaint creation in database"""
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
+        
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00001'}
+        
+        mock_conn = MagicMock()
+        mock_conn.__enter__ = Mock(return_value=mock_conn)
+        mock_conn.__exit__ = Mock(return_value=False)
+        mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+        mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+        mock_connect.return_value = mock_conn
 
-        # Verify format
-        code_parts = code.split('-')
-        assert len(code_parts) == 2
-        assert code_parts[0] == 'CAS'
-        assert code_parts[1].isdigit()
-        assert len(code_parts[1]) == 20  # 17 timestamp + 3 random
+        result = lambda_function.create_complaint_in_db('Test narrative')
+        
+        assert result == 'CAS-00001'
+        mock_cursor.execute.assert_called_once()
+        mock_conn.commit.assert_called_once()
 
-    def test_ulid_strategy(self):
-        """Test: ULID code generation"""
-        code = lambda_function.generate_complaint_code('ulid')
+    @patch('create_complaint.lambda_function.get_connection_string')
+    @patch('create_complaint.lambda_function.psycopg.connect')
+    def test_create_complaint_in_db_error(self, mock_connect, mock_get_connection):
+        """Test: Database error handling"""
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
+        mock_connect.side_effect = Exception("Database connection failed")
 
-        assert code.startswith('CAS-')
-        assert len(code) == 30  # CAS- (4) + ULID (26)
-
-    def test_uuid_short_strategy(self):
-        """Test: UUID short code generation"""
-        code = lambda_function.generate_complaint_code('uuid_short')
-
-        assert code.startswith('CAS-')
-        assert len(code) == 12  # CAS- (4) + UUID_SHORT (8)
-
-        # Verify it's alphanumeric uppercase
-        uuid_part = code.split('-')[1]
-        assert uuid_part.isupper()
-        assert uuid_part.isalnum()
-
-    def test_nanoid_strategy(self):
-        """Test: NanoID code generation"""
-        code = lambda_function.generate_complaint_code('nanoid')
-
-        assert code.startswith('CAS-')
-        assert len(code) == 12  # CAS- (4) + NANOID (8)
-
-    def test_unknown_strategy_defaults_to_timestamp(self):
-        """Test: Unknown strategy falls back to timestamp_random"""
-        code = lambda_function.generate_complaint_code('unknown_strategy')
-
-        assert code.startswith('CAS-')
-        assert len(code) == 24  # timestamp_random format
-
-    def test_ulid_generation(self):
-        """Test: ULID generation function"""
-        ulid = lambda_function.generate_ulid()
-
-        assert len(ulid) == 26
-
-        # ULID uses Crockford's Base32 (0-9, A-Z excluding I, L, O, U)
-        valid_chars = set('0123456789ABCDEFGHJKMNPQRSTVWXYZ')
-        assert all(c in valid_chars for c in ulid)
-
-    def test_nanoid_generation(self):
-        """Test: NanoID generation function"""
-        nanoid = lambda_function.generate_nanoid(8)
-
-        assert len(nanoid) == 8
-
-        # NanoID excludes ambiguous characters (0, O, 1, I, l)
-        forbidden_chars = set('01OIl')
-        assert not any(c in forbidden_chars for c in nanoid)
+        with pytest.raises(Exception):
+            lambda_function.create_complaint_in_db('Test narrative')
 
 
 class TestUtilityFunctions:
@@ -504,7 +408,6 @@ class TestMessageFormatting:
     """Tests for SQS message formatting"""
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_sqs_message_structure(self, mock_boto3):
         """Test: SQS message has correct structure"""
@@ -534,20 +437,12 @@ class TestMessageFormatting:
         message_body = json.loads(call_args[1]['MessageBody'])
         assert 'complaint_id' in message_body
         assert message_body['complaint_id'].startswith('CAS-')
-        assert message_body['narrative'] == narrative
-        assert message_body['status'] == 'IN-REVIEW'
-        assert message_body['caseStatus'] == 'pending'
-        assert message_body['criticality'] == 'NA'
-        assert message_body['created_by'] == 'tester@example.com'
-        assert message_body['metadata']['source'] == 'manual'
-
-        # Check short description is truncated to 100 chars
-        assert len(message_body['short_description']) <= 100
+        assert message_body['narrative_text'] == narrative
+        assert 'file_id' in message_body
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
-    def test_short_description_truncation(self, mock_boto3):
+    def test_narrative_preservation(self, mock_boto3):
         """Test: Long narratives are truncated in short_description"""
         mock_sqs = Mock()
         mock_boto3.return_value = mock_sqs
@@ -571,15 +466,15 @@ class TestMessageFormatting:
         call_args = mock_sqs.send_message.call_args
         message_body = json.loads(call_args[1]['MessageBody'])
 
-        # short_description should be exactly 100 chars
-        assert len(message_body['short_description']) == 100
+        # narrative_text should be preserved in full
+        assert message_body['narrative_text'] == long_narrative
+        assert len(message_body['narrative_text']) == 200
 
 
 class TestIntegration:
     """Integration tests for complete workflows"""
 
     @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
-    @patch('create_complaint.lambda_function.CODE_STRATEGY', 'timestamp_random')
     @patch('boto3.client')
     def test_end_to_end_complaint_creation(self, mock_boto3):
         """Test: Complete complaint creation workflow"""
@@ -614,9 +509,8 @@ class TestIntegration:
         assert body['success'] is True
 
         complaint_data = body['data']['complaint']
-        assert complaint_data['code'].startswith('CAS-')
-        assert complaint_data['status'] == 'IN-REVIEW'
-        # Note: caseStatus is not returned in API response, only used internally
+        assert complaint_data['complaint_id'].startswith('CAS-')
+        assert complaint_data['status'] == 'Pending'
         assert 'created_at' in complaint_data
 
         # Verify SQS interaction

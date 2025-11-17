@@ -1,8 +1,7 @@
 import json
 import logging
 import os
-import random
-import string
+import uuid
 from datetime import datetime, timezone
 
 import boto3
@@ -17,7 +16,6 @@ except ImportError:
 
 # Environment variables
 ENV = os.environ.get('env', 'dev')
-CODE_STRATEGY = os.environ.get('CODE_STRATEGY', 'timestamp_random')
 SQS_QUEUE_BASE_NAME = os.environ.get('sqs_queue_base_name', 'preload-complaints')
 SQS_QUEUE_NAME = f"qms-{ENV}-{SQS_QUEUE_BASE_NAME}"
 DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
@@ -71,32 +69,14 @@ def lambda_handler(event, context):
         if not narrative:
             return _response(400, "Narrative is required")
 
-        # Generate unique complaint code
-        complaint_code = generate_complaint_code(CODE_STRATEGY)
-        created_by = _get_user_from_event(event)
-        now = datetime.now(timezone.utc)
-
-        # Get database connection string
-        conninfo = get_connection_string()
-        logger.info(conninfo)
-
-        # Create complaint message
-        now = datetime.now(timezone.utc)
+        # Create complaint in database and get auto-generated ID
+        complaint_id = create_complaint_in_db(narrative)
+        
+        # Create SQS message for extract_and_process_complaints lambda
         complaint_message = {
-            'complaint_id': complaint_code,
-            'narrative': narrative,
-            'short_description': narrative[:100],  # First 100 chars as short desc
-            'status': 'IN-REVIEW',
-            'caseStatus': 'pending',
-            'criticality': 'NA',
-            'report_type': 'NA',
-            'created_at': now.isoformat(),
-            'updated_at': now.isoformat(),
-            'created_by': _get_user_from_event(event),
-            'metadata': {
-                'source': 'manual',
-                'version': '1.0'
-            }
+            'complaint_id': complaint_id,
+            'file_id': str(uuid.uuid4()),  # Generate file_id for narrative input
+            'narrative_text': narrative
         }
 
         # Send to SQS for processing
@@ -108,27 +88,21 @@ def lambda_handler(event, context):
                     'StringValue': 'manual',
                     'DataType': 'String'
                 },
-                'ComplaintCode': {
-                    'StringValue': complaint_code,
-                    'DataType': 'String'
-                },
-                'CreatedBy': {
-                    'StringValue': _get_user_from_event(event),
+                'ComplaintId': {
+                    'StringValue': complaint_id,
                     'DataType': 'String'
                 }
             }
         )
 
-        print(f"Complaint sent to SQS successfully: {complaint_code}, MessageId: {sqs_response['MessageId']}")
+        print(f"Complaint created and sent to SQS: {complaint_id}, MessageId: {sqs_response['MessageId']}")
 
         return _response(200, "Complaint created and queued for processing", {
             'complaint': {
-                'complaint_id': complaint_code,
-                'code': complaint_code,
+                'complaint_id': complaint_id,
                 'narrative': narrative,
-                'short_description': complaint_message['short_description'],
-                'status': 'IN-REVIEW',
-                'created_at': now.isoformat()
+                'status': 'Pending',
+                'created_at': datetime.now(timezone.utc).isoformat()
             },
             'message_id': sqs_response['MessageId']
         })
@@ -179,77 +153,36 @@ def get_connection_string():
         raise
 
 
-def generate_complaint_code(strategy='timestamp_random'):
+def create_complaint_in_db(narrative):
     """
-    Generate unique complaint code with different strategies
-
-    Strategies:
-    - timestamp_random: CAS-20241030154523789 (timestamp + 3 random digits)
-    - ulid: CAS-01HQZP2N7V8CHJ... (ULID format)
-    - uuid_short: CAS-A7B2C9D4 (8 chars from UUID)
-    - nanoid: CAS-V1StGXR8 (8 random alphanumeric)
+    Create complaint record in database with narrative and return auto-generated complaint_id
     """
-
-    if strategy == 'timestamp_random':
-        # CAS-20241030154523789456 (timestamp with microseconds + 3 random digits)
-        now = datetime.now(timezone.utc)
-        timestamp = now.strftime('%Y%m%d%H%M%S')
-        microseconds = str(now.microsecond)[:3]  # First 3 digits of microseconds
-        random_suffix = ''.join(random.choices(string.digits, k=3))
-        return f"CAS-{timestamp}{microseconds}{random_suffix}"
-
-    elif strategy == 'ulid':
-        # CAS-01HQZP2N7V8CHJ9K3T2W4X5Y6Z
-        ulid = generate_ulid()
-        return f"CAS-{ulid}"
-
-    elif strategy == 'uuid_short':
-        # CAS-A7B2C9D4
-        import uuid
-        short_uuid = str(uuid.uuid4()).replace('-', '')[:8].upper()
-        return f"CAS-{short_uuid}"
-
-    elif strategy == 'nanoid':
-        # CAS-V1StGXR8
-        nanoid = generate_nanoid(8)
-        return f"CAS-{nanoid}"
-
-    else:
-        # Default: timestamp_random
-        return generate_complaint_code('timestamp_random')
+    try:
+        conninfo = get_connection_string()
+        
+        with psycopg.connect(conninfo) as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                # Insert complaint with narrative, let database auto-generate complaint_id
+                insert_query = """
+                INSERT INTO complaints (narrative, status) 
+                VALUES (%s, 'Pending') 
+                RETURNING complaint_id
+                """
+                
+                cur.execute(insert_query, (narrative,))
+                result = cur.fetchone()
+                complaint_id = result['complaint_id']
+                
+                conn.commit()
+                logger.info(f"Created complaint in database with ID: {complaint_id}")
+                return complaint_id
+                
+    except Exception as e:
+        logger.error(f"Database error creating complaint: {str(e)}")
+        raise
 
 
-def generate_ulid():
-    """
-    Generate ULID (Universally Unique Lexicographically Sortable Identifier)
-    Format: 26 characters, time-sortable
-    """
-    # Timestamp part (10 chars, 48 bits)
-    timestamp = int(datetime.now(timezone.utc).timestamp() * 1000)
 
-    # Crockford's Base32 encoding
-    encoding = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
-
-    # Encode timestamp (10 characters)
-    time_part = ""
-    for _ in range(10):
-        time_part = encoding[timestamp % 32] + time_part
-        timestamp //= 32
-
-    # Random part (16 chars, 80 bits)
-    random_part = ''.join(random.choices(encoding, k=16))
-
-    return time_part + random_part
-
-
-def generate_nanoid(length=8):
-    """
-    Generate Nanoid-style identifier
-    URL-safe, readable, no ambiguous characters
-    """
-    # Exclude similar looking characters: 0/O, 1/I/l
-    alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz"
-    return ''.join(random.choices(alphabet, k=length))
 
 
 def _get_user_from_event(event):
