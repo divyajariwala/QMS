@@ -197,7 +197,7 @@ lambda_configs = [
     environment_variables = {
       env                 = "dev"
       aws_region          = "us-east-1"
-      level_endpoint_name = "roberta-level-model-v1"
+      level_endpoint = "roberta-level-model-v1"
     }
   },
   {
@@ -205,6 +205,8 @@ lambda_configs = [
     path          = "src/app/calculate_complaints_subcategory"
     environment_variables = {
       env                 = "dev"
+      aws_region          = "us-east-1"
+      subcategory_endpoint = "roberta-mounjaro-category-12-model-v1"
     }
   },
   {
