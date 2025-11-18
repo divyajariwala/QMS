@@ -264,11 +264,11 @@ class TestGetAllComplaints:
             [
                 {'complaint_id': 'CAS-1', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending'}
             ],
-            # All complaints for grouping (no filter)
+            # All complaints for grouping (no filter) - ordered by case_id DESC
             [
-                {'complaint_id': 'CAS-1', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE'},
-                {'complaint_id': 'CAS-2', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC'},
-                {'complaint_id': 'CAS-3', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE'}
+                {'complaint_id': 'CAS-00003', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE'},
+                {'complaint_id': 'CAS-00002', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC'},
+                {'complaint_id': 'CAS-00001', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE'}
             ]
         ]
 
@@ -305,10 +305,10 @@ class TestGetAllComplaints:
                 {'stat_name': 'Processed', 'stat_value': 1},
                 {'stat_name': 'Overdue', 'stat_value': 1}
             ],
-            # Only pending complaints (filtered and paginated)
+            # Only pending complaints (filtered and paginated) - ordered by case_id DESC
             [
-                {'complaint_id': 'CAS-1', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending'},
-                {'complaint_id': 'CAS-4', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 4), 'case_type': 'PC', 'status': 'Pending'}
+                {'complaint_id': 'CAS-00004', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 4), 'case_type': 'PC', 'status': 'Pending'},
+                {'complaint_id': 'CAS-00001', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending'}
             ]
         ]
 
@@ -341,19 +341,27 @@ class TestUtilityFunctions:
     """Tests for utility functions"""
 
     def test_group_by_status_comprehensive(self):
-        """Test: Group complaints by status comprehensively"""
+        """Test: Group complaints by status with descending case_id ordering"""
         complaints = [
             {
                 'status': 'Pending',
-                'complaint_id': 'CAS-1',
+                'complaint_id': 'CAS-00001',
                 'criticality': 'High',
                 'report_type': 'Spontaneous',
                 'receipt_date': date(2023, 1, 1),
                 'case_type': 'AE'
             },
             {
+                'status': 'Pending',
+                'complaint_id': 'CAS-00003',
+                'criticality': 'Medium',
+                'report_type': 'Study',
+                'receipt_date': date(2023, 1, 3),
+                'case_type': 'PC'
+            },
+            {
                 'status': 'Processed',
-                'complaint_id': 'CAS-2',
+                'complaint_id': 'CAS-00002',
                 'criticality': 'Medium',
                 'report_type': 'Study',
                 'receipt_date': date(2023, 1, 2),
@@ -361,25 +369,28 @@ class TestUtilityFunctions:
             },
             {
                 'status': 'Overdue',
-                'complaint_id': 'CAS-3',
+                'complaint_id': 'CAS-00004',
                 'criticality': 'Low',
                 'report_type': 'Literature',
-                'receipt_date': date(2023, 1, 3),
+                'receipt_date': date(2023, 1, 4),
                 'case_type': 'AE'
             }
         ]
 
         result = lambda_function._group_by_status(complaints)
 
-        assert len(result['pending']) == 1
+        assert len(result['pending']) == 2
         assert len(result['processed']) == 1
         assert len(result['overdue']) == 1
         
+        # Check descending order by case_id within each status
+        pending_items = result['pending']
+        assert pending_items[0]['case_id'] == 'CAS-00003'  # Higher case_id first
+        assert pending_items[1]['case_id'] == 'CAS-00001'  # Lower case_id second
+        
         # Check field mapping
-        pending_item = result['pending'][0]
-        assert pending_item['case_id'] == 'CAS-1'
-        assert pending_item['criticality'] == 'High'
-        assert pending_item['case_type'] == ['AE']
+        assert pending_items[0]['criticality'] == 'Medium'
+        assert pending_items[0]['case_type'] == ['PC']
 
     def test_get_cors_headers(self):
         """Test: CORS headers function"""

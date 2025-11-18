@@ -168,7 +168,7 @@ def get_all_complaints(conn, page=1, status_filter=None):
                 SELECT complaint_id, criticality, report_type, receipt_date, case_type, status
                 FROM complaints
                 {where_clause}
-                ORDER BY created_at DESC
+                ORDER BY complaint_id DESC
                 LIMIT %s OFFSET %s
             """, params + [limit, offset])
             paginated_complaints = cursor.fetchall()
@@ -182,7 +182,7 @@ def get_all_complaints(conn, page=1, status_filter=None):
                 cursor.execute("""
                     SELECT complaint_id, criticality, report_type, receipt_date, case_type, status
                     FROM complaints
-                    ORDER BY created_at DESC
+                    ORDER BY complaint_id DESC
                 """)
                 complaints_for_grouping = cursor.fetchall()
             
@@ -263,7 +263,7 @@ def get_db_connection():
 
 def _group_by_status(complaints):
     """
-    Group complaints by status for response
+    Group complaints by status for response, maintaining descending order by case_id
     """
     status_groups = {
         'pending': [],
@@ -288,6 +288,10 @@ def _group_by_status(complaints):
             status_groups['processed'].append(complaint_summary)
         elif case_status == 'overdue':
             status_groups['overdue'].append(complaint_summary)
+    
+    # Sort each status group by case_id in descending order
+    for status in status_groups:
+        status_groups[status].sort(key=lambda x: x['case_id'], reverse=True)
     
     return status_groups
 
