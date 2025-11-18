@@ -282,6 +282,7 @@ class TestUtilityFunctions:
         assert headers['Access-Control-Allow-Methods'] == 'GET, OPTIONS'
         assert 'Authorization' in headers['Access-Control-Allow-Headers']
 
+    @patch.dict('os.environ', {'env': 'dev', 'db_secret_base_name': 'aurora-postgres-master', 'db_region': 'us-east-1'})
     @patch.object(lambda_function, 'get_secret')
     def test_get_db_connection_success(self, mock_get_secret):
         """Test: Successful database connection"""
@@ -300,6 +301,7 @@ class TestUtilityFunctions:
             result = lambda_function.get_db_connection()
 
             assert result == mock_conn
+            mock_get_secret.assert_called_once_with('qms-dev-aurora-postgres-master', 'us-east-1')
             mock_connect.assert_called_once_with(
                 host='localhost',
                 port=5432,
