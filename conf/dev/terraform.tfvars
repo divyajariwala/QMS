@@ -196,6 +196,8 @@ lambda_configs = [
     path          = "src/app/calculate_complaints_level"
     environment_variables = {
       env                 = "dev"
+      aws_region          = "us-east-1"
+      level_endpoint_name = "roberta-level-model-v1"
     }
   },
   {
