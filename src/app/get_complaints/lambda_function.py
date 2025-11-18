@@ -173,23 +173,28 @@ def get_all_complaints(conn, page=1, status_filter=None):
             """, params + [limit, offset])
             paginated_complaints = cursor.fetchall()
             
-            # Get all complaints for status grouping (without pagination)
-            cursor.execute("""
-                SELECT complaint_id, criticality, report_type, receipt_date, case_type, status
-                FROM complaints
-                ORDER BY created_at DESC
-            """)
-            all_complaints = cursor.fetchall()
+            # Get complaints for status grouping based on filter
+            if status_filter:
+                # When filtering by status, only return that status in caseStatus
+                complaints_for_grouping = paginated_complaints
+            else:
+                # When no filter, get all complaints for status grouping
+                cursor.execute("""
+                    SELECT complaint_id, criticality, report_type, receipt_date, case_type, status
+                    FROM complaints
+                    ORDER BY created_at DESC
+                """)
+                complaints_for_grouping = cursor.fetchall()
             
             # Group complaints by status
-            case_status = _group_by_status(all_complaints)
+            case_status = _group_by_status(complaints_for_grouping)
             
             # Calculate pagination info
             total_pages = (total_count + limit - 1) // limit
         
             response_data = {
                 'caseStats': {
-                    'total_complaints': len(all_complaints),
+                    'total_complaints': total_count if status_filter else len(complaints_for_grouping),
                     'pending': stats.get('pending', 0),
                     'processed': stats.get('processed', 0),
                     'overdue': stats.get('overdue', 0),
