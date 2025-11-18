@@ -512,7 +512,49 @@ def process_csv_excel_file(file_content, file_extension, file_id):
     try:
         # Read file into pandas DataFrame
         if file_extension == 'csv':
-            df = pd.read_csv(io.BytesIO(file_content))
+            # Handle CSV with potential unquoted commas
+            import csv
+            
+            # Decode content to string
+            csv_text = file_content.decode('utf-8-sig' if file_content.startswith(b'\xef\xbb\xbf') else 'utf-8')
+            lines = csv_text.strip().split('\n')
+            
+            if len(lines) < 2:
+                return {'success': False, 'message': 'CSV file must have at least a header and one data row'}
+            
+            # Parse header
+            header_line = lines[0].strip()
+            if '\t' in header_line and ',' not in header_line:
+                # Tab-separated
+                delimiter = '\t'
+            else:
+                # Comma-separated (default)
+                delimiter = ','
+            
+            # Parse with csv module for robust handling
+            csv_reader = csv.reader(lines, delimiter=delimiter)
+            rows = list(csv_reader)
+            
+            if len(rows) < 2:
+                return {'success': False, 'message': 'CSV file must have at least a header and one data row'}
+            
+            # Handle cases where unquoted commas create extra columns
+            header = rows[0]
+            if len(header) != 2:
+                return {'success': False, 'message': 'CSV header must have exactly 2 columns'}
+            
+            processed_rows = []
+            for row in rows[1:]:
+                if len(row) >= 2:
+                    # If more than 2 columns, join the extra ones into the second column
+                    processed_row = [row[0], delimiter.join(row[1:]) if len(row) > 2 else row[1]]
+                    processed_rows.append(processed_row)
+                elif len(row) == 1:
+                    # If only one column, add empty second column
+                    processed_rows.append([row[0], ''])
+            
+            # Create DataFrame
+            df = pd.DataFrame(processed_rows, columns=header)
         elif file_extension in ['xlsx', 'xls']:
             df = pd.read_excel(io.BytesIO(file_content))
         else:
