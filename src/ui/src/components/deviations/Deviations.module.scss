@@ -20,6 +20,7 @@
     @extend .baseButton;
     background-color: #437ef7;
     color: #fff;
+    font-family: inherit !important;
 
     &:hover {
       background-color: #437ef7;

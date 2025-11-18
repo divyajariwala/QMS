@@ -60,11 +60,12 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
           <span className={styles.progressLabel}>Overall Progress</span>
           <span className={styles.progressPercent}>{`${Math.round(progress)}%`}</span>
         </div>
-        <LinearProgress
-          variant="determinate"
-          value={Math.max(0, Math.min(100, progress))}
-          className={`${styles.progressBar}${styles.progressBarDark}`}
-        />
+        <div className={styles.progressBarBackground}>
+          <div
+            className={styles.progressBarFill}
+            style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
+          />
+        </div>
       </div>
       <div className={styles.stepsRow}>
         <div className={styles.stepColumn}>
