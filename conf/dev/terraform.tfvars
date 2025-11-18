@@ -224,6 +224,7 @@ lambda_configs = [
       env                 = "dev"
       aws_region          = "us-east-1"
       llm_model_id        = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+      db_secret_base_name = "aurora-postgres-master"
     }
   },
 ]

@@ -3,14 +3,20 @@ import logging
 import os
 
 import boto3
+import psycopg
+
+from secrets_util import get_db_credentials
 
 # Logger setup
 logger = logging.getLogger("calculate_complaints_priority")
 logger.setLevel(logging.INFO)
 
 # Environment variables
+ENV = os.environ.get('env', 'dev')
 AWS_REGION = os.environ.get('aws_region', 'us-east-1')
 MODEL_ID = os.environ.get('llm_model_id', 'anthropic.claude-3-5-sonnet-20241022-v2:0')
+DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
+DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 
 # Initialize Bedrock Runtime client
 bedrock_client = boto3.client('bedrock-runtime', region_name=AWS_REGION)
@@ -84,6 +90,78 @@ def call_bedrock(prompt_text):
         raise
 
 
+def save_inference_results(complaint_id, level_dict, subcategory_dict, crl_dict,
+                           final_level, priority, priority_reason, priority_summary):
+    """
+    Save inference results to PostgreSQL database.
+
+    Args:
+        complaint_id: The complaint ID
+        level_dict: Dictionary with level probabilities
+        subcategory_dict: Dictionary with subcategory probabilities
+        crl_dict: Dictionary with CRL code probabilities (can be None)
+        final_level: The final calculated level
+        priority: The calculated priority
+        priority_reason: Reason for the priority assignment
+        priority_summary: Summary of the complaint
+    """
+    if not DB_SECRET_NAME:
+        logger.warning("DB_SECRET_NAME not set, skipping database save")
+        return
+
+    try:
+        # Get database credentials from Secrets Manager
+        db_creds = get_db_credentials(DB_SECRET_NAME, AWS_REGION)
+
+        # Build connection string
+        conn_string = (
+            f"host={db_creds['host']} "
+            f"port={db_creds.get('port', 5432)} "
+            f"dbname={db_creds['dbname']} "
+            f"user={db_creds['username']} "
+            f"password={db_creds['password']} "
+            f"sslmode=require"
+        )
+
+        # Connect and insert
+        with psycopg.connect(conn_string) as conn:
+            with conn.cursor() as cur:
+                # Convert dicts to JSON strings for JSONB columns
+                # Handle None for crl_dict
+                crl_json = json.dumps(crl_dict) if crl_dict else None
+
+                cur.execute("""
+                            INSERT INTO inference_results (complaint_id,
+                                                           levels,
+                                                           subcategories,
+                                                           crl_codes,
+                                                           final_level,
+                                                           priority,
+                                                           priority_reason,
+                                                           priority_summary)
+                            VALUES (%s, %s::jsonb, %s::jsonb, %s::jsonb, %s, %s, %s, %s) RETURNING inference_id, created_at
+                            """, (
+                                complaint_id,
+                                json.dumps(level_dict),
+                                json.dumps(subcategory_dict),
+                                crl_json,
+                                final_level,
+                                priority,
+                                priority_reason,
+                                priority_summary
+                            ))
+
+                result = cur.fetchone()
+                conn.commit()
+
+                logger.info(f"✅ Saved inference results to database: ID={result[0]}, created_at={result[1]}")
+
+    except Exception as e:
+        logger.error(f"❌ Error saving to database: {str(e)}")
+        # Don't raise - we still want to return results even if DB save fails
+        # This makes the system more resilient
+
+
 def lambda_handler(event, context):
     """
     Calculate complaint priority using Claude via Bedrock.
@@ -147,6 +225,7 @@ def lambda_handler(event, context):
         narrative = event.get('narrative')
         level_dict = event.get('level', {})
         subcategory_dict = event.get('subcategory', {})
+        crl_dict = event.get('crl_value')  # Can be None or a dict
 
         if not complaint_id or not narrative:
             raise ValueError("Missing required fields: complaint_id or narrative")
@@ -190,17 +269,39 @@ def lambda_handler(event, context):
 
         logger.info(f"Priority calculation result: {json.dumps(priority_result)}")
 
+        # Extract final values
+        final_level = priority_result.get('Level', updated_level)
+        priority = priority_result.get('Priority', 0)
+        priority_reason = priority_result.get('Priority Reason', '')
+        priority_summary = priority_result.get('Priority Summary', '')
+
+        # ============================================================
+        # STEP 3: Save to Database
+        # ============================================================
+        logger.info("Step 3: Saving results to database...")
+
+        save_inference_results(
+            complaint_id=complaint_id,
+            level_dict=level_dict,
+            subcategory_dict=subcategory_dict,
+            crl_dict=crl_dict,
+            final_level=final_level,
+            priority=priority,
+            priority_reason=priority_reason,
+            priority_summary=priority_summary
+        )
+
         # Build output for Step Function
         output = {
             'complaint_id': complaint_id,
             'narrative': narrative,
             'level': level_dict,
             'subcategory': subcategory_dict,
-            'crl_value': event.get('crl_value'),
-            'updated_level': priority_result.get('Level', updated_level),
-            'priority': priority_result.get('Priority', 0),
-            'priority_reason': priority_result.get('Priority Reason', ''),
-            'priority_summary': priority_result.get('Priority Summary', '')
+            'crl_value': crl_dict,
+            'updated_level': final_level,
+            'priority': priority,
+            'priority_reason': priority_reason,
+            'priority_summary': priority_summary
         }
 
         logger.info(f"✅ Priority calculated successfully for {complaint_id}")
