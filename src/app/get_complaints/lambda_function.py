@@ -1,7 +1,7 @@
 import json
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
+from psycopg.rows import dict_row
 from datetime import datetime
 from secrets_util import get_secret
 
@@ -49,7 +49,7 @@ def get_single_complaint(conn, complaint_id):
     Get single complaint details by complaint_id
     """
     try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with conn.cursor(row_factory=dict_row) as cursor:
             # Query complaint with inference data
             cursor.execute("""
                 SELECT c.*, f.file_name, f.s3_url
@@ -142,7 +142,7 @@ def get_all_complaints(conn, page=1, status_filter=None):
     Get all complaints with statistics and pagination
     """
     try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with conn.cursor(row_factory=dict_row) as cursor:
             # Get statistics from case_stats table
             cursor.execute("SELECT stat_name, stat_value FROM case_stats")
             stats_rows = cursor.fetchall()
@@ -241,10 +241,10 @@ def get_db_connection():
     try:
         secret = get_secret(DB_SECRET_NAME)
         
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             host=secret['host'],
             port=secret['port'],
-            database=secret['dbname'],
+            dbname=secret['dbname'],
             user=secret['username'],
             password=secret['password']
         )
@@ -293,5 +293,3 @@ def _get_cors_headers():
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }
-
-

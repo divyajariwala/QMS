@@ -6,8 +6,8 @@ from unittest.mock import Mock, patch, MagicMock
 from datetime import date, datetime
 
 # Mock dependencies before importing
-sys.modules['psycopg2'] = Mock()
-sys.modules['psycopg2.extras'] = Mock()
+sys.modules['psycopg'] = Mock()
+sys.modules['psycopg.rows'] = Mock()
 sys.modules['secrets_util'] = Mock()
 
 # Add src directory to path for importing lambda_function
@@ -290,7 +290,7 @@ class TestUtilityFunctions:
             'password': 'testpass'
         }
 
-        with patch('psycopg2.connect') as mock_connect:
+        with patch('psycopg.connect') as mock_connect:
             mock_conn = Mock()
             mock_connect.return_value = mock_conn
 
@@ -300,7 +300,7 @@ class TestUtilityFunctions:
             mock_connect.assert_called_once_with(
                 host='localhost',
                 port=5432,
-                database='testdb',
+                dbname='testdb',
                 user='testuser',
                 password='testpass'
             )
