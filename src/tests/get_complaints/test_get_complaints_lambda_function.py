@@ -14,7 +14,10 @@ sys.modules['secrets_util'] = Mock()
 get_complaints_path = os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'get_complaints')
 sys.path.insert(0, get_complaints_path)
 
-import lambda_function
+import importlib.util
+spec = importlib.util.spec_from_file_location("lambda_function", os.path.join(get_complaints_path, "lambda_function.py"))
+lambda_function = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(lambda_function)
 
 
 def create_mock_cursor():
