@@ -6,7 +6,10 @@ from datetime import datetime
 from secrets_util import get_secret
 
 # Environment variables
-DB_SECRET_NAME = os.environ.get('DB_SECRET_NAME', 'qms-dev-aurora-secret')
+ENV = os.environ.get('env', 'dev')
+DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
+DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
+DB_REGION = os.environ.get('db_region', 'us-east-1')
 
 def lambda_handler(event, context):
     """
@@ -239,7 +242,7 @@ def get_db_connection():
     Get database connection using secrets manager
     """
     try:
-        secret = get_secret(DB_SECRET_NAME)
+        secret = get_secret(DB_SECRET_NAME, DB_REGION)
         
         conn = psycopg.connect(
             host=secret['host'],

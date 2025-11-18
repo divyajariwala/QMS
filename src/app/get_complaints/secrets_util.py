@@ -2,12 +2,10 @@ import boto3
 import json
 import os
 
-def get_secret(secret_name):
+def get_secret(secret_name, region_name='us-east-1'):
     """
     Retrieve secret from AWS Secrets Manager
     """
-    region_name = os.environ.get('AWS_REGION', 'us-east-1')
-    
     session = boto3.session.Session()
     client = session.client(
         service_name='secretsmanager',
