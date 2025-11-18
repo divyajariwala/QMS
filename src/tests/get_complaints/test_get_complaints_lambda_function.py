@@ -115,7 +115,7 @@ class TestLambdaHandler:
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_all_complaints_success(self, mock_get_db):
-        """Test: Successful all complaints retrieval with pagination"""
+        """Test: Successful all complaints retrieval with pagination (no filter)"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -140,7 +140,7 @@ class TestLambdaHandler:
                     'status': 'Pending'
                 }
             ],
-            # All complaints for status grouping
+            # All complaints for status grouping (no filter)
             [
                 {'complaint_id': 'CAS-1', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE'},
                 {'complaint_id': 'CAS-2', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC'},
@@ -164,6 +164,70 @@ class TestLambdaHandler:
         assert body['pagination']['total_items'] == 25
         assert body['pagination']['items_per_page'] == 15
         assert body['pagination']['current_page'] == 1
+        # Verify all status groups have data when no filter
+        assert len(body['caseStatus']['pending']) == 1
+        assert len(body['caseStatus']['processed']) == 1
+        assert len(body['caseStatus']['overdue']) == 1
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_all_complaints_with_status_filter(self, mock_get_db):
+        """Test: Get complaints with status filter - only filtered status in caseStatus"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # Mock stats data
+        mock_cursor.fetchall.side_effect = [
+            [
+                {'stat_name': 'Pending', 'stat_value': 5},
+                {'stat_name': 'Processed', 'stat_value': 3},
+                {'stat_name': 'Overdue', 'stat_value': 2}
+            ],
+            # Only pending complaints (filtered)
+            [
+                {
+                    'complaint_id': 'CAS-1',
+                    'criticality': 'High',
+                    'report_type': 'Spontaneous',
+                    'receipt_date': date(2023, 1, 1),
+                    'case_type': 'AE',
+                    'status': 'Pending'
+                },
+                {
+                    'complaint_id': 'CAS-4',
+                    'criticality': 'Medium',
+                    'report_type': 'Study',
+                    'receipt_date': date(2023, 1, 4),
+                    'case_type': 'PC',
+                    'status': 'Pending'
+                }
+            ]
+        ]
+
+        # Mock total count for pending only
+        mock_cursor.fetchone.return_value = {'total': 5}
+
+        event = {
+            'queryStringParameters': {'status': 'pending', 'page': '1'}
+        }
+
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        
+        # Verify pagination reflects filtered results
+        assert body['pagination']['total_items'] == 5
+        assert body['pagination']['current_page'] == 1
+        
+        # Verify only pending status has data, others are empty
+        assert len(body['caseStatus']['pending']) == 2
+        assert len(body['caseStatus']['processed']) == 0
+        assert len(body['caseStatus']['overdue']) == 0
+        
+        # Verify total_complaints reflects filtered count
+        assert body['caseStats']['total_complaints'] == 5
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_lambda_handler_exception(self, mock_get_db):
@@ -184,7 +248,7 @@ class TestGetAllComplaints:
     """Tests for get_all_complaints function"""
 
     def test_get_all_complaints_with_data(self):
-        """Test: Get all complaints with various statuses"""
+        """Test: Get all complaints with various statuses (no filter)"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -200,7 +264,7 @@ class TestGetAllComplaints:
             [
                 {'complaint_id': 'CAS-1', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending'}
             ],
-            # All complaints for grouping
+            # All complaints for grouping (no filter)
             [
                 {'complaint_id': 'CAS-1', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE'},
                 {'complaint_id': 'CAS-2', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC'},
@@ -227,6 +291,50 @@ class TestGetAllComplaints:
         assert pagination['current_page'] == 1
         assert pagination['total_items'] == 15
         assert pagination['items_per_page'] == 15
+
+    def test_get_all_complaints_with_status_filter(self):
+        """Test: Get complaints with status filter applied"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+
+        # Mock stats and filtered complaints data
+        mock_cursor.fetchall.side_effect = [
+            [
+                {'stat_name': 'Pending', 'stat_value': 2},
+                {'stat_name': 'Processed', 'stat_value': 1},
+                {'stat_name': 'Overdue', 'stat_value': 1}
+            ],
+            # Only pending complaints (filtered and paginated)
+            [
+                {'complaint_id': 'CAS-1', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending'},
+                {'complaint_id': 'CAS-4', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 4), 'case_type': 'PC', 'status': 'Pending'}
+            ]
+        ]
+
+        # Mock total count for pending only
+        mock_cursor.fetchone.return_value = {'total': 2}
+
+        result = lambda_function.get_all_complaints(mock_conn, 1, 'pending')
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        
+        # Check statistics reflect filtered count
+        stats = body['caseStats']
+        assert stats['total_complaints'] == 2
+        
+        # Check pagination reflects filtered results
+        pagination = body['pagination']
+        assert pagination['current_page'] == 1
+        assert pagination['total_items'] == 2
+        assert pagination['items_per_page'] == 15
+        
+        # Check caseStatus only has pending complaints
+        case_status = body['caseStatus']
+        assert len(case_status['pending']) == 2
+        assert len(case_status['processed']) == 0
+        assert len(case_status['overdue']) == 0
 
 
 class TestUtilityFunctions:
