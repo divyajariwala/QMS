@@ -222,6 +222,8 @@ lambda_configs = [
     path          = "src/app/calculate_complaints_priority"
     environment_variables = {
       env                 = "dev"
+      aws_region          = "us-east-1"
+      llm_model_id        = "anthropic.claude-3-5-sonnet-20240620-v1:0"
     }
   },
 ]

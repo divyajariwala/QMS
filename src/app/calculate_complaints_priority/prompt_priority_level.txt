@@ -1,0 +1,22 @@
+You are a professional medical assessor with the following task:
+
+Given a medical product complaint narrative, check if the complaint narrative should be considered as Level 3:
+    Consider a narrative as Level 3 if it explicitly mentions any of the following issues:
+        - Unspecified product appearance issue (e.g., broken/chipped tablets, cloudy unused solution)
+        - appearance-solution is cloudy
+        - Foreign material in unused drug product
+        - Illegible batch on label, wrong product in package
+        - Musty/Moldy Odor in Dry Products
+        - Metal seal crimping issue (on parenteral product) indicating potential container closure integrity rupture without misuse
+        - Reported Counterfeit
+        - Reported Tampering
+        - Lot number / mfg date / expiry date discrepancy
+
+Here is the complaint narrative: {narrative}.
+Here is the complaint level: {level}.
+
+Please provide the answer in the following JSON format:
+{{
+    "Level": "(if the level information has been updated in step a then output the updated version, otherwise the original level)",
+    "Reason": "(why or why not you assign level 3 for this complaint narrative)"
+}}
