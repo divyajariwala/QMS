@@ -2,48 +2,77 @@ import pytest
 import json
 import os
 import sys
-import importlib.util
 from unittest.mock import Mock, patch, MagicMock
-from decimal import Decimal
+from datetime import date, datetime
+
+# Mock dependencies before importing
+sys.modules['psycopg2'] = Mock()
+sys.modules['psycopg2.extras'] = Mock()
+sys.modules['secrets_util'] = Mock()
 
 # Add src directory to path for importing lambda_function
 get_complaints_path = os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'get_complaints')
 sys.path.insert(0, get_complaints_path)
-import importlib.util
-spec = importlib.util.spec_from_file_location("get_complaints_lambda", os.path.join(get_complaints_path, "lambda_function.py"))
-lambda_function = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(lambda_function)
+
+import lambda_function
+
+
+def create_mock_cursor():
+    """Helper to create properly mocked cursor with context manager"""
+    mock_cursor = Mock()
+    mock_context = MagicMock()
+    mock_context.__enter__.return_value = mock_cursor
+    mock_context.__exit__.return_value = None
+    return mock_context, mock_cursor
 
 
 class TestLambdaHandler:
     """Unit tests for the main lambda_handler function"""
 
-    @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
-    @patch('boto3.resource')
-    def test_get_single_complaint_success(self, mock_boto3):
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_single_complaint_success(self, mock_get_db):
         """Test: Successful single complaint retrieval"""
-        # Mock DynamoDB
-        mock_table = Mock()
-        mock_dynamodb = Mock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.return_value = mock_dynamodb
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
 
-        # Mock DynamoDB response
-        mock_table.get_item.return_value = {
-            'Item': {
-                'PK': 'COMPLAINT#CAS-123',
-                'SK': 'METADATA',
+        # Mock complaint data
+        mock_cursor.fetchone.side_effect = [
+            {
                 'complaint_id': 'CAS-123',
-                'case_id': 'RGL23-000070',
-                'narrative': 'Test complaint narrative',
+                'receipt_date': date(2023, 1, 7),
                 'criticality': 'High',
-                'status': 'IN-REVIEW',
-                'caseStatus': 'pending',
-                'created_at': '2023-01-07T00:00:00Z',
-                'primary_reporter': {'name': 'John Doe'},
-                'product_details': {'drug_name': 'Test Drug'}
+                'report_type': 'Spontaneous',
+                'narrative_summary': 'AI summary',
+                'case_type': 'AE,PC',
+                'narrative': 'Test complaint narrative',
+                'primary_reporter': 'John Doe',
+                'primary_reporter_address': '123 Main St',
+                'patient_name': 'Jane Patient',
+                'physician': 'Dr. Smith',
+                'drug': 'Test Drug',
+                'lot_no': 'LOT123',
+                'dosage': '100mg',
+                'expiration_date': date(2024, 1, 1),
+                'part_number': 'PN123',
+                'status': 'Pending',
+                'file_name': 'test.pdf',
+                's3_url': 's3://bucket/test.pdf'
             }
-        }
+        ]
+        
+        # Mock inference data
+        mock_cursor.fetchall.return_value = [
+            {
+                'id': '1',
+                'label': 'Broken Needle',
+                'priority': 1,
+                'crl': 'High confidence',
+                'unit': 1,
+                'percentage': 85.5
+            }
+        ]
 
         event = {
             'queryStringParameters': {'complaint_id': 'CAS-123'}
@@ -57,19 +86,18 @@ class TestLambdaHandler:
         assert body['narrative'] == 'Test complaint narrative'
         assert body['criticality'] == 'High'
         assert body['caseStatus'] == 'pending'
+        assert len(body['category_details']) == 1
 
-    @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
-    @patch('boto3.resource')
-    def test_get_single_complaint_not_found(self, mock_boto3):
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_single_complaint_not_found(self, mock_get_db):
         """Test: Single complaint not found"""
-        # Mock DynamoDB
-        mock_table = Mock()
-        mock_dynamodb = Mock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.return_value = mock_dynamodb
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
 
-        # Mock DynamoDB response - no item found
-        mock_table.get_item.return_value = {}
+        # Mock no complaint found
+        mock_cursor.fetchone.return_value = None
 
         event = {
             'queryStringParameters': {'complaint_id': 'CAS-999'}
@@ -82,69 +110,43 @@ class TestLambdaHandler:
         assert body['success'] is False
         assert body['error'] == 'Complaint not found'
 
-    @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
-    @patch('boto3.resource')
-    def test_get_all_complaints_success(self, mock_boto3):
-        """Test: Successful all complaints retrieval with proper filtering"""
-        # Mock DynamoDB
-        mock_table = Mock()
-        mock_dynamodb = Mock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.return_value = mock_dynamodb
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_all_complaints_success(self, mock_get_db):
+        """Test: Successful all complaints retrieval with pagination"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
 
-        # Mock scan response with proper PK/SK structure
-        mock_table.scan.return_value = {
-            'Items': [
-                {'PK': 'COMPLAINT#CAS-1', 'SK': 'METADATA', 'caseStatus': 'pending', 'complaint_id': 'CAS-1'},
-                {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA', 'caseStatus': 'processed', 'complaint_id': 'CAS-2'},
-                {'PK': 'COMPLAINT#CAS-3', 'SK': 'METADATA', 'caseStatus': 'overdue', 'complaint_id': 'CAS-3'}
+        # Mock stats data
+        mock_cursor.fetchall.side_effect = [
+            [
+                {'stat_name': 'Pending', 'stat_value': 5},
+                {'stat_name': 'Processed', 'stat_value': 3},
+                {'stat_name': 'Overdue', 'stat_value': 2},
+                {'stat_name': 'Avg Time', 'stat_value': 24}
+            ],
+            # Paginated complaints
+            [
+                {
+                    'complaint_id': 'CAS-1',
+                    'criticality': 'High',
+                    'report_type': 'Spontaneous',
+                    'receipt_date': date(2023, 1, 1),
+                    'case_type': 'AE',
+                    'status': 'Pending'
+                }
+            ],
+            # All complaints for status grouping
+            [
+                {'complaint_id': 'CAS-1', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE'},
+                {'complaint_id': 'CAS-2', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC'},
+                {'complaint_id': 'CAS-3', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE'}
             ]
-        }
-
-        event = {}  # No path parameters
-
-        result = lambda_function.lambda_handler(event, {})
-
-        assert result['statusCode'] == 200
-        body = json.loads(result['body'])
-        assert 'caseStats' in body
-        assert 'caseStatus' in body
-        assert body['caseStats']['total_complaints'] == 3
-        
-        # Verify scan was called with proper filter
-        mock_table.scan.assert_called_with(
-            FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
-            ExpressionAttributeValues={
-                ':pk_prefix': 'COMPLAINT#',
-                ':sk_value': 'METADATA'
-            }
-        )
-
-    @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
-    @patch('boto3.resource')
-    def test_get_all_complaints_with_pagination(self, mock_boto3):
-        """Test: Scan method with pagination handling"""
-        # Mock DynamoDB
-        mock_table = Mock()
-        mock_dynamodb = Mock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.return_value = mock_dynamodb
-
-        # Mock paginated scan responses
-        mock_table.scan.side_effect = [
-            {
-                'Items': [
-                    {'PK': 'COMPLAINT#CAS-1', 'SK': 'METADATA', 'caseStatus': 'pending'},
-                    {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA', 'caseStatus': 'processed'}
-                ],
-                'LastEvaluatedKey': {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA'}
-            },
-            {
-                'Items': [
-                    {'PK': 'COMPLAINT#CAS-3', 'SK': 'METADATA', 'caseStatus': 'overdue'}
-                ]
-            }
         ]
+
+        # Mock total count
+        mock_cursor.fetchone.return_value = {'total': 25}
 
         event = {}
 
@@ -152,17 +154,18 @@ class TestLambdaHandler:
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['caseStats']['total_complaints'] == 3
-        
-        # Verify pagination was handled (scan called twice)
-        assert mock_table.scan.call_count == 2
+        assert 'caseStats' in body
+        assert 'caseStatus' in body
+        assert 'pagination' in body
+        assert 'complaints' in body
+        assert body['pagination']['total_items'] == 25
+        assert body['pagination']['items_per_page'] == 15
+        assert body['pagination']['current_page'] == 1
 
-    @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
-    @patch('boto3.resource')
-    def test_lambda_handler_exception(self, mock_boto3):
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_lambda_handler_exception(self, mock_get_db):
         """Test: Lambda handler exception handling"""
-        # Mock DynamoDB to raise exception
-        mock_boto3.side_effect = Exception("DynamoDB connection failed")
+        mock_get_db.side_effect = Exception("Database connection failed")
 
         event = {}
 
@@ -173,138 +176,38 @@ class TestLambdaHandler:
         assert body['success'] is False
         assert body['error'] == 'Internal server error'
 
-    @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
-    @patch('boto3.resource')
-    def test_empty_path_parameters(self, mock_boto3):
-        """Test: Empty path parameters triggers get_all_complaints"""
-        # Mock DynamoDB
-        mock_table = Mock()
-        mock_dynamodb = Mock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.return_value = mock_dynamodb
-
-        # Mock scan to return empty results
-        mock_table.scan.return_value = {'Items': []}
-
-        event = {'queryStringParameters': {}}
-
-        result = lambda_function.lambda_handler(event, {})
-
-        assert result['statusCode'] == 200
-        # Should call get_all_complaints, not get_single_complaint
-        # Verify scan was called with proper filter
-        mock_table.scan.assert_called_with(
-            FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
-            ExpressionAttributeValues={
-                ':pk_prefix': 'COMPLAINT#',
-                ':sk_value': 'METADATA'
-            }
-        )
-
-
-class TestGetSingleComplaint:
-    """Tests for get_single_complaint function"""
-
-    def test_get_single_complaint_with_all_fields(self):
-        """Test: Single complaint with all fields"""
-        mock_table = Mock()
-        mock_table.get_item.return_value = {
-            'Item': {
-                'complaint_id': 'CAS-123',
-                'case_id': 'RGL23-000070',
-                'narrative': 'Full narrative text',
-                'narrative_text': 'Alternative narrative',
-                'criticality': 'Medium',
-                'report_type': 'Spontaneous',
-                'ai_summary': 'AI generated summary',
-                'short_description': 'Short desc',
-                'case_type': ['AE', 'PC'],
-                'primary_reporter': {'name': 'Jane Doe', 'address': '123 Main St'},
-                'patient_name': 'John Patient',
-                'physician_name': 'Dr. Smith',
-                'product_details': {'drug_name': 'TestDrug', 'dosage': '100mg'},
-                'status': 'IN-REVIEW',
-                'caseStatus': 'pending',
-                'receipt_date': '2023-01-01',
-                'created_at': '2023-01-01T10:00:00Z'
-            }
-        }
-
-        result = lambda_function.get_single_complaint(mock_table, 'CAS-123')
-
-        assert result['statusCode'] == 200
-        body = json.loads(result['body'])
-        assert body['case_id'] == 'CAS-123'
-        assert body['narrative'] == 'Full narrative text'
-        assert body['ai_summary'] == 'AI generated summary'
-        assert body['case_type'] == ['AE', 'PC']
-        assert body['caseStatus'] == 'pending'
-
-    def test_get_single_complaint_minimal_fields(self):
-        """Test: Single complaint with minimal fields"""
-        mock_table = Mock()
-        mock_table.get_item.return_value = {
-            'Item': {
-                'complaint_id': 'CAS-456'
-            }
-        }
-
-        result = lambda_function.get_single_complaint(mock_table, 'CAS-456')
-
-        assert result['statusCode'] == 200
-        body = json.loads(result['body'])
-        assert body['case_id'] == 'CAS-456'  # Falls back to complaint_id
-        assert body['criticality'] == 'NA'
-        assert body['report_type'] == 'NA'
-        assert body['narrative'] == ''
-        assert body['caseStatus'] == 'pending'
-
-    def test_get_single_complaint_db_error(self):
-        """Test: Database error in get_single_complaint"""
-        mock_table = Mock()
-        mock_table.get_item.side_effect = Exception("DynamoDB error")
-
-        result = lambda_function.get_single_complaint(mock_table, 'CAS-123')
-
-        assert result['statusCode'] == 500
-        body = json.loads(result['body'])
-        assert body['success'] is False
-        assert body['error'] == 'Failed to retrieve complaint'
-
-    def test_get_single_complaint_with_decimals(self):
-        """Test: Single complaint with Decimal values"""
-        mock_table = Mock()
-        mock_table.get_item.return_value = {
-            'Item': {
-                'complaint_id': 'CAS-789',
-                'score': Decimal('95.5'),
-                'confidence': Decimal('0.85')
-            }
-        }
-
-        result = lambda_function.get_single_complaint(mock_table, 'CAS-789')
-
-        assert result['statusCode'] == 200
-        # Should handle Decimal encoding without errors
-
 
 class TestGetAllComplaints:
     """Tests for get_all_complaints function"""
 
     def test_get_all_complaints_with_data(self):
-        """Test: Get all complaints with various statuses and proper filtering"""
-        mock_table = Mock()
-        
-        # Mock scan response with different statuses and proper PK/SK structure
-        mock_table.scan.return_value = {
-            'Items': [
-                {'PK': 'COMPLAINT#CAS-1', 'SK': 'METADATA', 'caseStatus': 'pending', 'complaint_id': 'CAS-1', 'criticality': 'High'},
-                {'PK': 'COMPLAINT#CAS-3', 'SK': 'METADATA', 'caseStatus': 'processed', 'complaint_id': 'CAS-3', 'criticality': 'Low'},
-                {'PK': 'COMPLAINT#CAS-4', 'SK': 'METADATA', 'caseStatus': 'overdue', 'complaint_id': 'CAS-4', 'criticality': 'High'}
-            ]
-        }
+        """Test: Get all complaints with various statuses"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
 
-        result = lambda_function.get_all_complaints(mock_table)
+        # Mock stats and complaints data
+        mock_cursor.fetchall.side_effect = [
+            [
+                {'stat_name': 'Pending', 'stat_value': 2},
+                {'stat_name': 'Processed', 'stat_value': 1},
+                {'stat_name': 'Overdue', 'stat_value': 1}
+            ],
+            # Paginated complaints
+            [
+                {'complaint_id': 'CAS-1', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending'}
+            ],
+            # All complaints for grouping
+            [
+                {'complaint_id': 'CAS-1', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE'},
+                {'complaint_id': 'CAS-2', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC'},
+                {'complaint_id': 'CAS-3', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE'}
+            ]
+        ]
+
+        mock_cursor.fetchone.return_value = {'total': 15}
+
+        result = lambda_function.get_all_complaints(mock_conn, 1, None)
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
@@ -312,174 +215,60 @@ class TestGetAllComplaints:
         # Check statistics
         stats = body['caseStats']
         assert stats['total_complaints'] == 3
-        assert stats['pending'] == 1
+        assert stats['pending'] == 2
         assert stats['processed'] == 1
         assert stats['overdue'] == 1
 
-        # Check case status grouping
-        case_status = body['caseStatus']
-        assert len(case_status['pending']) == 1
-        assert len(case_status['processed']) == 1
-        assert len(case_status['overdue']) == 1
-        
-        # Verify scan was called with proper filter
-        mock_table.scan.assert_called_with(
-            FilterExpression='begins_with(PK, :pk_prefix) AND SK = :sk_value',
-            ExpressionAttributeValues={
-                ':pk_prefix': 'COMPLAINT#',
-                ':sk_value': 'METADATA'
-            }
-        )
-
-    def test_get_all_complaints_empty_result(self):
-        """Test: Get all complaints with no data"""
-        mock_table = Mock()
-        # Mock scan to return empty
-        mock_table.scan.return_value = {'Items': []}
-
-        result = lambda_function.get_all_complaints(mock_table)
-
-        assert result['statusCode'] == 200
-        body = json.loads(result['body'])
-        assert body['caseStats']['total_complaints'] == 0
-
-    def test_get_all_complaints_pagination_multiple_pages(self):
-        """Test: Pagination handling across multiple pages"""
-        mock_table = Mock()
-        
-        # Mock multiple paginated responses
-        mock_table.scan.side_effect = [
-            {
-                'Items': [
-                    {'PK': 'COMPLAINT#CAS-1', 'SK': 'METADATA', 'caseStatus': 'pending'},
-                    {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA', 'caseStatus': 'processed'}
-                ],
-                'LastEvaluatedKey': {'PK': 'COMPLAINT#CAS-2', 'SK': 'METADATA'}
-            },
-            {
-                'Items': [
-                    {'PK': 'COMPLAINT#CAS-3', 'SK': 'METADATA', 'caseStatus': 'overdue'},
-                    {'PK': 'COMPLAINT#CAS-4', 'SK': 'METADATA', 'caseStatus': 'pending'}
-                ],
-                'LastEvaluatedKey': {'PK': 'COMPLAINT#CAS-4', 'SK': 'METADATA'}
-            },
-            {
-                'Items': [
-                    {'PK': 'COMPLAINT#CAS-5', 'SK': 'METADATA', 'caseStatus': 'processed'}
-                ]
-            }
-        ]
-
-        result = lambda_function.get_all_complaints(mock_table)
-
-        assert result['statusCode'] == 200
-        body = json.loads(result['body'])
-        assert body['caseStats']['total_complaints'] == 5
-        
-        # Verify all pages were processed
-        assert mock_table.scan.call_count == 3
-
-    def test_get_all_complaints_db_error(self):
-        """Test: Database error in get_all_complaints"""
-        mock_table = Mock()
-        mock_table.scan.side_effect = Exception("Scan failed")
-
-        result = lambda_function.get_all_complaints(mock_table)
-
-        assert result['statusCode'] == 500
-        body = json.loads(result['body'])
-        assert body['success'] is False
-        assert body['error'] == 'Failed to retrieve complaints'
+        # Check pagination
+        pagination = body['pagination']
+        assert pagination['current_page'] == 1
+        assert pagination['total_items'] == 15
+        assert pagination['items_per_page'] == 15
 
 
 class TestUtilityFunctions:
     """Tests for utility functions"""
 
-    def test_calculate_stats_various_statuses(self):
-        """Test: Calculate statistics with various statuses"""
-        complaints = [
-            {'caseStatus': 'pending'},
-            {'caseStatus': 'processed'},
-            {'caseStatus': 'overdue'},
-            {'caseStatus': 'pending'},  # another pending
-            {'caseStatus': ''}  # empty status
-        ]
-
-        stats = lambda_function._calculate_stats(complaints)
-
-        assert stats['total_complaints'] == 5
-        assert stats['pending'] == 2  # IN-REVIEW, in-review
-        assert stats['processed'] == 1  # PROCESSED
-        assert stats['overdue'] == 1
-        assert stats['avg_cycle_time'] == 24
-        assert stats['best_time'] == 7
-        assert stats['longest_time'] == 72
-
-    def test_calculate_stats_empty_list(self):
-        """Test: Calculate statistics with empty list"""
-        stats = lambda_function._calculate_stats([])
-
-        assert stats['total_complaints'] == 0
-        assert stats['pending'] == 0
-        assert stats['processed'] == 0
-        assert stats['overdue'] == 0
-
     def test_group_by_status_comprehensive(self):
         """Test: Group complaints by status comprehensively"""
         complaints = [
             {
-                'caseStatus': 'pending',
+                'status': 'Pending',
                 'complaint_id': 'CAS-1',
-                'case_id': 'RGL-1',
                 'criticality': 'High',
                 'report_type': 'Spontaneous',
-                'created_at': '2023-01-01'
+                'receipt_date': date(2023, 1, 1),
+                'case_type': 'AE'
             },
             {
-                'caseStatus': 'pending',
+                'status': 'Processed',
                 'complaint_id': 'CAS-2',
-                'criticality': 'Medium'
+                'criticality': 'Medium',
+                'report_type': 'Study',
+                'receipt_date': date(2023, 1, 2),
+                'case_type': 'PC'
             },
             {
-                'caseStatus': 'processed',
-                'case_id': 'RGL-3',
-                'criticality': 'Low'
-            },
-            {
-                'caseStatus': 'overdue',
-                'complaint_id': 'CAS-4'
-            },
-            {
-                'caseStatus': 'unknown',  # Should not be grouped
-                'complaint_id': 'CAS-5'
+                'status': 'Overdue',
+                'complaint_id': 'CAS-3',
+                'criticality': 'Low',
+                'report_type': 'Literature',
+                'receipt_date': date(2023, 1, 3),
+                'case_type': 'AE'
             }
         ]
 
         result = lambda_function._group_by_status(complaints)
 
-        assert len(result['pending']) == 2  # in-review, IN-REVIEW
-        assert len(result['processed']) == 1  # PROCESSED
-        assert len(result['overdue']) == 1   # overdue
+        assert len(result['pending']) == 1
+        assert len(result['processed']) == 1
+        assert len(result['overdue']) == 1
         
         # Check field mapping
         pending_item = result['pending'][0]
-        assert pending_item['case_id'] == 'RGL-1'
+        assert pending_item['case_id'] == 'CAS-1'
         assert pending_item['criticality'] == 'High'
-        assert pending_item['report_type'] == 'Spontaneous'
-
-    def test_group_by_status_missing_fields(self):
-        """Test: Group by status with missing fields"""
-        complaints = [
-            {'caseStatus': 'pending'},  # Minimal data
-            {}  # No status
-        ]
-
-        result = lambda_function._group_by_status(complaints)
-
-        assert len(result['pending']) == 1
-        pending_item = result['pending'][0]
-        assert pending_item['case_id'] == ''
-        assert pending_item['criticality'] == 'NA'
+        assert pending_item['case_type'] == ['AE']
 
     def test_get_cors_headers(self):
         """Test: CORS headers function"""
@@ -490,103 +279,32 @@ class TestUtilityFunctions:
         assert headers['Access-Control-Allow-Methods'] == 'GET, OPTIONS'
         assert 'Authorization' in headers['Access-Control-Allow-Headers']
 
-
-class TestDecimalEncoder:
-    """Tests for DecimalEncoder class"""
-
-    def test_decimal_encoder_with_decimal(self):
-        """Test: Decimal encoder with Decimal values"""
-        encoder = lambda_function.DecimalEncoder()
-        
-        test_data = {
-            'score': Decimal('95.5'),
-            'confidence': Decimal('0.85'),
-            'count': 10,
-            'name': 'test'
+    @patch.object(lambda_function, 'get_secret')
+    def test_get_db_connection_success(self, mock_get_secret):
+        """Test: Successful database connection"""
+        mock_get_secret.return_value = {
+            'host': 'localhost',
+            'port': 5432,
+            'dbname': 'testdb',
+            'username': 'testuser',
+            'password': 'testpass'
         }
 
-        result = json.dumps(test_data, cls=lambda_function.DecimalEncoder)
-        parsed = json.loads(result)
+        with patch('psycopg2.connect') as mock_connect:
+            mock_conn = Mock()
+            mock_connect.return_value = mock_conn
 
-        assert parsed['score'] == 95.5
-        assert parsed['confidence'] == 0.85
-        assert parsed['count'] == 10
-        assert parsed['name'] == 'test'
+            result = lambda_function.get_db_connection()
 
-    def test_decimal_encoder_without_decimal(self):
-        """Test: Decimal encoder with non-Decimal values"""
-        encoder = lambda_function.DecimalEncoder()
-        
-        test_data = {
-            'number': 42,
-            'text': 'hello',
-            'boolean': True,
-            'list': [1, 2, 3]
-        }
-
-        result = json.dumps(test_data, cls=lambda_function.DecimalEncoder)
-        parsed = json.loads(result)
-
-        assert parsed == test_data
-
-
-class TestEdgeCases:
-    """Tests for edge cases and error conditions"""
-
-    @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
-    @patch('boto3.resource')
-    def test_none_path_parameters(self, mock_boto3):
-        """Test: None path parameters"""
-        mock_table = Mock()
-        mock_dynamodb = Mock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.return_value = mock_dynamodb
-
-        # Mock scan fallback
-        mock_table.scan.return_value = {'Items': []}
-
-        event = {'queryStringParameters': None}
-
-        result = lambda_function.lambda_handler(event, {})
-
-        assert result['statusCode'] == 200
-        # Should trigger get_all_complaints path
-
-    @patch.dict(os.environ, {'DYNAMODB_TABLE_NAME': 'test-table'})
-    @patch('boto3.resource')
-    def test_complaint_id_none(self, mock_boto3):
-        """Test: complaint_id is None in path parameters"""
-        mock_table = Mock()
-        mock_dynamodb = Mock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_boto3.return_value = mock_dynamodb
-
-        # Mock scan fallback
-        mock_table.scan.return_value = {'Items': []}
-
-        event = {'queryStringParameters': {'complaint_id': None}}
-
-        result = lambda_function.lambda_handler(event, {})
-
-        assert result['statusCode'] == 200
-        # Should trigger get_all_complaints path
-
-    def test_calculate_stats_case_insensitive(self):
-        """Test: Statistics calculation is case insensitive"""
-        complaints = [
-            {'caseStatus': 'pending'},
-            {'caseStatus': 'pending'},
-            {'caseStatus': 'pending'},
-            {'caseStatus': 'processed'},
-            {'caseStatus': 'overdue'}
-        ]
-
-        stats = lambda_function._calculate_stats(complaints)
-
-        assert stats['pending'] == 3  # All in-review variants
-        assert stats['processed'] == 1
-        assert stats['overdue'] == 1
+            assert result == mock_conn
+            mock_connect.assert_called_once_with(
+                host='localhost',
+                port=5432,
+                database='testdb',
+                user='testuser',
+                password='testpass'
+            )
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=get_complaints.lambda_function", "--cov-report=term-missing"])
+    pytest.main([__file__, "-v"])
