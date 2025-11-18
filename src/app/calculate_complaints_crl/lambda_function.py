@@ -9,56 +9,111 @@ logger.setLevel(logging.INFO)
 # Environment variables
 AWS_REGION = os.environ.get('aws_region', 'us-east-1')
 
+# Load CRL mapping lookup (cached at module level)
+_crl_lookup = None
+
+
+def load_crl_lookup():
+    """
+    Load CRL mapping from JSON file.
+    Cached at module level to avoid repeated file reads.
+
+    Returns:
+        dict: Mapping of subcategory names to CRL codes
+        Example: {"Dose confirmation": "CRL-000100", ...}
+    """
+    global _crl_lookup
+
+    if _crl_lookup is not None:
+        return _crl_lookup
+
+    try:
+        with open('crl_mapping_lookup.json', 'r') as f:
+            _crl_lookup = json.load(f)
+        logger.info(f"Loaded {len(_crl_lookup)} CRL mappings from lookup file")
+        return _crl_lookup
+    except FileNotFoundError:
+        logger.error("CRL mapping lookup file not found")
+        raise
+    except json.JSONDecodeError as e:
+        logger.error(f"Error parsing CRL mapping JSON: {str(e)}")
+        raise
+
+
+def map_subcategories_to_crl(subcategories):
+    """
+    Map subcategories to CRL codes using JSON lookup.
+
+    Args:
+        subcategories: Dict with subcategory names as keys, probabilities as values
+        Example: {"Dose confirmation": 0.949, "Needle not fully extended": 0.028}
+
+    Returns:
+        Dict with CRL codes as keys, probabilities as values
+        Example: {"CRL-000100": 0.949, "CRL-000108": 0.028}
+
+    Notes:
+        - CRL-999999 means "null" (no CRL code assigned) - these are skipped
+        - Unknown subcategories are mapped to "UNASSIGNED"
+    """
+    crl_lookup = load_crl_lookup()
+    crl_mapping = {}
+
+    for subcategory, probability in subcategories.items():
+        # Look up CRL code for this subcategory
+        crl_code = crl_lookup.get(subcategory)
+
+        if crl_code and crl_code != "CRL-999999":
+            # Valid CRL code found
+            crl_mapping[crl_code] = probability
+            logger.info(f"Mapped '{subcategory}' -> {crl_code} (prob: {probability})")
+        elif crl_code == "CRL-999999":
+            # Null CRL code - skip or map to UNASSIGNED
+            logger.info(f"Skipping '{subcategory}' with null CRL code (prob: {probability})")
+            crl_mapping["UNASSIGNED"] = crl_mapping.get("UNASSIGNED", 0) + probability
+        else:
+            # Unknown subcategory
+            logger.warning(f"Unknown subcategory '{subcategory}' - mapping to UNASSIGNED (prob: {probability})")
+            crl_mapping["UNASSIGNED"] = crl_mapping.get("UNASSIGNED", 0) + probability
+
+    return crl_mapping
+
 
 def lambda_handler(event, context):
     """
-    CRL (Complaint Report Labeling) Mapping - PLACEHOLDER
+    CRL (Complaint Report Labeling) Mapping
 
-    TODO: Future implementation will map subcategories to official CRL codes
-    by querying a lookup table in PostgreSQL/DynamoDB.
+    Maps subcategories to official CRL codes using a JSON lookup table.
 
     Expected input from Step Function (Parallel State results):
     [
         {
             "complaint_id": "CAS-00001",
             "narrative": "...",
-            "level": {...}
+            "level": {"1": 0.11, "2": 0.81, "3": 0.01}
         },
         {
             "complaint_id": "CAS-00001",
             "narrative": "...",
-            "subcategory": {...}
+            "subcategory": {
+                "Dose confirmation": 0.949,
+                "Needle not fully extended": 0.029,
+                "Injection incomplete - Autoinjector/Syringe": 0.019
+            }
         }
     ]
 
-    OR (if not coming from parallel state):
-    {
-        "complaint_id": "CAS-00001",
-        "narrative": "...",
-        "level": {...},
-        "subcategory": {...}
-    }
-
-    This Lambda receives a LIST when Level and Subcategory run in parallel.
-    It merges the results into a single object.
-
-    Future behavior:
-    - Query lookup table for each subcategory
-    - Map subcategory names to official CRL codes
-    - Example: "Product Quality" → "PQ-001"
-
-    Current behavior (placeholder):
-    - Merge parallel results if needed
-    - Pass through all data unchanged
-    - Ready for future CRL mapping implementation
-
-    Returns (for now):
+    Returns:
     {
         "complaint_id": "CAS-00001",
         "narrative": "...",
         "level": {...},
         "subcategory": {...},
-        "crl_value": null  ← Will be populated in future
+        "crl_value": {
+            "CRL-000100": 0.949,
+            "CRL-000108": 0.029,
+            "CRL-000102": 0.019
+        }
     }
     """
     logger.info(f"Received event: {json.dumps(event)}")
@@ -78,31 +133,34 @@ def lambda_handler(event, context):
             logger.info(f"Merged event: {json.dumps(event)}")
 
         complaint_id = event.get('complaint_id')
+        subcategories = event.get('subcategory', {})
 
         if not complaint_id:
             raise ValueError("Missing required field: complaint_id")
 
-        logger.info(f"Processing CRL mapping for complaint {complaint_id} (PLACEHOLDER - no mapping yet)")
+        if not subcategories:
+            logger.warning(f"No subcategories found for complaint {complaint_id}")
+            crl_value = None
+        else:
+            logger.info(f"Processing CRL mapping for complaint {complaint_id}")
+            logger.info(f"Subcategories to map: {subcategories}")
 
-        # TODO: Future implementation
-        # 1. Extract subcategories from event
-        # 2. Query PostgreSQL lookup table for CRL codes:
-        #    SELECT crl_code FROM crl_mapping WHERE subcategory = %s
-        # 3. Map each subcategory to its CRL code
-        # 4. Return mapped CRL values
+            # Perform CRL mapping
+            crl_value = map_subcategories_to_crl(subcategories)
+            logger.info(f"CRL mapping result: {crl_value}")
 
-        # For now: pass through all data unchanged
+        # Build output
         output = {
             **event,  # Keep all existing fields
-            'crl_value': None  # Placeholder for future CRL mapping
+            'crl_value': crl_value
         }
 
-        logger.info(f"✅ CRL placeholder processed for {complaint_id}")
+        logger.info(f"✅ CRL mapping completed for {complaint_id}")
 
         return output
 
     except Exception as e:
-        logger.error(f"❌ Error in CRL placeholder: {str(e)}")
+        logger.error(f"❌ Error in CRL mapping: {str(e)}")
 
         # Try to extract complaint_id even on error
         complaint_id = 'unknown'
@@ -120,42 +178,3 @@ def lambda_handler(event, context):
             'crl_value': None,
             'error': str(e)
         }
-
-# ============================================================================
-# FUTURE IMPLEMENTATION REFERENCE
-# ============================================================================
-#
-# def map_subcategories_to_crl(subcategories: dict) -> dict:
-#     """
-#     Map subcategories to CRL codes using lookup table.
-#
-#     Args:
-#         subcategories: Dict with subcategory names as keys, probabilities as values
-#         Example: {"Product Quality": "0.75", "Safety": "0.25"}
-#
-#     Returns:
-#         Dict with CRL codes as keys, probabilities as values
-#         Example: {"PQ-001": "0.75", "SF-002": "0.25"}
-#     """
-#     conninfo = get_connection_string()
-#     crl_mapping = {}
-#
-#     with psycopg.connect(conninfo) as conn:
-#         with conn.cursor() as cur:
-#             for subcategory, probability in subcategories.items():
-#                 # Query lookup table
-#                 cur.execute(
-#                     "SELECT crl_code FROM crl_mapping WHERE subcategory_name = %s",
-#                     (subcategory,)
-#                 )
-#                 row = cur.fetchone()
-#
-#                 if row:
-#                     crl_code = row[0]
-#                     crl_mapping[crl_code] = probability
-#                 else:
-#                     # Unassigned CRL for unknown subcategories
-#                     crl_mapping["UNASSIGNED"] = probability
-#
-#     return crl_mapping
-# ============================================================================
