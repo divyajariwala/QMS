@@ -154,7 +154,8 @@ lambda_configs = [
     path          = "src/app/get_complaints"
     environment_variables = {
       env                 = "dev"
-      DYNAMODB_TABLE_NAME = "qms-dev-complaints-metadata"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region           = "us-east-1"
     }
     api_gateway_paths = [
       {
