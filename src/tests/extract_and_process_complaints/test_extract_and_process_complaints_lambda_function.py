@@ -387,63 +387,61 @@ class TestUpdateComplaintInDb:
     """Tests for update_complaint_in_db function"""
 
     @patch('lambda_function.get_connection_string')
-    @patch('psycopg.connect')
-    def test_update_complaint_success(self, mock_connect, mock_get_connection, mock_extracted_data):
+    def test_update_complaint_success(self, mock_get_connection, mock_extracted_data):
         """Test: Successful complaint update in database"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_conn.__enter__.return_value = mock_conn
-        mock_conn.__exit__.return_value = False
-        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-        mock_conn.cursor.return_value.__exit__.return_value = False
-        mock_connect.return_value = mock_conn
+        with patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_conn = MagicMock()
+            mock_cursor = MagicMock()
+            mock_conn.__enter__.return_value = mock_conn
+            mock_conn.__exit__.return_value = False
+            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+            mock_conn.cursor.return_value.__exit__.return_value = False
+            mock_connect.return_value = mock_conn
 
-        lambda_function.update_complaint_in_db('CAS-123', mock_extracted_data)
-        
-        mock_cursor.execute.assert_called_once()
-        mock_conn.commit.assert_called_once()
+            lambda_function.update_complaint_in_db('CAS-123', mock_extracted_data)
+            
+            mock_cursor.execute.assert_called_once()
+            mock_conn.commit.assert_called_once()
 
     @patch('lambda_function.get_connection_string')
-    @patch('psycopg.connect')
-    def test_update_complaint_with_na_values(self, mock_connect, mock_get_connection):
+    def test_update_complaint_with_na_values(self, mock_get_connection):
         """Test: Update complaint with N/A values"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_conn.__enter__.return_value = mock_conn
-        mock_conn.__exit__.return_value = False
-        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-        mock_conn.cursor.return_value.__exit__.return_value = False
-        mock_connect.return_value = mock_conn
+        with patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_conn = MagicMock()
+            mock_cursor = MagicMock()
+            mock_conn.__enter__.return_value = mock_conn
+            mock_conn.__exit__.return_value = False
+            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+            mock_conn.cursor.return_value.__exit__.return_value = False
+            mock_connect.return_value = mock_conn
 
-        extracted_data = {
-            'narrative': 'Test',
-            'primary_reporter': {'name': 'N/A', 'address': 'N/A'},
-            'patient_name': 'N/A',
-            'physician_name': 'N/A',
-            'product_details': {'drug_name': 'N/A'}
-        }
+            extracted_data = {
+                'narrative': 'Test',
+                'primary_reporter': {'name': 'N/A', 'address': 'N/A'},
+                'patient_name': 'N/A',
+                'physician_name': 'N/A',
+                'product_details': {'drug_name': 'N/A'}
+            }
 
-        lambda_function.update_complaint_in_db('CAS-123', extracted_data)
-        
-        # Verify execute was called (N/A values should be converted to None)
-        mock_cursor.execute.assert_called_once()
+            lambda_function.update_complaint_in_db('CAS-123', extracted_data)
+            
+            # Verify execute was called (N/A values should be converted to None)
+            mock_cursor.execute.assert_called_once()
 
     @patch('lambda_function.get_connection_string')
-    @patch('psycopg.connect')
-    def test_update_complaint_db_error(self, mock_connect, mock_get_connection):
+    def test_update_complaint_db_error(self, mock_get_connection):
         """Test: Database error handling"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
-        mock_conn = MagicMock()
-        mock_conn.__enter__.side_effect = Exception("Database connection failed")
-        mock_connect.return_value = mock_conn
+        with patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_connect.side_effect = Exception("Database connection failed")
 
-        with pytest.raises(Exception):
-            lambda_function.update_complaint_in_db('CAS-123', {})
+            with pytest.raises(Exception):
+                lambda_function.update_complaint_in_db('CAS-123', {})
 
 
 class TestLambdaHandler:
@@ -587,27 +585,27 @@ class TestEdgeCases:
             lambda_function.validate_event({})
 
     @patch('lambda_function.get_connection_string')
-    @patch('psycopg.connect')
-    def test_update_complaint_invalid_dates(self, mock_connect, mock_get_connection):
+    def test_update_complaint_invalid_dates(self, mock_get_connection):
         """Test: Invalid date handling in database update"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_conn.__enter__.return_value = mock_conn
-        mock_conn.__exit__.return_value = False
-        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-        mock_conn.cursor.return_value.__exit__.return_value = False
-        mock_connect.return_value = mock_conn
+        with patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_conn = MagicMock()
+            mock_cursor = MagicMock()
+            mock_conn.__enter__.return_value = mock_conn
+            mock_conn.__exit__.return_value = False
+            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+            mock_conn.cursor.return_value.__exit__.return_value = False
+            mock_connect.return_value = mock_conn
 
-        extracted_data = {
-            'receipt_date': 'invalid-date',
-            'product_details': {'expiration_date': 'also-invalid'}
-        }
+            extracted_data = {
+                'receipt_date': 'invalid-date',
+                'product_details': {'expiration_date': 'also-invalid'}
+            }
 
-        # Should not raise exception, invalid dates should be set to None
-        lambda_function.update_complaint_in_db('CAS-123', extracted_data)
-        mock_cursor.execute.assert_called_once()
+            # Should not raise exception, invalid dates should be set to None
+            lambda_function.update_complaint_in_db('CAS-123', extracted_data)
+            mock_cursor.execute.assert_called_once()
 
     def test_construct_pdf_prompt_empty_images(self):
         """Test: PDF prompt with empty images list"""
