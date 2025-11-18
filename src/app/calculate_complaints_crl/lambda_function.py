@@ -1,267 +1,161 @@
 import json
 import logging
 import os
-from datetime import datetime, timezone
-from decimal import Decimal
 
-import boto3
+# Logger setup
+logger = logging.getLogger("calculate_complaints_crl")
+logger.setLevel(logging.INFO)
 
 # Environment variables
-STEP_FUNCTION_ARN = os.environ.get('STEP_FUNCTION_ARN',
-                                   'arn:aws:states:us-east-1:ACCOUNT_ID:stateMachine:qms-dev-classify-complaints')
-
-# Setup logging
-logger = logging.getLogger("classify_complaints_lambda")
-logger.setLevel(logging.INFO)
+AWS_REGION = os.environ.get('aws_region', 'us-east-1')
 
 
 def lambda_handler(event, context):
     """
-    Lambda function to trigger Step Functions for complaint classification.
+    CRL (Complaint Report Labeling) Mapping - PLACEHOLDER
 
-    Expected SQS event structure:
-    {
-        "Records": [
-            {
-                "messageId": "...",
-                "body": "{...complaint data...}"
-            }
-        ]
-    }
-    """
-    logger.info("Received event: %s", json.dumps(event, indent=2))
+    TODO: Future implementation will map subcategories to official CRL codes
+    by querying a lookup table in PostgreSQL/DynamoDB.
 
-    try:
-        # Initialize AWS clients
-        stepfunctions = boto3.client('stepfunctions')
-
-        # Track processing results
-        successful = 0
-        failed = 0
-        errors = []
-        executions = []
-
-        # Process each SQS message
-        for record in event.get('Records', []):
-            try:
-                message_id = record.get('messageId', 'unknown')
-                logger.info(f"Processing message: {message_id}")
-
-                # Parse message body
-                body = json.loads(record['body'])
-
-                # Validate complaint data
-                validate_complaint(body)
-
-                # Start Step Function execution
-                execution_arn = start_step_function(stepfunctions, body)
-
-                successful += 1
-                executions.append({
-                    'complaint_id': body.get('complaint_id'),
-                    'execution_arn': execution_arn,
-                    'messageId': message_id
-                })
-                logger.info(f"Successfully started classification for complaint: {body.get('complaint_id')}")
-
-            except json.JSONDecodeError as e:
-                failed += 1
-                error_msg = f"Invalid JSON in message {message_id}: {str(e)}"
-                logger.error(error_msg)
-                errors.append({
-                    'messageId': message_id,
-                    'error': 'InvalidJSON',
-                    'detail': str(e)
-                })
-
-            except ValueError as e:
-                failed += 1
-                error_msg = f"Validation error in message {message_id}: {str(e)}"
-                logger.error(error_msg)
-                errors.append({
-                    'messageId': message_id,
-                    'error': 'ValidationError',
-                    'detail': str(e)
-                })
-
-            except Exception as e:
-                failed += 1
-                error_msg = f"Error processing message {message_id}: {str(e)}"
-                logger.error(error_msg)
-                import traceback
-                logger.error(f"Traceback: {traceback.format_exc()}")
-                errors.append({
-                    'messageId': message_id,
-                    'error': 'ProcessingError',
-                    'detail': str(e)
-                })
-
-        # Log summary
-        logger.info(f"Processing complete - Successful: {successful}, Failed: {failed}")
-
-        # Return results
-        return {
-            'statusCode': 200 if failed == 0 else 207,
-            'body': json.dumps({
-                'processed': successful + failed,
-                'successful': successful,
-                'failed': failed,
-                'executions': executions,
-                'errors': errors
-            })
+    Expected input from Step Function (Parallel State results):
+    [
+        {
+            "complaint_id": "CAS-00001",
+            "narrative": "...",
+            "level": {...}
+        },
+        {
+            "complaint_id": "CAS-00001",
+            "narrative": "...",
+            "subcategory": {...}
         }
-
-    except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({
-                'error': 'Internal server error',
-                'detail': str(e)
-            })
-        }
-
-
-def validate_complaint(complaint):
-    """
-    Validate that complaint has all required fields for classification.
-
-    Args:
-        complaint (dict): Complaint data
-
-    Raises:
-        ValueError: If validation fails
-    """
-    required_fields = [
-        'complaint_id',
-        'narrative'
     ]
 
-    # Check required fields
-    missing_fields = [field for field in required_fields if field not in complaint]
-    if missing_fields:
-        raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
-
-    # Validate field values
-    if not complaint['complaint_id'].strip():
-        raise ValueError("complaint_id cannot be empty")
-
-    if not complaint['narrative'].strip():
-        raise ValueError("narrative cannot be empty")
-
-    if len(complaint['narrative']) > 420:
-        raise ValueError("narrative exceeds maximum length of 420 characters")
-
-
-def start_step_function(stepfunctions_client, complaint):
-    """
-    Start Step Function execution for complaint classification.
-
-    Args:
-        stepfunctions_client: Boto3 Step Functions client
-        complaint (dict): Complaint data to process
-
-    Returns:
-        str: Execution ARN
-
-    Raises:
-        Exception: If Step Functions operation fails
-    """
-    complaint_id = complaint['complaint_id']
-
-    try:
-        # Prepare input for Step Function
-        step_input = prepare_step_function_input(complaint)
-
-        # Generate unique execution name
-        timestamp = datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')
-        execution_name = f"classify-{complaint_id}-{timestamp}"
-
-        # Start execution
-        response = stepfunctions_client.start_execution(
-            stateMachineArn=STEP_FUNCTION_ARN,
-            name=execution_name,
-            input=json.dumps(step_input, default=decimal_default)
-        )
-
-        execution_arn = response['executionArn']
-        logger.info(f"Started Step Function execution: {execution_arn}")
-
-        return execution_arn
-
-    except Exception as e:
-        logger.error(f"Step Functions error for complaint {complaint_id}: {str(e)}")
-        raise
-
-
-def prepare_step_function_input(complaint):
-    """
-    Prepare input data for Step Function execution.
-
-    Args:
-        complaint (dict): Original complaint data
-
-    Returns:
-        dict: Formatted input for Step Function
-    """
-    # Convert floats to Decimal for JSON serialization
-    complaint_data = _convert_floats_to_decimal(complaint)
-
-    # Build Step Function input
-    step_input = {
-        'complaint_id': complaint_data['complaint_id'],
-        'narrative': complaint_data['narrative'],
-        'code': complaint_data.get('code'),
-        'status': complaint_data.get('status', 'IN-REVIEW'),
-        'created_at': complaint_data.get('created_at', datetime.now(timezone.utc).isoformat()),
-        'created_by': complaint_data.get('created_by'),
-        'source': complaint_data.get('source', 'api'),
-        'metadata': {
-            'triggered_at': datetime.now(timezone.utc).isoformat(),
-            'trigger_source': 'classify_complaints_lambda'
-        }
+    OR (if not coming from parallel state):
+    {
+        "complaint_id": "CAS-00001",
+        "narrative": "...",
+        "level": {...},
+        "subcategory": {...}
     }
 
-    # Include any additional fields from original complaint
-    for key, value in complaint_data.items():
-        if key not in step_input:
-            step_input[key] = value
+    This Lambda receives a LIST when Level and Subcategory run in parallel.
+    It merges the results into a single object.
 
-    return step_input
+    Future behavior:
+    - Query lookup table for each subcategory
+    - Map subcategory names to official CRL codes
+    - Example: "Product Quality" → "PQ-001"
 
+    Current behavior (placeholder):
+    - Merge parallel results if needed
+    - Pass through all data unchanged
+    - Ready for future CRL mapping implementation
 
-def _convert_floats_to_decimal(obj):
+    Returns (for now):
+    {
+        "complaint_id": "CAS-00001",
+        "narrative": "...",
+        "level": {...},
+        "subcategory": {...},
+        "crl_value": null  ← Will be populated in future
+    }
     """
-    Convert floats to Decimal for JSON compatibility.
+    logger.info(f"Received event: {json.dumps(event)}")
 
-    Args:
-        obj: Object to convert (dict, list, or primitive)
+    try:
+        # Handle parallel state results (list of dicts from Level + Subcategory)
+        if isinstance(event, list):
+            logger.info(f"Merging {len(event)} parallel results")
 
-    Returns:
-        Object with floats converted to Decimal
-    """
-    if isinstance(obj, list):
-        return [_convert_floats_to_decimal(item) for item in obj]
-    elif isinstance(obj, dict):
-        return {key: _convert_floats_to_decimal(value) for key, value in obj.items()}
-    elif isinstance(obj, float):
-        return Decimal(str(obj))
-    else:
-        return obj
+            # Merge all dicts into one
+            merged_event = {}
+            for item in event:
+                if isinstance(item, dict):
+                    merged_event.update(item)
 
+            event = merged_event
+            logger.info(f"Merged event: {json.dumps(event)}")
 
-def decimal_default(obj):
-    """
-    JSON serializer for Decimal objects.
+        complaint_id = event.get('complaint_id')
 
-    Args:
-        obj: Object to serialize
+        if not complaint_id:
+            raise ValueError("Missing required field: complaint_id")
 
-    Returns:
-        Serializable representation
-    """
-    if isinstance(obj, Decimal):
-        return float(obj)
-    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+        logger.info(f"Processing CRL mapping for complaint {complaint_id} (PLACEHOLDER - no mapping yet)")
+
+        # TODO: Future implementation
+        # 1. Extract subcategories from event
+        # 2. Query PostgreSQL lookup table for CRL codes:
+        #    SELECT crl_code FROM crl_mapping WHERE subcategory = %s
+        # 3. Map each subcategory to its CRL code
+        # 4. Return mapped CRL values
+
+        # For now: pass through all data unchanged
+        output = {
+            **event,  # Keep all existing fields
+            'crl_value': None  # Placeholder for future CRL mapping
+        }
+
+        logger.info(f"✅ CRL placeholder processed for {complaint_id}")
+
+        return output
+
+    except Exception as e:
+        logger.error(f"❌ Error in CRL placeholder: {str(e)}")
+
+        # Try to extract complaint_id even on error
+        complaint_id = 'unknown'
+        try:
+            if isinstance(event, list) and len(event) > 0:
+                complaint_id = event[0].get('complaint_id', 'unknown')
+            elif isinstance(event, dict):
+                complaint_id = event.get('complaint_id', 'unknown')
+        except:
+            pass
+
+        # Return safe default
+        return {
+            'complaint_id': complaint_id,
+            'crl_value': None,
+            'error': str(e)
+        }
+
+# ============================================================================
+# FUTURE IMPLEMENTATION REFERENCE
+# ============================================================================
+#
+# def map_subcategories_to_crl(subcategories: dict) -> dict:
+#     """
+#     Map subcategories to CRL codes using lookup table.
+#
+#     Args:
+#         subcategories: Dict with subcategory names as keys, probabilities as values
+#         Example: {"Product Quality": "0.75", "Safety": "0.25"}
+#
+#     Returns:
+#         Dict with CRL codes as keys, probabilities as values
+#         Example: {"PQ-001": "0.75", "SF-002": "0.25"}
+#     """
+#     conninfo = get_connection_string()
+#     crl_mapping = {}
+#
+#     with psycopg.connect(conninfo) as conn:
+#         with conn.cursor() as cur:
+#             for subcategory, probability in subcategories.items():
+#                 # Query lookup table
+#                 cur.execute(
+#                     "SELECT crl_code FROM crl_mapping WHERE subcategory_name = %s",
+#                     (subcategory,)
+#                 )
+#                 row = cur.fetchone()
+#
+#                 if row:
+#                     crl_code = row[0]
+#                     crl_mapping[crl_code] = probability
+#                 else:
+#                     # Unassigned CRL for unknown subcategories
+#                     crl_mapping["UNASSIGNED"] = probability
+#
+#     return crl_mapping
+# ============================================================================

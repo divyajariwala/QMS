@@ -214,6 +214,7 @@ lambda_configs = [
     path          = "src/app/calculate_complaints_crl"
     environment_variables = {
       env                 = "dev"
+      aws_region          = "us-east-1"
     }
   },
   {
