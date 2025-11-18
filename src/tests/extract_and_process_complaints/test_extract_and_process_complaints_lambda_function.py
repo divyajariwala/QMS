@@ -392,12 +392,12 @@ class TestUpdateComplaintInDb:
         """Test: Successful complaint update in database"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
-        mock_conn = Mock()
-        mock_cursor = Mock()
-        mock_conn.__enter__ = Mock(return_value=mock_conn)
-        mock_conn.__exit__ = Mock(return_value=False)
-        mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
-        mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.__enter__.return_value = mock_conn
+        mock_conn.__exit__.return_value = False
+        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+        mock_conn.cursor.return_value.__exit__.return_value = False
         mock_connect.return_value = mock_conn
 
         lambda_function.update_complaint_in_db('CAS-123', mock_extracted_data)
@@ -411,12 +411,12 @@ class TestUpdateComplaintInDb:
         """Test: Update complaint with N/A values"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
-        mock_conn = Mock()
-        mock_cursor = Mock()
-        mock_conn.__enter__ = Mock(return_value=mock_conn)
-        mock_conn.__exit__ = Mock(return_value=False)
-        mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
-        mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.__enter__.return_value = mock_conn
+        mock_conn.__exit__.return_value = False
+        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+        mock_conn.cursor.return_value.__exit__.return_value = False
         mock_connect.return_value = mock_conn
 
         extracted_data = {
@@ -437,7 +437,10 @@ class TestUpdateComplaintInDb:
     def test_update_complaint_db_error(self, mock_connect, mock_get_connection):
         """Test: Database error handling"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
-        mock_connect.side_effect = Exception("Database connection failed")
+        
+        mock_conn = MagicMock()
+        mock_conn.__enter__.side_effect = Exception("Database connection failed")
+        mock_connect.return_value = mock_conn
 
         with pytest.raises(Exception):
             lambda_function.update_complaint_in_db('CAS-123', {})
@@ -589,12 +592,12 @@ class TestEdgeCases:
         """Test: Invalid date handling in database update"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
-        mock_conn = Mock()
-        mock_cursor = Mock()
-        mock_conn.__enter__ = Mock(return_value=mock_conn)
-        mock_conn.__exit__ = Mock(return_value=False)
-        mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
-        mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.__enter__.return_value = mock_conn
+        mock_conn.__exit__.return_value = False
+        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+        mock_conn.cursor.return_value.__exit__.return_value = False
         mock_connect.return_value = mock_conn
 
         extracted_data = {
