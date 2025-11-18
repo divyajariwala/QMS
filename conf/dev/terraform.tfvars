@@ -190,6 +190,34 @@ lambda_configs = [
       }
     ]
   },
+  {
+    function_name = "calculate-complaints-level"
+    path          = "src/app/calculate_complaints_level"
+    environment_variables = {
+      env                 = "dev"
+    }
+  },
+  {
+    function_name = "calculate-complaints-subcategory"
+    path          = "src/app/calculate_complaints_subcategory"
+    environment_variables = {
+      env                 = "dev"
+    }
+  },
+  {
+    function_name = "calculate-complaints-crl"
+    path          = "src/app/calculate_complaints_crl"
+    environment_variables = {
+      env                 = "dev"
+    }
+  },
+  {
+    function_name = "calculate-complaints-priority"
+    path          = "src/app/calculate_complaints_priority"
+    environment_variables = {
+      env                 = "dev"
+    }
+  },
 ]
 
 
