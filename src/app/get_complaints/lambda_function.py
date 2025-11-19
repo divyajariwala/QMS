@@ -73,25 +73,28 @@ def get_single_complaint(conn, complaint_id):
                     })
                 }
             
-            # Get inference data
+            # Get inference data from new inference_results table
             cursor.execute("""
-                SELECT * FROM inference WHERE complaint_id = %s ORDER BY priority
+                SELECT * FROM inference_results WHERE complaint_id = %s ORDER BY created_at DESC LIMIT 1
             """, (complaint_id,))
             
-            inferences = cursor.fetchall()
+            inference_result = cursor.fetchone()
 
             # Transform inference data to category details
             category_details = []
-            for inf in inferences:
-                category_details.append({
-                    "id": inf['id'] or str(inf['priority']),
-                    "label": inf['label'],
-                    "level": inf['priority'],
-                    "crl": inf['crl'],
-                    "priority": "High" if inf['priority'] <= 2 else "Medium" if inf['priority'] <= 4 else "Low",
-                    "unit": inf['unit'],
-                    "percentage": inf['percentage']
-                })
+            if inference_result:
+                # Extract subcategories from JSONB
+                subcategories = inference_result.get('subcategories', {})
+                for label, percentage in subcategories.items():
+                    category_details.append({
+                        "id": label.replace(' ', '_').lower(),
+                        "label": label,
+                        "level": inference_result.get('final_level', ''),
+                        "crl": f"{percentage:.2f}%",
+                        "priority": "High" if inference_result.get('priority', 0) <= 2 else "Medium" if inference_result.get('priority', 0) <= 4 else "Low",
+                        "unit": 1,
+                        "percentage": percentage * 100
+                    })
         
             # Transform database record to response format
             complaint_details = {

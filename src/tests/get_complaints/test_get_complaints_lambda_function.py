@@ -41,6 +41,9 @@ class TestLambdaHandler:
         mock_get_db.return_value = mock_conn
 
         # Mock complaint data
+
+        
+        # Mock inference data from new inference_results table
         mock_cursor.fetchone.side_effect = [
             {
                 'complaint_id': 'CAS-123',
@@ -63,18 +66,17 @@ class TestLambdaHandler:
                 'text_extracted': True,
                 'file_name': 'test.pdf',
                 's3_url': 's3://bucket/test.pdf'
-            }
-        ]
-        
-        # Mock inference data
-        mock_cursor.fetchall.return_value = [
+            },
             {
-                'id': '1',
-                'label': 'Broken Needle',
+                'inference_id': 5,
+                'complaint_id': 'CAS-123',
+                'levels': {"1": 0.11, "2": 0.81, "3": 0.08},
+                'subcategories': {"Broken Needle": 0.855, "Dose confirmation": 0.145},
+                'crl_codes': {"CRL-000100": 0.855},
+                'final_level': '2',
                 'priority': 1,
-                'crl': 'High confidence',
-                'unit': 1,
-                'percentage': 85.5
+                'priority_reason': 'High priority issue',
+                'priority_summary': 'Critical safety concern'
             }
         ]
 
@@ -91,7 +93,7 @@ class TestLambdaHandler:
         assert body['criticality'] == 'High'
         assert body['caseStatus'] == 'pending'
         assert body['text_extracted'] is True
-        assert len(body['category_details']) == 1
+        assert len(body['category_details']) == 2
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_not_found(self, mock_get_db):
