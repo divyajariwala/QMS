@@ -46,9 +46,9 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
     if (status === 'importing') {
-      timer = setTimeout(() => setStatus('extracting'), 1000);
+      timer = setTimeout(() => setStatus('extracting'), 0);
     } else if (status === 'extracting') {
-      timer = setTimeout(() => setStatus('success'), 1000);
+      timer = setTimeout(() => setStatus('success'), 0);
     }
 
     return () => {

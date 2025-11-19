@@ -311,4 +311,68 @@ export async function postApproveComplaint(
 }
 
 
+export async function classifyComplaint<T = any>(complaintId: string): Promise<T> {
+  const url = 'https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/classifyComplaints';
+  const payload = { complaint_id: complaintId };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: T = await response.json();
+  return data;
+}
+
+
+interface Reporter {
+  name: string;
+  address: string;
+}
+
+interface ModifyExtractedDetailsPayload {
+  status: string;
+  caseId: string;
+  overdueDays: number;
+  primaryReporter: Reporter;
+  patientName: string;
+  physicianName: string;
+  drug: string;
+  lotNumber: string;
+  doseAmount: string;
+  expirationDate: string;  // ISO string
+  partNumber: string;
+  receipt_date: string;    // ISO string
+}
+
+export async function modifyExtractedDetails(
+  payload: ModifyExtractedDetailsPayload
+): Promise<ModifyExtractedDetailsPayload> {
+  const url = 'https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/modifyExtractedDetails';
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // Add auth headers if needed
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: ModifyExtractedDetailsPayload = await response.json();
+  return data;
+}
+
+
 

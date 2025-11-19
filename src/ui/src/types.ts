@@ -396,6 +396,7 @@ type PrimaryReporter = {
 
 type ProductDetails = {
   drug: string;
+  drug_name: string;
   dosage: string;
   lot_no: string;
   expiration_date: string;

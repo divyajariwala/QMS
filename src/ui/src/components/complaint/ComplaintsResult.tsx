@@ -108,7 +108,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected }) => 
         <div className={styles.infoItemColumn}>
           <Box className={styles.infoItemLabel}>Case Type</Box>
           <div className={styles.caseTypeRow}>
-            {complaint.case_type.includes("PC") && (
+            {complaint.case_type.includes("Product Complaint") && (
               <Chip
                 iconSrc={ProductComplaintIcon}
                 iconAlt="Product Complaint"
@@ -116,7 +116,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected }) => 
                 className={styles.productComplaintsChip}
               />
             )}
-            {complaint.case_type.includes("AE") && (
+            {complaint.case_type.includes("Adverse Event") && (
               <Chip
                 iconSrc={AdverseEventIcon}
                 iconAlt="Adverse Event"
@@ -124,7 +124,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected }) => 
                 className={styles.adverseEventChip}
               />
             )}
-            {!(complaint.case_type.includes("PC") && complaint.case_type.includes("PC")) && <Box className={styles.infoItemValue}>NA</Box>}
+            {(!complaint.case_type.includes("Product Complaint") && !complaint.case_type.includes("Adverse Event")) && <Box className={styles.infoItemValue}>NA</Box>}
           </div>
         </div>
       </div>

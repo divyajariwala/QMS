@@ -5,21 +5,20 @@ import { MAX_LENGTH } from 'src/constants';
 /**
  * Data shape sent to onSubmit
  */
-export type SubmittedData =
-  {
-    status?: string | undefined;
-    caseId?: string | undefined;
-    overdueDays?: number | undefined;
-    primaryReporter?: Record<string, any> | undefined;
-    patientName?: string | undefined;
-    physicianName?: string | undefined;
-    drug?: string | undefined;
-    lotNumber?: string | undefined;
-    doseAmount?: string | undefined;
-    expirationDate?: string | undefined;
-    partNumber?: string | undefined;
-    receipt_date?: string | undefined;
-  };
+export type SubmittedData = {
+  status?: string | undefined;
+  caseId?: string | undefined;
+  overdueDays?: number | undefined;
+  primaryReporter?: Record<string, any> | undefined;
+  patientName?: string | undefined;
+  physicianName?: string | undefined;
+  drug?: string | undefined;
+  lotNumber?: string | undefined;
+  doseAmount?: string | undefined;
+  expirationDate?: string | undefined;
+  partNumber?: string | undefined;
+  receipt_date?: string | undefined;
+};
 
 type Props = {
   open: boolean;
@@ -29,7 +28,9 @@ type Props = {
 };
 
 const ModifyDetails: React.FC<Props> = ({ open, onClose, onSubmit, initialValues = {} }) => {
-  const [primaryReporter, setPrimaryReporter] = useState(initialValues?.primaryReporter ?? { addres: '', name: '' });
+  const [primaryReporter, setPrimaryReporter] = useState(
+    initialValues?.primaryReporter ?? { address: '', name: '' }
+  );
   const [drug, setDrug] = useState(initialValues?.drug ?? '');
   const [dose, setDose] = useState(initialValues?.doseAmount ?? '');
   const [patientName, setPatientName] = useState(initialValues?.patientName ?? '');
@@ -38,22 +39,31 @@ const ModifyDetails: React.FC<Props> = ({ open, onClose, onSubmit, initialValues
   const [lotNumber, setLotNumber] = useState(initialValues?.lotNumber ?? '');
   const [partNumber, setPartNumber] = useState(initialValues?.partNumber ?? '');
 
-  const primaryReporterText =
-    [primaryReporter.name, primaryReporter.address].filter(Boolean).join('\n');
-
   const handlePrimaryReporterTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const v = e.target.value;
-    const [nameLine, ...rest] = v.split('\n');
-    setPrimaryReporter({
-      name: (nameLine || '').trim(),
-      address: rest.join('\n').trim(),
-    });
+
+    // Split only on the first newline into name and address
+    const firstNewlineIndex = v.indexOf('\n');
+    if (firstNewlineIndex === -1) {
+      // No newline => all is name, address empty
+      setPrimaryReporter({
+        name: v,
+        address: '',
+      });
+    } else {
+      const namePart = v.substring(0, firstNewlineIndex);
+      const addressPart = v.substring(firstNewlineIndex + 1);
+      setPrimaryReporter({
+        name: namePart,
+        address: addressPart,
+      });
+    }
   };
 
   useEffect(() => {
     // initialize when open or when initialValues change
     if (open) {
-      setPrimaryReporter(initialValues.primaryReporter ?? { addres: '', name: '' });
+      setPrimaryReporter(initialValues.primaryReporter ?? { address: '', name: '' });
       setDrug(initialValues.drug ?? '');
       setDose(initialValues.doseAmount ?? '');
       setPatientName(initialValues.patientName ?? '');
@@ -89,8 +99,8 @@ const ModifyDetails: React.FC<Props> = ({ open, onClose, onSubmit, initialValues
     };
 
     onSubmit(data);
-    // reset fields (optional) and close
-    setPrimaryReporter({ addres: '', name: '' });
+    // reset fields and close
+    setPrimaryReporter({ address: '', name: '' });
     setDrug('');
     setDose('');
     setPatientName('');
@@ -130,7 +140,15 @@ const ModifyDetails: React.FC<Props> = ({ open, onClose, onSubmit, initialValues
             className={styles.closeBtn}
             onClick={handleCancel}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden focusable="false" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+              focusable="false"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path d="M6 6L18 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M6 18L18 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -144,7 +162,8 @@ const ModifyDetails: React.FC<Props> = ({ open, onClose, onSubmit, initialValues
               <textarea
                 id="primaryReporter"
                 className={styles.textarea}
-                value={primaryReporterText} onChange={handlePrimaryReporterTextChange}
+                value={primaryReporter.name + '\n' + (primaryReporter.address ?? '')}
+                onChange={handlePrimaryReporterTextChange}
                 rows={10}
                 maxLength={MAX_LENGTH}
                 aria-describedby="char-count"
@@ -173,7 +192,6 @@ const ModifyDetails: React.FC<Props> = ({ open, onClose, onSubmit, initialValues
                   className={styles.select}
                   placeholder="Enter physician name"
                 />
-                  
               </div>
 
               <div className={styles.formField}>
