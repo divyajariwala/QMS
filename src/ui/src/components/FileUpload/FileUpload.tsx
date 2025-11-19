@@ -17,7 +17,9 @@ import styles from './FileUpload.module.scss';
 const FileUpload: React.FC<FileUploadPopupProps> = ({
   open,
   onClose,
-  onFileSelect
+  onFileSelect,
+  setProcessing,
+  onSuccess
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const [status, setStatus] = useState<fileUploadStatus>('idle');
@@ -25,6 +27,12 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   console.log(status);
+
+  useEffect(() => {
+  if (status === 'success') {
+    onSuccess?.();
+  }
+}, [status, onSuccess]);
 
   useEffect(() => {
     if (!open) {
@@ -41,14 +49,12 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
       timer = setTimeout(() => setStatus('extracting'), 1000);
     } else if (status === 'extracting') {
       timer = setTimeout(() => setStatus('success'), 1000);
-    } else if (status === 'success') {
-      timer = setTimeout(() => onClose(), 4000);
     }
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [status, onClose]);
+  }, [status]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -77,6 +83,8 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
       setErrorMsg(errorMessage || 'File upload failed');
       setStatus('error');
       console.error('Upload error:', err);
+    } finally {
+      setProcessing(true);
     }
   };
 
@@ -186,7 +194,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
 
     const statusBoxProps = { className: styles.statusBox };
 
-    if (status === 'importing' || 'uploading') {
+    if (status === 'importing' || status === 'uploading') {
       return (
         <Box {...statusBoxProps}>
           <CircularProgress className={styles.circularProgress} />

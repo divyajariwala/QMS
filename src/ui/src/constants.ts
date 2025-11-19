@@ -16,7 +16,7 @@ export const TOTAL_FILES = 3;
 export const MAX_LENGTH = 1500;
 
 export const mapped: { [key: number]: string } = {
-  0: 'pending',
-  1: 'overdue',
+  0: 'overdue',
+  1: 'pending',
   2: 'processed'
 }

@@ -10,7 +10,7 @@ import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import { useAuth } from "../../auth/useAuth";
 
 const Deviations = () => {
-  const [selected, setSelected] = useState('Root Cause Analysis');
+  const [activeIndex, setActiveIndex] = useState(0);
   const items = [
     { label: 'Home', to: '/' },
     { label: 'Deviations' },
@@ -40,7 +40,7 @@ const Deviations = () => {
           </Stack>
         </Stack>
         <div className={styles.statusCards}> <DeviationsStatusCard complaintStats={caseStatsMock} /></div>
-        <div className={styles.statusTabs}> <StatusTabs /></div>
+        <div className={styles.statusTabs}> <StatusTabs activeIndex={activeIndex} setActiveIndex={setActiveIndex} pending={2} processed={2} overdue={2} /></div>
       </Stack>
       <DeviationsFilter />
       {deviationsData.map((deviation, index) => (

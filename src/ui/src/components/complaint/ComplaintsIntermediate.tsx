@@ -36,8 +36,7 @@ const ComplaintsIntermediate: React.FC = () => {
     async function fetchData() {
       setLoading(true);
       try {
-        //const data = await fetchComplaintDetailById(complaintId);
-        const data = MockComplaintDetailApiResponse;
+        const data = await fetchComplaintDetailById(complaintId);
         setComplaintDetails(data);
       } catch (err: any) {
         console.log(err.message || "Failed to load complaint details.");
@@ -58,11 +57,11 @@ const ComplaintsIntermediate: React.FC = () => {
       primaryReporter: complaintDetails?.primary_reporter ?? '',
       patientName: complaintDetails?.patient_name ?? '',
       physicianName: complaintDetails?.physician_name ?? '',
-      drug: complaintDetails?.product_details?.drug_name ?? '',
+      drug: complaintDetails?.product_details?.drug ?? '',
       lotNumber: complaintDetails?.product_details?.lot_no ?? '',
       doseAmount: complaintDetails?.product_details?.dosage ?? '',
       expirationDate: complaintDetails?.product_details?.expiration_date ?? '',
-      partNumber: '',
+      partNumber: complaintDetails?.product_details?.part_number ?? '',
       receipt_date: complaintDetails?.receipt_date ?? ''
     });
   }, [complaintDetails]);
@@ -167,6 +166,8 @@ const ComplaintsIntermediate: React.FC = () => {
     setOpenModifyDetails(false);
   };
 
+  console.log(headerData);
+
   if (loading) return <p>Loading details...</p>;
 
   return (
@@ -203,7 +204,7 @@ const ComplaintsIntermediate: React.FC = () => {
         </Grid>
       </Grid>
 
-      <Notification open={open} onClose={handleCloseNotification} />
+      <Notification open={open} onClose={handleCloseNotification} position='top'/>
 
       <ModifyDetails
         onSubmit={handleModifySubmit}

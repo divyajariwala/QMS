@@ -298,6 +298,8 @@ export interface FileUploadPopupProps {
   open: boolean;
   onClose: () => void;
   onFileSelect: (file: File) => void;
+  setProcessing: (val: boolean) => void;
+  onSuccess: () => void;
 }
 
 export type fileUploadStatus = 'idle' | 'uploading' | 'importing' | 'extracting' | 'success' | 'error';
@@ -342,6 +344,7 @@ export type Case = {
   report_type: string;
   receipt_date: string;
   case_type: string[];
+  text_extracted: boolean;
 };
 
 export type CaseStatus = {
@@ -360,9 +363,20 @@ export type CaseStats = {
   longest_time: number;
 };
 
+
+export interface PaginationData {
+  current_page: number;
+  total_pages: number;
+  total_items: number;
+  items_per_page: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
 export type getComplaintsApiResponse = {
   caseStats: CaseStats;
   caseStatus: CaseStatus;
+  pagination: PaginationData;
 };
 
 export type CategoryDetail = {
@@ -381,10 +395,11 @@ type PrimaryReporter = {
 };
 
 type ProductDetails = {
-  drug_name: string;
+  drug: string;
   dosage: string;
   lot_no: string;
   expiration_date: string;
+  part_number: string;
 };
 export interface ComplaintDetail {
   case_id: string;

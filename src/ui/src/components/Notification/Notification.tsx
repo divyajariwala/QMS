@@ -9,6 +9,7 @@ interface NotificationProps {
   message?: string;
   duration?: number;  // Duration in milliseconds
   onClose: () => void;
+  position: "top" | "bottom";
 }
 
 const Notification: React.FC<NotificationProps> = ({
@@ -16,13 +17,14 @@ const Notification: React.FC<NotificationProps> = ({
   message = "Approved and Sent to QMS",
   duration = 4000,
   onClose,
+  position
 }) => {
   return (
     <Snackbar
       open={open}
       autoHideDuration={duration}
       onClose={onClose}
-      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      anchorOrigin={{ vertical: position, horizontal: "center" }}
       message={
         <span className={styles.notificationContent}>
           <CheckCircleIcon className={styles.icon} />

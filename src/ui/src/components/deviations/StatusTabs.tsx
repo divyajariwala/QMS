@@ -1,9 +1,31 @@
-import React, { useState } from "react";
-import { statuses } from "../../mockData/mockData"
+import React from "react";
 import styles from "./StatusTabs.module.scss";
 
-const StatusTabs: React.FC = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
+type StatusTabItem = {
+  label: string;
+  count?: number;
+};
+
+type Props = {
+  pending?: number;
+  processed?: number;
+  overdue?: number;
+  activeIndex: number;
+  setActiveIndex: (val: number) => void;
+};
+
+const StatusTabs: React.FC<Props> = ({
+  pending,
+  processed,
+  overdue,
+  activeIndex,
+  setActiveIndex,
+}) => {
+  const statuses: StatusTabItem[] = [
+    { label: "Overdue", count: overdue },
+    { label: "Pending", count: pending },
+    { label: "Processed", count: processed },
+  ];
 
   return (
     <div className={styles.tabsContainer}>

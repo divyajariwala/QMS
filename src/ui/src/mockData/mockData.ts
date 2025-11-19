@@ -224,6 +224,22 @@ export const MockComplaintsApiResponse = {
   },
 
   caseStatus: {
+    overdue: [
+      {
+        case_id: "CASE-0008",
+        criticality: "High",
+        report_type: "Service",
+        receipt_date: "2025-08-20T09:00:00Z",
+        case_type: ["ae", "pc"],
+      },
+      {
+        case_id: "CASE-0009",
+        criticality: "Medium",
+        report_type: "Product",
+        receipt_date: "2025-09-01T10:30:00Z",
+        case_type: [],
+      },
+    ],
     pending: [
       {
         case_id: "CASE-0001",
@@ -276,23 +292,6 @@ export const MockComplaintsApiResponse = {
         report_type: "Product",
         receipt_date: "2025-10-25T07:25:00Z",
         case_type: ["AE", "PC"],
-      },
-    ],
-
-    overdue: [
-      {
-        case_id: "CASE-0008",
-        criticality: "High",
-        report_type: "Service",
-        receipt_date: "2025-08-20T09:00:00Z",
-        case_type: ["ae", "pc"],
-      },
-      {
-        case_id: "CASE-0009",
-        criticality: "Medium",
-        report_type: "Product",
-        receipt_date: "2025-09-01T10:30:00Z",
-        case_type: [],
       },
     ],
   },

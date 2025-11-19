@@ -264,9 +264,9 @@ export const createComplaint = async (
   return data;
 };
 
-export async function fetchComplaints(): Promise<getComplaintsApiResponse> {
+export async function fetchComplaints(status: string, page: Number): Promise<getComplaintsApiResponse> {
   const response = await fetch(
-    "https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/getComplaints"
+    `https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/getComplaints?status=${status}&page=${page}`
   );
 
   if (!response.ok) {
