@@ -16,26 +16,10 @@ import lambda_function
 @pytest.fixture(autouse=True)
 def mock_all_external_dependencies():
     """Auto-mock all external dependencies for ALL tests."""
-    with patch('lambda_function.get_secret') as mock_get_secret, \
-            patch('lambda_function.psycopg.connect') as mock_psycopg_connect:
+    with patch('lambda_function.get_connection_string') as mock_get_conn_str:
         
-        # Mock Secrets Manager response
-        mock_get_secret.return_value = {
-            'host': 'test-db.cluster-xxxxx.us-east-1.rds.amazonaws.com',
-            'port': 5432,
-            'dbname': 'test_qms',
-            'username': 'test_user',
-            'password': 'test_password'
-        }
-
-        # Mock PostgreSQL connection
-        mock_cursor = MagicMock()
-        mock_conn = MagicMock()
-        mock_conn.__enter__ = Mock(return_value=mock_conn)
-        mock_conn.__exit__ = Mock(return_value=False)
-        mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
-        mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
-        mock_psycopg_connect.return_value = mock_conn
+        # Mock connection string
+        mock_get_conn_str.return_value = 'postgresql://test:test@test:5432/test'
 
         # Reset cache before each test
         lambda_function._db_credentials = None
