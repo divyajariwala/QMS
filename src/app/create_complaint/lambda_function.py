@@ -164,8 +164,8 @@ def create_complaint_in_db(narrative):
             with conn.cursor(row_factory=dict_row) as cur:
                 # Insert complaint with narrative, let database auto-generate complaint_id
                 insert_query = """
-                INSERT INTO complaints (narrative, status) 
-                VALUES (%s, 'Pending') 
+                INSERT INTO complaints (narrative, status, text_extracted) 
+                VALUES (%s, 'Pending', FALSE) 
                 RETURNING complaint_id
                 """
                 

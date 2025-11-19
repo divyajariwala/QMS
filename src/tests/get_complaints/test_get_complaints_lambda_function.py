@@ -60,6 +60,7 @@ class TestLambdaHandler:
                 'expiration_date': date(2024, 1, 1),
                 'part_number': 'PN123',
                 'status': 'Pending',
+                'text_extracted': True,
                 'file_name': 'test.pdf',
                 's3_url': 's3://bucket/test.pdf'
             }
@@ -89,6 +90,7 @@ class TestLambdaHandler:
         assert body['narrative'] == 'Test complaint narrative'
         assert body['criticality'] == 'High'
         assert body['caseStatus'] == 'pending'
+        assert body['text_extracted'] is True
         assert len(body['category_details']) == 1
 
     @patch.object(lambda_function, 'get_db_connection')
@@ -137,14 +139,15 @@ class TestLambdaHandler:
                     'report_type': 'Spontaneous',
                     'receipt_date': date(2023, 1, 1),
                     'case_type': 'AE',
-                    'status': 'Pending'
+                    'status': 'Pending',
+                    'text_extracted': True
                 }
             ],
             # All complaints for status grouping (no filter)
             [
-                {'complaint_id': 'CAS-1', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE'},
-                {'complaint_id': 'CAS-2', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC'},
-                {'complaint_id': 'CAS-3', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE'}
+                {'complaint_id': 'CAS-1', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'text_extracted': True},
+                {'complaint_id': 'CAS-2', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC', 'text_extracted': False},
+                {'complaint_id': 'CAS-3', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE', 'text_extracted': True}
             ]
         ]
 
@@ -192,7 +195,8 @@ class TestLambdaHandler:
                     'report_type': 'Spontaneous',
                     'receipt_date': date(2023, 1, 1),
                     'case_type': 'AE',
-                    'status': 'Pending'
+                    'status': 'Pending',
+                    'text_extracted': True
                 },
                 {
                     'complaint_id': 'CAS-4',
@@ -200,7 +204,8 @@ class TestLambdaHandler:
                     'report_type': 'Study',
                     'receipt_date': date(2023, 1, 4),
                     'case_type': 'PC',
-                    'status': 'Pending'
+                    'status': 'Pending',
+                    'text_extracted': False
                 }
             ]
         ]
@@ -262,13 +267,13 @@ class TestGetAllComplaints:
             ],
             # Paginated complaints
             [
-                {'complaint_id': 'CAS-1', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending'}
+                {'complaint_id': 'CAS-1', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': True}
             ],
             # All complaints for grouping (no filter) - ordered by case_id DESC
             [
-                {'complaint_id': 'CAS-00003', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE'},
-                {'complaint_id': 'CAS-00002', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC'},
-                {'complaint_id': 'CAS-00001', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE'}
+                {'complaint_id': 'CAS-00003', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE', 'text_extracted': False},
+                {'complaint_id': 'CAS-00002', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC', 'text_extracted': True},
+                {'complaint_id': 'CAS-00001', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'text_extracted': False}
             ]
         ]
 
@@ -307,8 +312,8 @@ class TestGetAllComplaints:
             ],
             # Only pending complaints (filtered and paginated) - ordered by case_id DESC
             [
-                {'complaint_id': 'CAS-00004', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 4), 'case_type': 'PC', 'status': 'Pending'},
-                {'complaint_id': 'CAS-00001', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending'}
+                {'complaint_id': 'CAS-00004', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 4), 'case_type': 'PC', 'status': 'Pending', 'text_extracted': True},
+                {'complaint_id': 'CAS-00001', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': False}
             ]
         ]
 
@@ -349,7 +354,8 @@ class TestUtilityFunctions:
                 'criticality': 'High',
                 'report_type': 'Spontaneous',
                 'receipt_date': date(2023, 1, 1),
-                'case_type': 'AE'
+                'case_type': 'AE',
+                'text_extracted': True
             },
             {
                 'status': 'Pending',
@@ -357,7 +363,8 @@ class TestUtilityFunctions:
                 'criticality': 'Medium',
                 'report_type': 'Study',
                 'receipt_date': date(2023, 1, 3),
-                'case_type': 'PC'
+                'case_type': 'PC',
+                'text_extracted': False
             },
             {
                 'status': 'Processed',
@@ -365,7 +372,8 @@ class TestUtilityFunctions:
                 'criticality': 'Medium',
                 'report_type': 'Study',
                 'receipt_date': date(2023, 1, 2),
-                'case_type': 'PC'
+                'case_type': 'PC',
+                'text_extracted': True
             },
             {
                 'status': 'Overdue',
@@ -373,7 +381,8 @@ class TestUtilityFunctions:
                 'criticality': 'Low',
                 'report_type': 'Literature',
                 'receipt_date': date(2023, 1, 4),
-                'case_type': 'AE'
+                'case_type': 'AE',
+                'text_extracted': False
             }
         ]
 
@@ -391,6 +400,8 @@ class TestUtilityFunctions:
         # Check field mapping
         assert pending_items[0]['criticality'] == 'Medium'
         assert pending_items[0]['case_type'] == ['PC']
+        assert pending_items[0]['text_extracted'] is False
+        assert pending_items[1]['text_extracted'] is True
 
     def test_get_cors_headers(self):
         """Test: CORS headers function"""

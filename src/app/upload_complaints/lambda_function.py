@@ -479,15 +479,15 @@ def create_complaint_in_db(file_id, narrative=None):
             with conn.cursor(row_factory=dict_row) as cur:
                 if narrative:
                     insert_query = """
-                    INSERT INTO complaints (file_id, narrative, status) 
-                    VALUES (%s, %s, 'Pending') 
+                    INSERT INTO complaints (file_id, narrative, status, text_extracted) 
+                    VALUES (%s, %s, 'Pending', FALSE) 
                     RETURNING complaint_id
                     """
                     cur.execute(insert_query, (file_id, narrative))
                 else:
                     insert_query = """
-                    INSERT INTO complaints (file_id, status) 
-                    VALUES (%s, 'Pending') 
+                    INSERT INTO complaints (file_id, status, text_extracted) 
+                    VALUES (%s, 'Pending', FALSE) 
                     RETURNING complaint_id
                     """
                     cur.execute(insert_query, (file_id,))

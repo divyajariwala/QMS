@@ -388,7 +388,7 @@ class TestUpdateComplaintInDb:
 
     @patch('lambda_function.get_connection_string')
     def test_update_complaint_success(self, mock_get_connection, mock_extracted_data):
-        """Test: Successful complaint update in database"""
+        """Test: Successful complaint update in database with text_extracted set to true"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
         with patch('lambda_function.psycopg.connect') as mock_connect:
@@ -403,6 +403,9 @@ class TestUpdateComplaintInDb:
             lambda_function.update_complaint_in_db('CAS-123', mock_extracted_data)
             
             mock_cursor.execute.assert_called_once()
+            # Verify text_extracted is set to TRUE in the SQL
+            call_args = mock_cursor.execute.call_args[0]
+            assert 'text_extracted = TRUE' in call_args[0]
             mock_conn.commit.assert_called_once()
 
     @patch('lambda_function.get_connection_string')

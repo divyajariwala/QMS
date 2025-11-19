@@ -312,7 +312,7 @@ class TestDatabaseIntegration:
     @patch('create_complaint.lambda_function.get_connection_string')
     @patch('create_complaint.lambda_function.psycopg.connect')
     def test_create_complaint_in_db_success(self, mock_connect, mock_get_connection):
-        """Test: Successful complaint creation in database"""
+        """Test: Successful complaint creation in database with text_extracted set to false"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
         mock_cursor = MagicMock()
@@ -329,6 +329,10 @@ class TestDatabaseIntegration:
         
         assert result == 'CAS-00001'
         mock_cursor.execute.assert_called_once()
+        # Verify text_extracted is set to FALSE in the SQL
+        call_args = mock_cursor.execute.call_args[0]
+        assert 'text_extracted' in call_args[0]
+        assert 'FALSE' in call_args[0]
         mock_conn.commit.assert_called_once()
 
     @patch('create_complaint.lambda_function.get_connection_string')
