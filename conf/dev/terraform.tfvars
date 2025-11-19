@@ -240,8 +240,9 @@ lambda_configs = [
       {
         path_name   = "modifyExtractedDetails"
         http_method = "POST"
-      }
+      },
     ]
 ]
+
 
 
