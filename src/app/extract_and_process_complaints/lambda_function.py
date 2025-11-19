@@ -246,7 +246,8 @@ def update_complaint_in_db(complaint_id, extracted_data):
                     case_type = %s,
                     report_type = %s,
                     category = %s,
-                    status = 'Pending'
+                    status = 'Pending',
+                    text_extracted = TRUE
                 WHERE complaint_id = %s
                 """
                 

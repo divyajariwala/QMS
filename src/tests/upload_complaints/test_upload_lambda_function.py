@@ -281,7 +281,7 @@ class TestDatabaseFunctions:
     @patch('upload_complaints.lambda_function.get_connection_string')
     @patch('psycopg.connect')
     def test_create_complaint_in_db(self, mock_connect, mock_get_conn):
-        """Test: Create complaint record in database"""
+        """Test: Create complaint record in database with text_extracted set to false"""
         mock_get_conn.return_value = 'mock_connection_string'
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -293,6 +293,10 @@ class TestDatabaseFunctions:
         
         assert result == 'CAS-00001'
         mock_cursor.execute.assert_called_once()
+        # Verify text_extracted is set to FALSE in the SQL
+        call_args = mock_cursor.execute.call_args[0]
+        assert 'text_extracted' in call_args[0]
+        assert 'FALSE' in call_args[0]
         mock_conn.commit.assert_called_once()
 
 

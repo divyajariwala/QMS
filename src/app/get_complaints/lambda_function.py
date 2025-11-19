@@ -73,25 +73,28 @@ def get_single_complaint(conn, complaint_id):
                     })
                 }
             
-            # Get inference data
+            # Get inference data from new inference_results table
             cursor.execute("""
-                SELECT * FROM inference WHERE complaint_id = %s ORDER BY priority
+                SELECT * FROM inference_results WHERE complaint_id = %s ORDER BY created_at DESC LIMIT 1
             """, (complaint_id,))
             
-            inferences = cursor.fetchall()
+            inference_result = cursor.fetchone()
 
             # Transform inference data to category details
             category_details = []
-            for inf in inferences:
-                category_details.append({
-                    "id": inf['id'] or str(inf['priority']),
-                    "label": inf['label'],
-                    "level": inf['priority'],
-                    "crl": inf['crl'],
-                    "priority": "High" if inf['priority'] <= 2 else "Medium" if inf['priority'] <= 4 else "Low",
-                    "unit": inf['unit'],
-                    "percentage": inf['percentage']
-                })
+            if inference_result:
+                # Extract subcategories from JSONB
+                subcategories = inference_result.get('subcategories', {})
+                for label, percentage in subcategories.items():
+                    category_details.append({
+                        "id": label.replace(' ', '_').lower(),
+                        "label": label,
+                        "level": inference_result.get('final_level', ''),
+                        "crl": f"{percentage:.2f}%",
+                        "priority": "High" if inference_result.get('priority', 0) <= 2 else "Medium" if inference_result.get('priority', 0) <= 4 else "Low",
+                        "unit": 1,
+                        "percentage": percentage * 100
+                    })
         
             # Transform database record to response format
             complaint_details = {
@@ -116,6 +119,7 @@ def get_single_complaint(conn, complaint_id):
                     'part_number': complaint['part_number'] or ''
                 },
                 'caseStatus': complaint['status'].lower(),
+                'text_extracted': complaint.get('text_extracted', False),
                 'category_details': category_details
             }
         
@@ -165,7 +169,7 @@ def get_all_complaints(conn, page=1, status_filter=None):
             
             # Get paginated complaints
             cursor.execute(f"""
-                SELECT complaint_id, criticality, report_type, receipt_date, case_type, status
+                SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted
                 FROM complaints
                 {where_clause}
                 ORDER BY complaint_id DESC
@@ -180,7 +184,7 @@ def get_all_complaints(conn, page=1, status_filter=None):
             else:
                 # When no filter, get all complaints for status grouping
                 cursor.execute("""
-                    SELECT complaint_id, criticality, report_type, receipt_date, case_type, status
+                    SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted
                     FROM complaints
                     ORDER BY complaint_id DESC
                 """)
@@ -217,7 +221,8 @@ def get_all_complaints(conn, page=1, status_filter=None):
                     'report_type': c['report_type'] or 'NA',
                     'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
                     'case_type': c['case_type'].split(',') if c['case_type'] else [],
-                    'status': c['status'].lower()
+                    'status': c['status'].lower(),
+                    'text_extracted': c.get('text_extracted', False)
                 } for c in paginated_complaints]
             }
             
@@ -279,7 +284,8 @@ def _group_by_status(complaints):
             'criticality': complaint['criticality'] or 'NA',
             'report_type': complaint['report_type'] or 'NA',
             'receipt_date': complaint['receipt_date'].isoformat() if complaint['receipt_date'] else '',
-            'case_type': complaint['case_type'].split(',') if complaint['case_type'] else []
+            'case_type': complaint['case_type'].split(',') if complaint['case_type'] else [],
+            'text_extracted': complaint.get('text_extracted', False)
         }
         
         if case_status == 'pending':
