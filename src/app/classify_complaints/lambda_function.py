@@ -40,6 +40,10 @@ def lambda_handler(event, context):
     """
     logger.info(f"Received event: {json.dumps(event)}")
 
+    # Handle OPTIONS request for CORS preflight
+    if event.get('httpMethod') == 'OPTIONS':
+        return _response(200, "OK")
+
     try:
         # Parse body from API Gateway event
         body = json.loads(event.get('body', '{}'))
@@ -49,12 +53,7 @@ def lambda_handler(event, context):
 
         if not complaint_id:
             logger.error("Missing complaint_id in request")
-            return {
-                'statusCode': 400,
-                'body': json.dumps({
-                    'error': 'Missing complaint_id'
-                })
-            }
+            return _response(400, "Missing complaint_id")
 
         logger.info(f"Processing complaint: {complaint_id}")
 
@@ -79,31 +78,19 @@ def lambda_handler(event, context):
         logger.info(f"✅ Successfully processed: {complaint_id}")
 
         # Return success response
-        return {
-            'statusCode': 200,
-            'body': json.dumps({
-                'complaint_id': complaint_id,
-                'execution_arn': execution_arn,
-                'status': 'started'
-            })
-        }
+        return _response(200, "Classification started successfully", {
+            'complaint_id': complaint_id,
+            'execution_arn': execution_arn,
+            'status': 'started'
+        })
 
     except ValueError as e:
         logger.error(f"❌ Validation error: {str(e)}")
-        return {
-            'statusCode': 404,
-            'body': json.dumps({
-                'error': str(e)
-            })
-        }
+        return _response(404, str(e))
+
     except Exception as e:
         logger.error(f"❌ Handler error: {str(e)}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({
-                'error': str(e)
-            })
-        }
+        return _response(500, f"Internal server error: {str(e)}")
 
 
 def get_connection_string():
@@ -193,3 +180,25 @@ def start_step_function(stepfunctions_client, step_function_arn, complaint_id, n
     logger.info(f"Started Step Function: {execution_arn}")
 
     return execution_arn
+
+
+def _response(status_code, message, data=None):
+    """Standardized HTTP response with CORS headers"""
+    body = {
+        "success": status_code < 400,
+        "message": message,
+        "data": data or {},
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+    return {
+        "statusCode": status_code,
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Max-Age": "86400"
+        },
+        "body": json.dumps(body)
+    }
