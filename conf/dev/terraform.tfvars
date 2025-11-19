@@ -227,6 +227,21 @@ lambda_configs = [
       db_secret_base_name = "aurora-postgres-master"
     }
   },
+  {
+    function_name = "modify-extracted-text"
+    path          = "src/app/modify_extracted_text"
+    environment_variables = {
+      env                 = "dev"
+      aws_region          = "us-east-1"
+      db_secret_base_name = "aurora-postgres-master"
+    }
+  },
+    api_gateway_paths = [
+      {
+        path_name   = "modifyExtractedDetails"
+        http_method = "POST"
+      }
+    ]
 ]
 
 
