@@ -235,13 +235,14 @@ lambda_configs = [
       aws_region          = "us-east-1"
       db_secret_base_name = "aurora-postgres-master"
     }
-  },
     api_gateway_paths = [
       {
         path_name   = "modifyExtractedDetails"
         http_method = "POST"
-      }
+      },
     ]
+  }
 ]
+
 
 
