@@ -1,15 +1,34 @@
 import json
-import boto3
+import logging
 import os
 from datetime import datetime, timezone
-from decimal import Decimal
+
+import boto3
+import psycopg
+from psycopg.rows import dict_row
+
+try:
+    from secrets_util import get_secret
+except ImportError:
+    from .secrets_util import get_secret
 
 # Environment variables
-DYNAMODB_TABLE_NAME = os.environ.get('DYNAMODB_TABLE_NAME', 'qms-dev-complaints-metadata')
+ENV = os.environ.get('env', 'dev')
+DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
+DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
+DB_REGION = os.environ.get('db_region', 'us-east-1')
+
+# Setup logging
+logger = logging.getLogger("approve_complaint_lambda")
+logger.setLevel(logging.INFO)
+
+# Cache for database credentials and connection string
+_db_credentials = None
+_connection_string = None
 
 def lambda_handler(event, context):
     """
-    Lambda function to approve complaints by updating caseStatus from pending to processed.
+    Lambda function to approve complaints by updating status from Pending to Processed.
     
     Expected POST body format (based on input.json):
     {
@@ -29,9 +48,8 @@ def lambda_handler(event, context):
     }
     """
     try:
-        # Initialize DynamoDB
-        dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table(DYNAMODB_TABLE_NAME)
+        # Get database connection string
+        conninfo = get_connection_string()
         
         # Parse request body
         if isinstance(event.get('body'), str):
@@ -48,143 +66,131 @@ def lambda_handler(event, context):
         if current_status != 'pending':
             return _error_response(400, f"Can only approve complaints with pending status. Current status: {current_status}")
         
-        # Check if complaint exists
-        try:
-            response = table.get_item(
-                Key={
-                    'PK': f'COMPLAINT#{case_id}',
-                    'SK': 'METADATA'
+        # Check if complaint exists and get current data
+        with psycopg.connect(conninfo) as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                cur.execute(
+                    "SELECT * FROM complaints WHERE complaint_id = %s AND status = 'Pending'",
+                    (case_id,)
+                )
+                existing_complaint = cur.fetchone()
+                
+                if not existing_complaint:
+                    return _error_response(404, f"Complaint with case_id '{case_id}' not found or not in Pending status")
+            
+                # Update complaint status to Processed
+                approved_at = datetime.now(timezone.utc)
+                approved_by = _get_user_from_event(event)
+                
+                # Update only status and approval details - no other fields allowed
+                update_fields = ['status = %s']
+                update_values = ['Processed']
+                
+                update_values.append(case_id)
+                
+                cur.execute(
+                    f"UPDATE complaints SET {', '.join(update_fields)} WHERE complaint_id = %s",
+                    update_values
+                )
+                
+                # Insert into processed_complaints table
+                cur.execute(
+                    "INSERT INTO processed_complaints (complaint_id, approved_at, approved_by) VALUES (%s, %s, %s)",
+                    (case_id, approved_at, approved_by)
+                )
+                
+                conn.commit()
+            
+                # Get updated complaint data
+                cur.execute("SELECT * FROM complaints WHERE complaint_id = %s", (case_id,))
+                updated_complaint = cur.fetchone()
+            
+                # Prepare response with updated data
+                response_data = {
+                    'case_id': updated_complaint['complaint_id'],
+                    'receipt_date': str(updated_complaint.get('receipt_date', '')) if updated_complaint.get('receipt_date') else '',
+                    'criticality': updated_complaint.get('criticality', '') or '',
+                    'report_type': updated_complaint.get('report_type', '') or '',
+                    'ai_summary': updated_complaint.get('narrative_summary', '') or '',
+                    'case_type': [updated_complaint['case_type']] if updated_complaint.get('case_type') else [],
+                    'narrative': updated_complaint.get('narrative', '') or '',
+                    'primary_reporter': {'name': updated_complaint.get('primary_reporter', '') or '', 'address': updated_complaint.get('primary_reporter_address', '') or ''},
+                    'patient_name': updated_complaint.get('patient_name', '') or '',
+                    'physician_name': updated_complaint.get('physician', '') or '',
+                    'product_details': {'drug': updated_complaint.get('drug', '') or '', 'lot_no': updated_complaint.get('lot_no', '') or ''},
+                    'category_details': [],
+                    'caseStatus': 'processed',
+                    'approved_at': approved_at.isoformat(),
+                    'approved_by': approved_by
                 }
-            )
-            
-            if 'Item' not in response:
-                return _error_response(404, f"Complaint with case_id '{case_id}' not found")
-            
-            existing_item = response['Item']
-            print(f"DEBUG: Existing item keys: {list(existing_item.keys())}")
-            print(f"DEBUG: Existing case_type: {existing_item.get('case_type')}")
-            print(f"DEBUG: Existing primary_reporter: {existing_item.get('primary_reporter')}")
-            
-        except Exception as e:
-            return _error_response(500, f"Error retrieving complaint: {str(e)}")
-        
-        # Start with existing item and only update specific fields
-        updated_item = existing_item.copy()
-        
-        # Ensure case_id is properly set
-        updated_item['case_id'] = case_id
-        
-        # Update status-related fields
-        updated_item.update({
-            'GSI1PK': 'STATUS#processed',  # Update GSI for status queries
-            'GSI1SK': f'COMPLAINT#{case_id}',
-            'caseStatus': 'processed',  # Change status to processed
-            'status': 'processed',  # Keep both for compatibility
-            'updated_at': datetime.now(timezone.utc).isoformat(),
-            'approved_at': datetime.now(timezone.utc).isoformat(),
-            'approved_by': _get_user_from_event(event)
-        })
-        
-        # Only update fields that are explicitly provided in the request body
-        if 'receipt_date' in body:
-            updated_item['receipt_date'] = body['receipt_date']
-        if 'criticality' in body:
-            updated_item['criticality'] = body['criticality']
-        if 'report_type' in body:
-            updated_item['report_type'] = body['report_type']
-        if 'ai_summary' in body:
-            updated_item['ai_summary'] = body['ai_summary']
-        if 'case_type' in body:
-            updated_item['case_type'] = body['case_type']
-        if 'narrative' in body:
-            updated_item['narrative'] = body['narrative']
-        if 'primary_reporter' in body:
-            updated_item['primary_reporter'] = body['primary_reporter']
-        if 'patient_name' in body:
-            updated_item['patient_name'] = body['patient_name']
-        if 'physician_name' in body:
-            updated_item['physician_name'] = body['physician_name']
-        if 'product_details' in body:
-            updated_item['product_details'] = body['product_details']
-        if 'category_details' in body:
-            updated_item['category_details'] = body['category_details']
-            
-        print(f"DEBUG: Updated case_type: {updated_item.get('case_type')}")
-        print(f"DEBUG: Updated primary_reporter: {updated_item.get('primary_reporter')}")
-        
-        # Ensure required fields have default values if missing
-        field_defaults = {
-            'case_type': [],
-            'primary_reporter': {},
-            'patient_name': '',
-            'physician_name': '',
-            'product_details': {},
-            'category_details': [],
-            'criticality': 'NA',
-            'report_type': 'NA',
-            'ai_summary': '',
-            'narrative': '',
-            'receipt_date': ''
-        }
-        
-        for field, default_value in field_defaults.items():
-            if field not in updated_item or updated_item[field] is None:
-                updated_item[field] = default_value
-        
-        # Update the item in DynamoDB
-        try:
-            table.put_item(Item=updated_item)
-            
-            # Prepare response with updated data
-            response_data = {
-                'case_id': updated_item['case_id'],
-                'receipt_date': updated_item['receipt_date'],
-                'criticality': updated_item['criticality'],
-                'report_type': updated_item['report_type'],
-                'ai_summary': updated_item['ai_summary'],
-                'case_type': updated_item['case_type'],
-                'narrative': updated_item['narrative'],
-                'primary_reporter': updated_item['primary_reporter'],
-                'patient_name': updated_item['patient_name'],
-                'physician_name': updated_item['physician_name'],
-                'product_details': updated_item['product_details'],
-                'category_details': updated_item['category_details'],
-                'caseStatus': updated_item['caseStatus'],
-                'approved_at': updated_item['approved_at'],
-                'approved_by': updated_item['approved_by']
-            }
-            
-            return {
-                'statusCode': 200,
-                'headers': _get_cors_headers(),
-                'body': json.dumps({
-                    'success': True,
-                    'message': f'Complaint {case_id} approved successfully',
-                    'data': response_data
-                }, cls=DecimalEncoder)
-            }
-            
-        except Exception as e:
-            return _error_response(500, f"Error updating complaint: {str(e)}")
+                
+                return {
+                    'statusCode': 200,
+                    'headers': _get_cors_headers(),
+                    'body': json.dumps({
+                        'success': True,
+                        'message': f'Complaint {case_id} approved successfully',
+                        'data': response_data
+                    })
+                }
         
     except json.JSONDecodeError as e:
         return _error_response(400, f"Invalid JSON format: {str(e)}")
-    
     except Exception as e:
-        print(f"Unexpected error: {str(e)}")
+        logger.error(f"Error: {str(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return _error_response(500, f"Internal server error: {str(e)}")
 
-def _get_user_from_event(event):
-    """Extract user information from event"""
+def get_connection_string():
+    """
+    Build PostgreSQL connection string from credentials in Secrets Manager.
+    Credentials are cached to avoid repeated API calls.
+
+    Returns:
+        str: PostgreSQL connection string in format:
+             "postgresql://user:password@host:port/dbname"
+    """
+    global _connection_string, _db_credentials
+
+    if _connection_string is not None:
+        return _connection_string
+
     try:
+        # Use the existing secrets_util function
+        _db_credentials = get_secret(DB_SECRET_NAME, DB_REGION)
+
+        # Build connection string
+        host = _db_credentials['host']
+        port = _db_credentials.get('port', 5432)
+        dbname = _db_credentials['dbname']
+        user = _db_credentials['username']
+        password = _db_credentials['password']
+
+        _connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+
+        logger.info(f"Database connection string built from secret: {DB_SECRET_NAME}")
+        return _connection_string
+
+    except Exception as e:
+        logger.error(f"Error building connection string: {str(e)}")
+        raise
+
+
+def _get_user_from_event(event):
+    """Extract user information from event (Cognito, API Key, etc.)"""
+    try:
+        # From Cognito authorizer
         request_context = event.get('requestContext', {})
         authorizer = request_context.get('authorizer', {})
-        
+
         if 'claims' in authorizer:
             return authorizer['claims'].get('email') or authorizer['claims'].get('sub')
-        
+
+        # From custom header
         headers = event.get('headers', {})
         return headers.get('x-user-email') or headers.get('x-user-id') or 'system'
+
     except Exception:
         return 'system'
 
@@ -209,9 +215,3 @@ def _get_cors_headers():
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }
 
-class DecimalEncoder(json.JSONEncoder):
-    """JSON encoder for DynamoDB Decimal types"""
-    def default(self, obj):
-        if isinstance(obj, Decimal):
-            return float(obj)
-        return super(DecimalEncoder, self).default(obj)

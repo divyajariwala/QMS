@@ -73,7 +73,7 @@ def get_single_complaint(conn, complaint_id):
                     })
                 }
             
-            # Get inference data from new inference_results table
+            # Get inference data from inference_results table
             cursor.execute("""
                 SELECT * FROM inference_results WHERE complaint_id = %s ORDER BY created_at DESC LIMIT 1
             """, (complaint_id,))
