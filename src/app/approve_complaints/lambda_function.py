@@ -48,9 +48,6 @@ def lambda_handler(event, context):
     }
     """
     try:
-        # Get database connection string
-        conninfo = get_connection_string()
-        
         # Parse request body
         if isinstance(event.get('body'), str):
             body = json.loads(event['body'])
@@ -65,6 +62,9 @@ def lambda_handler(event, context):
         current_status = body.get('caseStatus', '').lower()
         if current_status != 'pending':
             return _error_response(400, f"Can only approve complaints with pending status. Current status: {current_status}")
+        
+        # Get database connection string after validation
+        conninfo = get_connection_string()
         
         # Check if complaint exists and get current data
         with psycopg.connect(conninfo) as conn:
