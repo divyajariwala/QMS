@@ -16,7 +16,17 @@ import lambda_function
 @pytest.fixture(autouse=True)
 def mock_all_external_dependencies():
     """Auto-mock all external dependencies for ALL tests."""
-    with patch('lambda_function.get_connection_string') as mock_get_conn_str:
+    with patch('lambda_function.get_secret') as mock_get_secret, \
+         patch('lambda_function.get_connection_string') as mock_get_conn_str:
+        
+        # Mock get_secret to return fake credentials
+        mock_get_secret.return_value = {
+            'host': 'test-host',
+            'port': 5432,
+            'dbname': 'test-db',
+            'username': 'test-user',
+            'password': 'test-pass'
+        }
         
         # Mock connection string
         mock_get_conn_str.return_value = 'postgresql://test:test@test:5432/test'
