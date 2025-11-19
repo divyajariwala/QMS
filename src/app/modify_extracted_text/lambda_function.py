@@ -84,16 +84,16 @@ def update_complaint_in_db(case_id, body):
             with conn.cursor(row_factory=dict_row) as cur:
                 update_query = """
                 UPDATE complaints 
-                SET primary_reporter_name = %s,
+                SET primary_reporter = %s,
                     primary_reporter_address = %s,
                     patient_name = %s,
-                    physician_name = %s,
+                    physician = %s,
                     drug = %s,
-                    lot_number = %s,
-                    dose_amount = %s,
+                    lot_no = %s,
+                    dosage = %s,
                     expiration_date = %s,
                     part_number = %s
-                WHERE case_id = %s
+                WHERE complaint_id = %s
                 """
                 
                 cur.execute(update_query, (
