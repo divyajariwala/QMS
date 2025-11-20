@@ -168,10 +168,10 @@ def construct_pdf_prompt(base64_images):
 
 def construct_narrative_prompt(narrative_text):
     """Construct Bedrock message for narrative processing"""
-    prompt = f"""Extract case information from the following narrative text. 
-    Infer missing information where possible and use 'N/A' for unavailable data.
+    with open('prompt_narrative.txt', 'r') as file:
+        prompt_text = file.read()
     
-    Narrative: {narrative_text}"""
+    prompt = f"{prompt_text}\n\nNarrative: {narrative_text}"
     
     return [{"role": "user", "content": [{"text": prompt}]}]
 
@@ -205,6 +205,8 @@ def update_complaint_in_db(complaint_id, extracted_data):
             with conn.cursor() as cur:
                 # Parse extracted data
                 result = extracted_data
+                logger.info(f"Extracted data keys: {result.keys()}")
+                logger.info(f"Narrative summary from LLM: {result.get('narrative_summary', 'NOT FOUND')}")
                 primary_reporter = result.get('primary_reporter', {})
                 product_details = result.get('product_details', {})
                 
@@ -251,9 +253,12 @@ def update_complaint_in_db(complaint_id, extracted_data):
                 WHERE complaint_id = %s
                 """
                 
+                narrative_summary = result.get('narrative_summary', '')
+                logger.info(f"Storing narrative_summary in DB: {narrative_summary[:100] if narrative_summary else 'EMPTY'}")
+                
                 cur.execute(update_query, (
                     result.get('narrative', ''),
-                    result.get('narrative_summary', ''),
+                    narrative_summary,
                     receipt_date,
                     primary_reporter.get('name') if primary_reporter.get('name') != 'N/A' else None,
                     primary_reporter.get('address') if primary_reporter.get('address') != 'N/A' else None,
