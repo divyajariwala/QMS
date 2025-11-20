@@ -78,8 +78,6 @@ const ComplaintsIntermediate: React.FC = () => {
     });
   }, [complaintDetails]);
 
-  const handleShowNotification = () => setOpen(true);
-
   const handleCloseNotification = (
     event?: React.SyntheticEvent | Event,
     reason?: string,
@@ -123,26 +121,6 @@ const ComplaintsIntermediate: React.FC = () => {
 
   // New: handle modify details submit. `data` shape should match ModifyDetails onSubmit payload.
   const handleModifySubmit = async (data: any) => {
-    // Update complaintDetails state
-    setComplaintDetails(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        primary_reporter: data.primaryReporter ?? prev.primary_reporter,
-        patient_name: data.patientName ?? prev.patient_name,
-        physician_name: data.physicianName ?? prev.physician_name,
-        product_details: {
-          ...(prev.product_details ?? {}),
-          drug_name: data.drug ?? prev.product_details?.drug_name,
-          lot_no: data.lotNumber ?? prev.product_details?.lot_no,
-          dosage: data.doseAmount ?? prev.product_details?.dosage,
-          expiration_date: data.expirationDate ?? prev.product_details?.expiration_date,   // <-- Updated
-          part_number: data.partNumber ?? prev.product_details?.part_number,              // <-- Updated
-        },
-        receipt_date: data.reportDate ?? prev.receipt_date,
-      };
-    });
-
     // Prepare new header data with updated fields
     const newHeaderData = {
       ...(headerData ?? {}),
@@ -156,9 +134,6 @@ const ComplaintsIntermediate: React.FC = () => {
       partNumber: data.partNumber ?? headerData?.partNumber,                   // <-- Updated
       receipt_date: data.reportDate ?? headerData?.receipt_date,
     };
-
-    setHeaderData(newHeaderData);
-
     try {
       const result = await modifyExtractedDetails(newHeaderData);
       console.log('Modified details response:', result);

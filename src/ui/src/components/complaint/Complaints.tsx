@@ -149,11 +149,15 @@ const Complaints = () => {
           </Box>
 
           <Stack className={styles.actions} direction="row" spacing={2}>
-            <Button variant="outlined" className={styles.addManuallyButton} onClick={handleOpen}>
+            <Button variant="outlined" className={styles.addManuallyButton} onClick={(e) => {
+              handleOpen(e); setActiveStatus('pending'); setPageNumber(1)
+            }}>
               <img src={PlusIcon} alt="plus" />
               Add Manually
             </Button>
-            <Button variant="contained" className={styles.primaryImportButton} onClick={() => setOpenFileUpload(true)}>
+            <Button variant="contained" className={styles.primaryImportButton} onClick={() => {
+              setOpenFileUpload(true); setActiveStatus('pending'); setPageNumber(1)
+            }}>
               Import
             </Button>
           </Stack>

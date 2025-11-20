@@ -3,7 +3,15 @@ import { ComplaintsDueDateChipProps } from "./types";
 export const getDueStatus = (
   dateStr: string
 ): ComplaintsDueDateChipProps => {
+  if (!dateStr) {
+    return { type: "NA", label: "NA" };
+  }
+
   const dueDate = new Date(dateStr);
+  if (isNaN(dueDate.getTime())) {
+    return { type: "NA", label: "NA" };
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diffTime = dueDate.getTime() - today.getTime();
