@@ -253,7 +253,7 @@ def update_complaint_in_db(complaint_id, extracted_data):
                 
                 cur.execute(update_query, (
                     result.get('narrative', ''),
-                    result.get('narrative', '')[:500] if result.get('narrative') else '',  # Summary as first 500 chars
+                    result.get('narrative_summary', ''),
                     receipt_date,
                     primary_reporter.get('name') if primary_reporter.get('name') != 'N/A' else None,
                     primary_reporter.get('address') if primary_reporter.get('address') != 'N/A' else None,

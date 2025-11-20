@@ -162,7 +162,7 @@ def lambda_handler(event, context):
             complaint_message = {
                 'complaint_id': complaint_id,
                 'file_id': file_id,
-                's3_uri': s3_uri
+                's3path': s3_uri
             }
             
             # Send to SQS for processing

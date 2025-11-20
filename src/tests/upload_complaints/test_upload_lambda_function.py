@@ -123,7 +123,7 @@ class TestLambdaHandler:
         call_args = mock_sqs.send_message.call_args
         message_body = json.loads(call_args[1]['MessageBody'])
         assert message_body['complaint_id'] == 'CAS-00002'
-        assert 's3_uri' in message_body
+        assert 's3path' in message_body
         assert 'file_id' in message_body
 
     @patch.dict(os.environ, {

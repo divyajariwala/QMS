@@ -36,6 +36,10 @@
                         "type": "string",
                         "description": "The complete narrative text"
                     },
+                    "narrative_summary": {
+                        "type": "string",
+                        "description": "AI-generated concise summary of the narrative in 100-150 words"
+                    },
                     "primary_reporter": {
                         "type": "object",
                         "description": "Name and address of primary reporter if mentioned",
@@ -63,7 +67,7 @@
                         }
                     }
                 },
-                "required": ["case_id", "receipt_date", "criticality", "category", "case_type", "report_type", "narrative", "primary_reporter", "patient_name", "physician_name", "product_details"]
+                "required": ["case_id", "receipt_date", "criticality", "category", "case_type", "report_type", "narrative", "narrative_summary", "primary_reporter", "patient_name", "physician_name", "product_details"]
             }
         }
     }

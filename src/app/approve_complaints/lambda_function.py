@@ -121,6 +121,9 @@ def lambda_handler(event, context):
                     (case_id, approved_at, approved_by)
                 )
                 
+                # Update case stats after approval
+                cur.execute("SELECT update_stats_only()")
+                
                 conn.commit()
             
                 # Get updated inference data

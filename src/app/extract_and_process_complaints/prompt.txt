@@ -54,8 +54,8 @@ Field Specific Instructions:
 	Key : case_type
 	Definition : To check if a case is an adverse event, product type or both
 	Expected Values : 
-		- For Ashfield reports : [AE, PC, AE & PC]
-		- For MedWatch reports : [Adverse Event], [Adverse Event, Product Problem], [Product Problem] 
+		- For Ashfield reports : [Adverse Event], [Adverse Event, Product Complaint], [Product Complaint]
+		- For MedWatch reports : [Adverse Event], [Adverse Event, Product Complaint], [Product Complaint] 
 	Document Specific Instructions:
 		- Ashfield Report - It appears as a value for Case Type field in the case information section.
 		- MedWatch Report - It appears as checked boxes in Type of Report Field in section B. ADVERSE EVENT OR PRODUCT PROBLEM of the MedWatch Report.
@@ -72,7 +72,15 @@ Field Specific Instructions:
 	Expected Values : Long paragraphs describing the complaint issue and patient/product narrative.
 	Document Specific Instructions:
 		- Ashfield Report - Can be found near the Product Complaint or Complaint Description section. 
-		- MedWatch Report - Can be found in the Describe Event or Problem field in section B. ADVERSE EVENT OR PRODUCT PROBLEM. Extract the full text in this section even if it is spanning mulitple pages.  	
+		- MedWatch Report - Can be found in the Describe Event or Problem field in section B. ADVERSE EVENT OR PRODUCT PROBLEM. Extract the full text in this section even if it is spanning mulitple pages.
+7a. Narrative Summary:
+	Key : narrative_summary
+	Definition : AI-generated concise summary of the narrative text in 100-150 words.
+	Expected Values : A brief summary capturing key points including patient issue, product involved, and outcome.
+	Document Specific Instructions:
+		- Generate a professional summary of the narrative in 100-150 words
+		- Include key information: patient condition, product details, adverse event/complaint nature, and outcome
+		- Use clear, concise medical/pharmaceutical language  	
 8. Primary Reporter:
 	Key : primary_reporter
 	Definition : Name and Address of the Primary Reporter as it appears in the report.
