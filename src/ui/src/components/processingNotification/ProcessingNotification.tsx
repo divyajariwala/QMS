@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, CircularProgress, Paper, Typography, Slide } from '@mui/material';
+import { Box, CircularProgress, Paper, Slide } from '@mui/material';
 import styles from './ProcessingNotification.module.scss';
 
 interface ProcessingNotificationProps {
@@ -11,9 +11,9 @@ const ProcessingNotification: React.FC<ProcessingNotificationProps> = ({ loading
     <Slide direction="down" in={loading} mountOnEnter unmountOnExit>
       <Paper elevation={3} className={styles.notificationPaper}>
         <CircularProgress size={24} />
-        <Typography variant="body1" fontWeight={500}>
+        <Box fontWeight={500}>
           Processing the text
-        </Typography>
+        </Box>
       </Paper>
     </Slide>
   );
