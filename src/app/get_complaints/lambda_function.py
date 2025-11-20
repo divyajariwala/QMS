@@ -152,6 +152,9 @@ def get_all_complaints(conn, page=1, status_filter=None):
     """
     try:
         with conn.cursor(row_factory=dict_row) as cursor:
+            # Update overdue complaints and refresh stats
+            cursor.execute("SELECT update_complaints_and_stats()")
+            conn.commit()
             # Get statistics from case_stats table
             cursor.execute("SELECT stat_name, stat_value FROM case_stats")
             stats_rows = cursor.fetchall()

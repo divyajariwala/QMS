@@ -312,6 +312,7 @@ class TestGetAllComplaints:
         mock_conn.cursor.return_value = mock_context
 
         # Mock stats and complaints data
+        mock_cursor.fetchone.return_value = {'total': 15}
         mock_cursor.fetchall.side_effect = [
             [
                 {'stat_name': 'Pending', 'stat_value': 2},
@@ -329,8 +330,6 @@ class TestGetAllComplaints:
                 {'complaint_id': 'CAS-00001', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'text_extracted': False, 'created_at': datetime(2023, 1, 1, 10, 0, 0)}
             ]
         ]
-
-        mock_cursor.fetchone.return_value = {'total': 15}
 
         result = lambda_function.get_all_complaints(mock_conn, 1, None)
 
@@ -356,6 +355,9 @@ class TestGetAllComplaints:
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
 
+        # Mock total count for pending only
+        mock_cursor.fetchone.return_value = {'total': 2}
+        
         # Mock stats and filtered complaints data
         mock_cursor.fetchall.side_effect = [
             [
@@ -369,9 +371,6 @@ class TestGetAllComplaints:
                 {'complaint_id': 'CAS-00001', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': False, 'created_at': datetime(2023, 1, 1, 10, 0, 0)}
             ]
         ]
-
-        # Mock total count for pending only
-        mock_cursor.fetchone.return_value = {'total': 2}
 
         result = lambda_function.get_all_complaints(mock_conn, 1, 'pending')
 
