@@ -167,8 +167,9 @@ export interface ComplaintCategoryItem {
   percentage: number;
 }
 export interface ComplaintCategoryProps {
-    complaintCategories: ComplaintCategoryItem[];
+  complaintCategories: ComplaintCategoryItem[];
   setComplaintCategories: (updatedCategories: ComplaintCategoryItem[]) => void;
+  caseStatus: string | undefined;
 }
 
 export interface ComplaintHeaderCardProps {
@@ -258,7 +259,8 @@ export interface ComplaintProps {
     receipt_date: string; // You might want to correct this to 'receipt_date' if it's a typo
     case_type: string[];
   },
-  selected: string
+  selected: string;
+  activeStatus: 'pending' | 'processed' | 'overdue';
 }
 
 export interface ButtonGroupProps {
@@ -416,6 +418,7 @@ export interface ComplaintDetail {
   product_details: ProductDetails; // undefined structure assumed, adjust if known
   caseStatus: string;
   category_details: CategoryDetail[];
+  complaintClassified?: boolean;
 }
 
 export type CaseStatusKey = "pending" | "processed" | "overdue";
@@ -473,17 +476,17 @@ export type ApproveComplaintResponse = {
 };
 
 export type ApproveComplaintRequest = {
-    case_id: string;
-    receipt_date: string;
-    criticality: string;
-    report_type: string;
-    ai_summary: string;
-    case_type: string[];
-    narrative: string;
-    primary_reporter: PrimaryReporterApi;
-    patient_name: string;
-    physician_name: string;
-    product_details: ProductDetailsApi;
-    caseStatus: string;
-    category_details: CategoryDetailApi[];
+  case_id: string;
+  receipt_date: string;
+  criticality: string;
+  report_type: string;
+  ai_summary: string;
+  case_type: string[];
+  narrative: string;
+  primary_reporter: PrimaryReporterApi;
+  patient_name: string;
+  physician_name: string;
+  product_details: ProductDetailsApi;
+  caseStatus: string;
+  category_details: CategoryDetailApi[];
 };

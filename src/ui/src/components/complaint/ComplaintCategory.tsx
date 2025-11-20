@@ -19,6 +19,7 @@ import { ComplaintCategoryProps, ComplaintCategoryItem } from "src/types";
 const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
   complaintCategories,
   setComplaintCategories,
+  caseStatus
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedData, setEditedData] = useState<ComplaintCategoryItem | null>(null);
@@ -102,7 +103,7 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                 </Select>
 
                 <Box className={`${styles.percentageBox} ${getPercentageClass(editedData.percentage)}`}>
-                  {editedData.percentage}%
+                  {Math.round(editedData.percentage)}%
                 </Box>
               </Stack>
 
@@ -133,9 +134,11 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     variant="outlined"
                   >
                     {/* Replace this with your real CRL options */}
-                    <MenuItem value="Needle was chipped">Needle was chipped</MenuItem>
-                    <MenuItem value="Other option 1">Other option 1</MenuItem>
-                    <MenuItem value="Other option 2">Other option 2</MenuItem>
+                    {complaintCategories.map((opt) => (
+                      <MenuItem key={opt.id} value={opt.crl}>
+                        {opt.crl}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </Grid>
 
@@ -204,16 +207,16 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
               <Typography className={styles.nonEditLabel}>{item.label}</Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Box className={`${styles.percentageBox} ${getPercentageClass(item.percentage)}`}>
-                  {item.percentage}%
+                  {Math.round(item.percentage)}%
                 </Box>
-                <IconButton
+                {caseStatus === "pending" && <IconButton
                   aria-label={`edit ${item.label}`}
                   size="small"
                   onClick={() => handleStartEdit(item)}
                   className={styles.editIconButton}
                 >
                   <img src={EditIcon} alt="Edit Icon" />
-                </IconButton>
+                </IconButton>}
               </Stack>
             </Stack>
 

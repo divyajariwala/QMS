@@ -35,22 +35,34 @@ const ComplaintsDetails: React.FC = () => {
     primaryReporter: complaintDetails?.primary_reporter,
     patientName: complaintDetails?.patient_name,
     physicianName: complaintDetails?.physician_name,
-    drug: complaintDetails?.product_details?.drug_name,
+    drug: complaintDetails?.product_details?.drug,
     lotNumber: complaintDetails?.product_details?.lot_no,
     doseAmount: complaintDetails?.product_details?.dosage,
-    expirationDate: '',
-    partNumber: '',
+    expirationDate: complaintDetails?.product_details?.expiration_date,
+    partNumber: complaintDetails?.product_details?.part_number,
     receipt_date: complaintDetails?.receipt_date
   };
+
+  async function fetchData() {
+    setLoading(true);
+    try {
+      const data = await fetchComplaintDetailById(complaintId);
+      setComplaintDetails(data);
+    } catch (err: any) {
+      console.log(err.message || "Failed to load complaint details.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
       if (complaintDetails) {
-        const res = await postApproveComplaint(complaintDetails);
-        setComplaintDetails(res?.data);
+        await postApproveComplaint(complaintDetails);
         setIsApproved(true);
         handleShowNotification();
+        fetchData();
       }
 
     } catch (err: any) {
@@ -108,17 +120,6 @@ const ComplaintsDetails: React.FC = () => {
   ];
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      try {
-        //const data = await fetchComplaintDetailById(complaintId);
-        setComplaintDetails(MockComplaintDetailApiResponse);
-      } catch (err: any) {
-        console.log(err.message || "Failed to load complaint details.");
-      } finally {
-        setLoading(false);
-      }
-    }
     if (complaintId) fetchData();
   }, [complaintId]);
 
@@ -147,6 +148,7 @@ const ComplaintsDetails: React.FC = () => {
         </Grid>
         <Grid item xs={12} md={7.1}>
           <ComplaintCategory
+            caseStatus={complaintDetails?.caseStatus}
             complaintCategories={complaintDetails?.category_details || []}
             setComplaintCategories={(newCategoryDetails) => {
               setComplaintDetails((prev) => {
@@ -162,7 +164,7 @@ const ComplaintsDetails: React.FC = () => {
           />
         </Grid>
       </Grid>
-      <Notification open={open} onClose={handleCloseNotification} position='top'/>
+      <Notification open={open} onClose={handleCloseNotification} position='top' />
     </Box>
   );
 };

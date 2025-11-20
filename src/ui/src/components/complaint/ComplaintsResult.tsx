@@ -4,7 +4,7 @@ import { Box, Stack } from "@mui/material";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ComplaintsDueDateChip from "./ComplaintsDueDateChip";
 import { getDueStatus } from "src/helpers";
-import {formatDateMMM_D_YYYY} from "src/utils"
+import { formatDateMMM_D_YYYY } from "src/utils"
 
 import CriticalityIcon from "../../assets/icons/criticality.svg";
 import ReportTypeIcon from "../../assets/icons/reportType.svg";
@@ -53,11 +53,16 @@ const Chip = ({
   </div>
 );
 
-const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected }) => {
+const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activeStatus }) => {
   const navigate = useNavigate();
 
   const handleSeeDetailsClick = () => {
-    navigate(`/complaints/${complaint.case_id}`);
+    if (activeStatus === 'processed' || activeStatus === 'overdue') {
+      navigate(`/approveComplaints/${complaint.case_id}`);
+    } 
+    if(activeStatus === 'pending') {
+      navigate(`/complaints/${complaint.case_id}`);
+    }
   };
 
   const infoItems = [

@@ -19,6 +19,8 @@ import { fetchComplaintDetailById, postApproveComplaint, classifyComplaint, modi
 import Notification from '@components/Notification/Notification';
 import { MockComplaintDetailApiResponse } from 'src/mockData/mockData';
 import ModifyDetails from '../../components/modifyDetails/ModifyDetails';
+import ProcessingNotification from '@components/processingNotification/ProcessingNotification';
+import { usePollingClassify } from '@components/polling/PollingClassify';
 import styles from "./ComplaintsResult.module.scss";
 
 const ComplaintsIntermediate: React.FC = () => {
@@ -26,10 +28,15 @@ const ComplaintsIntermediate: React.FC = () => {
   const [openModifyDetails, setOpenModifyDetails] = useState(false);
   const [complaintDetails, setComplaintDetails] = useState<ComplaintDetail | null>(null);
   const [headerData, setHeaderData] = useState<any>(null); // holds editable header fields
-  const [isApproved, setIsApproved] = useState<boolean>(false);
+  const [processingFile, setProcessingFile] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const { complaintId } = useParams<{ complaintId: string | undefined }>();
   const navigate = useNavigate();
+  const { done } = usePollingClassify(processingFile, complaintId);
+
+   const handleClassify = () => {
+    navigate(`/approveComplaints/${complaintDetails?.case_id}`);
+  };
 
   async function fetchData() {
     setLoading(true);
@@ -43,10 +50,14 @@ const ComplaintsIntermediate: React.FC = () => {
     }
   }
 
-  // Load complaint details
+  // Load complaint details 
   useEffect(() => {
-    if (complaintId) fetchData();
-  }, [complaintId]);
+    if (complaintId && !processingFile) fetchData();
+    if (done) {
+      setProcessingFile(false);
+      handleClassify();
+    }
+  }, [complaintId, processingFile, done]);
 
   // Initialize headerData from complaintDetails whenever complaintDetails changes
   useEffect(() => {
@@ -110,75 +121,61 @@ const ComplaintsIntermediate: React.FC = () => {
     },
   ];
 
-  const handleClassify = () => {
-    navigate(`/approveComplaints/${complaintDetails?.case_id}`);
-  };
-
   // New: handle modify details submit. `data` shape should match ModifyDetails onSubmit payload.
-const handleModifySubmit = async(data: any) => {
-  // Update complaintDetails state
-  setComplaintDetails(prev => {
-    if (!prev) return prev;
-    return {
-      ...prev,
-      primary_reporter: data.primaryReporter ?? prev.primary_reporter,
-      patient_name: data.patientName ?? prev.patient_name,
-      physician_name: data.physicianName ?? prev.physician_name,
-      product_details: {
-        ...(prev.product_details ?? {}),
-        drug_name: data.drug ?? prev.product_details?.drug_name,
-        lot_no: data.lotNumber ?? prev.product_details?.lot_no,
-        dosage: data.doseAmount ?? prev.product_details?.dosage,
-        expiration_date: data.expirationDate ?? prev.product_details?.expiration_date,   // <-- Updated
-        part_number: data.partNumber ?? prev.product_details?.part_number,              // <-- Updated
-      },
-      receipt_date: data.reportDate ?? prev.receipt_date,
+  const handleModifySubmit = async (data: any) => {
+    // Update complaintDetails state
+    setComplaintDetails(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        primary_reporter: data.primaryReporter ?? prev.primary_reporter,
+        patient_name: data.patientName ?? prev.patient_name,
+        physician_name: data.physicianName ?? prev.physician_name,
+        product_details: {
+          ...(prev.product_details ?? {}),
+          drug_name: data.drug ?? prev.product_details?.drug_name,
+          lot_no: data.lotNumber ?? prev.product_details?.lot_no,
+          dosage: data.doseAmount ?? prev.product_details?.dosage,
+          expiration_date: data.expirationDate ?? prev.product_details?.expiration_date,   // <-- Updated
+          part_number: data.partNumber ?? prev.product_details?.part_number,              // <-- Updated
+        },
+        receipt_date: data.reportDate ?? prev.receipt_date,
+      };
+    });
+
+    // Prepare new header data with updated fields
+    const newHeaderData = {
+      ...(headerData ?? {}),
+      primaryReporter: data.primaryReporter ?? headerData?.primaryReporter,
+      patientName: data.patientName ?? headerData?.patientName,
+      physicianName: data.physicianName ?? headerData?.physicianName,
+      drug: data.drug ?? headerData?.drug,
+      lotNumber: data.lotNumber ?? headerData?.lotNumber,
+      doseAmount: data.doseAmount ?? headerData?.doseAmount,
+      expirationDate: data.expirationDate ?? headerData?.expirationDate,       // <-- Updated
+      partNumber: data.partNumber ?? headerData?.partNumber,                   // <-- Updated
+      receipt_date: data.reportDate ?? headerData?.receipt_date,
     };
-  });
 
-  // Prepare new header data with updated fields
-  const newHeaderData = {
-    ...(headerData ?? {}),
-    primaryReporter: data.primaryReporter ?? headerData?.primaryReporter,
-    patientName: data.patientName ?? headerData?.patientName,
-    physicianName: data.physicianName ?? headerData?.physicianName,
-    drug: data.drug ?? headerData?.drug,
-    lotNumber: data.lotNumber ?? headerData?.lotNumber,
-    doseAmount: data.doseAmount ?? headerData?.doseAmount,
-    expirationDate: data.expirationDate ?? headerData?.expirationDate,       // <-- Updated
-    partNumber: data.partNumber ?? headerData?.partNumber,                   // <-- Updated
-    receipt_date: data.reportDate ?? headerData?.receipt_date,
-  };
+    setHeaderData(newHeaderData);
 
-  setHeaderData(newHeaderData);
-
-  try {
-    const result = await modifyExtractedDetails(newHeaderData);
-    console.log('Modified details response:', result);
-  } catch (err) {
-    console.error('Error calling modifyExtractedDetails:', err);
-  }
-
-  await fetchData();
-  setOpenModifyDetails(false);
-};
-
-  console.log(headerData);
-
-  async function testModify() {
     try {
-      const result = await modifyExtractedDetails(headerData);
+      const result = await modifyExtractedDetails(newHeaderData);
       console.log('Modified details response:', result);
     } catch (err) {
       console.error('Error calling modifyExtractedDetails:', err);
     }
-  }
+
+    await fetchData();
+    setOpenModifyDetails(false);
+  };
 
   async function testClassify() {
     try {
       if (complaintId) {
         const result = await classifyComplaint<any>(complaintId);
         console.log('Classification result:', result);
+        setProcessingFile(true);
       }
 
     } catch (error) {
@@ -223,15 +220,14 @@ const handleModifySubmit = async(data: any) => {
           </div>
         </Grid>
       </Grid>
-
-      <Notification open={open} onClose={handleCloseNotification} position='top' />
-
       <ModifyDetails
         onSubmit={handleModifySubmit}
         initialValues={headerData}
         open={openModifyDetails}
         onClose={() => setOpenModifyDetails(false)}
       />
+      <Notification open={open} onClose={handleCloseNotification} position="top" message="Processed Successfully" />
+      <ProcessingNotification loading={processingFile} />
     </Box>
   );
 };

@@ -165,7 +165,7 @@ const Complaints = () => {
       <StatusTabs setPageNumber={setPageNumber} active={activeStatus} setActive={setActiveStatus} pending={pending} processed={processed} overdue={overdue} />
       <ComplaintsFilter />
       {caseStats && complaints?.map((complaint, index) => (
-        <ComplaintsResult key={index} complaint={complaint} selected={selected} />
+        <ComplaintsResult key={index} complaint={complaint} selected={selected} activeStatus={activeStatus} />
       ))}
       <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />
       <Popup open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />

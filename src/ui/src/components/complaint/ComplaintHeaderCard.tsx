@@ -50,7 +50,7 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
                 label={receipt_date && getDueStatus(receipt_date).label}
               />
               <Box className={styles.flexGrow} />
-              {(caseStatus !== 'processed') && <button type="button" className={styles.approveSendButton} onClick={onApproveAndSend}>
+              {(caseStatus === 'pending') && <button type="button" className={styles.approveSendButton} onClick={onApproveAndSend}>
                 <CheckIcon />
                 Approve and Send
               </button>}
