@@ -41,8 +41,6 @@ class TestLambdaHandler:
         mock_get_db.return_value = mock_conn
 
         # Mock complaint data
-
-        
         # Mock inference data from new inference_results table
         mock_cursor.fetchone.side_effect = [
             {
@@ -50,7 +48,7 @@ class TestLambdaHandler:
                 'receipt_date': date(2023, 1, 7),
                 'criticality': 'High',
                 'report_type': 'Spontaneous',
-                'narrative_summary': 'AI summary',
+                'narrative_summary': 'AI generated summary of the complaint narrative in 100-150 words',
                 'case_type': 'AE,PC',
                 'narrative': 'Test complaint narrative',
                 'primary_reporter': 'John Doe',
@@ -91,6 +89,7 @@ class TestLambdaHandler:
         body = json.loads(result['body'])
         assert body['case_id'] == 'CAS-123'
         assert body['narrative'] == 'Test complaint narrative'
+        assert body['ai_summary'] == 'AI generated summary of the complaint narrative in 100-150 words'
         assert body['criticality'] == 'High'
         assert body['caseStatus'] == 'pending'
         assert body['text_extracted'] is True

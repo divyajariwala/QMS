@@ -78,6 +78,7 @@ def mock_extracted_data():
     return {
         'case_id': 'RGL23-000070',
         'narrative': 'Test narrative',
+        'narrative_summary': 'AI generated summary of the test narrative',
         'criticality': 'High',
         'category': ['AE', 'PC'],
         'case_type': ['Adverse Event'],
@@ -390,6 +391,7 @@ class TestUpdateComplaintInDb:
     def test_update_complaint_success(self, mock_get_connection, mock_extracted_data):
         """Test: Successful complaint update in database with text_extracted set to true"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
+        mock_extracted_data['narrative_summary'] = 'AI generated summary of the narrative'
         
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_conn = MagicMock()
@@ -424,6 +426,7 @@ class TestUpdateComplaintInDb:
 
             extracted_data = {
                 'narrative': 'Test',
+                'narrative_summary': 'Test summary',
                 'primary_reporter': {'name': 'N/A', 'address': 'N/A'},
                 'patient_name': 'N/A',
                 'physician_name': 'N/A',
@@ -602,6 +605,7 @@ class TestEdgeCases:
             mock_connect.return_value = mock_conn
 
             extracted_data = {
+                'narrative_summary': 'Test summary',
                 'receipt_date': 'invalid-date',
                 'product_details': {'expiration_date': 'also-invalid'}
             }

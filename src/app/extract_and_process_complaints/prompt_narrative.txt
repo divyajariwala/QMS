@@ -8,6 +8,7 @@ Your task is to extract the following information from the provided narrative te
 - Case Type (infer if it's Product Complaint, Adverse Event, or both)
 - Category (infer the category of complaint)
 - Narrative (the complete text provided)
+- Narrative Summary (generate a concise 100-150 word summary of the narrative capturing key points)
 - Primary Reporter name and address (if mentioned, otherwise 'N/A')
 - Patient Name (if mentioned, otherwise 'N/A')
 - Physician Name (if mentioned, otherwise 'N/A')
@@ -17,5 +18,6 @@ Instructions:
 1. Analyze the narrative text carefully
 2. Extract explicit information where available
 3. Infer missing information based on context where reasonable
-4. Use 'N/A' for information that cannot be determined
-5. Return all information using the extract_narrative_info tool
+4. Generate a professional 100-150 word summary of the narrative including patient issue, product involved, and outcome
+5. Use 'N/A' for information that cannot be determined
+6. Return all information using the extract_narrative_info tool
