@@ -328,11 +328,14 @@ class TestConstructPrompts:
     def test_construct_narrative_prompt(self):
         """Test: Narrative prompt construction"""
         narrative = "Test narrative text"
-        result = lambda_function.construct_narrative_prompt(narrative)
+        
+        with patch('builtins.open', mock_open(read_data='Test prompt from file')):
+            result = lambda_function.construct_narrative_prompt(narrative)
         
         assert len(result) == 1
         assert result[0]['role'] == 'user'
         assert narrative in result[0]['content'][0]['text']
+        assert 'Test prompt from file' in result[0]['content'][0]['text']
 
 
 class TestProcessWithBedrock:
