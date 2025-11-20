@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch, MagicMock
 # Mock dependencies before importing
 sys.modules['psycopg'] = Mock()
 sys.modules['psycopg.rows'] = Mock()
+sys.modules['secrets_util'] = Mock()
 
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'approve_complaints'))
@@ -16,8 +17,12 @@ import lambda_function
 @pytest.fixture(autouse=True)
 def mock_all_external_dependencies():
     """Auto-mock all external dependencies for ALL tests."""
-    with patch('lambda_function.get_secret') as mock_get_secret, \
-         patch('lambda_function.get_connection_string') as mock_get_conn_str:
+    # Reset cache before each test
+    lambda_function._db_credentials = None
+    lambda_function._connection_string = None
+    
+    with patch.object(lambda_function, 'get_secret') as mock_get_secret, \
+         patch.object(lambda_function, 'get_connection_string') as mock_get_conn_str:
         
         # Mock get_secret to return fake credentials
         mock_get_secret.return_value = {
@@ -30,10 +35,6 @@ def mock_all_external_dependencies():
         
         # Mock connection string
         mock_get_conn_str.return_value = 'postgresql://test:test@test:5432/test'
-
-        # Reset cache before each test
-        lambda_function._db_credentials = None
-        lambda_function._connection_string = None
 
         yield
 
