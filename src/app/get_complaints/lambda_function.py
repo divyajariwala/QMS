@@ -120,6 +120,7 @@ def get_single_complaint(conn, complaint_id):
                 },
                 'caseStatus': complaint['status'].lower(),
                 'text_extracted': complaint.get('text_extracted', False),
+                'complaintClassified': inference_result is not None,
                 'category_details': category_details
             }
         

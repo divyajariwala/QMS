@@ -93,6 +93,7 @@ class TestLambdaHandler:
         assert body['criticality'] == 'High'
         assert body['caseStatus'] == 'pending'
         assert body['text_extracted'] is True
+        assert body['complaintClassified'] is True
         assert len(body['category_details']) == 2
 
     @patch.object(lambda_function, 'get_db_connection')
@@ -116,6 +117,53 @@ class TestLambdaHandler:
         body = json.loads(result['body'])
         assert body['success'] is False
         assert body['error'] == 'Complaint not found'
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_single_complaint_no_inference(self, mock_get_db):
+        """Test: Complaint found but no inference results yet"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # Mock complaint data without inference results
+        mock_cursor.fetchone.side_effect = [
+            {
+                'complaint_id': 'CAS-456',
+                'receipt_date': date(2023, 1, 7),
+                'criticality': 'Medium',
+                'report_type': 'Spontaneous',
+                'narrative_summary': '',
+                'case_type': 'AE',
+                'narrative': 'Test narrative',
+                'primary_reporter': 'John Doe',
+                'primary_reporter_address': '123 Main St',
+                'patient_name': 'Jane Patient',
+                'physician': 'Dr. Smith',
+                'drug': 'Test Drug',
+                'lot_no': 'LOT456',
+                'dosage': '50mg',
+                'expiration_date': date(2024, 6, 1),
+                'part_number': 'PN456',
+                'status': 'Pending',
+                'text_extracted': True,
+                'file_name': 'test2.pdf',
+                's3_url': 's3://bucket/test2.pdf'
+            },
+            None  # No inference result
+        ]
+
+        event = {
+            'queryStringParameters': {'complaint_id': 'CAS-456'}
+        }
+
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['case_id'] == 'CAS-456'
+        assert body['complaintClassified'] is False
+        assert len(body['category_details']) == 0
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_all_complaints_success(self, mock_get_db):
