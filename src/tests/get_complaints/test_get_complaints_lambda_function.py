@@ -190,14 +190,15 @@ class TestLambdaHandler:
                     'receipt_date': date(2023, 1, 1),
                     'case_type': 'AE',
                     'status': 'Pending',
-                    'text_extracted': True
+                    'text_extracted': True,
+                    'created_at': datetime(2023, 1, 1, 10, 0, 0)
                 }
             ],
             # All complaints for status grouping (no filter)
             [
-                {'complaint_id': 'CAS-1', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'text_extracted': True},
-                {'complaint_id': 'CAS-2', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC', 'text_extracted': False},
-                {'complaint_id': 'CAS-3', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE', 'text_extracted': True}
+                {'complaint_id': 'CAS-1', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'text_extracted': True, 'created_at': datetime(2023, 1, 1, 10, 0, 0)},
+                {'complaint_id': 'CAS-2', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC', 'text_extracted': False, 'created_at': datetime(2023, 1, 2, 11, 0, 0)},
+                {'complaint_id': 'CAS-3', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE', 'text_extracted': True, 'created_at': datetime(2023, 1, 3, 12, 0, 0)}
             ]
         ]
 
@@ -246,7 +247,8 @@ class TestLambdaHandler:
                     'receipt_date': date(2023, 1, 1),
                     'case_type': 'AE',
                     'status': 'Pending',
-                    'text_extracted': True
+                    'text_extracted': True,
+                    'created_at': datetime(2023, 1, 1, 10, 0, 0)
                 },
                 {
                     'complaint_id': 'CAS-4',
@@ -255,7 +257,8 @@ class TestLambdaHandler:
                     'receipt_date': date(2023, 1, 4),
                     'case_type': 'PC',
                     'status': 'Pending',
-                    'text_extracted': False
+                    'text_extracted': False,
+                    'created_at': datetime(2023, 1, 4, 13, 0, 0)
                 }
             ]
         ]
@@ -317,13 +320,13 @@ class TestGetAllComplaints:
             ],
             # Paginated complaints
             [
-                {'complaint_id': 'CAS-1', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': True}
+                {'complaint_id': 'CAS-1', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': True, 'created_at': datetime(2023, 1, 1, 10, 0, 0)}
             ],
             # All complaints for grouping (no filter) - ordered by case_id DESC
             [
-                {'complaint_id': 'CAS-00003', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE', 'text_extracted': False},
-                {'complaint_id': 'CAS-00002', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC', 'text_extracted': True},
-                {'complaint_id': 'CAS-00001', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'text_extracted': False}
+                {'complaint_id': 'CAS-00003', 'status': 'Overdue', 'criticality': 'Low', 'report_type': 'Literature', 'receipt_date': date(2023, 1, 3), 'case_type': 'AE', 'text_extracted': False, 'created_at': datetime(2023, 1, 3, 12, 0, 0)},
+                {'complaint_id': 'CAS-00002', 'status': 'Processed', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 2), 'case_type': 'PC', 'text_extracted': True, 'created_at': datetime(2023, 1, 2, 11, 0, 0)},
+                {'complaint_id': 'CAS-00001', 'status': 'Pending', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'text_extracted': False, 'created_at': datetime(2023, 1, 1, 10, 0, 0)}
             ]
         ]
 
@@ -362,8 +365,8 @@ class TestGetAllComplaints:
             ],
             # Only pending complaints (filtered and paginated) - ordered by case_id DESC
             [
-                {'complaint_id': 'CAS-00004', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 4), 'case_type': 'PC', 'status': 'Pending', 'text_extracted': True},
-                {'complaint_id': 'CAS-00001', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': False}
+                {'complaint_id': 'CAS-00004', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 1, 4), 'case_type': 'PC', 'status': 'Pending', 'text_extracted': True, 'created_at': datetime(2023, 1, 4, 13, 0, 0)},
+                {'complaint_id': 'CAS-00001', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 1, 1), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': False, 'created_at': datetime(2023, 1, 1, 10, 0, 0)}
             ]
         ]
 
@@ -405,7 +408,8 @@ class TestUtilityFunctions:
                 'report_type': 'Spontaneous',
                 'receipt_date': date(2023, 1, 1),
                 'case_type': 'AE',
-                'text_extracted': True
+                'text_extracted': True,
+                'created_at': datetime(2023, 1, 1, 10, 0, 0)
             },
             {
                 'status': 'Pending',
@@ -414,7 +418,8 @@ class TestUtilityFunctions:
                 'report_type': 'Study',
                 'receipt_date': date(2023, 1, 3),
                 'case_type': 'PC',
-                'text_extracted': False
+                'text_extracted': False,
+                'created_at': datetime(2023, 1, 3, 12, 0, 0)
             },
             {
                 'status': 'Processed',
@@ -423,7 +428,8 @@ class TestUtilityFunctions:
                 'report_type': 'Study',
                 'receipt_date': date(2023, 1, 2),
                 'case_type': 'PC',
-                'text_extracted': True
+                'text_extracted': True,
+                'created_at': datetime(2023, 1, 2, 11, 0, 0)
             },
             {
                 'status': 'Overdue',
@@ -432,7 +438,8 @@ class TestUtilityFunctions:
                 'report_type': 'Literature',
                 'receipt_date': date(2023, 1, 4),
                 'case_type': 'AE',
-                'text_extracted': False
+                'text_extracted': False,
+                'created_at': datetime(2023, 1, 4, 13, 0, 0)
             }
         ]
 
