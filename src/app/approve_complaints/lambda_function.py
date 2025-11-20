@@ -30,21 +30,14 @@ def lambda_handler(event, context):
     """
     Lambda function to approve complaints by updating status from Pending to Processed.
     
-    Expected POST body format (based on input.json):
+    Expected POST body format:
     {
-        "case_id": "RGL23-000070",
-        "receipt_date": "08/Jan/2023",
-        "criticality": "Major",
-        "report_type": "Spontaneous",
-        "ai_summary": "...",
-        "case_type": ["AE", "PC"],
-        "narrative": "...",
-        "primary_reporter": {...},
-        "patient_name": "...",
-        "physician_name": "...",
-        "product_details": {...},
-        "caseStatus": "pending",
-        "categoryDetails": [...]
+        "case_id": "CAS-00001",
+        "categoryDetails": [
+            {"label": "Dose confirmation", "percentage": 94.92, "level": "2", "crl": "CRL-000100", "priority": 0, "unit": 5},
+            {"label": "Needle not fully extended", "percentage": 2.88, "level": "2", "crl": "CRL-000108", "priority": 0, "unit": 2}
+        ],
+        "caseStatus": "pending"
     }
     """
     try:
@@ -62,6 +55,8 @@ def lambda_handler(event, context):
         current_status = body.get('caseStatus', '').lower()
         if current_status != 'pending':
             return _error_response(400, f"Can only approve complaints with pending status. Current status: {current_status}")
+        
+        category_details = body.get('categoryDetails', [])
         
         # Get database connection string after validation
         conninfo = get_connection_string()
@@ -82,16 +77,43 @@ def lambda_handler(event, context):
                 approved_at = datetime.now(timezone.utc)
                 approved_by = _get_user_from_event(event)
                 
-                # Update only status and approval details - no other fields allowed
-                update_fields = ['status = %s']
-                update_values = ['Processed']
+                cur.execute("UPDATE complaints SET status = %s WHERE complaint_id = %s", ('Processed', case_id))
                 
-                update_values.append(case_id)
-                
-                cur.execute(
-                    f"UPDATE complaints SET {', '.join(update_fields)} WHERE complaint_id = %s",
-                    update_values
-                )
+                # Update inference_results if category details provided
+                if category_details:
+                    levels = {}
+                    subcategories = {}
+                    crl_codes = {}
+                    units = {}
+                    final_level = None
+                    priority = 0
+                    
+                    for cat in category_details:
+                        label = cat.get('label', '')
+                        percentage = cat.get('percentage', 0) / 100
+                        level = cat.get('level', '')
+                        crl = cat.get('crl', '')
+                        cat_priority = cat.get('priority', 0)
+                        unit = cat.get('unit', 1)
+                        
+                        if label:
+                            subcategories[label] = percentage
+                            units[label] = unit
+                        if level:
+                            levels[level] = levels.get(level, 0) + percentage
+                            if not final_level:
+                                final_level = level
+                        if crl and label:
+                            crl_codes[crl] = percentage
+                        if cat_priority > priority:
+                            priority = cat_priority
+                    
+                    cur.execute(
+                        """UPDATE inference_results 
+                           SET levels = %s, subcategories = %s, crl_codes = %s, units = %s, final_level = %s, priority = %s
+                           WHERE complaint_id = %s""",
+                        (json.dumps(levels), json.dumps(subcategories), json.dumps(crl_codes), json.dumps(units), final_level, priority, case_id)
+                    )
                 
                 # Insert into processed_complaints table
                 cur.execute(
@@ -101,24 +123,30 @@ def lambda_handler(event, context):
                 
                 conn.commit()
             
-                # Get updated complaint data
-                cur.execute("SELECT * FROM complaints WHERE complaint_id = %s", (case_id,))
-                updated_complaint = cur.fetchone()
+                # Get updated inference data
+                cur.execute("SELECT * FROM inference_results WHERE complaint_id = %s ORDER BY created_at DESC LIMIT 1", (case_id,))
+                inference_result = cur.fetchone()
+                
+                # Transform inference data to category details
+                response_category_details = []
+                if inference_result:
+                    subcategories = inference_result.get('subcategories', {})
+                    crl_codes = inference_result.get('crl_codes', {})
+                    units = inference_result.get('units', {})
+                    for label, percentage in subcategories.items():
+                        crl = next((code for code, pct in crl_codes.items() if pct == percentage), '')
+                        response_category_details.append({
+                            "label": label,
+                            "percentage": percentage * 100,
+                            "level": inference_result.get('final_level', ''),
+                            "crl": crl,
+                            "priority": inference_result.get('priority', 0),
+                            "unit": units.get(label, 1)
+                        })
             
-                # Prepare response with updated data
                 response_data = {
-                    'case_id': updated_complaint['complaint_id'],
-                    'receipt_date': str(updated_complaint.get('receipt_date', '')) if updated_complaint.get('receipt_date') else '',
-                    'criticality': updated_complaint.get('criticality', '') or '',
-                    'report_type': updated_complaint.get('report_type', '') or '',
-                    'ai_summary': updated_complaint.get('narrative_summary', '') or '',
-                    'case_type': [updated_complaint['case_type']] if updated_complaint.get('case_type') else [],
-                    'narrative': updated_complaint.get('narrative', '') or '',
-                    'primary_reporter': {'name': updated_complaint.get('primary_reporter', '') or '', 'address': updated_complaint.get('primary_reporter_address', '') or ''},
-                    'patient_name': updated_complaint.get('patient_name', '') or '',
-                    'physician_name': updated_complaint.get('physician', '') or '',
-                    'product_details': {'drug': updated_complaint.get('drug', '') or '', 'lot_no': updated_complaint.get('lot_no', '') or ''},
-                    'category_details': [],
+                    'case_id': case_id,
+                    'category_details': response_category_details,
                     'caseStatus': 'processed',
                     'approved_at': approved_at.isoformat(),
                     'approved_by': approved_by

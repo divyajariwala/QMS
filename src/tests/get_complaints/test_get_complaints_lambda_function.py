@@ -73,6 +73,7 @@ class TestLambdaHandler:
                 'levels': {"1": 0.11, "2": 0.81, "3": 0.08},
                 'subcategories': {"Broken Needle": 0.855, "Dose confirmation": 0.145},
                 'crl_codes': {"CRL-000100": 0.855},
+                'units': {"Broken Needle": 3, "Dose confirmation": 1},
                 'final_level': '2',
                 'priority': 1,
                 'priority_reason': 'High priority issue',
