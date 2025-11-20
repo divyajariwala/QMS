@@ -85,6 +85,7 @@ def get_single_complaint(conn, complaint_id):
             if inference_result:
                 # Extract subcategories from JSONB
                 subcategories = inference_result.get('subcategories', {})
+                units = inference_result.get('units', {})
                 for label, percentage in subcategories.items():
                     category_details.append({
                         "id": label.replace(' ', '_').lower(),
@@ -92,7 +93,7 @@ def get_single_complaint(conn, complaint_id):
                         "level": inference_result.get('final_level', ''),
                         "crl": f"{percentage:.2f}%",
                         "priority": "High" if inference_result.get('priority', 0) <= 2 else "Medium" if inference_result.get('priority', 0) <= 4 else "Low",
-                        "unit": 1,
+                        "unit": units.get(label, 1),
                         "percentage": percentage * 100
                     })
         
@@ -120,6 +121,7 @@ def get_single_complaint(conn, complaint_id):
                 },
                 'caseStatus': complaint['status'].lower(),
                 'text_extracted': complaint.get('text_extracted', False),
+                'complaintClassified': inference_result is not None,
                 'category_details': category_details
             }
         

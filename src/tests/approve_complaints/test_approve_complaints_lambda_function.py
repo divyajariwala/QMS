@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch, MagicMock
 # Mock dependencies before importing
 sys.modules['psycopg'] = Mock()
 sys.modules['psycopg.rows'] = Mock()
+sys.modules['secrets_util'] = Mock()
 
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'approve_complaints'))
@@ -16,8 +17,12 @@ import lambda_function
 @pytest.fixture(autouse=True)
 def mock_all_external_dependencies():
     """Auto-mock all external dependencies for ALL tests."""
-    with patch('lambda_function.get_secret') as mock_get_secret, \
-         patch('lambda_function.get_connection_string') as mock_get_conn_str:
+    # Reset cache before each test
+    lambda_function._db_credentials = None
+    lambda_function._connection_string = None
+    
+    with patch.object(lambda_function, 'get_secret') as mock_get_secret, \
+         patch.object(lambda_function, 'get_connection_string') as mock_get_conn_str:
         
         # Mock get_secret to return fake credentials
         mock_get_secret.return_value = {
@@ -31,26 +36,21 @@ def mock_all_external_dependencies():
         # Mock connection string
         mock_get_conn_str.return_value = 'postgresql://test:test@test:5432/test'
 
-        # Reset cache before each test
-        lambda_function._db_credentials = None
-        lambda_function._connection_string = None
-
         yield
 
 
 class TestLambdaHandler:
     """Unit tests for the main lambda_handler function"""
 
-    @pytest.mark.skip(reason="Mocking issue with get_secret - needs fix")
+    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_approve_complaint_success(self):
-        """Test: Successful complaint approval - only status updated"""
+        """Test: Successful complaint approval with category details"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = {
-                'complaint_id': 'RGL23-000070',
-                'status': 'Pending',
-                'narrative': 'Original narrative'
-            }
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                {'inference_id': 5, 'subcategories': {"Dose confirmation": 0.9492}, 'crl_codes': {"CRL-000100": 0.9492}, 'units': {"Dose confirmation": 5}, 'final_level': '2', 'priority': 0}
+            ]
             
             mock_conn = MagicMock()
             mock_conn.__enter__ = Mock(return_value=mock_conn)
@@ -61,10 +61,9 @@ class TestLambdaHandler:
 
             event = {
                 'body': json.dumps({
-                    'case_id': 'RGL23-000070',
+                    'case_id': 'CAS-00001',
                     'caseStatus': 'pending',
-                    'narrative': 'Updated narrative',
-                    'criticality': 'High'
+                    'categoryDetails': [{'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 0, 'unit': 5}]
                 })
             }
 
@@ -73,6 +72,7 @@ class TestLambdaHandler:
             assert result['statusCode'] == 200
             body = json.loads(result['body'])
             assert body['success'] is True
+            assert body['data']['category_details'][0]['unit'] == 5
 
     def test_missing_case_id(self):
         """Test: Missing case_id in request"""
@@ -105,7 +105,7 @@ class TestLambdaHandler:
         assert body['success'] is False
         assert 'Can only approve complaints with pending status' in body['error']
 
-    @pytest.mark.skip(reason="Mocking issue with get_secret - needs fix")
+    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_complaint_not_found(self):
         """Test: Complaint not found in database"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
@@ -122,7 +122,8 @@ class TestLambdaHandler:
             event = {
                 'body': json.dumps({
                     'case_id': 'NONEXISTENT',
-                    'caseStatus': 'pending'
+                    'caseStatus': 'pending',
+                    'categoryDetails': []
                 })
             }
 
@@ -167,14 +168,14 @@ class TestLambdaHandler:
         assert body['success'] is False
         assert 'Invalid JSON format' in body['error']
 
-    @pytest.mark.skip(reason="Mocking issue with get_secret - needs fix")
-    def test_fields_not_updated_only_status(self):
-        """Test: Other fields are not updated, only status and approval details"""
+    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
+    def test_category_details_update(self):
+        """Test: Category details are updated in inference_results"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
-                {'complaint_id': 'RGL23-000070', 'status': 'Pending'},  # First call
-                {'complaint_id': 'RGL23-000070', 'status': 'Processed', 'narrative': 'Original'}  # Second call
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                {'subcategories': {"Dose confirmation": 0.9492, "Needle not fully extended": 0.0288}, 'crl_codes': {"CRL-000100": 0.9492, "CRL-000108": 0.0288}, 'units': {"Dose confirmation": 5, "Needle not fully extended": 2}, 'final_level': '2', 'priority': 0}
             ]
             
             mock_conn = MagicMock()
@@ -186,23 +187,26 @@ class TestLambdaHandler:
 
             event = {
                 'body': json.dumps({
-                    'case_id': 'RGL23-000070',
+                    'case_id': 'CAS-00001',
                     'caseStatus': 'pending',
-                    'narrative': 'Should not be updated',
-                    'criticality': 'Should not be updated',
-                    'patient_name': 'Should not be updated'
+                    'categoryDetails': [
+                        {'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 0, 'unit': 5},
+                        {'label': 'Needle not fully extended', 'percentage': 2.88, 'level': '2', 'crl': 'CRL-000108', 'priority': 0, 'unit': 2}
+                    ]
                 })
             }
 
             result = lambda_function.lambda_handler(event, {})
 
             assert result['statusCode'] == 200
-            # Verify only status update query was called (UPDATE and INSERT are separate calls)
+            body = json.loads(result['body'])
+            assert len(body['data']['category_details']) == 2
+            assert body['data']['category_details'][0]['unit'] == 5
+            assert body['data']['category_details'][1]['unit'] == 2
+            # Verify inference_results UPDATE was called
             execute_calls = mock_cursor.execute.call_args_list
-            update_calls = [call for call in execute_calls if 'UPDATE' in str(call)]
-            insert_calls = [call for call in execute_calls if 'INSERT' in str(call)]
-            assert len(update_calls) == 1  # One UPDATE for complaints status only
-            assert len(insert_calls) == 1  # One INSERT for processed_complaints
+            update_calls = [call for call in execute_calls if 'UPDATE inference_results' in str(call)]
+            assert len(update_calls) == 1
 
 
 
@@ -286,14 +290,14 @@ class TestEdgeCases:
         body = json.loads(result['body'])
         assert body['error'] == 'case_id is required'
 
-    @pytest.mark.skip(reason="Mocking issue with get_secret - needs fix")
+    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_case_insensitive_status(self):
         """Test: Case insensitive status check - PENDING should work"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
-                {'complaint_id': 'RGL23-000070', 'status': 'Pending'},
-                {'complaint_id': 'RGL23-000070', 'status': 'Processed'}
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                {'subcategories': {}, 'crl_codes': {}, 'units': {}, 'final_level': '2', 'priority': 0}
             ]
             
             mock_conn = MagicMock()
@@ -305,8 +309,9 @@ class TestEdgeCases:
 
             event = {
                 'body': json.dumps({
-                    'case_id': 'RGL23-000070',
-                    'caseStatus': 'PENDING'  # Should work as it converts to lowercase
+                    'case_id': 'CAS-00001',
+                    'caseStatus': 'PENDING',
+                    'categoryDetails': []
                 })
             }
 
