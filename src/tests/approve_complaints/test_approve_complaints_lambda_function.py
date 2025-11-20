@@ -43,7 +43,10 @@ class TestLambdaHandler:
 
     def test_approve_complaint_success(self):
         """Test: Successful complaint approval with category details"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        with patch('lambda_function.get_connection_string') as mock_get_conn, \
+             patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_get_conn.return_value = 'postgresql://test:test@test:5432/test'
+            
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
                 {'complaint_id': 'CAS-00001', 'status': 'Pending'},
@@ -105,7 +108,10 @@ class TestLambdaHandler:
 
     def test_complaint_not_found(self):
         """Test: Complaint not found in database"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        with patch('lambda_function.get_connection_string') as mock_get_conn, \
+             patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_get_conn.return_value = 'postgresql://test:test@test:5432/test'
+            
             mock_cursor = MagicMock()
             mock_cursor.fetchone.return_value = None
             
@@ -167,7 +173,10 @@ class TestLambdaHandler:
 
     def test_category_details_update(self):
         """Test: Category details are updated in inference_results"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        with patch('lambda_function.get_connection_string') as mock_get_conn, \
+             patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_get_conn.return_value = 'postgresql://test:test@test:5432/test'
+            
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
                 {'complaint_id': 'CAS-00001', 'status': 'Pending'},
@@ -288,7 +297,10 @@ class TestEdgeCases:
 
     def test_case_insensitive_status(self):
         """Test: Case insensitive status check - PENDING should work"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        with patch('lambda_function.get_connection_string') as mock_get_conn, \
+             patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_get_conn.return_value = 'postgresql://test:test@test:5432/test'
+            
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
                 {'complaint_id': 'CAS-00001', 'status': 'Pending'},
