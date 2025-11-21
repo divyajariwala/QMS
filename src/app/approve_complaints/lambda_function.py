@@ -56,7 +56,9 @@ def lambda_handler(event, context):
         if current_status != 'pending':
             return _error_response(400, f"Can only approve complaints with pending status. Current status: {current_status}")
         
-        category_details = body.get('categoryDetails', [])
+        category_details = body.get('categoryDetails') or body.get('category_details', [])
+        
+        logger.info(f"Category details received: {category_details}")
         
         # Get database connection string after validation
         conninfo = get_connection_string()
@@ -80,39 +82,45 @@ def lambda_handler(event, context):
                 cur.execute("UPDATE complaints SET status = %s WHERE complaint_id = %s", ('Processed', case_id))
                 
                 # Update inference_results if category details provided
-                if category_details:
+                if category_details and len(category_details) > 0:
                     levels = {}
                     subcategories = {}
                     crl_codes = {}
-                    units = {}
+                    units = 0
                     final_level = None
-                    priority = 0
+                    priority_str = None
                     
                     for cat in category_details:
+                        if not isinstance(cat, dict):
+                            logger.warning(f"Skipping non-dict category: {cat}")
+                            continue
+                            
                         label = cat.get('label', '')
-                        percentage = cat.get('percentage', 0) / 100
-                        level = cat.get('level', '')
+                        percentage = float(cat.get('percentage', 0)) / 100
+                        level = str(cat.get('level', ''))
                         crl = cat.get('crl', '')
-                        cat_priority = cat.get('priority', 0)
-                        unit = cat.get('unit', 1)
+                        priority_str = cat.get('priority', 'Low')
+                        unit = int(cat.get('unit', 0))
                         
                         if label:
                             subcategories[label] = percentage
-                            units[label] = unit
                         if level:
-                            levels[level] = levels.get(level, 0) + percentage
+                            levels[level] = percentage
                             if not final_level:
                                 final_level = level
-                        if crl and label:
+                        if crl:
                             crl_codes[crl] = percentage
-                        if cat_priority > priority:
-                            priority = cat_priority
+                        if unit:
+                            units = unit
+                    
+                    # Convert priority string to int
+                    priority = 0 if priority_str == 'Low' else 1 if priority_str == 'High' else 3
                     
                     cur.execute(
                         """UPDATE inference_results 
                            SET levels = %s, subcategories = %s, crl_codes = %s, units = %s, final_level = %s, priority = %s
                            WHERE complaint_id = %s""",
-                        (json.dumps(levels), json.dumps(subcategories), json.dumps(crl_codes), json.dumps(units), final_level, priority, case_id)
+                        (json.dumps(levels), json.dumps(subcategories), json.dumps(crl_codes), units, final_level, priority, case_id)
                     )
                 
                 # Insert into processed_complaints table
@@ -130,21 +138,42 @@ def lambda_handler(event, context):
                 cur.execute("SELECT * FROM inference_results WHERE complaint_id = %s ORDER BY created_at DESC LIMIT 1", (case_id,))
                 inference_result = cur.fetchone()
                 
+                logger.info(f"Inference result: {inference_result}")
+                
                 # Transform inference data to category details
                 response_category_details = []
-                if inference_result:
-                    subcategories = inference_result.get('subcategories', {})
-                    crl_codes = inference_result.get('crl_codes', {})
-                    units = inference_result.get('units', {})
-                    for label, percentage in subcategories.items():
-                        crl = next((code for code, pct in crl_codes.items() if pct == percentage), '')
+                if inference_result and isinstance(inference_result, dict):
+                    levels_raw = inference_result.get('levels')
+                    subcategories_raw = inference_result.get('subcategories')
+                    crl_codes_raw = inference_result.get('crl_codes')
+                    
+                    levels = levels_raw if isinstance(levels_raw, dict) else {}
+                    subcategories = subcategories_raw if isinstance(subcategories_raw, dict) else {}
+                    crl_codes = crl_codes_raw if isinstance(crl_codes_raw, dict) else {}
+                    units = inference_result.get('units', 0)
+                    priority = inference_result.get('priority', 0)
+                    priority_str = "Low" if priority == 0 else "High" if priority <= 2 else "Medium" if priority <= 4 else "Low"
+                    
+                    # Convert to lists maintaining order
+                    level_items = list(levels.items())
+                    subcat_items = list(subcategories.items())
+                    crl_items = list(crl_codes.items())
+                    
+                    # Create array with sequential IDs
+                    for idx in range(len(subcat_items)):
+                        level_key = level_items[idx][0] if idx < len(level_items) else ''
+                        subcat_label = subcat_items[idx][0] if idx < len(subcat_items) else ''
+                        subcat_pct = subcat_items[idx][1] if idx < len(subcat_items) else 0
+                        crl_code = crl_items[idx][0] if idx < len(crl_items) else ''
+                        
                         response_category_details.append({
-                            "label": label,
-                            "percentage": percentage * 100,
-                            "level": inference_result.get('final_level', ''),
-                            "crl": crl,
-                            "priority": inference_result.get('priority', 0),
-                            "unit": units.get(label, 1)
+                            "id": str(idx + 1),
+                            "label": subcat_label,
+                            "level": level_key,
+                            "crl": crl_code,
+                            "priority": priority_str,
+                            "unit": units,
+                            "percentage": subcat_pct * 100
                         })
             
                 response_data = {
