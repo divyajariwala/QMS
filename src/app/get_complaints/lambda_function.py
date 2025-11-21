@@ -73,48 +73,61 @@ def get_single_complaint(conn, complaint_id):
                     })
                 }
             
-            # Get inference data from inference_results table
-            cursor.execute("""
-                SELECT * FROM inference_results WHERE complaint_id = %s ORDER BY created_at DESC LIMIT 1
-            """, (complaint_id,))
-            
-            inference_result = cursor.fetchone()
-
-            # Transform inference data to category details
+            # Get category details based on complaint status
             category_details = []
-            if inference_result and isinstance(inference_result, dict):
-                levels_raw = inference_result.get('levels')
-                subcategories_raw = inference_result.get('subcategories')
-                crl_codes_raw = inference_result.get('crl_codes')
+            inference_result = None
+            
+            if complaint['status'].lower() == 'processed':
+                # For processed complaints, get from processed_complaints table
+                cursor.execute("""
+                    SELECT approved_category_details FROM processed_complaints WHERE complaint_id = %s
+                """, (complaint_id,))
+                processed_result = cursor.fetchone()
+                if processed_result and processed_result.get('approved_category_details'):
+                    category_details = processed_result['approved_category_details']
+                    inference_result = True  # Mark as classified
+            else:
+                # For pending complaints, get from inference_results table
+                cursor.execute("""
+                    SELECT * FROM inference_results WHERE complaint_id = %s ORDER BY created_at DESC LIMIT 1
+                """, (complaint_id,))
                 
-                levels = levels_raw if isinstance(levels_raw, dict) else {}
-                subcategories = subcategories_raw if isinstance(subcategories_raw, dict) else {}
-                crl_codes = crl_codes_raw if isinstance(crl_codes_raw, dict) else {}
-                units = inference_result.get('units', 0)
-                priority = inference_result.get('priority', 0)
-                priority_str = "Low" if priority == 0 else "High" if priority <= 2 else "Medium" if priority <= 4 else "Low"
-                
-                # Convert to lists maintaining order
-                level_items = list(levels.items())
-                subcat_items = list(subcategories.items())
-                crl_items = list(crl_codes.items())
-                
-                # Create array with sequential IDs
-                for idx in range(len(subcat_items)):
-                    level_key = level_items[idx][0] if idx < len(level_items) else ''
-                    subcat_label = subcat_items[idx][0] if idx < len(subcat_items) else ''
-                    subcat_pct = subcat_items[idx][1] if idx < len(subcat_items) else 0
-                    crl_code = crl_items[idx][0] if idx < len(crl_items) else ''
+                inference_result = cursor.fetchone()
+
+                # Transform inference data to category details
+                if inference_result and isinstance(inference_result, dict):
+                    levels_raw = inference_result.get('levels')
+                    subcategories_raw = inference_result.get('subcategories')
+                    crl_codes_raw = inference_result.get('crl_codes')
                     
-                    category_details.append({
-                        "id": str(idx + 1),
-                        "label": subcat_label,
-                        "level": level_key,
-                        "crl": crl_code,
-                        "priority": priority_str,
-                        "unit": units,
-                        "percentage": subcat_pct * 100
-                    })
+                    levels = levels_raw if isinstance(levels_raw, dict) else {}
+                    subcategories = subcategories_raw if isinstance(subcategories_raw, dict) else {}
+                    crl_codes = crl_codes_raw if isinstance(crl_codes_raw, dict) else {}
+                    units = inference_result.get('units', 0)
+                    priority = inference_result.get('priority', 0)
+                    priority_str = "Low" if priority == 0 else "High" if priority <= 2 else "Medium" if priority <= 4 else "Low"
+                    
+                    # Convert to lists maintaining order
+                    level_items = list(levels.items())
+                    subcat_items = list(subcategories.items())
+                    crl_items = list(crl_codes.items())
+                    
+                    # Create array with sequential IDs
+                    for idx in range(len(subcat_items)):
+                        level_key = level_items[idx][0] if idx < len(level_items) else ''
+                        subcat_label = subcat_items[idx][0] if idx < len(subcat_items) else ''
+                        subcat_pct = subcat_items[idx][1] if idx < len(subcat_items) else 0
+                        crl_code = crl_items[idx][0] if idx < len(crl_items) else ''
+                        
+                        category_details.append({
+                            "id": str(idx + 1),
+                            "label": subcat_label,
+                            "level": level_key,
+                            "crl": crl_code,
+                            "priority": priority_str,
+                            "unit": units,
+                            "percentage": subcat_pct * 100
+                        })
         
             # Transform database record to response format
             complaint_details = {

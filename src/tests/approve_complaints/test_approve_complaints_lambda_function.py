@@ -47,10 +47,7 @@ class TestLambdaHandler:
         """Test: Successful complaint approval with category details"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_cursor = MagicMock()
-            mock_cursor.fetchone.side_effect = [
-                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
-                {'inference_id': 5, 'levels': {"2": 0.9492}, 'subcategories': {"Dose confirmation": 0.9492}, 'crl_codes': {"CRL-000100": 0.9492}, 'units': 5, 'final_level': '2', 'priority': 0}
-            ]
+            mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00001', 'status': 'Pending'}
             
             mock_conn = MagicMock()
             mock_conn.__enter__ = Mock(return_value=mock_conn)
@@ -59,11 +56,12 @@ class TestLambdaHandler:
             mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
             mock_connect.return_value = mock_conn
 
+            category_details = [{'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 'Low', 'unit': 5}]
             event = {
                 'body': json.dumps({
                     'case_id': 'CAS-00001',
                     'caseStatus': 'pending',
-                    'categoryDetails': [{'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 'Low', 'unit': 5}]
+                    'categoryDetails': category_details
                 })
             }
 
@@ -72,7 +70,7 @@ class TestLambdaHandler:
             assert result['statusCode'] == 200
             body = json.loads(result['body'])
             assert body['success'] is True
-            assert body['data']['category_details'][0]['unit'] == 5
+            assert body['data']['category_details'] == category_details
 
     def test_missing_case_id(self):
         """Test: Missing case_id in request"""
@@ -169,14 +167,11 @@ class TestLambdaHandler:
         assert 'Invalid JSON format' in body['error']
 
     @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
-    def test_category_details_update(self):
-        """Test: Category details are updated in inference_results"""
+    def test_category_details_stored_as_is(self):
+        """Test: Category details are stored as-is in processed_complaints"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_cursor = MagicMock()
-            mock_cursor.fetchone.side_effect = [
-                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
-                {'levels': {"2": 0.9492, "2": 0.0288}, 'subcategories': {"Dose confirmation": 0.9492, "Needle not fully extended": 0.0288}, 'crl_codes': {"CRL-000100": 0.9492, "CRL-000108": 0.0288}, 'units': 5, 'final_level': '2', 'priority': 0}
-            ]
+            mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00001', 'status': 'Pending'}
             
             mock_conn = MagicMock()
             mock_conn.__enter__ = Mock(return_value=mock_conn)
@@ -185,14 +180,15 @@ class TestLambdaHandler:
             mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
             mock_connect.return_value = mock_conn
 
+            category_details = [
+                {'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 'Low', 'unit': 5},
+                {'label': 'Needle not fully extended', 'percentage': 2.88, 'level': '2', 'crl': 'CRL-000108', 'priority': 'Low', 'unit': 5}
+            ]
             event = {
                 'body': json.dumps({
                     'case_id': 'CAS-00001',
                     'caseStatus': 'pending',
-                    'categoryDetails': [
-                        {'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 'Low', 'unit': 5},
-                        {'label': 'Needle not fully extended', 'percentage': 2.88, 'level': '2', 'crl': 'CRL-000108', 'priority': 'Low', 'unit': 5}
-                    ]
+                    'categoryDetails': category_details
                 })
             }
 
@@ -200,13 +196,11 @@ class TestLambdaHandler:
 
             assert result['statusCode'] == 200
             body = json.loads(result['body'])
-            assert len(body['data']['category_details']) == 2
-            assert body['data']['category_details'][0]['unit'] == 5
-            assert body['data']['category_details'][1]['unit'] == 5
-            # Verify inference_results UPDATE was called
+            assert body['data']['category_details'] == category_details
+            # Verify no UPDATE to inference_results
             execute_calls = mock_cursor.execute.call_args_list
             update_calls = [call for call in execute_calls if 'UPDATE inference_results' in str(call)]
-            assert len(update_calls) == 1
+            assert len(update_calls) == 0
 
 
 
@@ -295,10 +289,7 @@ class TestEdgeCases:
         """Test: Case insensitive status check - PENDING should work"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_cursor = MagicMock()
-            mock_cursor.fetchone.side_effect = [
-                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
-                {'levels': {}, 'subcategories': {}, 'crl_codes': {}, 'units': 0, 'final_level': '2', 'priority': 0}
-            ]
+            mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00001', 'status': 'Pending'}
             
             mock_conn = MagicMock()
             mock_conn.__enter__ = Mock(return_value=mock_conn)
