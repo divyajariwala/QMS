@@ -104,7 +104,7 @@ def lambda_handler(event, context):
                         
                         if label:
                             subcategories[label] = percentage
-                        if level:
+                        if level and level in ['1', '2', '3']:
                             levels[level] = percentage
                             if not final_level:
                                 final_level = level
@@ -113,8 +113,12 @@ def lambda_handler(event, context):
                         if unit:
                             units = unit
                     
-                    # Convert priority string to int
-                    priority = 0 if priority_str == 'Low' else 1 if priority_str == 'High' else 3
+                    # Ensure final_level is valid (1, 2, or 3)
+                    if final_level not in ['1', '2', '3']:
+                        final_level = '2'  # Default to level 2 if invalid
+                    
+                    # Convert priority string to int (0=Low, 1=High, 2=Medium)
+                    priority = 0 if priority_str == 'Low' else 1 if priority_str == 'High' else 2
                     
                     cur.execute(
                         """UPDATE inference_results 
@@ -123,10 +127,10 @@ def lambda_handler(event, context):
                         (json.dumps(levels), json.dumps(subcategories), json.dumps(crl_codes), units, final_level, priority, case_id)
                     )
                 
-                # Insert into processed_complaints table
+                # Insert into processed_complaints table with approved category details
                 cur.execute(
-                    "INSERT INTO processed_complaints (complaint_id, approved_at, approved_by) VALUES (%s, %s, %s)",
-                    (case_id, approved_at, approved_by)
+                    "INSERT INTO processed_complaints (complaint_id, approved_at, approved_by, approved_category_details) VALUES (%s, %s, %s, %s)",
+                    (case_id, approved_at, approved_by, json.dumps(category_details))
                 )
                 
                 # Update case stats after approval

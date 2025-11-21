@@ -503,3 +503,59 @@ class TestUtilityFunctions:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_single_processed_complaint(self, mock_get_db):
+        """Test: Get processed complaint - should fetch from processed_complaints table"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # Mock complaint data with Processed status
+        mock_cursor.fetchone.side_effect = [
+            {
+                'complaint_id': 'CAS-789',
+                'receipt_date': date(2023, 1, 10),
+                'criticality': 'High',
+                'report_type': 'Spontaneous',
+                'narrative_summary': 'Processed complaint summary',
+                'case_type': 'AE',
+                'narrative': 'Processed complaint narrative',
+                'primary_reporter': 'John Doe',
+                'primary_reporter_address': '123 Main St',
+                'patient_name': 'Jane Patient',
+                'physician': 'Dr. Smith',
+                'drug': 'Test Drug',
+                'lot_no': 'LOT789',
+                'dosage': '200mg',
+                'expiration_date': date(2024, 12, 31),
+                'part_number': 'PN789',
+                'status': 'Processed',
+                'text_extracted': True,
+                'created_at': datetime(2023, 1, 10, 10, 0, 0),
+                'file_name': 'test3.pdf',
+                's3_url': 's3://bucket/test3.pdf'
+            },
+            {
+                'approved_category_details': [
+                    {"id": "1", "label": "Dose confirmation", "level": "2", "crl": "CRL-000100", "priority": "Low", "unit": 5, "percentage": 94.92},
+                    {"id": "2", "label": "Needle issue", "level": "1", "crl": "CRL-000105", "priority": "High", "unit": 5, "percentage": 5.08}
+                ]
+            }
+        ]
+
+        event = {
+            'queryStringParameters': {'complaint_id': 'CAS-789'}
+        }
+
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['case_id'] == 'CAS-789'
+        assert body['caseStatus'] == 'processed'
+        assert body['complaintClassified'] is True
+        assert len(body['category_details']) == 2
+        assert body['category_details'][0]['label'] == 'Dose confirmation'
+        assert body['category_details'][1]['label'] == 'Needle issue'
