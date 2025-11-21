@@ -62,16 +62,17 @@ class TestLambdaHandler:
                 'part_number': 'PN123',
                 'status': 'Pending',
                 'text_extracted': True,
+                'created_at': datetime(2023, 1, 7, 10, 0, 0),
                 'file_name': 'test.pdf',
                 's3_url': 's3://bucket/test.pdf'
             },
             {
                 'inference_id': 5,
                 'complaint_id': 'CAS-123',
-                'levels': {"1": 0.11, "2": 0.81, "3": 0.08},
+                'levels': {"1": 0.11, "2": 0.81},
                 'subcategories': {"Broken Needle": 0.855, "Dose confirmation": 0.145},
-                'crl_codes': {"CRL-000100": 0.855},
-                'units': {"Broken Needle": 3, "Dose confirmation": 1},
+                'crl_codes': {"CRL-000100": 0.855, "CRL-000102": 0.145},
+                'units': 3,
                 'final_level': '2',
                 'priority': 1,
                 'priority_reason': 'High priority issue',
@@ -88,6 +89,7 @@ class TestLambdaHandler:
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
         assert body['case_id'] == 'CAS-123'
+        assert body['created_at'] == '2023-01-07T10:00:00'
         assert body['narrative'] == 'Test complaint narrative'
         assert body['ai_summary'] == 'AI generated summary of the complaint narrative in 100-150 words'
         assert body['criticality'] == 'High'
@@ -147,6 +149,7 @@ class TestLambdaHandler:
                 'part_number': 'PN456',
                 'status': 'Pending',
                 'text_extracted': True,
+                'created_at': datetime(2023, 1, 7, 11, 0, 0),
                 'file_name': 'test2.pdf',
                 's3_url': 's3://bucket/test2.pdf'
             },
@@ -162,6 +165,7 @@ class TestLambdaHandler:
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
         assert body['case_id'] == 'CAS-456'
+        assert body['created_at'] == '2023-01-07T11:00:00'
         assert body['complaintClassified'] is False
         assert len(body['category_details']) == 0
 

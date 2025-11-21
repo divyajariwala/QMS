@@ -83,24 +83,40 @@ def get_single_complaint(conn, complaint_id):
             # Transform inference data to category details
             category_details = []
             if inference_result:
-                # Extract subcategories from JSONB
+                levels = inference_result.get('levels', {})
                 subcategories = inference_result.get('subcategories', {})
-                units = inference_result.get('units', {})
-                for label, percentage in subcategories.items():
+                crl_codes = inference_result.get('crl_codes', {})
+                units = inference_result.get('units', 0)
+                priority = inference_result.get('priority', 0)
+                priority_str = "Low" if priority == 0 else "High" if priority <= 2 else "Medium" if priority <= 4 else "Low"
+                
+                # Convert to lists maintaining order
+                level_items = list(levels.items())
+                subcat_items = list(subcategories.items())
+                crl_items = list(crl_codes.items())
+                
+                # Create array with sequential IDs
+                for idx in range(len(subcat_items)):
+                    level_key = level_items[idx][0] if idx < len(level_items) else ''
+                    subcat_label = subcat_items[idx][0] if idx < len(subcat_items) else ''
+                    subcat_pct = subcat_items[idx][1] if idx < len(subcat_items) else 0
+                    crl_code = crl_items[idx][0] if idx < len(crl_items) else ''
+                    
                     category_details.append({
-                        "id": label.replace(' ', '_').lower(),
-                        "label": label,
-                        "level": inference_result.get('final_level', ''),
-                        "crl": f"{percentage:.2f}%",
-                        "priority": "High" if inference_result.get('priority', 0) <= 2 else "Medium" if inference_result.get('priority', 0) <= 4 else "Low",
-                        "unit": units.get(label, 1),
-                        "percentage": percentage * 100
+                        "id": str(idx + 1),
+                        "label": subcat_label,
+                        "level": level_key,
+                        "crl": crl_code,
+                        "priority": priority_str,
+                        "unit": units,
+                        "percentage": subcat_pct * 100
                     })
         
             # Transform database record to response format
             complaint_details = {
                 'case_id': complaint['complaint_id'],
                 'receipt_date': complaint['receipt_date'].isoformat() if complaint['receipt_date'] else '',
+                'created_at': complaint['created_at'].isoformat() if complaint.get('created_at') else '',
                 'criticality': complaint['criticality'] or 'NA',
                 'report_type': complaint['report_type'] or 'NA',
                 'ai_summary': complaint['narrative_summary'] or '',

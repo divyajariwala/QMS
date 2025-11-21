@@ -49,7 +49,7 @@ class TestLambdaHandler:
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
                 {'complaint_id': 'CAS-00001', 'status': 'Pending'},
-                {'inference_id': 5, 'subcategories': {"Dose confirmation": 0.9492}, 'crl_codes': {"CRL-000100": 0.9492}, 'units': {"Dose confirmation": 5}, 'final_level': '2', 'priority': 0}
+                {'inference_id': 5, 'levels': {"2": 0.9492}, 'subcategories': {"Dose confirmation": 0.9492}, 'crl_codes': {"CRL-000100": 0.9492}, 'units': 5, 'final_level': '2', 'priority': 0}
             ]
             
             mock_conn = MagicMock()
@@ -63,7 +63,7 @@ class TestLambdaHandler:
                 'body': json.dumps({
                     'case_id': 'CAS-00001',
                     'caseStatus': 'pending',
-                    'categoryDetails': [{'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 0, 'unit': 5}]
+                    'categoryDetails': [{'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 'Low', 'unit': 5}]
                 })
             }
 
@@ -175,7 +175,7 @@ class TestLambdaHandler:
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
                 {'complaint_id': 'CAS-00001', 'status': 'Pending'},
-                {'subcategories': {"Dose confirmation": 0.9492, "Needle not fully extended": 0.0288}, 'crl_codes': {"CRL-000100": 0.9492, "CRL-000108": 0.0288}, 'units': {"Dose confirmation": 5, "Needle not fully extended": 2}, 'final_level': '2', 'priority': 0}
+                {'levels': {"2": 0.9492, "2": 0.0288}, 'subcategories': {"Dose confirmation": 0.9492, "Needle not fully extended": 0.0288}, 'crl_codes': {"CRL-000100": 0.9492, "CRL-000108": 0.0288}, 'units': 5, 'final_level': '2', 'priority': 0}
             ]
             
             mock_conn = MagicMock()
@@ -190,8 +190,8 @@ class TestLambdaHandler:
                     'case_id': 'CAS-00001',
                     'caseStatus': 'pending',
                     'categoryDetails': [
-                        {'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 0, 'unit': 5},
-                        {'label': 'Needle not fully extended', 'percentage': 2.88, 'level': '2', 'crl': 'CRL-000108', 'priority': 0, 'unit': 2}
+                        {'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 'Low', 'unit': 5},
+                        {'label': 'Needle not fully extended', 'percentage': 2.88, 'level': '2', 'crl': 'CRL-000108', 'priority': 'Low', 'unit': 5}
                     ]
                 })
             }
@@ -202,7 +202,7 @@ class TestLambdaHandler:
             body = json.loads(result['body'])
             assert len(body['data']['category_details']) == 2
             assert body['data']['category_details'][0]['unit'] == 5
-            assert body['data']['category_details'][1]['unit'] == 2
+            assert body['data']['category_details'][1]['unit'] == 5
             # Verify inference_results UPDATE was called
             execute_calls = mock_cursor.execute.call_args_list
             update_calls = [call for call in execute_calls if 'UPDATE inference_results' in str(call)]
@@ -297,7 +297,7 @@ class TestEdgeCases:
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
                 {'complaint_id': 'CAS-00001', 'status': 'Pending'},
-                {'subcategories': {}, 'crl_codes': {}, 'units': {}, 'final_level': '2', 'priority': 0}
+                {'levels': {}, 'subcategories': {}, 'crl_codes': {}, 'units': 0, 'final_level': '2', 'priority': 0}
             ]
             
             mock_conn = MagicMock()
