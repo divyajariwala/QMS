@@ -53,8 +53,8 @@ def lambda_handler(event, context):
             return _error_response(400, "case_id is required")
         
         current_status = body.get('caseStatus', '').lower()
-        if current_status != 'pending':
-            return _error_response(400, f"Can only approve complaints with pending status. Current status: {current_status}")
+        if current_status not in ['pending', 'overdue']:
+            return _error_response(400, f"Can only approve complaints with pending or overdue status. Current status: {current_status}")
         
         category_details = body.get('categoryDetails') or body.get('category_details', [])
         
@@ -67,19 +67,19 @@ def lambda_handler(event, context):
         with psycopg.connect(conninfo) as conn:
             with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute(
-                    "SELECT * FROM complaints WHERE complaint_id = %s AND status = 'Pending'",
+                    "SELECT * FROM complaints WHERE complaint_id = %s AND status IN ('Pending', 'Overdue')",
                     (case_id,)
                 )
                 existing_complaint = cur.fetchone()
                 
                 if not existing_complaint:
-                    return _error_response(404, f"Complaint with case_id '{case_id}' not found or not in Pending status")
+                    return _error_response(404, f"Complaint with case_id '{case_id}' not found or not in Pending/Overdue status")
             
                 # Update complaint status to Processed
                 approved_at = datetime.now(timezone.utc)
                 approved_by = _get_user_from_event(event)
                 
-                cur.execute("UPDATE complaints SET status = %s WHERE complaint_id = %s", ('Processed', case_id))
+                logger.info(f"Updating complaint {case_id} from {existing_complaint['status']} to Processed")
                 
                 # Insert into processed_complaints table with approved category details
                 cur.execute(
@@ -87,9 +87,15 @@ def lambda_handler(event, context):
                     (case_id, approved_at, approved_by, json.dumps(category_details))
                 )
                 
+                # Update complaint status to Processed (after insert to avoid FK issues)
+                cur.execute("UPDATE complaints SET status = %s WHERE complaint_id = %s", ('Processed', case_id))
+                logger.info(f"Status updated for {case_id}")
+                
+                # Commit before updating stats to ensure status change persists
+                conn.commit()
+                
                 # Update case stats after approval
                 cur.execute("SELECT update_stats_only()")
-                
                 conn.commit()
             
                 # Return the approved category details as-is
