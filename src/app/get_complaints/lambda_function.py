@@ -82,10 +82,14 @@ def get_single_complaint(conn, complaint_id):
 
             # Transform inference data to category details
             category_details = []
-            if inference_result:
-                levels = inference_result.get('levels', {})
-                subcategories = inference_result.get('subcategories', {})
-                crl_codes = inference_result.get('crl_codes', {})
+            if inference_result and isinstance(inference_result, dict):
+                levels_raw = inference_result.get('levels')
+                subcategories_raw = inference_result.get('subcategories')
+                crl_codes_raw = inference_result.get('crl_codes')
+                
+                levels = levels_raw if isinstance(levels_raw, dict) else {}
+                subcategories = subcategories_raw if isinstance(subcategories_raw, dict) else {}
+                crl_codes = crl_codes_raw if isinstance(crl_codes_raw, dict) else {}
                 units = inference_result.get('units', 0)
                 priority = inference_result.get('priority', 0)
                 priority_str = "Low" if priority == 0 else "High" if priority <= 2 else "Medium" if priority <= 4 else "Low"

@@ -56,7 +56,9 @@ def lambda_handler(event, context):
         if current_status != 'pending':
             return _error_response(400, f"Can only approve complaints with pending status. Current status: {current_status}")
         
-        category_details = body.get('categoryDetails', [])
+        category_details = body.get('categoryDetails') or body.get('category_details', [])
+        
+        logger.info(f"Category details received: {category_details}")
         
         # Get database connection string after validation
         conninfo = get_connection_string()
@@ -80,7 +82,7 @@ def lambda_handler(event, context):
                 cur.execute("UPDATE complaints SET status = %s WHERE complaint_id = %s", ('Processed', case_id))
                 
                 # Update inference_results if category details provided
-                if category_details:
+                if category_details and len(category_details) > 0:
                     levels = {}
                     subcategories = {}
                     crl_codes = {}
@@ -89,12 +91,16 @@ def lambda_handler(event, context):
                     priority_str = None
                     
                     for cat in category_details:
+                        if not isinstance(cat, dict):
+                            logger.warning(f"Skipping non-dict category: {cat}")
+                            continue
+                            
                         label = cat.get('label', '')
-                        percentage = cat.get('percentage', 0) / 100
-                        level = cat.get('level', '')
+                        percentage = float(cat.get('percentage', 0)) / 100
+                        level = str(cat.get('level', ''))
                         crl = cat.get('crl', '')
                         priority_str = cat.get('priority', 'Low')
-                        unit = cat.get('unit', 0)
+                        unit = int(cat.get('unit', 0))
                         
                         if label:
                             subcategories[label] = percentage
@@ -132,12 +138,18 @@ def lambda_handler(event, context):
                 cur.execute("SELECT * FROM inference_results WHERE complaint_id = %s ORDER BY created_at DESC LIMIT 1", (case_id,))
                 inference_result = cur.fetchone()
                 
+                logger.info(f"Inference result: {inference_result}")
+                
                 # Transform inference data to category details
                 response_category_details = []
-                if inference_result:
-                    levels = inference_result.get('levels', {})
-                    subcategories = inference_result.get('subcategories', {})
-                    crl_codes = inference_result.get('crl_codes', {})
+                if inference_result and isinstance(inference_result, dict):
+                    levels_raw = inference_result.get('levels')
+                    subcategories_raw = inference_result.get('subcategories')
+                    crl_codes_raw = inference_result.get('crl_codes')
+                    
+                    levels = levels_raw if isinstance(levels_raw, dict) else {}
+                    subcategories = subcategories_raw if isinstance(subcategories_raw, dict) else {}
+                    crl_codes = crl_codes_raw if isinstance(crl_codes_raw, dict) else {}
                     units = inference_result.get('units', 0)
                     priority = inference_result.get('priority', 0)
                     priority_str = "Low" if priority == 0 else "High" if priority <= 2 else "Medium" if priority <= 4 else "Low"
