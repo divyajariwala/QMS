@@ -115,7 +115,7 @@ const ComplaintsIntermediate: React.FC = () => {
       label: "Receipt Date",
       iconSrc: ReceiptDateIcon,
       iconAlt: "Receipt Date",
-      value: formatDateMMM_D_YYYY(complaintDetails?.receipt_date as string),
+      value: formatDateMMM_D_YYYY(complaintDetails?.created_at as string),
     },
   ];
 
@@ -169,6 +169,7 @@ const ComplaintsIntermediate: React.FC = () => {
         complaintData={headerData}
         caseStatus={complaintDetails?.caseStatus}
         setOpenModifyDetails={setOpenModifyDetails}
+        createdAt={complaintDetails?.created_at}
       />
       <ComplaintSecondaryInfo
         infoItems={infoItems}

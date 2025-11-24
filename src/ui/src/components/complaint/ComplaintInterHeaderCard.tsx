@@ -10,7 +10,8 @@ import { getDueStatus } from 'src/helpers';
 const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
   complaintData,
   caseStatus,
-  setOpenModifyDetails
+  setOpenModifyDetails,
+  createdAt
 }) => {
   const {
     caseId,
@@ -22,7 +23,7 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
     doseAmount,
     expirationDate,
     partNumber,
-    receipt_date
+    receipt_date,
   } = complaintData || {};
 
   console.log(complaintData);
@@ -40,8 +41,8 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
               <Box className={styles.caseIdText}>{caseId}</Box>
               <ComplaintsDueDateChip
-                type={receipt_date && getDueStatus(receipt_date).type}
-                label={receipt_date && getDueStatus(receipt_date).label}
+                type={createdAt && getDueStatus(createdAt).type}
+                label={createdAt && getDueStatus(createdAt).label}
               />
               <Box className={styles.flexGrow} />
               {(caseStatus !== 'processed') && <button
@@ -49,7 +50,7 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
                 className={`${styles.modifyBtn}`}
                 onClick={() => setOpenModifyDetails(true)}
               >
-                <img src={Edit}/><span className={styles.label}>Modify Details</span>
+                <img src={Edit} /><span className={styles.label}>Modify Details</span>
               </button>}
             </Stack>
           </Stack>

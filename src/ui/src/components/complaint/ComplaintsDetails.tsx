@@ -115,9 +115,11 @@ const ComplaintsDetails: React.FC = () => {
       label: "Receipt Date",
       iconSrc: ReceiptDateIcon,
       iconAlt: "Receipt Date",
-      value: formatDateMMM_D_YYYY(complaintDetails?.receipt_date as string),
+      value: formatDateMMM_D_YYYY(complaintDetails?.created_at as string),
     },
   ];
+
+  console.log(complaintDetails)
 
   useEffect(() => {
     if (complaintId) fetchData();
@@ -132,6 +134,7 @@ const ComplaintsDetails: React.FC = () => {
         onApproveAndSend={handleSubmit}
         caseStatus={complaintDetails?.caseStatus}
         isApproved={isApproved}
+        createdAt={complaintDetails?.created_at}
       />
       <ComplaintSecondaryInfo
         infoItems={infoItems}

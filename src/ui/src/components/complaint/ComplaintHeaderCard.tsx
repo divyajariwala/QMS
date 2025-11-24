@@ -10,7 +10,8 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
   complaintData,
   onApproveAndSend,
   caseStatus,
-  isApproved
+  isApproved,
+  createdAt
 }) => {
   const {
     status,
@@ -24,7 +25,7 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
     doseAmount,
     expirationDate,
     partNumber,
-    receipt_date
+    receipt_date,
   } = complaintData || {};
 
   return (
@@ -46,11 +47,11 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
               <Box className={styles.caseIdText}>{caseId}</Box>
               <ComplaintsDueDateChip
-                type={receipt_date && getDueStatus(receipt_date).type}
-                label={receipt_date && getDueStatus(receipt_date).label}
+                type={createdAt && getDueStatus(createdAt).type}
+                label={createdAt && getDueStatus(createdAt).label}
               />
               <Box className={styles.flexGrow} />
-              {(caseStatus === 'pending') && <button type="button" className={styles.approveSendButton} onClick={onApproveAndSend}>
+              {(caseStatus === 'pending' || caseStatus === 'overdue') && <button type="button" className={styles.approveSendButton} onClick={onApproveAndSend}>
                 <CheckIcon />
                 Approve and Send
               </button>}

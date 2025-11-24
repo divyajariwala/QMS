@@ -14,7 +14,8 @@ import EditIcon from "../../assets/icons/pencil.svg";
 import CloseIcon from "../../assets/icons/closeCross.svg";
 import CheckIcon from "../../assets/icons/greenTick.svg";
 import styles from "./ComplaintCategory.module.scss";
-import { ComplaintCategoryProps, ComplaintCategoryItem } from "src/types";
+import { issueList } from "src/constants";
+import { ComplaintCategoryProps, ComplaintCategoryItem, CategoryDetail } from "src/types";
 
 const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
   complaintCategories,
@@ -24,15 +25,6 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedData, setEditedData] = useState<ComplaintCategoryItem | null>(null);
 
-  function getColorClassName(color: string): string {
-    const colorClassMap: Record<string, string> = {
-      "#43a047": styles.green,
-      "#f57c00": styles.orange,
-      "#e53935": styles.red,
-    };
-    const normalizedColor = color.trim().toLowerCase();
-    return colorClassMap[normalizedColor] || "";
-  }
 
   const handleStartEdit = (item: ComplaintCategoryItem) => {
     setEditingId(item.id);
@@ -73,6 +65,18 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
     }
   };
 
+  const pushCrlLabelToIssueList = (
+    categoryDetails: CategoryDetail[],
+    issueList: string[]
+  ): void => {
+    categoryDetails.forEach(({ crl, label }) => {
+      issueList.push(`${crl}`);
+      issueList.push(`${label}`)
+    });
+  }
+
+  pushCrlLabelToIssueList(complaintCategories, issueList);
+
   return (
     <Paper variant="outlined" className={styles.rootPaper}>
       <Stack direction="row" alignItems="center" spacing={1} className={styles.headerStack}>
@@ -95,11 +99,11 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                   className={styles.selectMinSize}
                   classes={{ root: styles.editSelectRoot }}
                 >
-                  {complaintCategories.map((opt) => (
-                    <MenuItem key={opt.id} value={opt.label}>
-                      {opt.label}
-                    </MenuItem>
-                  ))}
+                  {Array.from(new Set(issueList))?.map((val, index) => (
+                      <MenuItem key={index} value={val}>
+                        {val}
+                      </MenuItem>
+                    ))}
                 </Select>
 
                 <Box className={`${styles.percentageBox} ${getPercentageClass(editedData.percentage)}`}>
@@ -117,7 +121,7 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     value={editedData.level}
                     onChange={(e) => handleEditChange("level", Number(e.target.value))}
                     fullWidth
-                    InputProps={{ classes: { input: styles.inputBaseInput }, inputProps: { min: 1 } }}
+                    InputProps={{ classes: { input: styles.inputBaseInput }, inputProps: { min: 1, max: 3 } }}
                     variant="outlined"
                     className={styles.editField}
                   />
@@ -134,9 +138,9 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     variant="outlined"
                   >
                     {/* Replace this with your real CRL options */}
-                    {complaintCategories.map((opt) => (
-                      <MenuItem key={opt.id} value={opt.crl}>
-                        {opt.crl}
+                    {Array.from(new Set(issueList))?.map((val, index) => (
+                      <MenuItem key={index} value={val}>
+                        {val}
                       </MenuItem>
                     ))}
                   </Select>
@@ -166,7 +170,7 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     value={editedData.unit}
                     onChange={(e) => handleEditChange("unit", Number(e.target.value))}
                     fullWidth
-                    InputProps={{ classes: { input: styles.inputBaseInput }, inputProps: { min: 1 } }}
+                    InputProps={{ classes: { input: styles.inputBaseInput }, inputProps: { min: 0 } }}
                     variant="outlined"
                     className={styles.editField}
                   />
@@ -209,7 +213,7 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                 <Box className={`${styles.percentageBox} ${getPercentageClass(item.percentage)}`}>
                   {Math.round(item.percentage)}%
                 </Box>
-                {caseStatus === "pending" && <IconButton
+                {(caseStatus === "pending" || caseStatus === "overdue") && <IconButton
                   aria-label={`edit ${item.label}`}
                   size="small"
                   onClick={() => handleStartEdit(item)}

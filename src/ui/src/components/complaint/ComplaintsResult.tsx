@@ -57,10 +57,10 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
   const navigate = useNavigate();
 
   const handleSeeDetailsClick = () => {
-    if (activeStatus === 'processed' || activeStatus === 'overdue') {
+    if (activeStatus === 'processed') {
       navigate(`/approveComplaints/${complaint.case_id}`);
     } 
-    if(activeStatus === 'pending') {
+    if(activeStatus === 'pending' || activeStatus === 'overdue') {
       navigate(`/complaints/${complaint.case_id}`);
     }
   };
@@ -88,9 +88,11 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
       label: "Receipt Date",
       iconSrc: ReceiptDateIcon,
       iconAlt: "Receipt Date",
-      value: formatDateMMM_D_YYYY(complaint.receipt_date),
+      value: formatDateMMM_D_YYYY(complaint.created_at),
     },
   ];
+
+  console.log(complaint);
 
   return (
     <div className={styles.complaintsCardContainer}>
@@ -99,10 +101,10 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
           <Box className={styles.statusText}>{selected === 'pending' ? "IN REVIEW" : selected.toUpperCase()}</Box>
           <Box className={styles.caseNumberText}>{complaint.case_id}</Box>
         </Box>
-        <ComplaintsDueDateChip
-          type={getDueStatus(complaint.receipt_date).type}
-          label={getDueStatus(complaint.receipt_date).label}
-        />
+        {activeStatus !== "processed" && <ComplaintsDueDateChip
+          type={getDueStatus(complaint.created_at).type}
+          label={getDueStatus(complaint.created_at).label}
+        />}
       </div>
 
       <div className={styles.infoRow}>

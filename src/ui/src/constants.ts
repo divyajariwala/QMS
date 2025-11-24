@@ -20,3 +20,21 @@ export const mapped: { [key: number]: string } = {
   1: 'pending',
   2: 'processed'
 }
+
+export const issueList = [
+  "Injection incomplete",
+  "Leaking unspecified",
+  "Needle bent",
+  "Dose confirmation",
+  "Device not working",
+  "Needle not fully extended",
+  "Device activated with base cap attached",
+  "Device activated before placement on skin",
+  "Injection button difficult to press",
+  "Needle did not retract",
+  "Device defective",
+  "Device activated before pressing button",
+  "Lack of Drug Effect",
+  "Pen was used from package",
+  "Needle broken",
+];
