@@ -10,6 +10,14 @@
   margin-bottom: 8px;
 }
 
+.MuiMenu-paper {
+  font-family: inherit !important; /* or specify your font stack */
+}
+
+.MuiList-root .MuiMenuItem-root {
+  font-family: inherit !important;
+}
+
 .headerTitle {
   font-weight: 600;
   font-size: 18px;

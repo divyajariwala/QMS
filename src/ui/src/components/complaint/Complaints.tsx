@@ -74,7 +74,6 @@ const Complaints = () => {
         narrative: inputValue,
       };
       const result = await createComplaint(complaintPayload);
-      console.log('Complaint created:', result);
       setProcessingFile(true);
       const res = await fetchComplaints(activeStatus, pageNumber);
       setData(res);

@@ -119,8 +119,6 @@ const ComplaintsDetails: React.FC = () => {
     },
   ];
 
-  console.log(complaintDetails)
-
   useEffect(() => {
     if (complaintId) fetchData();
   }, [complaintId]);
@@ -159,7 +157,6 @@ const ComplaintsDetails: React.FC = () => {
                 // Force deep clone
                 const clonedPrev = JSON.parse(JSON.stringify(prev));
                 clonedPrev.category_details = newCategoryDetails;
-                console.log("Setting complaintDetails with cloned data:", clonedPrev);
                 return clonedPrev;
               });
             }}

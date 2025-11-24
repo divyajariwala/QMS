@@ -26,8 +26,6 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
     receipt_date,
   } = complaintData || {};
 
-  console.log(complaintData);
-
   return (
     <Paper className={styles.paper}>
       <Box className={styles.flexContainer}>

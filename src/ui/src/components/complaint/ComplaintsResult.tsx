@@ -92,8 +92,6 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
     },
   ];
 
-  console.log(complaint);
-
   return (
     <div className={styles.complaintsCardContainer}>
       <div className={styles.headerRow}>

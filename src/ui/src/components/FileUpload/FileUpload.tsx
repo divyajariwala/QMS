@@ -26,7 +26,6 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   const [fileCount, setFileCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  console.log(status);
 
   useEffect(() => {
   if (status === 'success') {
