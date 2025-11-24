@@ -230,6 +230,7 @@ jobs:
           VITE_OIDC_REDIRECT_URI="${{ secrets.VITE_OIDC_REDIRECT_URI }}" \
           VITE_OIDC_POST_LOGOUT_REDIRECT_URI="${{ secrets.VITE_OIDC_POST_LOGOUT_REDIRECT_URI }}" \
           VITE_OIDC_SCOPE="${{ secrets.VITE_OIDC_SCOPE }}" \
+          VITE_OIDC_CLIENT_SECRET="${{ secrets.VITE_OIDC_CLIENT_SECRET }}" \
           npm run build:dev
           ls -la dist || true
 
