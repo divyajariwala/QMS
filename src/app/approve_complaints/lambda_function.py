@@ -54,7 +54,7 @@ def lambda_handler(event, context):
         
         current_status = body.get('caseStatus', '').lower()
         if current_status not in ['pending', 'overdue']:
-            return _error_response(400, f"Can only approve complaints with pending or overdue status. Current status: {current_status}")
+            return _error_response(400, f"Invalid status. Can only approve complaints with pending or overdue status. Current status: {current_status}")
         
         category_details = body.get('categoryDetails') or body.get('category_details', [])
         

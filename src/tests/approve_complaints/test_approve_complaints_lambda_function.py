@@ -101,9 +101,8 @@ class TestLambdaHandler:
         assert result['statusCode'] == 400
         body = json.loads(result['body'])
         assert body['success'] is False
-        assert 'Can only approve complaints with pending or overdue status' in body['error']
+        assert 'Invalid status' in body['error'] and 'pending or overdue' in body['error']
 
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_approve_overdue_complaint(self):
         """Test: Successful overdue complaint approval"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
