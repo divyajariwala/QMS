@@ -3,6 +3,8 @@ const ENV: string = process.env.VITE_API_URL ?? "development";
 // Base URL for your primary API
 export const API_BASE_URL = (() => {
   switch (ENV) {
+    case "development":
+      return "https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/"
     case "qa":
       return "https://gateway.pwc.com/"; // For QA
     case "prod":

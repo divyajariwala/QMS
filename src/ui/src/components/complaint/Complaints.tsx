@@ -40,7 +40,7 @@ const Complaints = () => {
   const { user } = useAuth();
   const displayName = `${user?.profile?.given_name ?? ''}`.trim();
 
-  const { done } = usePolling(processingFile);
+  const { done, falseCount, error } = usePolling(processingFile);
 
   const items = [
     { label: 'Home', to: '/' },
@@ -95,10 +95,10 @@ const Complaints = () => {
     }
   };
 
-  // Normal fetch when user changes filters or pages and not processingFile (polling)
+  // Normal fetch when user changes filters or pages
   useEffect(() => {
     fetchData();
-  }, [activeStatus, pageNumber]);
+  }, [activeStatus, pageNumber, falseCount]);
 
   // When polling done, stop loading and refresh data
   useEffect(() => {
@@ -109,11 +109,12 @@ const Complaints = () => {
   }, [done]);
 
   const handleFileUploadSuccess = async () => {
-    setOpenFileUpload(false);  // close modal here
-    await fetchData();
+    await fetchData();  // close modal here
   };
 
   const complaints = caseStatus?.[selected as CaseStatusKey];
+
+  console.log(error);
 
   if (loading) return <p>Loading complaints...</p>;
 
@@ -159,9 +160,9 @@ const Complaints = () => {
           />
         );
       })}
-      <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />
+      {complaints && complaints.length > 0 && <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />}
       <Popup open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />
-      <FileUpload onSuccess={handleFileUploadSuccess} setProcessing={setProcessingFile} open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
+      <FileUpload setOpenFileUpload={setOpenFileUpload} onSuccess={handleFileUploadSuccess} setProcessing={setProcessingFile} open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
     </Box>
   );
 };

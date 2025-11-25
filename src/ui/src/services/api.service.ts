@@ -6,7 +6,7 @@ import {
 import { ComplaintResult, SessionData, UIResultsParams, ComplaintRequest, CreateComplaintResponse, getComplaintsApiResponse,
    ComplaintDetail, ApproveComplaintResponse, ApproveComplaintRequest } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
+import { API_BASE_URL } from 'src/config';
 
 /**
  * Fetches the initial data from the backend.
@@ -17,27 +17,27 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
  * @param userName - The user name received from Veeva.
  * @returns The initial data object. May be undefined if an error occurs.
  */
-export const getInitialData = async (
-  id: string,
-  sessionId: string | null,
-  userName: string | null,
-) => {
-  try {
-    const q = `${COMPLAINT_ID_NAME}=${id}&${COMPLAINT_SESSION_ID}=${sessionId}&${COMPLAINT_USER_NAME}=${userName}`;
-    const res = await fetch(`${API_BASE_URL}getinitialdata?${q}`, {
-      method: 'GET',
-    });
+// export const getInitialData = async (
+//   id: string,
+//   sessionId: string | null,
+//   userName: string | null,
+// ) => {
+//   try {
+//     const q = `${COMPLAINT_ID_NAME}=${id}&${COMPLAINT_SESSION_ID}=${sessionId}&${COMPLAINT_USER_NAME}=${userName}`;
+//     const res = await fetch(`${API_BASE_URL}getinitialdata?${q}`, {
+//       method: 'GET',
+//     });
 
-    if (res.ok) {
-      return await res.json();
-    }
+//     if (res.ok) {
+//       return await res.json();
+//     }
 
-    return;
-  } catch (err) {
-    console.log('getinitialdata error', err);
-    return;
-  }
-}
+//     return;
+//   } catch (err) {
+//     console.log('getinitialdata error', err);
+//     return;
+//   }
+// }
 
 /**
  * Sends the drug name and narrative text to the backend.
@@ -48,170 +48,170 @@ export const getInitialData = async (
  * @param narrativeText  - The narrative text.
  * @returns A data object containing the result of the drug name and narrative processing in the backend. May be undefined if an error occurs.
  */
-export const invokeApi = async (
-  id: string | null,
-  date: string,
-  drugName: string,
-  narrativeText: string,
-  sessionData: SessionData | null,
-) => {
-  const params = {
-    complaint_id: id,
-    time: date,
-    narrative: narrativeText,
-    drugname: drugName,
-    session_id: sessionData?.session_id ?? null,
-    user_name: sessionData?.user_name ?? null,
-  };
+// export const invokeApi = async (
+//   id: string | null,
+//   date: string,
+//   drugName: string,
+//   narrativeText: string,
+//   sessionData: SessionData | null,
+// ) => {
+//   const params = {
+//     complaint_id: id,
+//     time: date,
+//     narrative: narrativeText,
+//     drugname: drugName,
+//     session_id: sessionData?.session_id ?? null,
+//     user_name: sessionData?.user_name ?? null,
+//   };
 
-  try {
-    const res = await fetch(`${API_BASE_URL}invokeapi`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
-    });
+//   try {
+//     const res = await fetch(`${API_BASE_URL}invokeapi`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(params),
+//     });
 
-    if (res.ok) {
-      return await res.json();
-    }
+//     if (res.ok) {
+//       return await res.json();
+//     }
 
-    return;
-  } catch (err) {
-    console.log('invokeApi error', err);
-    return;
-  }
-}
+//     return;
+//   } catch (err) {
+//     console.log('invokeApi error', err);
+//     return;
+//   }
+// }
 
-/**
- * Triggers the backend categorization process. Uses the data sent by the invokeApi endpoint.
- * This method must be called after the invokeApi method.
- *
- * @param id - The complaint id.
- * @returns Control data. May be undefined if an error occurs.
- */
-export const categoryInvoke = async (id: string) => {
-  const params = {
-    complaint_id: id,
-  };
+// /**
+//  * Triggers the backend categorization process. Uses the data sent by the invokeApi endpoint.
+//  * This method must be called after the invokeApi method.
+//  *
+//  * @param id - The complaint id.
+//  * @returns Control data. May be undefined if an error occurs.
+//  */
+// export const categoryInvoke = async (id: string) => {
+//   const params = {
+//     complaint_id: id,
+//   };
 
-  try {
-    const res = await fetch(`${API_BASE_URL}categoryinvoke`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
-    });
+//   try {
+//     const res = await fetch(`${API_BASE_URL}categoryinvoke`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(params),
+//     });
 
-    if (res.ok) {
-      return await res.json();
-    }
+//     if (res.ok) {
+//       return await res.json();
+//     }
 
-    return;
-  } catch (err) {
-    console.log('categoryInvoke error', err);
-    return;
-  }
-}
+//     return;
+//   } catch (err) {
+//     console.log('categoryInvoke error', err);
+//     return;
+//   }
+// }
 
-/**
- * Fetches the final result of the complaint.
- *
- * @param id - The complaint id.
- * @returns The complaint result object. May be undefined if an error occurs.
- */
-export const fetchResults = async (id: string) => {
-  const params = {
-    complaint_id: id,
-  };
+// /**
+//  * Fetches the final result of the complaint.
+//  *
+//  * @param id - The complaint id.
+//  * @returns The complaint result object. May be undefined if an error occurs.
+//  */
+// export const fetchResults = async (id: string) => {
+//   const params = {
+//     complaint_id: id,
+//   };
 
-  try {
-    const response = await fetch(`${API_BASE_URL}fetchresults`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
-    });
+//   try {
+//     const response = await fetch(`${API_BASE_URL}fetchresults`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(params),
+//     });
 
-    if (response.ok) {
-      return await response.json();
-    }
+//     if (response.ok) {
+//       return await response.json();
+//     }
 
-    return;
-  } catch (err) {
-    console.log('fetchResults error', err);
-    return;
-  }
-}
+//     return;
+//   } catch (err) {
+//     console.log('fetchResults error', err);
+//     return;
+//   }
+// }
 
-/**
- * Sends the final results (edited and approved by the user) to the backend.
- *
- * @param id - The complaint id.
- * @param data - The complete result data.
- * @param priority - The original priority value.
- * @param modelPriority - The edited priority value.
- * @returns Control data (not used in the UI). May be undefined if an error occurs.
- */
-export const uiResults = async (
-  id: string,
-  data: ComplaintResult[],
-  priority: number | null,
-  modelPriority: number | null,
-) => {
-  const params: UIResultsParams = {
-    complaint_id: id,
-    data,
-  };
+// /**
+//  * Sends the final results (edited and approved by the user) to the backend.
+//  *
+//  * @param id - The complaint id.
+//  * @param data - The complete result data.
+//  * @param priority - The original priority value.
+//  * @param modelPriority - The edited priority value.
+//  * @returns Control data (not used in the UI). May be undefined if an error occurs.
+//  */
+// export const uiResults = async (
+//   id: string,
+//   data: ComplaintResult[],
+//   priority: number | null,
+//   modelPriority: number | null,
+// ) => {
+//   const params: UIResultsParams = {
+//     complaint_id: id,
+//     data,
+//   };
 
-  if (priority !== null && modelPriority !== null) {
-    params.priority = priority;
-    params.modelPriority = modelPriority;
-  }
+//   if (priority !== null && modelPriority !== null) {
+//     params.priority = priority;
+//     params.modelPriority = modelPriority;
+//   }
 
-  try {
-    const res = await fetch(`${API_BASE_URL}uiresults`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
-    });
+//   try {
+//     const res = await fetch(`${API_BASE_URL}uiresults`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(params),
+//     });
 
-    if (res.ok) {
-      return await res.json();
-    }
+//     if (res.ok) {
+//       return await res.json();
+//     }
 
-    return;
-  } catch (err) {
-    console.log('uiResults error', err);
-    return;
-  }
-}
+//     return;
+//   } catch (err) {
+//     console.log('uiResults error', err);
+//     return;
+//   }
+// }
 
-/**
- * Obtains an html content.
- *
- * @param url - The URL to the HTML file stored in an S3 bucket.
- * @returns The HTML content.
- */
-export const fetchHtml = async (url: string) => {
-  try {
-    const res = await fetch(url);
+// /**
+//  * Obtains an html content.
+//  *
+//  * @param url - The URL to the HTML file stored in an S3 bucket.
+//  * @returns The HTML content.
+//  */
+// export const fetchHtml = async (url: string) => {
+//   try {
+//     const res = await fetch(url);
 
-    if (res.ok) {
-      return await res.text();
-    }
+//     if (res.ok) {
+//       return await res.text();
+//     }
 
-    return;
-  } catch (err) {
-    console.log('fetchHtml error', err);
-    return;
-  }
-}
+//     return;
+//   } catch (err) {
+//     console.log('fetchHtml error', err);
+//     return;
+//   }
+// }
 
 /**
  * Uploads a complaint file to the backend.
@@ -224,7 +224,7 @@ export const uploadComplaintFile = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch(`https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/uploadComplaints`, {
+    const res = await fetch(`${API_BASE_URL}dev/uploadComplaints`, {
       method: 'POST',
       body: formData,
     });
@@ -246,7 +246,7 @@ export const createComplaint = async (
   complaint: ComplaintRequest
 ): Promise<CreateComplaintResponse> => {
   const response = await fetch(
-    "https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/createComplaint",
+    `${API_BASE_URL}dev/createComplaint`,
     {
       method: "POST",
       headers: {
@@ -266,7 +266,7 @@ export const createComplaint = async (
 
 export async function fetchComplaints(status: string, page: Number): Promise<getComplaintsApiResponse> {
   const response = await fetch(
-    `https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/getComplaints?status=${status}&page=${page}`
+    `${API_BASE_URL}dev/getComplaints?status=${status}&page=${page}`
   );
 
   if (!response.ok) {
@@ -278,7 +278,7 @@ export async function fetchComplaints(status: string, page: Number): Promise<get
 }
 
 export async function fetchComplaintDetailById(complaint_id: string | undefined): Promise<ComplaintDetail> {
-  const url = new URL("https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/getComplaints");
+  const url = new URL(`${API_BASE_URL}dev/getComplaints`);
   if(complaint_id) url.searchParams.append("complaint_id", complaint_id);
 
   const response = await fetch(url.toString());
@@ -294,7 +294,7 @@ export async function fetchComplaintDetailById(complaint_id: string | undefined)
 export async function postApproveComplaint(
   data: ApproveComplaintRequest
 ): Promise<ApproveComplaintResponse> {
-  const response = await fetch("https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/approveComplaints", {
+  const response = await fetch(`${API_BASE_URL}dev/approveComplaints`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -312,7 +312,7 @@ export async function postApproveComplaint(
 
 
 export async function classifyComplaint<T = any>(complaintId: string): Promise<T> {
-  const url = 'https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/classifyComplaints';
+  const url = `${API_BASE_URL}dev/classifyComplaints`;
   const payload = { complaint_id: complaintId };
 
   const response = await fetch(url, {
@@ -355,7 +355,7 @@ interface ModifyExtractedDetailsPayload {
 export async function modifyExtractedDetails(
   payload: ModifyExtractedDetailsPayload
 ): Promise<ModifyExtractedDetailsPayload> {
-  const url = 'https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/modifyExtractedDetails';
+  const url = `${API_BASE_URL}dev/modifyExtractedDetails`;
 
   const response = await fetch(url, {
     method: 'POST',

@@ -309,6 +309,7 @@ export interface FileUploadPopupProps {
   onFileSelect: (file: File) => void;
   setProcessing: (val: boolean) => void;
   onSuccess: () => void;
+  setOpenFileUpload: (val: boolean) => void;
 }
 
 export type fileUploadStatus = 'idle' | 'uploading' | 'importing' | 'extracting' | 'success' | 'error';

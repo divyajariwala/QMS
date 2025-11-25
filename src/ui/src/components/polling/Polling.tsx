@@ -1,31 +1,47 @@
 import { useEffect, useRef, useState } from 'react';
 import { getComplaintsApiResponse } from 'src/types';
 
-export const usePolling = (shouldPoll: boolean) => {
+export const usePolling = (shouldPoll: boolean, maxRetries = 10) => {
   const [pollingData, setPollingData] = useState<getComplaintsApiResponse | null>(null);
   const [polling, setPolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [falseCount, setFalseCount] = useState<number | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const prevFalseCountRef = useRef<number | null>(null);
+  const isCancelledRef = useRef(false);
 
   useEffect(() => {
     if (!shouldPoll) {
-      // Stop polling and reset done if polling turned off externally
       if (timerRef.current) clearTimeout(timerRef.current);
       setDone(false);
+      setError(null);
+      setFalseCount(null);
+      prevFalseCountRef.current = null;
+      setRetryCount(0);
       return;
     }
+
     if (done) {
-      // Stop polling when done = true
       if (timerRef.current) clearTimeout(timerRef.current);
       return;
     }
 
-    let isCancelled = false;
+    if (retryCount >= maxRetries) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setError(`Maximum retries of ${maxRetries} reached.`);
+      setDone(true);
+      return;
+    }
+
+    isCancelledRef.current = false;
 
     const fetchData = async () => {
       setPolling(true);
       setError(null);
+
       try {
         const res = await fetch(
           'https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/getComplaints?status=pending&page=1'
@@ -33,36 +49,44 @@ export const usePolling = (shouldPoll: boolean) => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
         const json: getComplaintsApiResponse = await res.json();
-        if (isCancelled) return;
+        if (isCancelledRef.current) return;
 
-        setPollingData(json);
+        const currentFalseCount = json?.caseStatus?.pending?.filter(e => e?.text_extracted === false).length ?? 0;
+        setFalseCount(currentFalseCount);
 
-        const val = json?.caseStatus?.pending?.[0]?.text_extracted;
+        if (prevFalseCountRef.current === null || prevFalseCountRef.current !== currentFalseCount) {
+          setPollingData(json);
+          prevFalseCountRef.current = currentFalseCount;
+          setRetryCount(0); // reset retries on progress
+        } else {
+          setRetryCount(r => r + 1); // increment retry if no progress
+        }
 
-        if (val) {
+        if (currentFalseCount === 0) {
           setDone(true);
           if (timerRef.current) clearTimeout(timerRef.current);
           return;
         }
       } catch (err) {
         setError((err as Error).message || 'Unknown error');
+        setRetryCount(r => r + 1); // increment retry on error too
       } finally {
-        setPolling(false);
+        if (!isCancelledRef.current) setPolling(false);
       }
 
-      if (!done && !isCancelled) {
+      if (!done && !isCancelledRef.current) {
         timerRef.current = setTimeout(fetchData, 10000);
       }
     };
 
-    // Run immediately
-    fetchData();
+    // Schedule the first fetch after 10 seconds instead of calling immediately
+    timerRef.current = setTimeout(fetchData, 10000);
 
     return () => {
-      isCancelled = true;
+      isCancelledRef.current = true;
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [shouldPoll, done]);
+  }, [shouldPoll, done, maxRetries, retryCount]);
 
-  return { pollingData, polling, error, done };
+  return { pollingData, polling, error, done, falseCount, retryCount };
 };

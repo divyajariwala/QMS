@@ -98,7 +98,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
         <Box>
           <Box className={styles.statusText}>{selected === 'pending' ? "IN REVIEW" : selected.toUpperCase()}</Box>
           <Box className={styles.caseNumberText}>{complaint.case_id}
-            {loading && <span className={styles.processText}>Complaint is being progessed</span>}</Box>
+            {loading && <span className={styles.processText}>Complaint is being processed...</span>}</Box>
         </Box>
         {activeStatus !== "processed" && (
           <ComplaintsDueDateChip
