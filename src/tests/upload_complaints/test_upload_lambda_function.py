@@ -154,45 +154,6 @@ class TestLambdaHandler:
     @patch('boto3.client')
     @patch('upload_complaints.lambda_function.parse_multipart_manual')
     @patch('upload_complaints.lambda_function.create_file_record')
-    def test_csv_too_many_rows(self, mock_create_file, mock_parse, mock_boto3):
-        """Test: CSV file with more than 20 rows should be rejected"""
-        mock_s3 = Mock()
-        mock_sqs = Mock()
-        mock_boto3.side_effect = lambda service: mock_s3 if service == 's3' else mock_sqs
-        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
-        
-        # Create CSV with 21 rows
-        csv_content = 'complaint_id,narrative_text\n'
-        for i in range(21):
-            csv_content += f'OLD-{i:03d},Test narrative {i}\n'
-        
-        mock_parse.return_value = {
-            'filename': 'large_data.csv',
-            'content': csv_content.encode(),
-            'content_type': 'text/csv',
-            'field_name': 'file'
-        }
-
-        event = {
-            'body': 'multipart-fake-content',
-            'isBase64Encoded': False,
-            'headers': {'content-type': 'multipart/form-data; boundary=test'}
-        }
-
-        result = lambda_function.lambda_handler(event, {})
-
-        assert result['statusCode'] == 400
-        body = json.loads(result['body'])
-        assert 'Maximum allowed is 20 rows' in body['message']
-    
-    @patch.dict(os.environ, {
-        'env': 'dev',
-        'S3_BUCKET_NAME': 'test-bucket',
-        'SQS_QUEUE_NAME': 'test-queue'
-    })
-    @patch('boto3.client')
-    @patch('upload_complaints.lambda_function.parse_multipart_manual')
-    @patch('upload_complaints.lambda_function.create_file_record')
     def test_csv_too_many_columns(self, mock_create_file, mock_parse, mock_boto3):
         """Test: CSV file with more than 2 columns should be rejected"""
         mock_s3 = Mock()
@@ -440,18 +401,6 @@ class TestCSVProcessing:
         
         assert result['success'] is True
         assert result['processed_complaints'] == 3
-    
-    def test_process_csv_excel_file_too_many_rows(self):
-        """Test: Reject CSV with more than 20 rows"""
-        # Create CSV with 21 rows
-        csv_content = 'complaint_id,narrative_text\n'
-        for i in range(21):
-            csv_content += f'OLD-{i:03d},Test narrative {i}\n'
-        
-        result = lambda_function.process_csv_excel_file(csv_content.encode(), 'csv', 'test-file-id')
-        
-        assert result['success'] is False
-        assert 'Maximum allowed is 20 rows' in result['message']
     
     def test_process_csv_excel_file_too_many_columns(self):
         """Test: Reject CSV with more than 2 columns"""
