@@ -14,17 +14,17 @@ import EditIcon from "../../assets/icons/pencil.svg";
 import CloseIcon from "../../assets/icons/closeCross.svg";
 import CheckIcon from "../../assets/icons/greenTick.svg";
 import styles from "./ComplaintCategory.module.scss";
-import { issueList } from "src/constants";
-import { ComplaintCategoryProps, ComplaintCategoryItem, CategoryDetail } from "src/types";
+import { ComplaintCategoryProps, ComplaintCategoryItem } from "src/types";
 
 const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
   complaintCategories,
   setComplaintCategories,
-  caseStatus
+  caseStatus,
+  crlList,
+  labelList
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedData, setEditedData] = useState<ComplaintCategoryItem | null>(null);
-
 
   const handleStartEdit = (item: ComplaintCategoryItem) => {
     setEditingId(item.id);
@@ -65,18 +65,6 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
     }
   };
 
-  const pushCrlLabelToIssueList = (
-    categoryDetails: CategoryDetail[],
-    issueList: string[]
-  ): void => {
-    categoryDetails.forEach(({ crl, label }) => {
-      issueList.push(`${crl}`);
-      issueList.push(`${label}`)
-    });
-  }
-
-  pushCrlLabelToIssueList(complaintCategories, issueList);
-
   return (
     <Paper variant="outlined" className={styles.rootPaper}>
       <Stack direction="row" alignItems="center" spacing={1} className={styles.headerStack}>
@@ -99,9 +87,9 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                   className={styles.selectMinSize}
                   classes={{ root: styles.editSelectRoot }}
                 >
-                  {Array.from(new Set(issueList))?.map((val, index) => (
-                      <MenuItem key={index} value={val}>
-                        {val}
+                  {labelList?.map((opt, index) => (
+                      <MenuItem key={index} value={opt}>
+                        {opt}
                       </MenuItem>
                     ))}
                 </Select>
@@ -138,9 +126,9 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     variant="outlined"
                   >
                     {/* Replace this with your real CRL options */}
-                    {Array.from(new Set(issueList))?.map((val, index) => (
-                      <MenuItem key={index} value={val}>
-                        {val}
+                    {crlList?.map((opt, index) => (
+                      <MenuItem key={index} value={opt}>
+                        {opt}
                       </MenuItem>
                     ))}
                   </Select>

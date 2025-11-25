@@ -23,10 +23,11 @@ import styles from "./ComplaintsResult.module.scss";
 
 const ComplaintsDetails: React.FC = () => {
   const [open, setOpen] = useState(false);
-  //const [complaints, setComplaints] = useState<ComplaintCategoryItem[]>(complaintCategories);
   const [complaintDetails, setComplaintDetails] = useState<ComplaintDetail | null>(null);
   const [isApproved, setIsApproved] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [crlList, setCrlList] = useState<string[]>([]);
+  const [labelList, setLabelList] = useState<string[]>([]);
   const { complaintId } = useParams<{ complaintId: string | undefined }>();
   const complaintHeaderData = {
     status: complaintDetails?.caseStatus,
@@ -48,6 +49,8 @@ const ComplaintsDetails: React.FC = () => {
     try {
       const data = await fetchComplaintDetailById(complaintId);
       setComplaintDetails(data);
+      setCrlList(data?.category_details?.map( e => e?.crl));
+      setLabelList(data?.category_details?.map( e => e?.label));
     } catch (err: any) {
       console.log(err.message || "Failed to load complaint details.");
     } finally {
@@ -149,12 +152,13 @@ const ComplaintsDetails: React.FC = () => {
         </Grid>
         <Grid item xs={12} md={7.1}>
           <ComplaintCategory
+            crlList={crlList}
+            labelList={labelList}
             caseStatus={complaintDetails?.caseStatus}
             complaintCategories={complaintDetails?.category_details || []}
             setComplaintCategories={(newCategoryDetails) => {
               setComplaintDetails((prev) => {
                 if (!prev) return prev;
-                // Force deep clone
                 const clonedPrev = JSON.parse(JSON.stringify(prev));
                 clonedPrev.category_details = newCategoryDetails;
                 return clonedPrev;

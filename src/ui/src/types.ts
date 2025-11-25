@@ -170,6 +170,8 @@ export interface ComplaintCategoryProps {
   complaintCategories: ComplaintCategoryItem[];
   setComplaintCategories: (updatedCategories: ComplaintCategoryItem[]) => void;
   caseStatus: string | undefined;
+  crlList: string[];
+  labelList: string[];
 }
 
 export interface ComplaintHeaderCardProps {
@@ -189,7 +191,8 @@ export interface ComplaintHeaderCardProps {
   };
   onApproveAndSend: () => void;
   caseStatus: string | undefined;
-  isApproved: boolean
+  isApproved: boolean;
+  createdAt: string | undefined;
 }
 
 export interface ComplaintInterHeaderCardProps {
@@ -419,6 +422,7 @@ export interface ComplaintDetail {
   caseStatus: string;
   category_details: CategoryDetail[];
   complaintClassified?: boolean;
+  created_at?: string;
 }
 
 export type CaseStatusKey = "pending" | "processed" | "overdue";
