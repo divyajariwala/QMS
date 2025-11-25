@@ -18,7 +18,6 @@ import { formatDateMMM_D_YYYY } from 'src/utils';
 import { calculateOverdueDays } from 'src/helpers';
 import { fetchComplaintDetailById, postApproveComplaint } from 'src/services/api.service';
 import Notification from '@components/Notification/Notification';
-import { MockComplaintDetailApiResponse } from 'src/mockData/mockData';
 import styles from "./ComplaintsResult.module.scss";
 
 const ComplaintsDetails: React.FC = () => {
@@ -48,9 +47,12 @@ const ComplaintsDetails: React.FC = () => {
     setLoading(true);
     try {
       const data = await fetchComplaintDetailById(complaintId);
+      if (data?.category_details) {
+        data.category_details = data.category_details.sort((a, b) => b.percentage - a.percentage);
+      }
       setComplaintDetails(data);
-      setCrlList(data?.category_details?.map( e => e?.crl));
-      setLabelList(data?.category_details?.map( e => e?.label));
+      setCrlList(data?.crl_list);
+      setLabelList(data?.label_list);
     } catch (err: any) {
       console.log(err.message || "Failed to load complaint details.");
     } finally {

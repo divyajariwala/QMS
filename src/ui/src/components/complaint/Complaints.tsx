@@ -11,8 +11,6 @@ import StatusTabs from './StatusTabs';
 import ComplaintsStatusCard from '@components/commonCard/ComplaintsStatusCard';
 import { createComplaint, fetchComplaints } from 'src/services/api.service';
 import { getComplaintsApiResponse, CaseStatusKey } from 'src/types';
-import Notification from '@components/Notification/Notification';
-import ProcessingNotification from '@components/processingNotification/ProcessingNotification';
 import PaginationComponent from '@components/pagination/PaginationComponent';
 import { usePolling } from '@components/polling/Polling';
 import { useAuth } from '../../auth/useAuth';
@@ -28,7 +26,6 @@ const Complaints = () => {
   };
 
   const [open, setOpen] = useState<boolean>(false);
-  const [openNotification, setOpenNotification] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>('');
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [openFileUpload, setOpenFileUpload] = useState<boolean>(false);
@@ -50,10 +47,6 @@ const Complaints = () => {
     { label: 'Complaints' },
   ];
 
-  const handleShowNotification = () => {
-    setOpenNotification(true);
-  };
-
   const handleFileSelect = (file: File) => {
     console.log('Selected file:', file);
   };
@@ -73,11 +66,11 @@ const Complaints = () => {
       const complaintPayload = {
         narrative: inputValue,
       };
-      const result = await createComplaint(complaintPayload);
-      setProcessingFile(true);
+      await createComplaint(complaintPayload);
       const res = await fetchComplaints(activeStatus, pageNumber);
       setData(res);
       setPagination(res?.pagination);
+      setProcessingFile(true);
     } catch (error) {
       console.error('Failed to create complaint:', error);
     }
@@ -104,29 +97,16 @@ const Complaints = () => {
 
   // Normal fetch when user changes filters or pages and not processingFile (polling)
   useEffect(() => {
-    if (!processingFile) {
-      fetchData();
-    }
-  }, [activeStatus, pageNumber, processingFile]);
+    fetchData();
+  }, [activeStatus, pageNumber]);
 
   // When polling done, stop loading and refresh data
   useEffect(() => {
     if (done) {
       setProcessingFile(false);
-      handleShowNotification();
       fetchData();
     }
-  }, [done, activeStatus, pageNumber]);
-
-  const handleCloseNotification = (
-    event?: React.SyntheticEvent | Event,
-    reason?: string,
-  ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpenNotification(false);
-  };
+  }, [done]);
 
   const handleFileUploadSuccess = async () => {
     setOpenFileUpload(false);  // close modal here
@@ -167,14 +147,21 @@ const Complaints = () => {
       <ComplaintsStatusCard complaintStats={caseStats} />
       <StatusTabs setPageNumber={setPageNumber} active={activeStatus} setActive={setActiveStatus} pending={pending} processed={processed} overdue={overdue} />
       <ComplaintsFilter />
-      {caseStats && complaints?.map((complaint, index) => (
-        <ComplaintsResult key={index} complaint={complaint} selected={selected} activeStatus={activeStatus} />
-      ))}
+      {caseStats && complaints?.map((complaint, index) => {
+        const loading = !complaint.text_extracted && activeStatus === 'pending';
+        return (
+          <ComplaintsResult
+            key={index}
+            complaint={complaint}
+            selected={selected}
+            activeStatus={activeStatus}
+            loading={loading}
+          />
+        );
+      })}
       <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />
       <Popup open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />
       <FileUpload onSuccess={handleFileUploadSuccess} setProcessing={setProcessingFile} open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
-      <Notification open={openNotification} onClose={handleCloseNotification} position="top" message="Processed Successfully" />
-      <ProcessingNotification loading={processingFile} />
     </Box>
   );
 };

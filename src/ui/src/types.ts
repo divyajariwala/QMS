@@ -212,6 +212,7 @@ export interface ComplaintInterHeaderCardProps {
   };
   caseStatus: string | undefined;
   setOpenModifyDetails: (val: boolean) => void;
+  createdAt: string | undefined;
 }
 
 export interface ComplaintsDueDateChipProps {
@@ -261,9 +262,12 @@ export interface ComplaintProps {
     report_type: string;
     receipt_date: string; // You might want to correct this to 'receipt_date' if it's a typo
     case_type: string[];
+    text_extracted: boolean;
+    created_at: string;
   },
   selected: string;
   activeStatus: 'pending' | 'processed' | 'overdue';
+  loading: boolean;
 }
 
 export interface ButtonGroupProps {
@@ -350,6 +354,7 @@ export type Case = {
   receipt_date: string;
   case_type: string[];
   text_extracted: boolean;
+  created_at: string;
 };
 
 export type CaseStatus = {
@@ -423,6 +428,8 @@ export interface ComplaintDetail {
   category_details: CategoryDetail[];
   complaintClassified?: boolean;
   created_at?: string;
+  crl_list: string[];
+  label_list: string[];
 }
 
 export type CaseStatusKey = "pending" | "processed" | "overdue";

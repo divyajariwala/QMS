@@ -7,9 +7,7 @@ const Popup: React.FC<PopupProps> = ({ open, onClose, onSubmit, inputValue, setI
   
   if (!open) return null;
   const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    if (e.target.value.length <= MAX_LENGTH) {
       setInputValue(e.target.value);
-    }
   };
 
   const handleSubmit = (e: MouseEvent<HTMLButtonElement>) => {
@@ -44,9 +42,6 @@ const Popup: React.FC<PopupProps> = ({ open, onClose, onSubmit, inputValue, setI
               rows={13}
               maxLength={MAX_LENGTH}
             />
-            <div className={styles.charCount}>
-              {inputValue.length}/{MAX_LENGTH}
-            </div>
           </div>
         </section>
 

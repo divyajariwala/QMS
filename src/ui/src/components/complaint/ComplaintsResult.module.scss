@@ -49,7 +49,6 @@
 }
 
 .statusText {
-
   font-weight: 600;
   font-size: 12px;
   line-height: 24px;
@@ -57,6 +56,16 @@
   text-transform: uppercase;
   color: #3b3b3b;
   margin: 0;
+}
+
+.processText {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  color: #3b3b3b;
+  margin-left: 50px;
+  text-transform: none;
 }
 
 .caseNumberText {
@@ -94,7 +103,7 @@
 }
 
 .infoItemValue {
-
+  min-width: 100px;  
   font-weight: 600;
   font-size: 16px;
   line-height: 22px;
@@ -159,12 +168,14 @@
 .iconValueRow {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
 }
 
 .infoItemIcon {
-  vertical-align: middle;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .productComplaintsChip {
@@ -336,4 +347,8 @@ $disabled-opacity: 0.6;
   padding: 6px 10px;
   font-size: 13px;
   border-radius: 6px;
+}
+
+.skeleton {
+  padding-bottom: 20px;
 }

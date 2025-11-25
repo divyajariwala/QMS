@@ -52,7 +52,7 @@ export const usePollingClassify = (shouldPoll: boolean, id: string | undefined) 
       }
 
       if (!done && !isCancelled) {
-        timerRef.current = setTimeout(fetchData, 1000);
+        timerRef.current = setTimeout(fetchData, 10000);
       }
     };
 

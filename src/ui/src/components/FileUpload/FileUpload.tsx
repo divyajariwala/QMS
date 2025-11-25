@@ -26,13 +26,6 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   const [fileCount, setFileCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-
-  useEffect(() => {
-  if (status === 'success') {
-    onSuccess?.();
-  }
-}, [status, onSuccess]);
-
   useEffect(() => {
     if (!open) {
       setStatus('idle');
@@ -45,10 +38,12 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
     if (status === 'importing') {
-      timer = setTimeout(() => setStatus('extracting'), 0);
+      timer = setTimeout(() => setStatus('extracting'), 1000);
     } else if (status === 'extracting') {
-      timer = setTimeout(() => setStatus('success'), 0);
-    }
+      timer = setTimeout(() => setStatus('success'), 1000);
+    } else if (status === 'success') {
+    timer = setTimeout(() => onSuccess?.(), 1000);
+  }
 
     return () => {
       if (timer) clearTimeout(timer);

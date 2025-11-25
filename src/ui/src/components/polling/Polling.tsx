@@ -51,7 +51,7 @@ export const usePolling = (shouldPoll: boolean) => {
       }
 
       if (!done && !isCancelled) {
-        timerRef.current = setTimeout(fetchData, 1000);
+        timerRef.current = setTimeout(fetchData, 10000);
       }
     };
 

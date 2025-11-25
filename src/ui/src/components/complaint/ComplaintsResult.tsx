@@ -4,7 +4,8 @@ import { Box, Stack } from "@mui/material";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ComplaintsDueDateChip from "./ComplaintsDueDateChip";
 import { getDueStatus } from "src/helpers";
-import { formatDateMMM_D_YYYY } from "src/utils"
+import { formatDateMMM_D_YYYY } from "src/utils";
+import Skeleton from "@mui/material/Skeleton";
 
 import CriticalityIcon from "../../assets/icons/criticality.svg";
 import ReportTypeIcon from "../../assets/icons/reportType.svg";
@@ -21,15 +22,16 @@ const InfoItem = ({
   iconSrc,
   iconAlt,
   value,
-}: InfoItemProps) => (
+  loading = false,
+}: InfoItemProps & { loading?: boolean }) => (
   <div className={styles.stackColumn}>
     <Box className={styles.infoItemLabel}>{label}</Box>
     <div className={styles.iconValueRow}>
       <img src={iconSrc} alt={iconAlt} className={styles.infoItemIcon} />
-      {typeof value === "string" ? (
-        <Box className={styles.infoItemValue}>{value}</Box>
+      {loading ? (
+        <Skeleton variant="rectangular" width={100} height={24} />
       ) : (
-        value
+        <Box className={styles.infoItemValue}>{value}</Box>
       )}
     </div>
   </div>
@@ -42,26 +44,24 @@ const Chip = ({
   className,
 }: InfoChipProps) => (
   <div className={className}>
-    <Stack direction="row" gap={0.5}>
+    <Stack direction="row" gap={0.5} alignItems="center">
       <img src={iconSrc} alt={iconAlt} />
-      <Box
-        className={styles.infoItemLabel}
-      >
-        {label}
-      </Box>
+      <Box className={styles.infoItemLabel}>{label}</Box>
     </Stack>
   </div>
 );
 
-const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activeStatus }) => {
+const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activeStatus, loading }) => {
   const navigate = useNavigate();
 
   const handleSeeDetailsClick = () => {
-    if (activeStatus === 'processed') {
-      navigate(`/approveComplaints/${complaint.case_id}`);
-    } 
-    if(activeStatus === 'pending' || activeStatus === 'overdue') {
-      navigate(`/complaints/${complaint.case_id}`);
+    if (!loading) {
+      if (activeStatus === 'processed') {
+        navigate(`/approveComplaints/${complaint.case_id}`);
+      }
+      if (activeStatus === 'pending' || activeStatus === 'overdue') {
+        navigate(`/complaints/${complaint.case_id}`);
+      }
     }
   };
 
@@ -82,13 +82,13 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
       label: "Category",
       iconSrc: CategoryIcon,
       iconAlt: "Category",
-      value: 'NA',
+      value: "NA",
     },
     {
       label: "Receipt Date",
       iconSrc: ReceiptDateIcon,
       iconAlt: "Receipt Date",
-      value: formatDateMMM_D_YYYY(complaint.created_at),
+      value: formatDateMMM_D_YYYY(complaint?.created_at),
     },
   ];
 
@@ -97,40 +97,57 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
       <div className={styles.headerRow}>
         <Box>
           <Box className={styles.statusText}>{selected === 'pending' ? "IN REVIEW" : selected.toUpperCase()}</Box>
-          <Box className={styles.caseNumberText}>{complaint.case_id}</Box>
+          <Box className={styles.caseNumberText}>{complaint.case_id}
+            {loading && <span className={styles.processText}>Complaint is being progessed</span>}</Box>
         </Box>
-        {activeStatus !== "processed" && <ComplaintsDueDateChip
-          type={getDueStatus(complaint.created_at).type}
-          label={getDueStatus(complaint.created_at).label}
-        />}
+        {activeStatus !== "processed" && (
+          <ComplaintsDueDateChip
+            type={getDueStatus(complaint.created_at).type}
+            label={getDueStatus(complaint.created_at).label}
+          />
+        )}
       </div>
 
       <div className={styles.infoRow}>
         {infoItems.map(({ label, iconSrc, iconAlt, value }) => (
-          <InfoItem key={label} label={label} iconSrc={iconSrc} iconAlt={iconAlt} value={value} />
+          <InfoItem
+            key={label}
+            label={label}
+            iconSrc={iconSrc}
+            iconAlt={iconAlt}
+            value={value}
+            loading={loading}
+          />
         ))}
 
         <div className={styles.infoItemColumn}>
           <Box className={styles.infoItemLabel}>Case Type</Box>
-          <div className={styles.caseTypeRow}>
-            {complaint.case_type.includes("Product Complaint") && (
-              <Chip
-                iconSrc={ProductComplaintIcon}
-                iconAlt="Product Complaint"
-                label="Product Complaint"
-                className={styles.productComplaintsChip}
-              />
-            )}
-            {complaint.case_type.includes("Adverse Event") && (
-              <Chip
-                iconSrc={AdverseEventIcon}
-                iconAlt="Adverse Event"
-                label="Adverse Event"
-                className={styles.adverseEventChip}
-              />
-            )}
-            {(!complaint.case_type.includes("Product Complaint") && !complaint.case_type.includes("Adverse Event")) && <Box className={styles.infoItemValue}>NA</Box>}
-          </div>
+          {loading ? (
+            <Skeleton variant="rectangular" width={160} height={24} />
+          ) : (
+            <div className={styles.caseTypeRow}>
+              {complaint.case_type.includes("Product Complaint") && (
+                <Chip
+                  iconSrc={ProductComplaintIcon}
+                  iconAlt="Product Complaint"
+                  label="Product Complaint"
+                  className={styles.productComplaintsChip}
+                />
+              )}
+              {complaint.case_type.includes("Adverse Event") && (
+                <Chip
+                  iconSrc={AdverseEventIcon}
+                  iconAlt="Adverse Event"
+                  label="Adverse Event"
+                  className={styles.adverseEventChip}
+                />
+              )}
+              {!complaint.case_type.includes("Product Complaint") &&
+                !complaint.case_type.includes("Adverse Event") && (
+                  <Box className={styles.infoItemValue}>NA</Box>
+                )}
+            </div>
+          )}
         </div>
       </div>
 

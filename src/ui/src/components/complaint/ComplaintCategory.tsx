@@ -56,9 +56,9 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
   };
 
   const getPercentageClass = (percentage: number): string => {
-    if (percentage >= 85) {
+    if (percentage >= 70) {
       return styles.percentageGreen;
-    } else if (percentage >= 60) {
+    } else if (percentage >= 40) {
       return styles.percentageOrange;
     } else {
       return styles.percentageRed;
