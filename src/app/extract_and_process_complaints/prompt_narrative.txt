@@ -22,11 +22,11 @@ Your task is to extract the following information from the provided narrative te
 - Case ID (if mentioned, otherwise 'N/A')
 - Receipt Date (if mentioned, otherwise 'N/A') 
 - Criticality (infer from narrative content)
-- Report Type (infer as one of: Spontaneous, Clinical Trial, Literature, PSUR, PBRER, or N/A)
+- Report Type is not applicable. Value should be NA
 - Case Type (infer if it's Product Complaint, Adverse Event, or both using the AE/PC Classification Guidelines above. If ambiguous or borderline, classify based on the definitions provided)
 - Category (infer the category of complaint)
 - Narrative (the complete text provided)
-- Narrative Summary (generate a concise 100-150 word summary of the narrative capturing key points)
+- Narrative Summary (Summary should be proportionate to the size of the narrative. Generate a concise 50-500 word summary of the narrative capturing key points. Smaller narratives(50-150 words) should have smaller summaries while longer narrative(200+ words)s should have proportionately longer summaries )
 - Primary Reporter name and address (if mentioned, otherwise 'N/A')
 - Patient Name (if mentioned, otherwise 'N/A')
 - Physician Name (if mentioned, otherwise 'N/A')

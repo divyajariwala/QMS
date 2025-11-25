@@ -94,7 +94,7 @@ Field Specific Instructions:
 		- MedWatch Report - Can be found in the Describe Event or Problem field in section B. ADVERSE EVENT OR PRODUCT PROBLEM. Extract the full text in this section even if it is spanning mulitple pages.
 7a. Narrative Summary:
 	Key : narrative_summary
-	Definition : AI-generated concise summary of the narrative text in 100-150 words.
+	Definition : Narrative Summary (Summary should be proportionate to the size of the narrative. Generate a concise 50-500 word summary of the narrative capturing key points. Smaller narratives(50-150 words) should have smaller summaries while longer narrative(200+ words)s should have proportionately longer summaries )
 	Expected Values : A brief summary capturing key points including patient issue, product involved, and outcome.
 	Document Specific Instructions:
 		- Generate a professional summary of the narrative in 100-150 words

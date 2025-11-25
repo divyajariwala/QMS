@@ -37,7 +37,8 @@ LABEL_LIST = [
     "Device activated before pressing button",
     "Lack of Drug Effect",
     "Pen was used from package",
-    "Needle broken"
+    "Needle broken",
+    "Miscellaneous Sub-Category"
 ]
 
 def lambda_handler(event, context):
