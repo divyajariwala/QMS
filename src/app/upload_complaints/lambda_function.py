@@ -560,10 +560,6 @@ def process_csv_excel_file(file_content, file_extension, file_id):
         else:
             return {'success': False, 'message': f'Unsupported file type: {file_extension}'}
         
-        # Check row limit
-        if len(df) > 20:
-            return {'success': False, 'message': f'File has {len(df)} rows. Maximum allowed is 20 rows.'}
-        
         # Check column limit
         if len(df.columns) > 2:
             return {'success': False, 'message': f'File has {len(df.columns)} columns. Maximum allowed is 2 columns.'}
