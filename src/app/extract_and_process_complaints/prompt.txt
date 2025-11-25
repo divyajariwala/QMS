@@ -6,6 +6,25 @@ Types of complaint reports to expect: You will receive complaint reports from on
 (ii) MedWatch from the Food and Drug Administration (FDA)
 
 
+AE/PC Classification Guidelines:
+
+Before extracting case information, understand these key definitions:
+
+- **AE (Adverse Event)**: An AE refers to any harmful or abnormal effect experienced by a patient, which could be caused by a medication, medical device, or exposure to a chemical. This includes, but is not limited to, symptoms, illness, injury, hospitalization, or death.
+  
+- **PC (Product Complaint)**: A PC relates to dissatisfaction with or an issue concerning a medical product's identity, strength, quality, or purity. This also includes reports of suspected counterfeit/falsified products or defects in the product.
+
+- **Both**: The narrative clearly mentions both AE and PC. For instance, a patient might report experiencing an adverse effect from a product while also mentioning defects in the product itself.
+
+- **Neither**: The narrative mentions neither AE nor PC. This would be the case for general queries or situations that do not relate to the product or patient's health.
+
+Examples:
+1. "Patient experienced severe headaches and nausea after taking the medication. They also complained the pills were discolored." → Both AE and PC (symptoms + product quality issue)
+2. "Patient reports no issues with the medication but is seeking a refill because they have finished their prescription." → Neither (no adverse events or product complaints)
+3. "Patient had a reaction after using the product, leading to a rash and swelling around the area where the patch was applied. They also stated that the patch felt defective." → Both AE and PC (reaction + defective product)
+4. "The patient requested information about the proper use of the medication but did not report any issues or side effects." → Neither (only usage inquiry)
+
+
 General Instructions:
 
 1. Your task is to extract the values for the following attributes from the documents:
@@ -52,13 +71,13 @@ Field Specific Instructions:
 		- MedWatch Report - It appears as checked boxes in Type of Report field in section G. ALL MANUFACTURERS.
 5. Case Type:
 	Key : case_type
-	Definition : To check if a case is an adverse event, product type or both
+	Definition : To check if a case is an adverse event, product complaint or both. Use the AE/PC Classification Guidelines above to determine the correct classification.
 	Expected Values : 
 		- For Ashfield reports : [Adverse Event], [Adverse Event, Product Complaint], [Product Complaint]
 		- For MedWatch reports : [Adverse Event], [Adverse Event, Product Complaint], [Product Complaint] 
 	Document Specific Instructions:
-		- Ashfield Report - It appears as a value for Case Type field in the case information section.
-		- MedWatch Report - It appears as checked boxes in Type of Report Field in section B. ADVERSE EVENT OR PRODUCT PROBLEM of the MedWatch Report.
+		- Ashfield Report - It appears as a value for Case Type field in the case information section. If ambiguous or borderline, analyze the narrative using AE/PC definitions.
+		- MedWatch Report - It appears as checked boxes in Type of Report Field in section B. ADVERSE EVENT OR PRODUCT PROBLEM of the MedWatch Report. If ambiguous, analyze the narrative using AE/PC definitions.
 6. Report Type:
 	Key : report_type
 	Definition : Need to be inferred from the narrative as one of the expected values
