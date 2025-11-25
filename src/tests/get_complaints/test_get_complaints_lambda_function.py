@@ -501,6 +501,7 @@ class TestUtilityFunctions:
             )
 
 
+    @patch.object(lambda_function, 'CRL_TO_LABEL', {'CRL-000100': 'Dose confirmation', 'CRL-000106': 'Needle bent'})
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_with_crl_mapping(self, mock_get_db):
         """Test: CRL codes are mapped to labels and crl_list/label_list are included"""
@@ -560,6 +561,7 @@ class TestUtilityFunctions:
         assert len(body['label_list']) == 15
         assert 'Injection incomplete' in body['label_list']
 
+    @patch.object(lambda_function, 'CRL_TO_LABEL', {'CRL-000100': 'Dose confirmation'})
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_with_unassigned_crl(self, mock_get_db):
         """Test: UNASSIGNED CRL code is mapped to 'Not Assigned'"""
@@ -613,6 +615,7 @@ class TestUtilityFunctions:
         body = json.loads(result['body'])
         assert body['category_details'][0]['crl'] == 'Not Assigned'
 
+    @patch.object(lambda_function, 'CRL_TO_LABEL', {'CRL-000100': 'Dose confirmation'})
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_with_unknown_crl(self, mock_get_db):
         """Test: Unknown CRL code is mapped to 'Unknown CRL'"""
