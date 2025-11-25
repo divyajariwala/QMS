@@ -501,6 +501,216 @@ class TestUtilityFunctions:
             )
 
 
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_single_complaint_with_crl_mapping(self, mock_get_db):
+        """Test: CRL codes are mapped to labels and crl_list/label_list are included"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        mock_cursor.fetchone.side_effect = [
+            {
+                'complaint_id': 'CAS-555',
+                'receipt_date': date(2023, 1, 15),
+                'criticality': 'High',
+                'report_type': 'Spontaneous',
+                'narrative_summary': 'Test summary',
+                'case_type': 'AE',
+                'narrative': 'Test narrative',
+                'primary_reporter': 'John Doe',
+                'primary_reporter_address': '123 Main St',
+                'patient_name': 'Jane Patient',
+                'physician': 'Dr. Smith',
+                'drug': 'Test Drug',
+                'lot_no': 'LOT555',
+                'dosage': '100mg',
+                'expiration_date': date(2024, 1, 1),
+                'part_number': 'PN555',
+                'status': 'Pending',
+                'text_extracted': True,
+                'created_at': datetime(2023, 1, 15, 10, 0, 0),
+                'file_name': 'test.pdf',
+                's3_url': 's3://bucket/test.pdf'
+            },
+            {
+                'inference_id': 10,
+                'complaint_id': 'CAS-555',
+                'levels': {"2": 0.85},
+                'subcategories': {"Dose confirmation": 0.95},
+                'crl_codes': {"CRL-000100": 0.95},
+                'units': 5,
+                'final_level': '2',
+                'priority': 1,
+                'priority_reason': 'High priority',
+                'priority_summary': 'Critical issue'
+            }
+        ]
+
+        event = {'queryStringParameters': {'complaint_id': 'CAS-555'}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['complaintClassified'] is True
+        assert len(body['category_details']) == 1
+        assert body['category_details'][0]['crl'] == 'Dose confirmation'
+        assert 'crl_list' in body
+        assert 'label_list' in body
+        assert len(body['label_list']) == 15
+        assert 'Injection incomplete' in body['label_list']
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_single_complaint_with_unassigned_crl(self, mock_get_db):
+        """Test: UNASSIGNED CRL code is mapped to 'Not Assigned'"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        mock_cursor.fetchone.side_effect = [
+            {
+                'complaint_id': 'CAS-666',
+                'receipt_date': date(2023, 1, 20),
+                'criticality': 'Medium',
+                'report_type': 'Spontaneous',
+                'narrative_summary': 'Test',
+                'case_type': 'PC',
+                'narrative': 'Test',
+                'primary_reporter': 'John',
+                'primary_reporter_address': '123',
+                'patient_name': 'Jane',
+                'physician': 'Dr. Smith',
+                'drug': 'Drug',
+                'lot_no': 'LOT',
+                'dosage': '50mg',
+                'expiration_date': date(2024, 1, 1),
+                'part_number': 'PN',
+                'status': 'Pending',
+                'text_extracted': True,
+                'created_at': datetime(2023, 1, 20, 10, 0, 0),
+                'file_name': 'test.pdf',
+                's3_url': 's3://bucket/test.pdf'
+            },
+            {
+                'inference_id': 11,
+                'complaint_id': 'CAS-666',
+                'levels': {"1": 0.75},
+                'subcategories': {"Unknown Category": 0.80},
+                'crl_codes': {"UNASSIGNED": 0.80},
+                'units': 0,
+                'final_level': '1',
+                'priority': 0,
+                'priority_reason': 'Low priority',
+                'priority_summary': 'Minor issue'
+            }
+        ]
+
+        event = {'queryStringParameters': {'complaint_id': 'CAS-666'}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['category_details'][0]['crl'] == 'Not Assigned'
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_single_complaint_with_unknown_crl(self, mock_get_db):
+        """Test: Unknown CRL code is mapped to 'Unknown CRL'"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        mock_cursor.fetchone.side_effect = [
+            {
+                'complaint_id': 'CAS-777',
+                'receipt_date': date(2023, 1, 25),
+                'criticality': 'Low',
+                'report_type': 'Study',
+                'narrative_summary': 'Test',
+                'case_type': 'AE',
+                'narrative': 'Test',
+                'primary_reporter': 'John',
+                'primary_reporter_address': '123',
+                'patient_name': 'Jane',
+                'physician': 'Dr. Smith',
+                'drug': 'Drug',
+                'lot_no': 'LOT',
+                'dosage': '25mg',
+                'expiration_date': date(2024, 1, 1),
+                'part_number': 'PN',
+                'status': 'Pending',
+                'text_extracted': True,
+                'created_at': datetime(2023, 1, 25, 10, 0, 0),
+                'file_name': 'test.pdf',
+                's3_url': 's3://bucket/test.pdf'
+            },
+            {
+                'inference_id': 12,
+                'complaint_id': 'CAS-777',
+                'levels': {"0": 0.90},
+                'subcategories': {"Some Category": 0.85},
+                'crl_codes': {"CRL-999999": 0.85},
+                'units': 0,
+                'final_level': '0',
+                'priority': 0,
+                'priority_reason': 'Low',
+                'priority_summary': 'Minor'
+            }
+        ]
+
+        event = {'queryStringParameters': {'complaint_id': 'CAS-777'}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['category_details'][0]['crl'] == 'Unknown CRL'
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_single_complaint_no_crl_lists_when_not_classified(self, mock_get_db):
+        """Test: crl_list and label_list are not included when complaint is not classified"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        mock_cursor.fetchone.side_effect = [
+            {
+                'complaint_id': 'CAS-888',
+                'receipt_date': date(2023, 1, 30),
+                'criticality': 'Medium',
+                'report_type': 'Spontaneous',
+                'narrative_summary': '',
+                'case_type': 'PC',
+                'narrative': 'Test',
+                'primary_reporter': 'John',
+                'primary_reporter_address': '123',
+                'patient_name': 'Jane',
+                'physician': 'Dr. Smith',
+                'drug': 'Drug',
+                'lot_no': 'LOT',
+                'dosage': '75mg',
+                'expiration_date': date(2024, 1, 1),
+                'part_number': 'PN',
+                'status': 'Pending',
+                'text_extracted': False,
+                'created_at': datetime(2023, 1, 30, 10, 0, 0),
+                'file_name': 'test.pdf',
+                's3_url': 's3://bucket/test.pdf'
+            },
+            None
+        ]
+
+        event = {'queryStringParameters': {'complaint_id': 'CAS-888'}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['complaintClassified'] is False
+        assert 'crl_list' not in body
+        assert 'label_list' not in body
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
 

@@ -11,6 +11,35 @@ DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-mas
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 DB_REGION = os.environ.get('db_region', 'us-east-1')
 
+# Load CRL mapping
+def load_crl_mapping():
+    try:
+        with open('crl_mapping_lookup.json', 'r') as f:
+            return json.load(f)
+    except:
+        return {}
+
+CRL_MAPPING = load_crl_mapping()
+CRL_TO_LABEL = {v: k for k, v in CRL_MAPPING.items()}
+
+LABEL_LIST = [
+    "Injection incomplete",
+    "Leaking unspecified",
+    "Needle bent",
+    "Dose confirmation",
+    "Device not working",
+    "Needle not fully extended",
+    "Device activated with base cap attached",
+    "Device activated before placement on skin",
+    "Injection button difficult to press",
+    "Needle did not retract",
+    "Device defective",
+    "Device activated before pressing button",
+    "Lack of Drug Effect",
+    "Pen was used from package",
+    "Needle broken"
+]
+
 def lambda_handler(event, context):
     """
     Lambda function handler to retrieve complaints data from PostgreSQL.
@@ -119,11 +148,17 @@ def get_single_complaint(conn, complaint_id):
                         subcat_pct = subcat_items[idx][1] if idx < len(subcat_items) else 0
                         crl_code = crl_items[idx][0] if idx < len(crl_items) else ''
                         
+                        # Map CRL code to label, handle unmapped codes
+                        if crl_code == 'UNASSIGNED' or not crl_code:
+                            crl_label = 'Not Assigned'
+                        else:
+                            crl_label = CRL_TO_LABEL.get(crl_code, 'Unknown CRL')
+                        
                         category_details.append({
                             "id": str(idx + 1),
                             "label": subcat_label,
                             "level": level_key,
-                            "crl": crl_code,
+                            "crl": crl_label,
                             "priority": priority_str,
                             "unit": units,
                             "percentage": subcat_pct * 100
@@ -157,6 +192,11 @@ def get_single_complaint(conn, complaint_id):
                 'complaintClassified': inference_result is not None,
                 'category_details': category_details
             }
+            
+            # Add crl_list and label_list if complaint is classified
+            if inference_result is not None:
+                complaint_details['crl_list'] = list(CRL_TO_LABEL.values())
+                complaint_details['label_list'] = LABEL_LIST
         
             return {
                 'statusCode': 200,
