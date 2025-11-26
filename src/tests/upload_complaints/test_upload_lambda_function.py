@@ -363,7 +363,7 @@ class TestCSVProcessing:
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
         assert result['success'] is False
-        assert 'File must have exactly 2 columns' in result['message']
+        assert 'CSV header must have exactly 2 columns' in result['message']
     
     @patch('upload_complaints.lambda_function.create_complaint_in_db')
     def test_csv_empty_narratives_skipped(self, mock_create_complaint):
