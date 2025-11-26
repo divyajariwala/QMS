@@ -11,16 +11,35 @@ DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-mas
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 DB_REGION = os.environ.get('db_region', 'us-east-1')
 
-# Load CRL mapping
-def load_crl_mapping():
-    try:
-        with open('crl_mapping_lookup.json', 'r') as f:
-            return json.load(f)
-    except:
-        return {}
-
-CRL_MAPPING = load_crl_mapping()
-CRL_TO_LABEL = {v: k for k, v in CRL_MAPPING.items()}
+CRL_TO_LABEL = [
+    "Base cap difficult to remove",
+    "Button reported up after activation",
+    "Clicks - Autoinjector/Syringe",
+    "Device activated before placement on skin",
+    "Device activated before pressing button",
+    "Device activated when removed from carton",
+    "Device activated with base cap attached",
+    "Device defective",
+    "Device in the locked position after activation",
+    "Device not working - Autoinjector/Syringe",
+    "Dose confirmation",
+    "Injection button difficult to press",
+    "Injection incomplete - Autoinjector/Syringe",
+    "Injection takes too long",
+    "Lack of Drug Effect",
+    "Lack of Drug Effect - weight loss",
+    "Leaking after injection from device",
+    "Leaking unspecified - Autoinjector/Syringe",
+    "Miscellaneous Sub-Category",
+    "Needle bent",
+    "Needle broken",
+    "Needle did not retract",
+    "Needle not fully extended",
+    "Pen was used from package",
+    "Rigid needle shield was not removed",
+    "Upside down injection",
+    "Unknown"
+]
 
 LABEL_LIST = [
     "Injection incomplete",
@@ -153,7 +172,7 @@ def get_single_complaint(conn, complaint_id):
                         if crl_code == 'UNASSIGNED' or not crl_code:
                             crl_label = 'Not Assigned'
                         else:
-                            crl_label = CRL_TO_LABEL.get(crl_code, 'Unknown CRL')
+                            crl_label = crl_code if crl_code in CRL_TO_LABEL else 'Unknown CRL'
                         
                         category_details.append({
                             "id": str(idx + 1),
@@ -196,7 +215,7 @@ def get_single_complaint(conn, complaint_id):
             
             # Add crl_list and label_list if complaint is classified
             if inference_result is not None:
-                complaint_details['crl_list'] = list(CRL_TO_LABEL.values())
+                complaint_details['crl_list'] = CRL_TO_LABEL
                 complaint_details['label_list'] = LABEL_LIST
         
             return {
