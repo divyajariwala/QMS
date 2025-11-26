@@ -51,16 +51,10 @@ export const calculateOverdueDays = (dateStr: string): number => {
   return overdueDays;
 }
 
-export function formatHoursToDays(hours: number | undefined): string {
-  if (hours === 0) {
-    return "0 hr";
+export function formatDays(days: number | undefined): string {
+  if (days === undefined || days <= 0) {
+    return "0 day";
   }
-
-  const days = hours !== undefined ? Math.floor(hours / 24) : 0;
-  const remainingHours = hours !== undefined ? hours % 24 : 0;
-
-  const dayStr = days > 0 ? `${days} day${days > 1 ? "s" : ""}` : "";
-  const hourStr = remainingHours > 0 ? `${remainingHours} hr${remainingHours > 1 ? "s" : ""}` : "";
-
-  return [dayStr, hourStr].filter(Boolean).join(" ");
+  
+  return `${days} day${days > 1 ? "s" : ""}`;
 }

@@ -11,7 +11,6 @@ import DownloadIcon from '../../../src/assets/icons/vector.svg';
 import CheckCircleIcon from '../../../src/assets/icons/uploadSuccess.svg';
 import { uploadComplaintFile } from 'src/services/api.service';
 import { FileUploadPopupProps, fileUploadStatus } from 'src/types';
-import { TOTAL_FILES } from 'src/constants';
 import styles from './FileUpload.module.scss';
 
 const FileUpload: React.FC<FileUploadPopupProps> = ({
@@ -96,15 +95,50 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   );
 
   const handleDownloadExample = () => {
-    const blob = new Blob(
-      [new Uint8Array([0x50, 0x57, 0x43, 0x2d, 0x58, 0x4c, 0x53])],
-      { type: "application/vnd.ms-excel" }
-    );
+    const html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:x="urn:schemas-microsoft-com:office:excel"
+          xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <!--[if gte mso 9]>
+      <xml>
+        <x:ExcelWorkbook>
+          <x:ExcelWorksheets>
+            <x:ExcelWorksheet>
+              <x:Name>Sheet 1</x:Name>
+              <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+            </x:ExcelWorksheet>
+          </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+      </xml>
+      <![endif]-->
+      <style>
+        td, th {
+          border: 1px solid black;
+          padding: 5px;
+        }
+      </style>
+    </head>
+    <body>
+      <table>
+        <tr><th>Serial No</th><th>Narrative</th></tr>
+        <tr><td></td><td></td></tr>
+        <tr><td></td><td></td></tr>
+        <tr><td></td><td></td></tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+    const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "document-example.xls";
+    a.download = "sample-template.xls";  // Note the .xls extension, not .xlsx
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 

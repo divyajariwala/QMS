@@ -19,7 +19,7 @@ const PollingContext = createContext<PollingContextType | undefined>(undefined);
 
 export const PollingProvider = ({ children }: { children: ReactNode }) => {
   // Manage the polling state here
-  const [shouldPoll, setShouldPoll] = useState(true);
+  const [shouldPoll, setShouldPoll] = useState(false);
 
   // Pass the current polling state to your hook so it starts/stops accordingly
   const pollingState = usePolling(shouldPoll);

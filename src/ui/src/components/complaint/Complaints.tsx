@@ -49,8 +49,7 @@ const Complaints = () => {
     falseCount,
     error,
     done,
-    idList,
-    setIdList
+    shouldPoll
   } = usePollingContext();
 
   const items = [
@@ -152,7 +151,6 @@ const Complaints = () => {
       fetchOnAllComplete();
       if(error){
         setOpenNotification(true);
-        setIdList([]);
       }
     }
   }, [done]);
@@ -215,7 +213,7 @@ const Complaints = () => {
       {!searchActive && <StatusTabs setPageNumber={setPageNumber} active={activeStatus} setActive={setActiveStatus} pending={pending} processed={processed} overdue={overdue} />}
       <ComplaintsFilter setSearchActive={setSearchActive} complaintId={complaintId} setComplaintId={setComplaintId} complaintDetail={complaintDetail} setComplaintDetail={setComplaintDetail} />
       {!searchActive && caseStats && complaints?.map((complaint, index) => {
-        const loading = idList.includes(complaint?.case_id) && activeStatus === 'pending';
+        const loading = shouldPoll === true ? (!complaint?.text_extracted && activeStatus === 'pending') : false ;
         return (
           <ComplaintsResult
             key={index}
@@ -227,7 +225,7 @@ const Complaints = () => {
         );
       })}
       {searchActive && searchResult?.map((complaint, index) => {
-        const loading = idList.includes(complaint?.case_id) && activeStatus === 'pending';
+        const loading = shouldPoll === true ? (!complaint?.text_extracted && activeStatus === 'pending') : false ;
         return (
           <ComplaintsResult
             key={index}

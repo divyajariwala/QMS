@@ -26,7 +26,7 @@ const InfoItem = ({
 }: InfoItemProps & { loading?: boolean }) => (
   <div className={styles.stackColumn}>
     <Box className={styles.infoItemLabel}>{label}</Box>
-    <div className={styles.iconValueRow}>
+    <div className={loading ? styles.iconValueRowLoading : styles.iconValueRowStatic}>
       <img src={iconSrc} alt={iconAlt} className={styles.infoItemIcon} />
       {loading ? (
         <Skeleton variant="rectangular" width={100} height={24} />
