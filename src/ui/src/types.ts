@@ -354,8 +354,8 @@ export type Case = {
   report_type: string;
   receipt_date: string;
   case_type: string[];
-  text_extracted: boolean;
-  created_at: string;
+  text_extracted?: boolean;
+  created_at?: string;
 };
 
 export type CaseStatus = {
@@ -431,6 +431,7 @@ export interface ComplaintDetail {
   created_at?: string;
   crl_list: string[];
   label_list: string[];
+  text_extracted?: boolean;
 }
 
 export type CaseStatusKey = "pending" | "processed" | "overdue";

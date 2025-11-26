@@ -10,7 +10,7 @@ import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import StatusTabs from './StatusTabs';
 import ComplaintsStatusCard from '@components/commonCard/ComplaintsStatusCard';
 import { createComplaint, fetchComplaints } from 'src/services/api.service';
-import { getComplaintsApiResponse, CaseStatusKey } from 'src/types';
+import { getComplaintsApiResponse, CaseStatusKey, ComplaintDetail, Case } from 'src/types';
 import PaginationComponent from '@components/pagination/PaginationComponent';
 import { usePolling } from '@components/polling/Polling';
 import { useAuth } from '../../auth/useAuth';
@@ -34,6 +34,9 @@ const Complaints = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [processingFile, setProcessingFile] = useState<boolean>(false);
   const [pagination, setPagination] = useState(initialPagination);
+  const [complaintId, setComplaintId] = useState("");
+  const [complaintDetail, setComplaintDetail] = useState<ComplaintDetail | null>(null);
+  const [searchActive, setSearchActive] = useState<boolean>(false);
 
   const { caseStats, caseStatus } = data || {};
   const { pending, processed, overdue } = caseStats || {};
@@ -109,12 +112,29 @@ const Complaints = () => {
   }, [done]);
 
   const handleFileUploadSuccess = async () => {
+    setOpenFileUpload(false);
     await fetchData();  // close modal here
   };
 
   const complaints = caseStatus?.[selected as CaseStatusKey];
 
-  console.log(error);
+  function transformToOutput(input: ComplaintDetail): Case[] {
+    const cleanedCaseType = input.case_type.map((ct) => ct.trim());
+
+    const outputObject: Case = {
+      case_id: input.case_id,
+      criticality: input.criticality,
+      report_type: input.report_type,
+      receipt_date: input.receipt_date,
+      case_type: cleanedCaseType,
+      text_extracted: input.text_extracted,
+      created_at: input.created_at,
+    };
+
+    return [outputObject];
+  }
+
+  const searchResult = complaintDetail && transformToOutput(complaintDetail);
 
   if (loading) return <p>Loading complaints...</p>;
 
@@ -146,9 +166,9 @@ const Complaints = () => {
       {/* For empty state */}
       {/* <ComplaintsEmptyState /> */}
       <ComplaintsStatusCard complaintStats={caseStats} />
-      <StatusTabs setPageNumber={setPageNumber} active={activeStatus} setActive={setActiveStatus} pending={pending} processed={processed} overdue={overdue} />
-      <ComplaintsFilter />
-      {caseStats && complaints?.map((complaint, index) => {
+      {!searchActive && <StatusTabs setPageNumber={setPageNumber} active={activeStatus} setActive={setActiveStatus} pending={pending} processed={processed} overdue={overdue} />}
+      <ComplaintsFilter setSearchActive={setSearchActive} complaintId={complaintId} setComplaintId={setComplaintId} complaintDetail={complaintDetail} setComplaintDetail={setComplaintDetail} />
+      {!searchActive && caseStats && complaints?.map((complaint, index) => {
         const loading = !complaint.text_extracted && activeStatus === 'pending';
         return (
           <ComplaintsResult
@@ -160,7 +180,19 @@ const Complaints = () => {
           />
         );
       })}
-      {complaints && complaints.length > 0 && <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />}
+      {searchActive && searchResult?.map((complaint, index) => {
+        const loading = !complaint.text_extracted && activeStatus === 'pending';
+        return (
+          <ComplaintsResult
+            key={index}
+            complaint={complaint}
+            selected={selected}
+            activeStatus={activeStatus}
+            loading={loading}
+          />
+        );
+      })}
+      {!searchActive && complaints && complaints.length > 0 && <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />}
       <Popup open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />
       <FileUpload setOpenFileUpload={setOpenFileUpload} onSuccess={handleFileUploadSuccess} setProcessing={setProcessingFile} open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
     </Box>
