@@ -284,10 +284,10 @@ class TestCSVProcessing:
         """Test: CSV with quoted fields containing commas"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002', 'CAS-00003']
         
-        csv_content = b"""id,narrative
+        csv_content = b'''id,narrative
 1,"Product arrived damaged, packaging was torn"
 2,"Customer service was unhelpful, rude during call"
-3,"Wrong item shipped, received blue instead of red""""
+3,"Wrong item shipped, received blue instead of red"'''
         
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
