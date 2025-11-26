@@ -40,7 +40,7 @@ class TestLambdaHandler:
         # Mock CSV with valid 2-column format
         mock_parse.return_value = {
             'filename': 'data.csv',
-            'content': b'complaint_id,narrative_text\nOLD-001,Test complaint narrative',
+            'content': b'complaint_id,narrative\nOLD-001,Test complaint narrative',
             'content_type': 'text/csv',
             'field_name': 'file'
         }
@@ -163,7 +163,7 @@ class TestLambdaHandler:
         
         mock_parse.return_value = {
             'filename': 'wide_data.csv',
-            'content': b'complaint_id,narrative_text,extra_column\nOLD-001,Test narrative,Extra data',
+            'content': b'complaint_id,narrative,extra_column\nOLD-001,Test narrative,Extra data',
             'content_type': 'text/csv',
             'field_name': 'file'
         }
@@ -269,7 +269,7 @@ class TestCSVProcessing:
         """Test: Successfully process valid CSV file"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002']
         
-        csv_content = b'complaint_id,narrative_text\nOLD-001,First complaint\nOLD-002,Second complaint'
+        csv_content = b'complaint_id,narrative\nOLD-001,First complaint\nOLD-002,Second complaint'
         
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
@@ -280,14 +280,14 @@ class TestCSVProcessing:
         assert result['complaints'][1]['complaint_id'] == 'CAS-00002'
     
     @patch('upload_complaints.lambda_function.create_complaint_in_db')
-    def test_csv_with_unquoted_commas(self, mock_create_complaint):
-        """Test: CSV with unquoted commas in text fields"""
+    def test_csv_with_quoted_commas(self, mock_create_complaint):
+        """Test: CSV with quoted fields containing commas"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002', 'CAS-00003']
         
-        csv_content = b"""id,text
-1,Product arrived damaged, packaging was torn
-2,Customer service was unhelpful, rude during call
-3,Wrong item shipped, received blue instead of red"""
+        csv_content = b"""id,narrative
+1,"Product arrived damaged, packaging was torn"
+2,"Customer service was unhelpful, rude during call"
+3,"Wrong item shipped, received blue instead of red""""
         
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
@@ -305,7 +305,7 @@ class TestCSVProcessing:
         """Test: Tab-separated CSV with commas in text fields"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002', 'CAS-00003']
         
-        csv_content = b"""id\ttext
+        csv_content = b"""id\tnarrative
 1\tProduct arrived damaged, packaging was torn
 2\tCustomer service was unhelpful, rude during call
 3\tQuality is poor - broke after first use"""
@@ -321,26 +321,25 @@ class TestCSVProcessing:
         assert 'Quality is poor - broke after first use' in complaints[2]['narrative_text']
     
     @patch('upload_complaints.lambda_function.create_complaint_in_db')
-    def test_csv_with_quoted_fields(self, mock_create_complaint):
-        """Test: CSV with properly quoted fields containing commas"""
-        mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002', 'CAS-00003']
+    def test_csv_with_long_narrative(self, mock_create_complaint):
+        """Test: CSV with long narrative text (1500+ chars) with punctuation"""
+        mock_create_complaint.return_value = 'CAS-00001'
         
-        csv_content = b"""id,text
-1,"Product arrived damaged, packaging was torn"
-2,"Customer service was unhelpful, rude during call"
-3,Normal text without commas"""
+        long_narrative = "This is a very long complaint narrative with over 1500 characters. " * 30 + "It contains commas, periods, quotes 'like this', and other punctuation marks! The system should handle this as one complete string."
+        csv_content = f'id,narrative\n1,"{long_narrative}"'.encode('utf-8')
         
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
         assert result['success'] is True
-        assert result['processed_complaints'] == 3
+        assert result['processed_complaints'] == 1
+        assert long_narrative in result['complaints'][0]['narrative_text']
     
     @patch('upload_complaints.lambda_function.create_complaint_in_db')
     def test_csv_with_utf8_bom(self, mock_create_complaint):
         """Test: CSV file with UTF-8 BOM"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002']
         
-        csv_content = b'\xef\xbb\xbfid,text\n1,Complaint with BOM\n2,Another complaint'
+        csv_content = b'\xef\xbb\xbfid,narrative\n1,Complaint with BOM\n2,Another complaint'
         
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
@@ -349,7 +348,7 @@ class TestCSVProcessing:
     
     def test_csv_insufficient_rows(self):
         """Test: CSV with only header row"""
-        csv_content = b'id,text'
+        csv_content = b'id,narrative'
         
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
@@ -364,14 +363,14 @@ class TestCSVProcessing:
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
         assert result['success'] is False
-        assert 'CSV header must have exactly 2 columns' in result['message']
+        assert 'File must have exactly 2 columns' in result['message']
     
     @patch('upload_complaints.lambda_function.create_complaint_in_db')
     def test_csv_empty_narratives_skipped(self, mock_create_complaint):
         """Test: Rows with empty narratives are skipped"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00003']
         
-        csv_content = b"""id,text
+        csv_content = b"""id,narrative
 1,Valid complaint text
 2,
 3,Another valid complaint"""
@@ -390,7 +389,7 @@ class TestCSVProcessing:
         # Create a simple Excel file in memory
         df = pd.DataFrame({
             'id': [1, 2, 3],
-            'text': ['First complaint', 'Second complaint', 'Third complaint']
+            'narrative': ['First complaint', 'Second complaint', 'Third complaint']
         })
         
         excel_buffer = io.BytesIO()
@@ -404,12 +403,21 @@ class TestCSVProcessing:
     
     def test_process_csv_excel_file_too_many_columns(self):
         """Test: Reject CSV with more than 2 columns"""
-        csv_content = b'complaint_id,narrative_text,extra_column\nOLD-001,Test narrative,Extra data'
+        csv_content = b'complaint_id,narrative,extra_column\nOLD-001,Test narrative,Extra data'
         
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
         assert result['success'] is False
         assert 'CSV header must have exactly 2 columns' in result['message']
+    
+    def test_csv_missing_narrative_column(self):
+        """Test: Reject CSV without narrative column"""
+        csv_content = b'complaint_id,description\nOLD-001,Test description'
+        
+        result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
+        
+        assert result['success'] is False
+        assert 'must have a column named "narrative"' in result['message']
 
 
 if __name__ == "__main__":
