@@ -9,6 +9,7 @@ export const usePolling = (shouldPoll: boolean, maxRetries = 10) => {
   const [falseCount, setFalseCount] = useState<number | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [idList, setIdList] = useState<string[]>([])
 
   const prevFalseCountRef = useRef<number | null>(null);
   const isCancelledRef = useRef(false);
@@ -52,6 +53,10 @@ export const usePolling = (shouldPoll: boolean, maxRetries = 10) => {
         if (isCancelledRef.current) return;
 
         const currentFalseCount = json?.caseStatus?.pending?.filter(e => e?.text_extracted === false).length ?? 0;
+        const caseIds = json?.caseStatus?.pending
+          ?.filter(e => e.text_extracted === false)
+          .map(e => e.case_id) ?? [];
+        setIdList(caseIds);
         setFalseCount(currentFalseCount);
 
         if (prevFalseCountRef.current === null || prevFalseCountRef.current !== currentFalseCount) {
@@ -88,5 +93,5 @@ export const usePolling = (shouldPoll: boolean, maxRetries = 10) => {
     };
   }, [shouldPoll, done, maxRetries, retryCount]);
 
-  return { pollingData, polling, error, done, falseCount, retryCount };
+  return { pollingData, polling, error, done, falseCount, retryCount, idList, setIdList };
 };

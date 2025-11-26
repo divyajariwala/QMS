@@ -11,6 +11,8 @@ interface PollingContextType {
   retryCount: number;
   setShouldPoll: (val: boolean) => void; // expose setter for controlling polling from outside
   shouldPoll: boolean; // expose current polling on/off state
+  idList: string[];
+  setIdList: (val: string[]) => void;
 }
 
 const PollingContext = createContext<PollingContextType | undefined>(undefined);

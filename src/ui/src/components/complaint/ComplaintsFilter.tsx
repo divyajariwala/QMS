@@ -100,7 +100,7 @@ const ComplaintsFilter = ({
               <SearchSvg />
             </span>
             <span className={styles.searchButtonText}>
-              {loading ? "Searching..." : "Search"}
+              {"Search"}
             </span>
           </button>
         </form>

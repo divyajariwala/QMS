@@ -13,6 +13,7 @@ import { createComplaint, fetchComplaints } from 'src/services/api.service';
 import { getComplaintsApiResponse, CaseStatusKey, ComplaintDetail, Case } from 'src/types';
 import PaginationComponent from '@components/pagination/PaginationComponent';
 import { usePollingContext } from '@components/polling/PollingProvider';
+import Notification from '@components/Notification/Notification';
 import { useAuth } from '../../auth/useAuth';
 
 const Complaints = () => {
@@ -36,21 +37,20 @@ const Complaints = () => {
   const [complaintId, setComplaintId] = useState("");
   const [complaintDetail, setComplaintDetail] = useState<ComplaintDetail | null>(null);
   const [searchActive, setSearchActive] = useState<boolean>(false);
+  const [openNotification, setOpenNotification] = useState<boolean>(false);
 
   const { caseStats, caseStatus } = data || {};
   const { pending, processed, overdue } = caseStats || {};
   const { user } = useAuth();
   const displayName = `${user?.profile?.given_name ?? ''}`.trim();
 
-  const { 
-    polling, 
-    pollingData, 
-    setShouldPoll, 
-    shouldPoll, 
+  const {  
+    setShouldPoll,  
     falseCount,
     error,
     done,
-    retryCount
+    idList,
+    setIdList
   } = usePollingContext();
 
   const items = [
@@ -69,6 +69,16 @@ const Complaints = () => {
 
   const handleClose = (): void => {
     setOpen(false);
+  };
+
+   const handleCloseNotification = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string,
+  ) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenNotification(false);
   };
 
   const handleCreateComplaint = async () => {
@@ -140,6 +150,10 @@ const Complaints = () => {
     if (done) {
       setShouldPoll(false);
       fetchOnAllComplete();
+      if(error){
+        setOpenNotification(true);
+        setIdList([]);
+      }
     }
   }, [done]);
 
@@ -201,7 +215,7 @@ const Complaints = () => {
       {!searchActive && <StatusTabs setPageNumber={setPageNumber} active={activeStatus} setActive={setActiveStatus} pending={pending} processed={processed} overdue={overdue} />}
       <ComplaintsFilter setSearchActive={setSearchActive} complaintId={complaintId} setComplaintId={setComplaintId} complaintDetail={complaintDetail} setComplaintDetail={setComplaintDetail} />
       {!searchActive && caseStats && complaints?.map((complaint, index) => {
-        const loading = !complaint.text_extracted && activeStatus === 'pending';
+        const loading = idList.includes(complaint?.case_id) && activeStatus === 'pending';
         return (
           <ComplaintsResult
             key={index}
@@ -213,7 +227,7 @@ const Complaints = () => {
         );
       })}
       {searchActive && searchResult?.map((complaint, index) => {
-        const loading = !complaint.text_extracted && activeStatus === 'pending';
+        const loading = idList.includes(complaint?.case_id) && activeStatus === 'pending';
         return (
           <ComplaintsResult
             key={index}
@@ -227,6 +241,7 @@ const Complaints = () => {
       {!searchActive && complaints && complaints.length > 0 && <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />}
       <Popup open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />
       <FileUpload setOpenFileUpload={setOpenFileUpload} onSuccess={handleFileUploadSuccess} setProcessing={setShouldPoll} open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
+      <Notification open={openNotification} onClose={handleCloseNotification} position="top" message={"Max retries reached"} type={"error"} />
     </Box>
   );
 };

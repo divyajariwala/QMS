@@ -170,7 +170,7 @@ const ComplaintsDetails: React.FC = () => {
           />
         </Grid>
       </Grid>
-      <Notification open={open} onClose={handleCloseNotification} position='top' />
+      <Notification open={open} onClose={handleCloseNotification} position='top' type={"success"} />
     </Box>
   );
 };
