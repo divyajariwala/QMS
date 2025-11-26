@@ -8,7 +8,7 @@ resource "aws_cognito_user_pool_domain" "user_pool_domain" {
 }
 
 resource "aws_cognito_user_pool_client" "spa_client" {
-  name         = "qmsai-spa-client"
+  name         = "${var.short_name}-${var.environment}-client"
   user_pool_id = aws_cognito_user_pool.cognito_user_pool.id
   generate_secret = false
   callback_urls = [
