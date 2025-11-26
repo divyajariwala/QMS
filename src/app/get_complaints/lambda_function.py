@@ -300,9 +300,7 @@ def get_all_complaints(conn, page=1, status_filter=None):
                     'pending': stats.get('pending', 0),
                     'processed': stats.get('processed', 0),
                     'overdue': stats.get('overdue', 0),
-                    'avg_cycle_time': stats.get('avg_time', 0),
-                    'best_time': stats.get('best_time', 0),
-                    'longest_time': stats.get('longest_time', 0)
+                    'avg_cycle_time': stats.get('avg_time', 0)
                 },
                 'caseStatus': case_status,
                 'pagination': {

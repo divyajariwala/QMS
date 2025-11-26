@@ -94,8 +94,8 @@ def lambda_handler(event, context):
                 # Commit before updating stats to ensure status change persists
                 conn.commit()
                 
-                # Update case stats after approval
-                cur.execute("SELECT update_stats_only()")
+                # Update average cycle time after approval
+                cur.execute("SELECT update_avg_cycle_time()")
                 conn.commit()
             
                 # Return the approved category details as-is
