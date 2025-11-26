@@ -154,12 +154,15 @@ class TestLambdaHandler:
     @patch('boto3.client')
     @patch('upload_complaints.lambda_function.parse_multipart_manual')
     @patch('upload_complaints.lambda_function.create_file_record')
-    def test_csv_too_many_columns(self, mock_create_file, mock_parse, mock_boto3):
-        """Test: CSV file with more than 2 columns should be rejected"""
+    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    def test_csv_with_extra_columns(self, mock_create_complaint, mock_create_file, mock_parse, mock_boto3):
+        """Test: CSV file with more than 2 columns is accepted if narrative column exists"""
         mock_s3 = Mock()
         mock_sqs = Mock()
         mock_boto3.side_effect = lambda service: mock_s3 if service == 's3' else mock_sqs
         mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'test-123'}
+        mock_create_complaint.return_value = 'CAS-00001'
         
         mock_parse.return_value = {
             'filename': 'wide_data.csv',
@@ -176,9 +179,9 @@ class TestLambdaHandler:
 
         result = lambda_function.lambda_handler(event, {})
 
-        assert result['statusCode'] == 400
+        assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert 'CSV header must have exactly 2 columns' in body['message']
+        assert body['success'] is True
 
 
 class TestUtilityFunctions:
@@ -355,15 +358,15 @@ class TestCSVProcessing:
         assert result['success'] is False
         assert 'must have at least a header and one data row' in result['message']
     
-    def test_csv_header_validation(self):
-        """Test: CSV header must have exactly 2 columns"""
-        csv_content = b"""id
-1"""
+    def test_csv_missing_narrative_header(self):
+        """Test: CSV without narrative column should be rejected"""
+        csv_content = b"""id,description
+1,Some description"""
         
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
         assert result['success'] is False
-        assert 'CSV header must have exactly 2 columns' in result['message']
+        assert 'must have a column named "narrative"' in result['message']
     
     @patch('upload_complaints.lambda_function.create_complaint_in_db')
     def test_csv_empty_narratives_skipped(self, mock_create_complaint):
@@ -401,14 +404,17 @@ class TestCSVProcessing:
         assert result['success'] is True
         assert result['processed_complaints'] == 3
     
-    def test_process_csv_excel_file_too_many_columns(self):
-        """Test: Reject CSV with more than 2 columns"""
+    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    def test_process_csv_with_multiple_columns(self, mock_create_complaint):
+        """Test: Accept CSV with multiple columns if narrative exists"""
+        mock_create_complaint.return_value = 'CAS-00001'
+        
         csv_content = b'complaint_id,narrative,extra_column\nOLD-001,Test narrative,Extra data'
         
         result = lambda_function.process_csv_excel_file(csv_content, 'csv', 'test-file-id')
         
-        assert result['success'] is False
-        assert 'CSV header must have exactly 2 columns' in result['message']
+        assert result['success'] is True
+        assert result['processed_complaints'] == 1
     
     def test_csv_missing_narrative_column(self):
         """Test: Reject CSV without narrative column"""

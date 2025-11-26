@@ -57,7 +57,8 @@ LABEL_LIST = [
     "Lack of Drug Effect",
     "Pen was used from package",
     "Needle broken",
-    "Miscellaneous Sub-Category"
+    "Miscellaneous Sub-Category",
+    "Injection incomplete - Autoinjector/Syringe"
 ]
 
 def lambda_handler(event, context):
@@ -170,9 +171,9 @@ def get_single_complaint(conn, complaint_id):
                         
                         # Map CRL code to label, handle unmapped codes
                         if crl_code == 'UNASSIGNED' or not crl_code:
-                            crl_label = 'Not Assigned'
+                            crl_label = 'Unknown'
                         else:
-                            crl_label = crl_code if crl_code in CRL_TO_LABEL else 'Unknown CRL'
+                            crl_label = crl_code if crl_code in CRL_TO_LABEL else 'Unknown'
                         
                         category_details.append({
                             "id": str(idx + 1),
@@ -215,8 +216,10 @@ def get_single_complaint(conn, complaint_id):
             
             # Add crl_list and label_list if complaint is classified
             if inference_result is not None:
+                # Get label list from database and update with new subcategories
+                label_list = _get_and_update_label_list(cursor, category_details)
                 complaint_details['crl_list'] = CRL_TO_LABEL
-                complaint_details['label_list'] = LABEL_LIST
+                complaint_details['label_list'] = label_list
         
             return {
                 'statusCode': 200,
@@ -398,6 +401,26 @@ def _group_by_status(complaints):
         status_groups[status].sort(key=lambda x: x['case_id'], reverse=True)
     
     return status_groups
+
+def _get_and_update_label_list(cursor, category_details):
+    """
+    Get label list from database and add any new subcategories from category_details
+    """
+    # Get current label list from database
+    cursor.execute("SELECT label FROM label_list ORDER BY label")
+    label_rows = cursor.fetchall()
+    label_list = [row['label'] for row in label_rows]
+    
+    # Extract subcategories from category_details
+    new_labels = [detail['label'] for detail in category_details if detail.get('label')]
+    
+    # Add new labels that don't exist
+    for label in new_labels:
+        if label and label not in label_list:
+            cursor.execute("INSERT INTO label_list (label) VALUES (%s) ON CONFLICT (label) DO NOTHING", (label,))
+            label_list.append(label)
+    
+    return sorted(label_list)
 
 def _get_cors_headers():
     """
