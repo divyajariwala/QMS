@@ -171,7 +171,7 @@ def get_single_complaint(conn, complaint_id):
                         
                         # Map CRL code to label, handle unmapped codes
                         if crl_code == 'UNASSIGNED' or not crl_code:
-                            crl_label = 'Not Assigned'
+                            crl_label = 'Unassigned'
                         else:
                             crl_label = crl_code if crl_code in CRL_TO_LABEL else 'Unknown'
                         
