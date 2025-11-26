@@ -42,6 +42,21 @@ variable "event_bridge_role_arn" {
   type = string
 }
 
+variable "openam_issuer" {
+  type        = string
+  default     = "https://login-stg.pwc.com/openam/oauth2"
+}
+
+variable "openam_client_id" {
+  type        = string
+  default = "urn:pwc-qmsai-cognito"
+}
+
+variable "openam_client_secret" {
+  type        = string
+  sensitive   = true
+}
+
 variable "sagemaker_endpoint_name" {
   type = string
 }
