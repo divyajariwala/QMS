@@ -12,7 +12,7 @@ import ComplaintsStatusCard from '@components/commonCard/ComplaintsStatusCard';
 import { createComplaint, fetchComplaints } from 'src/services/api.service';
 import { getComplaintsApiResponse, CaseStatusKey, ComplaintDetail, Case } from 'src/types';
 import PaginationComponent from '@components/pagination/PaginationComponent';
-import { usePolling } from '@components/polling/Polling';
+import { usePollingContext } from '@components/polling/PollingProvider';
 import { useAuth } from '../../auth/useAuth';
 
 const Complaints = () => {
@@ -32,7 +32,6 @@ const Complaints = () => {
   const [activeStatus, setActiveStatus] = useState<'pending' | 'processed' | 'overdue'>('pending');
   const [data, setData] = useState<getComplaintsApiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [processingFile, setProcessingFile] = useState<boolean>(false);
   const [pagination, setPagination] = useState(initialPagination);
   const [complaintId, setComplaintId] = useState("");
   const [complaintDetail, setComplaintDetail] = useState<ComplaintDetail | null>(null);
@@ -43,7 +42,16 @@ const Complaints = () => {
   const { user } = useAuth();
   const displayName = `${user?.profile?.given_name ?? ''}`.trim();
 
-  const { done, falseCount, error } = usePolling(processingFile);
+  const { 
+    polling, 
+    pollingData, 
+    setShouldPoll, 
+    shouldPoll, 
+    falseCount,
+    error,
+    done,
+    retryCount
+  } = usePollingContext();
 
   const items = [
     { label: 'Home', to: '/' },
@@ -73,7 +81,7 @@ const Complaints = () => {
       const res = await fetchComplaints(activeStatus, pageNumber);
       setData(res);
       setPagination(res?.pagination);
-      setProcessingFile(true);
+      setShouldPoll(true);
     } catch (error) {
       console.error('Failed to create complaint:', error);
     }
@@ -98,16 +106,40 @@ const Complaints = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchOnSingleCardComplete = async () => {
+      try {
+        const res = await fetchComplaints(activeStatus, pageNumber);
+        setData(res);
+        setPagination(res?.pagination);
+      } catch (err: any) {
+        console.error(err.message);
+      }
+    };
+    fetchOnSingleCardComplete();
+  }, [falseCount]);
+
+
+
   // Normal fetch when user changes filters or pages
   useEffect(() => {
     fetchData();
-  }, [activeStatus, pageNumber, falseCount]);
+  }, [activeStatus, pageNumber]);
 
   // When polling done, stop loading and refresh data
   useEffect(() => {
+    const fetchOnAllComplete = async () => {
+      try {
+        const res = await fetchComplaints(activeStatus, pageNumber);
+        setData(res);
+        setPagination(res?.pagination);
+      } catch (err: any) {
+        console.error(err.message);
+      }
+    };
     if (done) {
-      setProcessingFile(false);
-      fetchData();
+      setShouldPoll(false);
+      fetchOnAllComplete();
     }
   }, [done]);
 
@@ -150,13 +182,13 @@ const Complaints = () => {
 
           <Stack className={styles.actions} direction="row" spacing={2}>
             <Button variant="outlined" className={styles.addManuallyButton} onClick={(e) => {
-              handleOpen(e); setActiveStatus('pending'); setPageNumber(1)
+              handleOpen(e); setActiveStatus('pending'); setPageNumber(1); setSearchActive(false); setComplaintId('')
             }}>
               <img src={PlusIcon} alt="plus" />
               Add Manually
             </Button>
             <Button variant="contained" className={styles.primaryImportButton} onClick={() => {
-              setOpenFileUpload(true); setActiveStatus('pending'); setPageNumber(1)
+              setOpenFileUpload(true); setActiveStatus('pending'); setPageNumber(1); setSearchActive(false); setComplaintId('')
             }}>
               Import
             </Button>
@@ -194,7 +226,7 @@ const Complaints = () => {
       })}
       {!searchActive && complaints && complaints.length > 0 && <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />}
       <Popup open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />
-      <FileUpload setOpenFileUpload={setOpenFileUpload} onSuccess={handleFileUploadSuccess} setProcessing={setProcessingFile} open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
+      <FileUpload setOpenFileUpload={setOpenFileUpload} onSuccess={handleFileUploadSuccess} setProcessing={setShouldPoll} open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
     </Box>
   );
 };

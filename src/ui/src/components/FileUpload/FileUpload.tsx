@@ -51,15 +51,14 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
     try {
       const response = await uploadComplaintFile(file);
       if (response && response.success) {
-        setFileCount(TOTAL_FILES);
         // Sequentially update status with delays
         await new Promise(res => setTimeout(res, 1000));
         setStatus('importing');
-        await new Promise(res => setTimeout(res, 2000));
+        await new Promise(res => setTimeout(res, 1500));
         setStatus('extracting');
-        await new Promise(res => setTimeout(res, 3000));
+        await new Promise(res => setTimeout(res, 2000));
         setStatus('success');
-        await new Promise(res => setTimeout(res, 4000));
+        await new Promise(res => setTimeout(res, 2500));
         onSuccess?.();
         onClose?.();   // Call onClose callback from parent
         onFileSelect(file);
@@ -186,7 +185,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
         <Box {...statusBoxProps}>
           <CircularProgress className={styles.circularProgress} />
           <Box className={styles.statusTitle}>
-            Importing file(s) {fileCount}/{TOTAL_FILES}
+            Importing file(s)
           </Box>
           <Box className={styles.statusSubtitle}>
             Please wait few seconds while we&apos;re extracting your data
@@ -200,7 +199,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
         <Box {...statusBoxProps}>
           <CircularProgress className={styles.circularProgress} />
           <Box className={styles.statusTitle}>
-            Extracting data {fileCount}/{TOTAL_FILES}
+            Extracting data
           </Box>
           <Box className={styles.statusSubtitle}>
             Please wait few seconds while we&apos;re extracting your data
