@@ -1,153 +1,309 @@
 .rootPaper {
   padding: 16px;
-  border-radius: 16px;
+  border-radius: 16px !important;
   height: 100%;
+  background-color: #fff;
+  font-family: inherit !important;
 }
 
 .headerStack {
   margin-bottom: 8px;
 }
 
+.MuiMenu-paper {
+  font-family: inherit !important; /* or specify your font stack */
+}
+
+.MuiList-root .MuiMenuItem-root {
+  font-family: inherit !important;
+}
+
 .headerTitle {
-  font-family: "Inter";
   font-weight: 600;
   font-size: 18px;
   line-height: 1;
   letter-spacing: 0.04em;
   vertical-align: bottom;
   color: #000000;
+  font-family: inherit !important;
 }
 
 .subtitleBox {
-  font-family: "Inter";
   font-weight: 400;
   font-size: 14px;
   line-height: 24px;
   letter-spacing: -0.1px;
   color: #5f6d7e;
   margin-bottom: 16px;
+  font-family: inherit !important;
 }
 
-.itemPaper {
+/* Non-edit mode styles */
+.nonEditPaper {
   padding: 16px;
   margin-bottom: 16px;
   border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
+  font-family: inherit !important;
 }
 
-.itemTopBox {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.labelBox {
-  font-family: "Inter";
-  font-weight: 500;
-  font-size: 15px;
-  line-height: 22px;
-  letter-spacing: -0.1px;
-  color: #272d37;
+.nonEditLabel {
+  font-weight: 600;
+  font-size: 16px;
+  color: #000;
+  font-family: inherit !important; 
 }
 
 .percentageBox {
   font-weight: 600;
-  font-size: 14px;
-  margin-right: 16px;
-  font-family: "Inter";
+  font-size: 14px; 
+  font-family: inherit !important;  
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 6px;
+  user-select: none;
+  margin-left: 24px;
+  /* existing spacing */
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
 }
 
-.iconButton {
-  padding: 0;
-  color: inherit;
+.percentageGreen {
+  background-color: #d6f5d6;
+  /* pale green */
+  color: #2e7d32;
+  /* green */
 }
 
-.inlineFlexCenter {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.percentageOrange {
+  background-color: #fff3e0;
+  /* pale orange */
+  color: #ef6c00;
+  /* orange */
 }
 
-.infoGrid {
-  font-family: "Inter";
+.percentageRed {
+  background-color: #fbe9e7;
+  /* pale red */
+  color: #d32f2f;
+  /* red */
+}
+
+.percentageBadge {
+  background-color: #d6f5d6;
+  /* pale green */
+  color: #2e7d32;
+  /* green */
+}
+
+.nonEditGrid {
   font-size: 13px;
-  margin-bottom: 16px;
+  margin-top: 8px;
+   font-family: inherit !important;
 }
 
-.infoGridNoMargin {
-  font-family: "Inter";
-  font-size: 13px;
-  margin-bottom: 0;
-}
-
-.infoGridItemLabel {
-  font-family: "Inter";
+.nonEditFieldLabel {
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: -0.1px;
   color: #5f6d7e;
+  margin-bottom: 4px;
+  font-family: inherit !important;  
 }
 
-.infoGridItemValue {
-  font-family: "Inter";
+.nonEditFieldValue {
+ font-family: inherit !important;
   font-weight: 600;
   font-size: 15px;
+  color: #272d37;
 }
 
-.editingControlsBox {
-  font-family: "Inter";
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.nonEditFieldValueBold {
+  font-family: inherit !important;
+  font-weight: 700;
+  font-size: 15px;
+  color: #272d37;
+}
+
+.editIconButton {
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  padding: 6px;
+  background-color: #fff;
+  color: #272d37;
+  transition: background-color 0.2s ease;
+}
+
+.editIconButton:hover {
+  background-color: #f0f0f0;
+}
+
+/* Edit mode styles */
+.editModePaper {
+  padding: 16px;
   margin-bottom: 16px;
-  margin-top: 48px;
+  border-radius: 8px;
+  background-color: #f5f6f7 !important;
+  box-shadow: none;
+  font-family: inherit !important;
+
+  input,
+  textarea,
+  .MuiInputBase-root,
+  .MuiOutlinedInput-root {
+    background-color: #fff !important;
+    color: #272d37 !important;
+    font-family: inherit !important;
+  }
+
+  .MuiSelect-select {
+    background-color: #fff !important;
+    color: #272d37 !important;
+    font-family: inherit !important;
+  }
+
+  .MuiOutlinedInput-root.Mui-focused,
+  .MuiOutlinedInput-root {
+    background-color: #fff !important;
+    color: #272d37 !important;
+    font-family: inherit !important;
+  }
+
+  .MuiPopover-paper,
+  .MuiPaper-root {
+    background-color: #fff !important;
+    color: #272d37 !important;
+    font-family: inherit !important;
+  }
+
+  label,
+  .MuiInputLabel-root,
+  .MuiFormLabel-root {
+    color: #5f6d7e !important;
+    font-family: inherit !important;
+  }
 }
 
 .selectMinSize {
-  min-width: 289px;
+  min-width: 280px;
   min-height: 40px;
-}
-
-.inputBaseInput {
-  font-family: "Inter";
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 22px;
-  letter-spacing: -0.1px;
-  padding: 6px 8px;
-}
-
-:global(.MuiInputBase-input) {
-  font-family: "Inter";
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 22px;
-  letter-spacing: -0.1px;
-  padding: 6px 8px;
+  background-color: #fff !important;
+  color: #272d37;
+  border-radius: 4px;
+  font-family: inherit !important;
 }
 
 .editSelectRoot {
-  font-family: "Inter";
   font-weight: 600;
   font-size: 15px;
   line-height: 22px;
   letter-spacing: -0.1px;
+  font-family: inherit !important;
 }
 
-.green {
-  color: #2e7d32;
-  background-color: #f0faf0;
+.editGrid {
+  margin-top: 8px;
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  font-family: inherit !important;
 }
 
-.orange {
-  color: #ef6c00;
-  background-color: #fff8eb;
+.editGrid>.MuiGrid-item {
+  flex-grow: 1;
+  flex-basis: 0;
+  /* allows items to shrink and grow evenly */
+  min-width: 120px;
+  font-family: inherit !important;
+  /* optional minimum width */
 }
 
-.red {
-  color: #d32f2f;
-  background-color: #fff8eb;
+.editField,
+.editSelectRoot {
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 4px;
+  font-family: inherit !important;
+}
+
+.editLabel {
+  font-weight: 500;
+  font-size: 13px;
+  color: #5f6d7e;
+  margin-bottom: 4px;
+  font-family: inherit !important;
+}
+
+.inputBaseInput {
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  padding: 6px 8px;
+  font-family: inherit !important;
+}
+
+.editField,
+.editSelectRoot {
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 4px;
+  font-family: inherit !important;
+}
+
+.buttonsRow {
+  margin-top: 12px;
+}
+
+.cancelButton,
+.confirmButton {
+  width: 40px !important;
+  /* enforce fixed width */
+  height: 40px !important;
+  /* enforce fixed height */
+  min-width: 40px !important;
+  min-height: 40px !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  /* remove rounding for perfect square */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff !important;
+  box-shadow: 0 0 0 1px #d1d9e6 !important;
+  /* subtle border */
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  margin-left: 8px !important;
+  overflow: visible !important;
+}
+
+.cancelButton {
+  color: #d32f2f !important;
+
+  &:hover {
+    background-color: #fdefec !important;
+    box-shadow: 0 0 6px 2px rgba(211, 47, 47, 0.3) !important;
+  }
+}
+
+.confirmButton {
+  color: #43a047 !important;
+
+  &:hover {
+    background-color: #e9f6e9 !important;
+    box-shadow: 0 0 6px 2px rgba(67, 160, 71, 0.3) !important;
+  }
+}
+
+.cancelButton img,
+.confirmButton img {
+  width: 20px;
+  height: 20px;
+  display: block;
+  margin: auto;
+  pointer-events: none;
 }

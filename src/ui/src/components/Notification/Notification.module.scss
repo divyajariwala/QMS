@@ -1,0 +1,17 @@
+.notificationContent {
+  background-color: #054923 !important;  /* Dark green background */
+  color: #d0f0c0 !important;              /* Light green text */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(5, 73, 35, 0.5);
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-weight: 500;
+  font-size: 16px;
+  font-family: inherit !important;
+}
+
+.icon {
+  margin-right: 8px;
+  font-size: 20px;
+}

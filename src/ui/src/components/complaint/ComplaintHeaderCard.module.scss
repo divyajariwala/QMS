@@ -4,6 +4,7 @@
   position: relative;
   background-color: #fff;
   box-sizing: border-box;
+  border-radius: 5px;
 }
 
 .flexContainer {
@@ -28,7 +29,7 @@
 }
 
 .statusText {
-  font-family: 'Inter';
+
   font-weight: 600;
   font-size: 12px;
   line-height: 24px;
@@ -39,8 +40,19 @@
   margin: 0;
 }
 
+.statusTextGreen {
+
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  text-transform: uppercase;
+  color: #4EB523;
+  white-space: nowrap;
+  margin: 0;
+}
+
 .caseIdText {
-  font-family: 'Inter';
   font-weight: 600;
   font-size: 28px;
   line-height: 38px;
@@ -65,7 +77,7 @@
   font-size: 13px;
   line-height: 18px;
   letter-spacing: -0.1px;
-  font-family: 'Inter';
+
   font-style: normal;
   height: 24px;
   border-radius: 4px;
@@ -88,7 +100,7 @@
 .approveSendButton {
   text-transform: none;
   background-color: #0060D7;
-  font-family: 'Inter';
+
   font-weight: 600;
   font-size: 14px;
   line-height: 20px;
@@ -115,13 +127,46 @@
   }
 }
 
+
+
+.modifyButton {
+  text-transform: none;
+  background-color: #ffffff;
+
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: #000;
+  height: 32px;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: grey;
+  }
+
+  svg {
+    font-size: 18px;
+    color: #fff;
+  }
+}
+
 .infoGridContainer {
   margin-top: 8px;
   align-items: flex-start;
+  border-radius: 10px;
 }
 
 .labelText {
-  font-family: 'Inter';
+
   font-weight: 400;
   font-style: normal;
   font-size: 14px;
@@ -132,7 +177,7 @@
 }
 
 .primaryReporterName {
-  font-family: 'Inter';
+
   font-weight: 700;
   font-style: normal;
   font-size: 16px;
@@ -143,7 +188,7 @@
 }
 
 .valueText {
-  font-family: 'Inter';
+
   font-weight: 500;
   font-style: normal;
   font-size: 14px;
@@ -155,4 +200,78 @@
 
 .mt2 {
   margin-top: 16px;
+}
+
+$btn-accent: #0b69ff;
+$btn-accent-hover: #0957d6;
+$btn-bg-hover: rgba(11, 105, 255, 0.06);
+$focus-ring: rgba(11, 105, 255, 0.14);
+$text-muted: #6b7280;
+$disabled-opacity: 0.6;
+
+.modifyBtn {
+  display: inline-flex;
+  align-items: center;
+  width: 154px;
+  height: 40px;
+  padding: 16px;
+  background: #FAFAFA;
+  border: 1px solid #DAE0E6;
+  color: #272D37;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  .label {
+    display: inline-block;
+    color: #272D37;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0px;
+    margin-left: 8px;
+  }
+
+  .icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    transition: transform 120ms ease, opacity 120ms ease;
+    color: inherit; // uses currentColor via fill="currentColor"
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    color: $btn-accent-hover;
+    background: $btn-bg-hover;
+
+    .icon {
+      transform: translateX(2px);
+    }
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px $focus-ring;
+    border-radius: 8px;
+  }
+
+  &:disabled {
+    opacity: $disabled-opacity;
+    cursor: not-allowed;
+    color: $text-muted;
+
+    .icon {
+      opacity: 0.6;
+      transform: none;
+    }
+  }
 }

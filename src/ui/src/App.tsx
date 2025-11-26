@@ -20,7 +20,9 @@ import { COMPLAINT_ID_NAME, COMPLAINT_SESSION_ID } from "./constants";
 import Deviations from "@components/deviations/Deviations";
 import CreateNarrative from "@components/Complaints/createNarrative";
 import Complaints from "@components/complaint/Complaints";
+import ComplaintsIntermediate from "@components/complaint/ComplaintsIntermediate";
 import ComplaintsDetails from "@components/complaint/ComplaintsDetails";
+import { PollingProvider } from "@components/polling/PollingProvider";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -54,6 +56,7 @@ const isAuthorized = cId || sId;
 const App = () => {
   return (
     <BrowserRouter>
+    <PollingProvider>
       <AuthProvider>
         <ThemeProvider theme={theme}>
           <ErrorBoundary
@@ -104,6 +107,14 @@ const App = () => {
                   path="/complaints/:complaintId"
                   element={
                     <ProtectedRoute>
+                      <ComplaintsIntermediate />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/approveComplaints/:complaintId"
+                  element={
+                    <ProtectedRoute>
                       <ComplaintsDetails />
                     </ProtectedRoute>
                   }
@@ -115,6 +126,7 @@ const App = () => {
           </ErrorBoundary>
         </ThemeProvider>
       </AuthProvider>
+      </PollingProvider>
     </BrowserRouter>
   );
 };

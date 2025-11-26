@@ -12,7 +12,15 @@ export const getCurrentDate = () => {
 };
 
 export const formatDateMMM_D_YYYY = (dateStr: string) => {
+  if (!dateStr) {
+    return "NA";
+  }
+
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) {
+    return "NA";
+  }
+
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const monthAbbr = months[date.getMonth()];

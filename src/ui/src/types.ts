@@ -154,6 +154,7 @@ export interface StatusCardProps {
   title: string;
   cardValue?: string | number | undefined;
   legend?: LegendData[];
+  page: string;
 }
 
 export interface ComplaintCategoryItem {
@@ -164,12 +165,13 @@ export interface ComplaintCategoryItem {
   priority: string;
   unit: number;
   percentage: number;
-  color: string;
-  bgColor: string;
 }
 export interface ComplaintCategoryProps {
   complaintCategories: ComplaintCategoryItem[];
-  onSave?: (updatedItem: ComplaintCategoryItem) => void;
+  setComplaintCategories: (updatedCategories: ComplaintCategoryItem[]) => void;
+  caseStatus: string | undefined;
+  crlList: string[];
+  labelList: string[];
 }
 
 export interface ComplaintHeaderCardProps {
@@ -188,6 +190,29 @@ export interface ComplaintHeaderCardProps {
     receipt_date: string | undefined;
   };
   onApproveAndSend: () => void;
+  caseStatus: string | undefined;
+  isApproved: boolean;
+  createdAt: string | undefined;
+}
+
+export interface ComplaintInterHeaderCardProps {
+  complaintData: {
+    status?: string | undefined;
+    caseId?: string | undefined;
+    overdueDays?: number | undefined;
+    primaryReporter?: Record<string, any> | undefined;
+    patientName?: string | undefined;
+    physicianName?: string | undefined;
+    drug?: string | undefined;
+    lotNumber?: string | undefined;
+    doseAmount?: string | undefined;
+    expirationDate?: string | undefined;
+    partNumber?: string | undefined;
+    receipt_date: string | undefined;
+  };
+  caseStatus: string | undefined;
+  setOpenModifyDetails: (val: boolean) => void;
+  createdAt: string | undefined;
 }
 
 export interface ComplaintsDueDateChipProps {
@@ -237,8 +262,12 @@ export interface ComplaintProps {
     report_type: string;
     receipt_date: string; // You might want to correct this to 'receipt_date' if it's a typo
     case_type: string[];
+    text_extracted: boolean;
+    created_at: string;
   },
-  selected: string
+  selected: string;
+  activeStatus: 'pending' | 'processed' | 'overdue';
+  loading: boolean;
 }
 
 export interface ButtonGroupProps {
@@ -252,7 +281,10 @@ export interface DeviationProps {
     "Processed Date": string,
     "Due Date": string,
     "rcaStatus": string,
-    "gradingStatus": string
+    "gradingStatus": string,
+    "status": string,
+    "progress": number;
+    "Case Number": string;
   };
 }
 
@@ -275,6 +307,9 @@ export interface FileUploadPopupProps {
   open: boolean;
   onClose: () => void;
   onFileSelect: (file: File) => void;
+  setProcessing: (val: boolean) => void;
+  onSuccess: () => void;
+  setOpenFileUpload: (val: boolean) => void;
 }
 
 export type fileUploadStatus = 'idle' | 'uploading' | 'importing' | 'extracting' | 'success' | 'error';
@@ -319,6 +354,8 @@ export type Case = {
   report_type: string;
   receipt_date: string;
   case_type: string[];
+  text_extracted?: boolean;
+  created_at?: string;
 };
 
 export type CaseStatus = {
@@ -337,11 +374,45 @@ export type CaseStats = {
   longest_time: number;
 };
 
+
+export interface PaginationData {
+  current_page: number;
+  total_pages: number;
+  total_items: number;
+  items_per_page: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
 export type getComplaintsApiResponse = {
   caseStats: CaseStats;
   caseStatus: CaseStatus;
+  pagination: PaginationData;
 };
 
+export type CategoryDetail = {
+  id: string;
+  label: string;
+  level: number;
+  crl: string;
+  priority: string;
+  unit: number;
+  percentage: number;
+};
+
+type PrimaryReporter = {
+  name: string;
+  address: string;
+};
+
+type ProductDetails = {
+  drug: string;
+  drug_name: string;
+  dosage: string;
+  lot_no: string;
+  expiration_date: string;
+  part_number: string;
+};
 export interface ComplaintDetail {
   case_id: string;
   receipt_date: string;
@@ -350,11 +421,17 @@ export interface ComplaintDetail {
   ai_summary: string;
   case_type: string[];
   narrative: string;
-  primary_reporter: Record<string, any>; // undefined structure assumed, adjust if known
+  primary_reporter: PrimaryReporter; // undefined structure assumed, adjust if known
   patient_name: string;
   physician_name: string;
-  product_details: Record<string, any>; // undefined structure assumed, adjust if known
+  product_details: ProductDetails; // undefined structure assumed, adjust if known
   caseStatus: string;
+  category_details: CategoryDetail[];
+  complaintClassified?: boolean;
+  created_at?: string;
+  crl_list: string[];
+  label_list: string[];
+  text_extracted?: boolean;
 }
 
 export type CaseStatusKey = "pending" | "processed" | "overdue";
@@ -370,3 +447,59 @@ export interface complaintStatsProps {
     "longest_time": number,
   } | undefined
 }
+
+export type CategoryDetailApi = {
+  id: string;
+  label: string;
+  level: number;
+  crl: string;
+  priority: string;
+  unit: number;
+  percentage: number;
+};
+
+type PrimaryReporterApi = {
+  name: string;
+  address: string;
+};
+
+type ProductDetailsApi = {
+  drug_name: string;
+  dosage: string;
+  lot_no: string;
+  expiration_date: string;
+};
+
+export type ApproveComplaintResponse = {
+  data: {
+    case_id: string;
+    receipt_date: string;
+    criticality: string;
+    report_type: string;
+    ai_summary: string;
+    case_type: string[];
+    narrative: string;
+    primary_reporter: PrimaryReporterApi;
+    patient_name: string;
+    physician_name: string;
+    product_details: ProductDetailsApi;
+    caseStatus: string;
+    category_details: CategoryDetailApi[];
+  }
+};
+
+export type ApproveComplaintRequest = {
+  case_id: string;
+  receipt_date: string;
+  criticality: string;
+  report_type: string;
+  ai_summary: string;
+  case_type: string[];
+  narrative: string;
+  primary_reporter: PrimaryReporterApi;
+  patient_name: string;
+  physician_name: string;
+  product_details: ProductDetailsApi;
+  caseStatus: string;
+  category_details: CategoryDetailApi[];
+};

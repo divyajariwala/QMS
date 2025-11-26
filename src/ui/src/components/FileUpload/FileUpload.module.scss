@@ -13,7 +13,7 @@
   padding-right: 16px;
   border-bottom: 1px solid #e0e0e0;
   user-select: none;
-  font-family: 'Inter';
+  font-family: inherit !important;
   font-weight: 600;
   font-size: 20px;
   line-height: 1;
@@ -67,7 +67,7 @@
 .formatsLine {
   display: block;
   margin-bottom: 24px;
-  font-family: 'Inter';
+ 
   font-weight: 400;
   font-size: 16px;
   line-height: 1;
@@ -78,7 +78,7 @@
 }
 
 .helperText {
-  font-family: 'Inter';
+ 
   font-weight: 400;
   font-size: 16px;
   line-height: 1;
@@ -99,7 +99,7 @@
   padding-left: 24px;
   padding-right: 16px;
   text-transform: none;
-  font-family: 'Inter';
+ 
   font-weight: 400;
   font-size: 16px;
   color: #606260;
@@ -126,7 +126,6 @@
 }
 
 .statusTitle {
-  font-family: 'Inter';
   font-weight: 500;
   font-size: 18px;
   line-height: 28px;
@@ -135,7 +134,7 @@
 }
 
 .statusSubtitle {
-  font-family: 'Inter';
+ 
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;

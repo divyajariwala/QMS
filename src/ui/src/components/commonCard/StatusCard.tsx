@@ -3,7 +3,7 @@ import { StatusCardProps } from "src/types";
 import styles from "./StatusCards.module.scss";
 import LegendItem from "./LegendItem";
 
-const StatusCard: React.FC<StatusCardProps> = ({ iconSrc, iconAlt, title, cardValue, legend }) => {
+const StatusCard: React.FC<StatusCardProps> = ({ iconSrc, iconAlt, title, cardValue, legend, page }) => {
   return (
     <div className={styles.card}>
       <div className={styles.cardInfo}>
@@ -16,13 +16,11 @@ const StatusCard: React.FC<StatusCardProps> = ({ iconSrc, iconAlt, title, cardVa
         </div>
       </div>
 
-      {legend && (
-        <div className={styles.cardLegend}>
-          <div className={styles.legendColumn}>
+      {legend && (      
+          <div className={page === "complaints" ? styles.legendColumnComplaints : styles.legendColumnDeviations}>
             {legend.map(({ colorClass, label, value }) => (
-              <LegendItem key={label} colorClass={colorClass} label={label} value={value} />
+              <LegendItem key={label} colorClass={colorClass} label={label} value={value}/>
             ))}
-          </div>
         </div>
       )}
     </div>

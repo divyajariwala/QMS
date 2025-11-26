@@ -8,35 +8,34 @@ import CycleIcon from "../../assets/icons/cycleTime.svg";
 const DeviationsStatusCard: React.FC = () => {
   return (
     <div className={styles.cardsContainer}>
+
       <StatusCard
         iconSrc={DeviationsIcon}
+        iconAlt="RCA"
+         page="deviations"
+        title="Total Deviations"
+        cardValue="15,340"
+        legend={[
+          { colorClass: "dotPending", label: "Pending", value: "10,000" },
+          { colorClass: "dotProcessed", label: "Processed", value: "4,000" },
+          { colorClass: "dotOverdue", label: "Overdue", value: "1,340" },
+        ]}
+      />
+      <StatusCard
+        iconSrc={DeviationsIcon}
+        page="deviations"
         iconAlt="RCA"
         title="Total Deviations"
         cardValue="27,340"
         legend={[
-          { colorClass: "dotPending", label: "RCA", value: 14000 },
-          { colorClass: "dotOverdue", label: "Grading", value: 13340 },
+          { colorClass: "dotPending", label: "RCA Pending", value: 14000 },
+          { colorClass: "dotProcessed", label: "RCA Done", value: 13340 },
+          { colorClass: "dotOverdue", label: "Grading Pending", value: 13340 },
         ]}
       />
 
-      <StatusCard
-        iconSrc={DeviationsIcon}
-        iconAlt="RCA"
-        title="Total RCA"
-        cardValue="14,000"
-        legend={[
-          { colorClass: "dotPending", label: "Pending", value: "7,000" },
-          { colorClass: "dotProcessed", label: "Processed", value: "3,000" },
-          { colorClass: "dotOverdue", label: "Overdue", value: "4,000" },
-        ]}
-      />
-
-      <StatusCard iconSrc={CycleIcon} iconAlt="Cycle Time" title="Cycle Time (Avg)" cardValue="2 Days"
-        legend={[
-          { label: "Best Time", value: "6hrs" },
-          { label: "Avg Time", value: "2 days" },
-          { label: "Longest Time", value: "7 days" },
-        ]} />
+      <StatusCard  page="deviations" iconSrc={CycleIcon} iconAlt="Cycle Time" title="Cycle Time (Avg)" cardValue="2 Days"
+        legend={[{ label: "Avg Time", value: "2 days" }]} />
     </div>
   );
 };

@@ -1,11 +1,10 @@
-
 .backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0,0,0,0.32);
+  background-color: rgba(0, 0, 0, 0.32);
   z-index: 999;
 }
 
@@ -23,7 +22,7 @@
   border-radius: 8px;
   z-index: 1000;
   font-family: 'Roboto', sans-serif;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .dialogTitle {
@@ -31,8 +30,7 @@
   display: flex;
   align-items: center;
   padding: 0 16px;
-  border-bottom: 1px solid rgba(0,0,0,0.12);
-  font-family: 'Inter', sans-serif;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   font-weight: 600;
   font-size: 20px;
   line-height: 1;
@@ -97,7 +95,7 @@
 .dialogActions {
   height: 79px;
   padding: 8px 16px 16px 16px;
-  border-top: 1px solid rgba(0,0,0,0.12);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -108,7 +106,7 @@
 .btnCancel {
   width: 83px;
   height: 36px;
-  font-family: 'Roboto', sans-serif;
+  font-family: inherit !important;
   padding: 8px 20px;
   border-radius: 10px;
   border: 1px solid #dae0e6;
@@ -131,7 +129,7 @@
 .btnSubmit {
   width: 99px;
   height: 36px;
-  font-family: 'Roboto', sans-serif;
+  font-family: inherit !important;
   padding: 8px 20px;
   border-radius: 10px;
   background-color: #0089EB;

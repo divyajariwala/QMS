@@ -17,7 +17,9 @@ import styles from './FileUpload.module.scss';
 const FileUpload: React.FC<FileUploadPopupProps> = ({
   open,
   onClose,
-  onFileSelect
+  onFileSelect,
+  setProcessing,
+  onSuccess
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
   const [status, setStatus] = useState<fileUploadStatus>('idle');
@@ -32,21 +34,6 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
       setErrorMsg(null);
     }
   }, [open]);
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
-    if (status === 'importing') {
-      timer = setTimeout(() => setStatus('extracting'), 1000);
-    } else if (status === 'extracting') {
-      timer = setTimeout(() => setStatus('success'), 1000);
-    } else if (status === 'success') {
-      timer = setTimeout(() => onClose(), 1000);
-    }
-
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [status, onClose]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -64,9 +51,18 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
     try {
       const response = await uploadComplaintFile(file);
       if (response && response.success) {
-        setFileCount(TOTAL_FILES);
+        // Sequentially update status with delays
+        await new Promise(res => setTimeout(res, 1000));
         setStatus('importing');
+        await new Promise(res => setTimeout(res, 1500));
+        setStatus('extracting');
+        await new Promise(res => setTimeout(res, 2000));
+        setStatus('success');
+        await new Promise(res => setTimeout(res, 2500));
+        onSuccess?.();
+        onClose?.();   // Call onClose callback from parent
         onFileSelect(file);
+        setProcessing(true);
       } else {
         throw new Error(response?.message || 'Unknown error during upload');
       }
@@ -184,12 +180,12 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
 
     const statusBoxProps = { className: styles.statusBox };
 
-    if (status === 'importing') {
+    if (status === 'importing' || status === 'uploading') {
       return (
         <Box {...statusBoxProps}>
           <CircularProgress className={styles.circularProgress} />
           <Box className={styles.statusTitle}>
-            Importing file(s) {fileCount}/{TOTAL_FILES}
+            Importing file(s)
           </Box>
           <Box className={styles.statusSubtitle}>
             Please wait few seconds while we&apos;re extracting your data
@@ -203,7 +199,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
         <Box {...statusBoxProps}>
           <CircularProgress className={styles.circularProgress} />
           <Box className={styles.statusTitle}>
-            Extracting data {fileCount}/{TOTAL_FILES}
+            Extracting data
           </Box>
           <Box className={styles.statusSubtitle}>
             Please wait few seconds while we&apos;re extracting your data

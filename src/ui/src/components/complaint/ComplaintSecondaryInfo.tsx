@@ -55,13 +55,13 @@ const ComplaintSecondaryInfo: React.FC<SecondaryInfoCardProps> = ({
             Case Type
           </Typography>
           <div className={styles.caseType__row}>
-            {caseType?.includes("PC") && (<InfoChip
+            {caseType?.includes("Product Complaint") && (<InfoChip
               iconSrc={productComplaintIconSrc}
               iconAlt="Product Complaint"
               label="Product Complaint"
               className={productComplaintsChipClassName}
             />)}
-            {caseType?.includes("AE") && (<InfoChip
+            {caseType?.includes("Adverse Event") && (<InfoChip
               iconSrc={adverseEventIconSrc}
               iconAlt="Adverse Event"
               label="Adverse Event"
