@@ -79,7 +79,7 @@ class TestLambdaHandler:
                 'priority_summary': 'Critical safety concern'
             }
         ]
-        mock_cursor.fetchall.return_value = [{'label_name': 'Broken Needle'}, {'label_name': 'Dose confirmation'}]
+        mock_cursor.fetchall.return_value = [{'label': 'Broken Needle'}, {'label': 'Dose confirmation'}]
 
         event = {
             'queryStringParameters': {'complaint_id': 'CAS-123'}
@@ -613,7 +613,7 @@ class TestUtilityFunctions:
                 'priority_summary': 'Minor issue'
             }
         ]
-        mock_cursor.fetchall.return_value = [{'label_name': 'Unknown Category'}]
+        mock_cursor.fetchall.return_value = [{'label': 'Unknown Category'}]
 
         event = {'queryStringParameters': {'complaint_id': 'CAS-666'}}
         result = lambda_function.lambda_handler(event, {})
@@ -668,7 +668,7 @@ class TestUtilityFunctions:
                 'priority_summary': 'Minor'
             }
         ]
-        mock_cursor.fetchall.return_value = [{'label_name': 'Some Category'}]
+        mock_cursor.fetchall.return_value = [{'label': 'Some Category'}]
 
         event = {'queryStringParameters': {'complaint_id': 'CAS-777'}}
         result = lambda_function.lambda_handler(event, {})
