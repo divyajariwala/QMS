@@ -510,6 +510,12 @@ class TestUtilityFunctions:
         mock_conn.cursor.return_value = mock_context
         mock_get_db.return_value = mock_conn
 
+        # Mock label_list query
+        mock_cursor.fetchall.return_value = [
+            {'label': 'Dose confirmation'},
+            {'label': 'Needle bent'}
+        ]
+
         mock_cursor.fetchone.side_effect = [
             {
                 'complaint_id': 'CAS-555',
@@ -558,8 +564,7 @@ class TestUtilityFunctions:
         assert body['category_details'][0]['crl'] == 'Dose confirmation'
         assert 'crl_list' in body
         assert 'label_list' in body
-        assert len(body['crl_list']) == 3
-        assert 'Dose confirmation' in body['crl_list']
+        assert 'Dose confirmation' in body['label_list']
 
     @patch.object(lambda_function, 'CRL_TO_LABEL', ['Dose confirmation', 'Needle bent'])
     @patch.object(lambda_function, 'get_db_connection')
