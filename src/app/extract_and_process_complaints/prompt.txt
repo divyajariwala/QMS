@@ -58,7 +58,7 @@ Field Specific Instructions:
 	Definition : Severity of the case. It should be inferred as one of the expected values from the narrative.
 	Expected Values : 
 		- For Ashfield reports : [Critical, Major , Minor]
-		- For MedWatch reports : [Adverse Event Inital Report, Follow Up]
+		- For MedWatch reports : [Critical, Major , Minor]
 4. Category:
 	Key : category
 	Definition : Category of the complaint

@@ -21,7 +21,7 @@ Examples:
 Your task is to extract the following information from the provided narrative text:
 - Case ID (if mentioned, otherwise 'N/A')
 - Receipt Date (if mentioned, otherwise 'N/A') 
-- Criticality (infer from narrative content)
+- Criticality (infer from narrative content. Expected values are "Critical", "Major", "Minor")
 - Report Type is not applicable. Value should be NA
 - Case Type (infer if it's Product Complaint, Adverse Event, or both using the AE/PC Classification Guidelines above. If ambiguous or borderline, classify based on the definitions provided)
 - Category (infer the category of complaint)
