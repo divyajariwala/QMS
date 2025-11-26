@@ -539,8 +539,6 @@ def process_csv_excel_file(file_content, file_extension, file_id):
                 return {'success': False, 'message': 'CSV file must have at least a header and one data row'}
             
             header = rows[0]
-            if len(header) != 2:
-                return {'success': False, 'message': 'CSV header must have exactly 2 columns'}
             
             # Create DataFrame (csv.reader already handled quoted fields properly)
             df = pd.DataFrame(rows[1:], columns=header)
@@ -548,14 +546,6 @@ def process_csv_excel_file(file_content, file_extension, file_id):
             df = pd.read_excel(io.BytesIO(file_content))
         else:
             return {'success': False, 'message': f'Unsupported file type: {file_extension}'}
-        
-        # Check column limit
-        if len(df.columns) > 2:
-            return {'success': False, 'message': f'File has {len(df.columns)} columns. Maximum allowed is 2 columns.'}
-        
-        # Validate structure - expect exactly 2 columns
-        if len(df.columns) != 2:
-            return {'success': False, 'message': 'File must have exactly 2 columns'}
         
         # Find narrative column by name (case-insensitive)
         narrative_col = None
@@ -567,8 +557,8 @@ def process_csv_excel_file(file_content, file_extension, file_id):
         if narrative_col is None:
             return {'success': False, 'message': 'File must have a column named "narrative"'}
         
-        # Get the other column as complaint_id
-        complaint_id_col = [col for col in df.columns if col != narrative_col][0]
+        # Use first column as complaint_id (or any other column that's not narrative)
+        complaint_id_col = df.columns[0] if df.columns[0] != narrative_col else (df.columns[1] if len(df.columns) > 1 else None)
         
         complaints = []
         
