@@ -79,6 +79,7 @@ class TestLambdaHandler:
                 'priority_summary': 'Critical safety concern'
             }
         ]
+        mock_cursor.fetchall.return_value = [{'label_name': 'Broken Needle'}, {'label_name': 'Dose confirmation'}]
 
         event = {
             'queryStringParameters': {'complaint_id': 'CAS-123'}
@@ -612,13 +613,14 @@ class TestUtilityFunctions:
                 'priority_summary': 'Minor issue'
             }
         ]
+        mock_cursor.fetchall.return_value = [{'label_name': 'Unknown Category'}]
 
         event = {'queryStringParameters': {'complaint_id': 'CAS-666'}}
         result = lambda_function.lambda_handler(event, {})
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['category_details'][0]['crl'] == 'Not Assigned'
+        assert body['category_details'][0]['crl'] == 'Unknown'
 
     @patch.object(lambda_function, 'CRL_TO_LABEL', ['Dose confirmation', 'Needle bent'])
     @patch.object(lambda_function, 'get_db_connection')
@@ -666,13 +668,14 @@ class TestUtilityFunctions:
                 'priority_summary': 'Minor'
             }
         ]
+        mock_cursor.fetchall.return_value = [{'label_name': 'Some Category'}]
 
         event = {'queryStringParameters': {'complaint_id': 'CAS-777'}}
         result = lambda_function.lambda_handler(event, {})
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['category_details'][0]['crl'] == 'Unknown CRL'
+        assert body['category_details'][0]['crl'] == 'Unknown'
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_no_crl_lists_when_not_classified(self, mock_get_db):
