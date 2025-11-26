@@ -531,30 +531,19 @@ def process_csv_excel_file(file_content, file_extension, file_id):
                 # Comma-separated (default)
                 delimiter = ','
             
-            # Parse with csv module for robust handling
-            csv_reader = csv.reader(lines, delimiter=delimiter)
+            # Parse with csv module for robust handling (handles quoted fields automatically)
+            csv_reader = csv.reader(lines, delimiter=delimiter, quoting=csv.QUOTE_MINIMAL)
             rows = list(csv_reader)
             
             if len(rows) < 2:
                 return {'success': False, 'message': 'CSV file must have at least a header and one data row'}
             
-            # Handle cases where unquoted commas create extra columns
             header = rows[0]
             if len(header) != 2:
                 return {'success': False, 'message': 'CSV header must have exactly 2 columns'}
             
-            processed_rows = []
-            for row in rows[1:]:
-                if len(row) >= 2:
-                    # If more than 2 columns, join the extra ones into the second column
-                    processed_row = [row[0], delimiter.join(row[1:]) if len(row) > 2 else row[1]]
-                    processed_rows.append(processed_row)
-                elif len(row) == 1:
-                    # If only one column, add empty second column
-                    processed_rows.append([row[0], ''])
-            
-            # Create DataFrame
-            df = pd.DataFrame(processed_rows, columns=header)
+            # Create DataFrame (csv.reader already handled quoted fields properly)
+            df = pd.DataFrame(rows[1:], columns=header)
         elif file_extension in ['xlsx', 'xls']:
             df = pd.read_excel(io.BytesIO(file_content))
         else:
@@ -564,13 +553,22 @@ def process_csv_excel_file(file_content, file_extension, file_id):
         if len(df.columns) > 2:
             return {'success': False, 'message': f'File has {len(df.columns)} columns. Maximum allowed is 2 columns.'}
         
-        # Validate structure - expect exactly 2 columns: complaint_id and narrative_text
+        # Validate structure - expect exactly 2 columns
         if len(df.columns) != 2:
-            return {'success': False, 'message': 'File must have exactly 2 columns: complaint_id and narrative_text'}
+            return {'success': False, 'message': 'File must have exactly 2 columns'}
         
-        # Get column names (first two columns)
-        complaint_id_col = df.columns[0]
-        narrative_col = df.columns[1]
+        # Find narrative column by name (case-insensitive)
+        narrative_col = None
+        for col in df.columns:
+            if col.lower().strip() == 'narrative':
+                narrative_col = col
+                break
+        
+        if narrative_col is None:
+            return {'success': False, 'message': 'File must have a column named "narrative"'}
+        
+        # Get the other column as complaint_id
+        complaint_id_col = [col for col in df.columns if col != narrative_col][0]
         
         complaints = []
         

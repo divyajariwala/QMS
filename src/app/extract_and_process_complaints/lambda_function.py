@@ -97,6 +97,28 @@ def load_tool_spec(spec_type='pdf'):
         logger.error(f"Tool spec file not found: {filename}")
         raise
 
+def get_default_extraction_data(spec_type='pdf'):
+    """Return default extraction data with NA values"""
+    return {
+        'case_id': 'N/A',
+        'receipt_date': 'N/A',
+        'criticality': 'N/A',
+        'category': [],
+        'case_type': [],
+        'report_type': 'N/A',
+        'narrative': '',
+        'narrative_summary': 'N/A',
+        'primary_reporter': {'name': 'N/A', 'address': 'N/A'},
+        'patient_name': 'N/A',
+        'physician_name': 'N/A',
+        'product_details': {
+            'drug_name': 'N/A',
+            'dosage': 'N/A',
+            'lot_no': 'N/A',
+            'expiration_date': 'N/A'
+        }
+    }
+
 def fetch_pdf_from_s3(s3_path):
     """Download PDF from S3 with size validation"""
     try:
@@ -184,7 +206,10 @@ def process_with_bedrock(messages, spec_type='pdf'):
         response = bedrock_runtime.converse(
             modelId="anthropic.claude-3-5-sonnet-20240620-v1:0",
             messages=messages,
-            toolConfig={"tools": [tool_spec]}
+            toolConfig={
+                "tools": [tool_spec],
+                "toolChoice": {"auto": {}}
+            }
         )
         
         content = response['output']['message']['content']
@@ -192,7 +217,9 @@ def process_with_bedrock(messages, spec_type='pdf'):
             if isinstance(item, dict) and 'toolUse' in item:
                 return item['toolUse']['input']
         
-        raise ValueError("No tool use found in response")
+        # If no tool use found, return default structure with NA values
+        logger.warning("No tool use found in response, returning default NA values")
+        return get_default_extraction_data(spec_type)
     except Exception as e:
         logger.error(f"Bedrock error: {str(e)}")
         raise

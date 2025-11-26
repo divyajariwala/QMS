@@ -38,7 +38,7 @@ def lambda_handler(event, context):
 
     Expected POST body:
     {
-        "narrative": "Detailed description of the complaint here (max 1500 chars)."
+        "narrative": "Detailed description of the complaint."
     }
     """
     logger.info("Received event: %s", json.dumps(event, indent=2))

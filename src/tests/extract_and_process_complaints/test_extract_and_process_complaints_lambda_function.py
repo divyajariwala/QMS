@@ -175,6 +175,35 @@ class TestGetConnectionString:
         mock_get_secret.assert_not_called()
 
 
+class TestGetDefaultExtractionData:
+    """Tests for get_default_extraction_data function"""
+
+    def test_get_default_extraction_data_pdf(self):
+        """Test: Get default extraction data for PDF"""
+        result = lambda_function.get_default_extraction_data('pdf')
+        
+        assert result['case_id'] == 'N/A'
+        assert result['narrative_summary'] == 'N/A'
+        assert result['criticality'] == 'N/A'
+        assert result['primary_reporter']['name'] == 'N/A'
+        assert result['primary_reporter']['address'] == 'N/A'
+        assert result['patient_name'] == 'N/A'
+        assert result['physician_name'] == 'N/A'
+        assert result['product_details']['drug_name'] == 'N/A'
+        assert result['product_details']['lot_no'] == 'N/A'
+        assert isinstance(result['category'], list)
+        assert isinstance(result['case_type'], list)
+
+    def test_get_default_extraction_data_narrative(self):
+        """Test: Get default extraction data for narrative"""
+        result = lambda_function.get_default_extraction_data('narrative')
+        
+        assert result['case_id'] == 'N/A'
+        assert result['narrative_summary'] == 'N/A'
+        assert all(value == 'N/A' or value == '' or isinstance(value, (list, dict)) 
+                   for value in result.values())
+
+
 class TestLoadToolSpec:
     """Tests for load_tool_spec function"""
 
@@ -364,13 +393,19 @@ class TestProcessWithBedrock:
         
         assert result == {'extracted': 'data'}
 
-    @patch('boto3.client')
+    @patch('lambda_function.get_default_extraction_data')
     @patch('lambda_function.load_tool_spec')
-    def test_process_with_bedrock_no_tool_use(self, mock_load_spec, mock_boto3):
-        """Test: No tool use found in response"""
+    @patch('boto3.client')
+    def test_process_with_bedrock_no_tool_use(self, mock_boto3, mock_load_spec, mock_get_default):
+        """Test: No tool use found returns default NA values"""
         mock_bedrock = Mock()
         mock_boto3.return_value = mock_bedrock
         mock_load_spec.return_value = {'toolSpec': {'name': 'test'}}
+        mock_get_default.return_value = {
+            'case_id': 'N/A',
+            'narrative_summary': 'N/A',
+            'primary_reporter': {'name': 'N/A', 'address': 'N/A'}
+        }
         
         mock_bedrock.converse.return_value = {
             'output': {
@@ -381,10 +416,11 @@ class TestProcessWithBedrock:
         }
 
         messages = [{'role': 'user', 'content': [{'text': 'test'}]}]
+        result = lambda_function.process_with_bedrock(messages, 'pdf')
         
-        with pytest.raises(ValueError) as exc_info:
-            lambda_function.process_with_bedrock(messages, 'pdf')
-        assert "No tool use found in response" in str(exc_info.value)
+        assert result['case_id'] == 'N/A'
+        assert result['narrative_summary'] == 'N/A'
+        mock_get_default.assert_called_once_with('pdf')
 
 
 class TestUpdateComplaintInDb:
