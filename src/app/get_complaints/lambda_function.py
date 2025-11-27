@@ -11,55 +11,16 @@ DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-mas
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 DB_REGION = os.environ.get('db_region', 'us-east-1')
 
-CRL_TO_LABEL = [
-    "Base cap difficult to remove",
-    "Button reported up after activation",
-    "Clicks - Autoinjector/Syringe",
-    "Device activated before placement on skin",
-    "Device activated before pressing button",
-    "Device activated when removed from carton",
-    "Device activated with base cap attached",
-    "Device defective",
-    "Device in the locked position after activation",
-    "Device not working - Autoinjector/Syringe",
-    "Dose confirmation",
-    "Injection button difficult to press",
-    "Injection incomplete - Autoinjector/Syringe",
-    "Injection takes too long",
-    "Lack of Drug Effect",
-    "Lack of Drug Effect - weight loss",
-    "Leaking after injection from device",
-    "Leaking unspecified - Autoinjector/Syringe",
-    "Miscellaneous Sub-Category",
-    "Needle bent",
-    "Needle broken",
-    "Needle did not retract",
-    "Needle not fully extended",
-    "Pen was used from package",
-    "Rigid needle shield was not removed",
-    "Upside down injection",
-    "Unknown"
-]
+# Load CRL mapping from JSON file
+CRL_MAPPING_FILE = os.path.join(os.path.dirname(__file__), 'crl_mapping_lookup.json')
+with open(CRL_MAPPING_FILE, 'r') as f:
+    LABEL_TO_CRL = json.load(f)
 
-LABEL_LIST = [
-    "Injection incomplete",
-    "Leaking unspecified",
-    "Needle bent",
-    "Dose confirmation",
-    "Device not working",
-    "Needle not fully extended",
-    "Device activated with base cap attached",
-    "Device activated before placement on skin",
-    "Injection button difficult to press",
-    "Needle did not retract",
-    "Device defective",
-    "Device activated before pressing button",
-    "Lack of Drug Effect",
-    "Pen was used from package",
-    "Needle broken",
-    "Miscellaneous Sub-Category",
-    "Injection incomplete - Autoinjector/Syringe"
-]
+# Create reverse mapping: CRL code -> Description
+CRL_TO_LABEL = {v: k for k, v in LABEL_TO_CRL.items()}
+
+# Get list of all CRL descriptions for frontend
+CRL_DESCRIPTIONS = sorted(LABEL_TO_CRL.keys())
 
 def lambda_handler(event, context):
     """
@@ -77,13 +38,14 @@ def lambda_handler(event, context):
         complaint_id = query_parameters.get('complaint_id') if query_parameters else None
         page = int(query_parameters.get('page', 1)) if query_parameters and query_parameters.get('page') else 1
         status_filter = query_parameters.get('status') if query_parameters else None
+        search_query = query_parameters.get('search') if query_parameters else None
         
         if complaint_id:
             # Handle single complaint request: /getComplaints?complaint_id=xxx
             return get_single_complaint(conn, complaint_id)
         else:
             # Handle all complaints request: /getComplaints
-            return get_all_complaints(conn, page, status_filter)
+            return get_all_complaints(conn, page, status_filter, search_query)
             
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -169,11 +131,11 @@ def get_single_complaint(conn, complaint_id):
                         subcat_pct = subcat_items[idx][1] if idx < len(subcat_items) else 0
                         crl_code = crl_items[idx][0] if idx < len(crl_items) else ''
                         
-                        # Map CRL code to label, handle unmapped codes
+                        # Map CRL code to description using mapping
                         if crl_code == 'UNASSIGNED' or not crl_code:
                             crl_label = 'Unknown'
                         else:
-                            crl_label = crl_code if crl_code in CRL_TO_LABEL else 'Unknown'
+                            crl_label = CRL_TO_LABEL.get(crl_code, 'Unknown')
                         
                         category_details.append({
                             "id": str(idx + 1),
@@ -218,7 +180,8 @@ def get_single_complaint(conn, complaint_id):
             if inference_result is not None:
                 # Get label list from database and update with new subcategories
                 label_list = _get_and_update_label_list(cursor, category_details)
-                complaint_details['crl_list'] = CRL_TO_LABEL
+                conn.commit()  # Commit new labels to database
+                complaint_details['crl_list'] = CRL_DESCRIPTIONS
                 complaint_details['label_list'] = label_list
         
             return {
@@ -242,7 +205,7 @@ def get_single_complaint(conn, complaint_id):
         if conn:
             conn.close()
 
-def get_all_complaints(conn, page=1, status_filter=None):
+def get_all_complaints(conn, page=1, status_filter=None, search_query=None):
     """
     Get all complaints with statistics and pagination
     """
@@ -260,71 +223,119 @@ def get_all_complaints(conn, page=1, status_filter=None):
             limit = 15
             offset = (page - 1) * limit
             
-            # Build query with optional status filter
-            where_clause = "WHERE status = %s" if status_filter else ""
-            params = [status_filter.title()] if status_filter else []
-            
-            # Get total count
-            cursor.execute(f"SELECT COUNT(*) as total FROM complaints {where_clause}", params)
-            total_count = cursor.fetchone()['total']
-            
-            # Get paginated complaints
-            cursor.execute(f"""
-                SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
-                FROM complaints
-                {where_clause}
-                ORDER BY complaint_id DESC
-                LIMIT %s OFFSET %s
-            """, params + [limit, offset])
-            paginated_complaints = cursor.fetchall()
-            
-            # Get complaints for status grouping based on filter
-            if status_filter:
-                # When filtering by status, only return that status in caseStatus
-                complaints_for_grouping = paginated_complaints
-            else:
-                # When no filter, get all complaints for status grouping
+            # Handle search separately - search ignores status filter
+            if search_query:
+                # Get total count for search
+                cursor.execute(
+                    "SELECT COUNT(*) as total FROM complaints WHERE complaint_id ILIKE %s",
+                    (f"%{search_query}%",)
+                )
+                total_count = cursor.fetchone()['total']
+                
+                # Get paginated search results
                 cursor.execute("""
                     SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
                     FROM complaints
+                    WHERE complaint_id ILIKE %s
                     ORDER BY complaint_id DESC
-                """)
-                complaints_for_grouping = cursor.fetchall()
+                    LIMIT %s OFFSET %s
+                """, (f"%{search_query}%", limit, offset))
+                search_results = cursor.fetchall()
+                
+                # Calculate pagination info
+                total_pages = (total_count + limit - 1) // limit
+                
+                response_data = {
+                    'caseStats': {
+                        'total_complaints': stats.get('pending', 0) + stats.get('processed', 0) + stats.get('overdue', 0),
+                        'pending': stats.get('pending', 0),
+                        'processed': stats.get('processed', 0),
+                        'overdue': stats.get('overdue', 0),
+                        'avg_cycle_time': stats.get('avg_time', 0)
+                    },
+                    'pagination': {
+                        'current_page': page,
+                        'total_pages': total_pages,
+                        'total_items': total_count,
+                        'items_per_page': limit,
+                        'has_next': page < total_pages,
+                        'has_previous': page > 1
+                    },
+                    'search_results': [{
+                        'case_id': c['complaint_id'],
+                        'criticality': c['criticality'] or 'NA',
+                        'report_type': c['report_type'] or 'NA',
+                        'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
+                        'case_type': c['case_type'].split(',') if c['case_type'] else [],
+                        'status': c['status'].lower(),
+                        'text_extracted': c.get('text_extracted', False),
+                        'created_at': c['created_at'].isoformat() if c.get('created_at') else ''
+                    } for c in search_results]
+                }
+            else:
+                # Normal flow - with optional status filter
+                where_clause = "WHERE status = %s" if status_filter else ""
+                params = [status_filter.title()] if status_filter else []
+                
+                # Get total count
+                cursor.execute(f"SELECT COUNT(*) as total FROM complaints {where_clause}", params)
+                total_count = cursor.fetchone()['total']
+                
+                # Get paginated complaints
+                cursor.execute(f"""
+                    SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                    FROM complaints
+                    {where_clause}
+                    ORDER BY complaint_id DESC
+                    LIMIT %s OFFSET %s
+                """, params + [limit, offset])
+                paginated_complaints = cursor.fetchall()
+                
+                # Get complaints for status grouping
+                if status_filter:
+                    complaints_for_grouping = paginated_complaints
+                else:
+                    cursor.execute("""
+                        SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                        FROM complaints
+                        ORDER BY complaint_id DESC
+                    """)
+                    complaints_for_grouping = cursor.fetchall()
+                
+                # Group complaints by status
+                case_status = _group_by_status(complaints_for_grouping)
+                
+                # Calculate pagination info
+                total_pages = (total_count + limit - 1) // limit
             
-            # Group complaints by status
-            case_status = _group_by_status(complaints_for_grouping)
-            
-            # Calculate pagination info
-            total_pages = (total_count + limit - 1) // limit
-        
-            response_data = {
-                'caseStats': {
-                    'total_complaints': total_count if status_filter else len(complaints_for_grouping),
-                    'pending': stats.get('pending', 0),
-                    'processed': stats.get('processed', 0),
-                    'overdue': stats.get('overdue', 0),
-                    'avg_cycle_time': stats.get('avg_time', 0)
-                },
-                'caseStatus': case_status,
-                'pagination': {
-                    'current_page': page,
-                    'total_pages': total_pages,
-                    'total_items': total_count,
-                    'items_per_page': limit,
-                    'has_next': page < total_pages,
-                    'has_previous': page > 1
-                },
-                'complaints': [{
-                    'case_id': c['complaint_id'],
-                    'criticality': c['criticality'] or 'NA',
-                    'report_type': c['report_type'] or 'NA',
-                    'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
-                    'case_type': c['case_type'].split(',') if c['case_type'] else [],
-                    'status': c['status'].lower(),
-                    'text_extracted': c.get('text_extracted', False),
-                    'created_at': c['created_at'].isoformat() if c.get('created_at') else ''
-                } for c in paginated_complaints]
-            }
+                response_data = {
+                    'caseStats': {
+                        'total_complaints': stats.get('pending', 0) + stats.get('processed', 0) + stats.get('overdue', 0),
+                        'pending': stats.get('pending', 0),
+                        'processed': stats.get('processed', 0),
+                        'overdue': stats.get('overdue', 0),
+                        'avg_cycle_time': stats.get('avg_time', 0)
+                    },
+                    'caseStatus': case_status,
+                    'pagination': {
+                        'current_page': page,
+                        'total_pages': total_pages,
+                        'total_items': total_count,
+                        'items_per_page': limit,
+                        'has_next': page < total_pages,
+                        'has_previous': page > 1
+                    },
+                    'complaints': [{
+                        'case_id': c['complaint_id'],
+                        'criticality': c['criticality'] or 'NA',
+                        'report_type': c['report_type'] or 'NA',
+                        'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
+                        'case_type': c['case_type'].split(',') if c['case_type'] else [],
+                        'status': c['status'].lower(),
+                        'text_extracted': c.get('text_extracted', False),
+                        'created_at': c['created_at'].isoformat() if c.get('created_at') else ''
+                    } for c in paginated_complaints]
+                }
             
             return {
                 'statusCode': 200,
