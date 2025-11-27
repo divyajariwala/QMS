@@ -86,12 +86,15 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                   onChange={(e) => handleEditChange("label", e.target.value)}
                   className={styles.selectMinSize}
                   classes={{ root: styles.editSelectRoot }}
+                  MenuProps={{
+                    classes: { paper: styles.rootPaper }
+                  }}
                 >
                   {labelList?.map((opt, index) => (
-                      <MenuItem key={index} value={opt} className={styles.menuItem}>
-                        {opt}
-                      </MenuItem>
-                    ))}
+                    <MenuItem key={index} value={opt} className={styles.menuItem}>
+                      {opt}
+                    </MenuItem>
+                  ))}
                 </Select>
 
                 <Box className={`${styles.percentageBox} ${getPercentageClass(editedData.percentage)}`}>
@@ -124,6 +127,9 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     fullWidth
                     className={styles.editSelectRoot}
                     variant="outlined"
+                    MenuProps={{
+                      classes: { paper: styles.rootPaper }
+                    }}
                   >
                     {/* Replace this with your real CRL options */}
                     {crlList?.map((opt, index) => (

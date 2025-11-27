@@ -4,6 +4,24 @@
   height: 100%;
   background-color: #fff;
   font-family: inherit !important;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f0f0f0;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 4px;
+    border: 2px solid #f0f0f0;
+  }
 }
 
 .headerStack {
