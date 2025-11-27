@@ -1,74 +1,87 @@
 {
-    "toolSpec": {
-        "name": "extract_case_info",
-        "description": "Extract case information from pharmaceutical complaint documents",
-        "inputSchema": {
-            "json": {
-                "type": "object",
-                "properties": {
-                    "case_id": {
-                        "type": "string",
-                        "description": "Unique case identifier"
-                    },
-                    "receipt_date": {
-                        "type": "string",
-                        "description": "Date of receiving report"
-                    },
-                    "criticality": {
-                        "type": "string",
-                        "description": "Case criticality level"
-                    },
-                    "category": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Category of the complaint - can be multiple values like [Initial, Follow#]"
-                    },
-                    "case_type": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Product Complaint or Adverse Event - can be multiple like [AE, PC] or [Adverse Event, Product Problem]"
-                    },
-                    "report_type": {
-                        "type": "string",
-                        "description": "Type of report"
-                    },
-                    "narrative": {
-                        "type": "string",
-                        "description": "Detailed case description"
-                    },
-                    "narrative_summary": {
-                        "type": "string",
-                        "description": "AI-generated concise summary of the narrative in 100-150 words"
-                    },
-                    "primary_reporter": {
-                        "type": "object",
-                        "description": "Name and address of primary reporter",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "address": {"type": "string"}
-                        }
-                    },
-                    "patient_name": {
-                        "type": "string",
-                        "description": "Name of the patient"
-                    },
-                    "physician_name": {
-                        "type": "string",
-                        "description": "Name of the physician"
-                    },
-                    "product_details": {
-                        "type": "object",
-                        "description": "Product information",
-                        "properties": {
-                            "drug_name": {"type": "string"},
-                            "dosage": {"type": "string"},
-                            "lot_no": {"type": "string"},
-                            "expiration_date": {"type": "string"}
-                        }
-                    }
-                },
-                "required": ["case_id", "receipt_date", "criticality", "category", "case_type", "report_type", "narrative", "narrative_summary", "primary_reporter", "patient_name", "physician_name", "product_details"]
+  "toolSpec": {
+    "name": "extract_case_info",
+    "description": "Extract case information from pharmaceutical complaint documents",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "description": "Unique case identifier from the complaint report"
+          },
+          "receipt_date": {
+            "type": "string",
+            "description": "Date the complaint report was received"
+          },
+          "criticality": {
+            "type": "string",
+            "description": "Potential risk to patient from product defect; values: Critical (life threatening), Major (serious risk), Minor (minimal impact). Extract explicitly from fields or narrative where clearly indicated; do not infer if ambiguous."
+          },
+          "category": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Product classification or high-level complaint category (e.g., Medical Device, Pharmaceutical Drug, Initial, Follow-up). Extract from dedicated fields or narrative context; may be multiple values."
+          },
+          "case_type": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Classification of case type: Adverse Event, Product Complaint, Both (AE and PC), or Neither; multiple values possible based on case. Derived from explicit fields or narrative analysis."
+          },
+          "report_type": {
+            "type": "string",
+            "description": "Type or source of report, e.g., Spontaneous, Clinical Trial, Literature for AE; Spontaneous, Internal, Field/Service, etc. for Product Complaints. Extract from fields, narrative, or document metadata; may be null or NA if unavailable."
+          },
+          "narrative": {
+            "type": "string",
+            "description": "Full detailed narrative describing the complaint, including patient or product issues"
+          },
+          "narrative_summary": {
+            "type": "string",
+            "description": "Concise (100-150 words) AI-generated summary of the narrative covering key points such as patient condition, product information, adverse event or complaint nature, and outcome"
+          },
+          "primary_reporter": {
+            "type": "object",
+            "description": "Name and address of the primary reporter as found in the report; use NA if not available",
+            "properties": {
+              "name": { "type": "string" },
+              "address": { "type": "string" }
             }
-        }
+          },
+          "patient_name": {
+            "type": "string",
+            "description": "Name of the patient mentioned in the report; NA if unavailable"
+          },
+          "physician_name": {
+            "type": "string",
+            "description": "Name of the physician mentioned in the report; NA if unavailable"
+          },
+          "product_details": {
+            "type": "object",
+            "description": "Structured product information including drug name, dosage, lot number, and expiration date; NA if unavailable",
+            "properties": {
+              "drug_name": { "type": "string" },
+              "dosage": { "type": "string" },
+              "lot_no": { "type": "string" },
+              "expiration_date": { "type": "string" }
+            }
+          }
+        },
+        "required": [
+          "case_id",
+          "receipt_date",
+          "criticality",
+          "category",
+          "case_type",
+          "report_type",
+          "narrative",
+          "narrative_summary",
+          "primary_reporter",
+          "patient_name",
+          "physician_name",
+          "product_details"
+        ]
+      }
     }
+  }
 }
