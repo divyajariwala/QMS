@@ -77,13 +77,14 @@ def lambda_handler(event, context):
         complaint_id = query_parameters.get('complaint_id') if query_parameters else None
         page = int(query_parameters.get('page', 1)) if query_parameters and query_parameters.get('page') else 1
         status_filter = query_parameters.get('status') if query_parameters else None
+        search_query = query_parameters.get('search') if query_parameters else None
         
         if complaint_id:
             # Handle single complaint request: /getComplaints?complaint_id=xxx
             return get_single_complaint(conn, complaint_id)
         else:
             # Handle all complaints request: /getComplaints
-            return get_all_complaints(conn, page, status_filter)
+            return get_all_complaints(conn, page, status_filter, search_query)
             
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -242,7 +243,7 @@ def get_single_complaint(conn, complaint_id):
         if conn:
             conn.close()
 
-def get_all_complaints(conn, page=1, status_filter=None):
+def get_all_complaints(conn, page=1, status_filter=None, search_query=None):
     """
     Get all complaints with statistics and pagination
     """
@@ -260,9 +261,19 @@ def get_all_complaints(conn, page=1, status_filter=None):
             limit = 15
             offset = (page - 1) * limit
             
-            # Build query with optional status filter
-            where_clause = "WHERE status = %s" if status_filter else ""
-            params = [status_filter.title()] if status_filter else []
+            # Build query with optional status filter and search
+            where_conditions = []
+            params = []
+            
+            if status_filter:
+                where_conditions.append("status = %s")
+                params.append(status_filter.title())
+            
+            if search_query:
+                where_conditions.append("complaint_id ILIKE %s")
+                params.append(f"%{search_query}%")
+            
+            where_clause = "WHERE " + " AND ".join(where_conditions) if where_conditions else ""
             
             # Get total count
             cursor.execute(f"SELECT COUNT(*) as total FROM complaints {where_clause}", params)
@@ -278,9 +289,9 @@ def get_all_complaints(conn, page=1, status_filter=None):
             """, params + [limit, offset])
             paginated_complaints = cursor.fetchall()
             
-            # Get complaints for status grouping based on filter
-            if status_filter:
-                # When filtering by status, only return that status in caseStatus
+            # Get complaints for status grouping based on filters
+            if status_filter or search_query:
+                # When filtering, only return filtered results in caseStatus
                 complaints_for_grouping = paginated_complaints
             else:
                 # When no filter, get all complaints for status grouping

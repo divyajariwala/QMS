@@ -293,6 +293,51 @@ class TestLambdaHandler:
         assert body['caseStats']['total_complaints'] == 10  # 5 + 3 + 2
 
     @patch.object(lambda_function, 'get_db_connection')
+    def test_get_all_complaints_with_search_query(self, mock_get_db):
+        """Test: Get complaints with search query parameter"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # Mock stats data
+        mock_cursor.fetchall.side_effect = [
+            [
+                {'stat_name': 'Pending', 'stat_value': 10},
+                {'stat_name': 'Processed', 'stat_value': 5},
+                {'stat_name': 'Overdue', 'stat_value': 3}
+            ],
+            # Search results
+            [
+                {
+                    'complaint_id': 'CAS-00348',
+                    'criticality': 'High',
+                    'report_type': 'Spontaneous',
+                    'receipt_date': date(2023, 3, 15),
+                    'case_type': 'AE',
+                    'status': 'Pending',
+                    'text_extracted': True,
+                    'created_at': datetime(2023, 3, 15, 10, 0, 0)
+                }
+            ]
+        ]
+
+        # Mock total count
+        mock_cursor.fetchone.return_value = {'total': 1}
+
+        event = {
+            'queryStringParameters': {'search': '348'}
+        }
+
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['pagination']['total_items'] == 1
+        assert body['complaints'][0]['case_id'] == 'CAS-00348'
+        assert body['caseStats']['total_complaints'] == 18  # 10 + 5 + 3
+
+    @patch.object(lambda_function, 'get_db_connection')
     def test_lambda_handler_exception(self, mock_get_db):
         """Test: Lambda handler exception handling"""
         mock_get_db.side_effect = Exception("Database connection failed")
@@ -336,14 +381,14 @@ class TestGetAllComplaints:
             ]
         ]
 
-        result = lambda_function.get_all_complaints(mock_conn, 1, None)
+        result = lambda_function.get_all_complaints(mock_conn, 1, None, None)
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
         
         # Check statistics
         stats = body['caseStats']
-        assert stats['total_complaints'] == 3
+        assert stats['total_complaints'] == 4
         assert stats['pending'] == 2
         assert stats['processed'] == 1
         assert stats['overdue'] == 1
@@ -377,7 +422,7 @@ class TestGetAllComplaints:
             ]
         ]
 
-        result = lambda_function.get_all_complaints(mock_conn, 1, 'pending')
+        result = lambda_function.get_all_complaints(mock_conn, 1, 'pending', None)
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
@@ -395,6 +440,90 @@ class TestGetAllComplaints:
         # Check caseStatus only has pending complaints
         case_status = body['caseStatus']
         assert len(case_status['pending']) == 2
+        assert len(case_status['processed']) == 0
+        assert len(case_status['overdue']) == 0
+
+    def test_get_all_complaints_with_search(self):
+        """Test: Get complaints with search query"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+
+        # Mock total count for search results
+        mock_cursor.fetchone.return_value = {'total': 2}
+        
+        # Mock stats and search results
+        mock_cursor.fetchall.side_effect = [
+            [
+                {'stat_name': 'Pending', 'stat_value': 5},
+                {'stat_name': 'Processed', 'stat_value': 3},
+                {'stat_name': 'Overdue', 'stat_value': 2}
+            ],
+            # Search results for "348"
+            [
+                {'complaint_id': 'CAS-00348', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 3, 15), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': True, 'created_at': datetime(2023, 3, 15, 10, 0, 0)},
+                {'complaint_id': 'CAS-01348', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 4, 20), 'case_type': 'PC', 'status': 'Processed', 'text_extracted': False, 'created_at': datetime(2023, 4, 20, 11, 0, 0)}
+            ]
+        ]
+
+        result = lambda_function.get_all_complaints(mock_conn, 1, None, '348')
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        
+        # Check statistics remain constant
+        stats = body['caseStats']
+        assert stats['total_complaints'] == 10  # 5 + 3 + 2
+        
+        # Check pagination reflects search results
+        pagination = body['pagination']
+        assert pagination['total_items'] == 2
+        
+        # Check caseStatus has filtered results
+        case_status = body['caseStatus']
+        assert len(case_status['pending']) == 1
+        assert len(case_status['processed']) == 1
+        assert len(case_status['overdue']) == 0
+
+    def test_get_all_complaints_with_status_and_search(self):
+        """Test: Get complaints with both status filter and search query"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+
+        # Mock total count for combined filter
+        mock_cursor.fetchone.return_value = {'total': 1}
+        
+        # Mock stats and combined filter results
+        mock_cursor.fetchall.side_effect = [
+            [
+                {'stat_name': 'Pending', 'stat_value': 5},
+                {'stat_name': 'Processed', 'stat_value': 3},
+                {'stat_name': 'Overdue', 'stat_value': 2}
+            ],
+            # Pending complaints with "34" in ID
+            [
+                {'complaint_id': 'CAS-00348', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 3, 15), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': True, 'created_at': datetime(2023, 3, 15, 10, 0, 0)}
+            ]
+        ]
+
+        result = lambda_function.get_all_complaints(mock_conn, 1, 'pending', '34')
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        
+        # Check statistics remain constant
+        stats = body['caseStats']
+        assert stats['total_complaints'] == 10  # 5 + 3 + 2
+        
+        # Check pagination reflects combined filter
+        pagination = body['pagination']
+        assert pagination['total_items'] == 1
+        
+        # Check only pending with matching ID
+        case_status = body['caseStatus']
+        assert len(case_status['pending']) == 1
+        assert case_status['pending'][0]['case_id'] == 'CAS-00348'
         assert len(case_status['processed']) == 0
         assert len(case_status['overdue']) == 0
 
