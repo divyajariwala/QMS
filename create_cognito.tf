@@ -19,8 +19,7 @@ resource "aws_cognito_user_pool_client" "spa_client" {
   allowed_oauth_scopes = [
     "openid",
     "email",
-    "profile",
-    "uid"
+    "profile"
   ]
   supported_identity_providers = [
     "COGNITO",
