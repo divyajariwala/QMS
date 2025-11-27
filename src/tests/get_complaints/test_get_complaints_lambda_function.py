@@ -289,8 +289,8 @@ class TestLambdaHandler:
         assert len(body['caseStatus']['processed']) == 0
         assert len(body['caseStatus']['overdue']) == 0
         
-        # Verify total_complaints reflects filtered count
-        assert body['caseStats']['total_complaints'] == 5
+        # Verify total_complaints is sum of all statuses (not filtered count)
+        assert body['caseStats']['total_complaints'] == 10  # 5 + 3 + 2
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_lambda_handler_exception(self, mock_get_db):
@@ -382,9 +382,9 @@ class TestGetAllComplaints:
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
         
-        # Check statistics reflect filtered count
+        # Check statistics - total_complaints is sum of all statuses (not filtered count)
         stats = body['caseStats']
-        assert stats['total_complaints'] == 2
+        assert stats['total_complaints'] == 4  # 2 + 1 + 1
         
         # Check pagination reflects filtered results
         pagination = body['pagination']

@@ -299,7 +299,7 @@ def get_all_complaints(conn, page=1, status_filter=None):
         
             response_data = {
                 'caseStats': {
-                    'total_complaints': total_count if status_filter else len(complaints_for_grouping),
+                    'total_complaints': stats.get('pending', 0) + stats.get('processed', 0) + stats.get('overdue', 0),
                     'pending': stats.get('pending', 0),
                     'processed': stats.get('processed', 0),
                     'overdue': stats.get('overdue', 0),
