@@ -252,6 +252,7 @@ const Complaints = () => {
                 selected={activeStatus}
                 activeStatus={activeStatus}
                 loading={shouldPoll && !complaint.text_extracted && activeStatus === 'pending'}
+                searching={false}
               />
             ))
           )}
@@ -270,6 +271,7 @@ const Complaints = () => {
                 selected={activeStatus}
                 activeStatus={activeStatus}
                 loading={shouldPoll && !complaint.text_extracted && activeStatus === 'pending'}
+                searching={true}
               />
             ))
           }

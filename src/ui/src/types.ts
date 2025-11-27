@@ -264,10 +264,12 @@ export interface ComplaintProps {
     case_type: string[];
     text_extracted: boolean;
     created_at: string;
+    status?: 'pending' | 'processed' | 'overdue';
   },
   selected: string;
   activeStatus: 'pending' | 'processed' | 'overdue';
   loading: boolean;
+  searching: boolean;
 }
 
 export interface ButtonGroupProps {
