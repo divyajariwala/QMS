@@ -88,7 +88,7 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                   classes={{ root: styles.editSelectRoot }}
                 >
                   {labelList?.map((opt, index) => (
-                      <MenuItem key={index} value={opt}>
+                      <MenuItem key={index} value={opt} className={styles.menuItem}>
                         {opt}
                       </MenuItem>
                     ))}
@@ -127,7 +127,7 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                   >
                     {/* Replace this with your real CRL options */}
                     {crlList?.map((opt, index) => (
-                      <MenuItem key={index} value={opt}>
+                      <MenuItem key={index} value={opt} className={styles.menuItem}>
                         {opt}
                       </MenuItem>
                     ))}
@@ -144,9 +144,9 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     className={styles.editSelectRoot}
                     variant="outlined"
                   >
-                    <MenuItem value="High">High</MenuItem>
-                    <MenuItem value="Medium">Medium</MenuItem>
-                    <MenuItem value="Low">Low</MenuItem>
+                    <MenuItem value="High" className={styles.menuItem}>High</MenuItem >
+                    <MenuItem value="Medium" className={styles.menuItem}>Medium</MenuItem>
+                    <MenuItem value="Low" className={styles.menuItem}>Low</MenuItem>
                   </Select>
                 </Grid>
 
