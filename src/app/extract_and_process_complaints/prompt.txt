@@ -79,7 +79,8 @@ Minor
 Extraction Guidelines:
 For Product Complaints, criticality may appear as a dedicated field or phrase in the document, narrative, or metadata. Extract these values exactly if found.
 For Adverse Event Reports, criticality is typically not a designated field. Only extract if explicitly and unambiguously indicated in the narrative text.
-When ambiguous or missing, do not infer criticality. Return null if uncertain.
+When ambiguous or missing, do not infer criticality. Return 'NA' if uncertain.
+
 Category:
 
 Key: category
@@ -132,7 +133,7 @@ Spontaneous, Clinical Trials, Literature
 Extraction Guidelines:
 May be explicitly stated as field, mentioned in narrative, or implied by document title.
 Extract the exact category from available data prioritizing fields over narrative.
-Return null or "NA" if not available or inapplicable.
+Return "NA" if not available or inapplicable.
 Narrative:
 
 
