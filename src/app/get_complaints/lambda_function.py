@@ -11,55 +11,16 @@ DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-mas
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 DB_REGION = os.environ.get('db_region', 'us-east-1')
 
-CRL_TO_LABEL = [
-    "Base cap difficult to remove",
-    "Button reported up after activation",
-    "Clicks - Autoinjector/Syringe",
-    "Device activated before placement on skin",
-    "Device activated before pressing button",
-    "Device activated when removed from carton",
-    "Device activated with base cap attached",
-    "Device defective",
-    "Device in the locked position after activation",
-    "Device not working - Autoinjector/Syringe",
-    "Dose confirmation",
-    "Injection button difficult to press",
-    "Injection incomplete - Autoinjector/Syringe",
-    "Injection takes too long",
-    "Lack of Drug Effect",
-    "Lack of Drug Effect - weight loss",
-    "Leaking after injection from device",
-    "Leaking unspecified - Autoinjector/Syringe",
-    "Miscellaneous Sub-Category",
-    "Needle bent",
-    "Needle broken",
-    "Needle did not retract",
-    "Needle not fully extended",
-    "Pen was used from package",
-    "Rigid needle shield was not removed",
-    "Upside down injection",
-    "Unknown"
-]
+# Load CRL mapping from JSON file
+CRL_MAPPING_FILE = os.path.join(os.path.dirname(__file__), 'crl_mapping_lookup.json')
+with open(CRL_MAPPING_FILE, 'r') as f:
+    LABEL_TO_CRL = json.load(f)
 
-LABEL_LIST = [
-    "Injection incomplete",
-    "Leaking unspecified",
-    "Needle bent",
-    "Dose confirmation",
-    "Device not working",
-    "Needle not fully extended",
-    "Device activated with base cap attached",
-    "Device activated before placement on skin",
-    "Injection button difficult to press",
-    "Needle did not retract",
-    "Device defective",
-    "Device activated before pressing button",
-    "Lack of Drug Effect",
-    "Pen was used from package",
-    "Needle broken",
-    "Miscellaneous Sub-Category",
-    "Injection incomplete - Autoinjector/Syringe"
-]
+# Create reverse mapping: CRL code -> Description
+CRL_TO_LABEL = {v: k for k, v in LABEL_TO_CRL.items()}
+
+# Get list of all CRL descriptions for frontend
+CRL_DESCRIPTIONS = sorted(LABEL_TO_CRL.keys())
 
 def lambda_handler(event, context):
     """
@@ -170,11 +131,11 @@ def get_single_complaint(conn, complaint_id):
                         subcat_pct = subcat_items[idx][1] if idx < len(subcat_items) else 0
                         crl_code = crl_items[idx][0] if idx < len(crl_items) else ''
                         
-                        # Map CRL code to label, handle unmapped codes
+                        # Map CRL code to description using mapping
                         if crl_code == 'UNASSIGNED' or not crl_code:
                             crl_label = 'Unknown'
                         else:
-                            crl_label = crl_code if crl_code in CRL_TO_LABEL else 'Unknown'
+                            crl_label = CRL_TO_LABEL.get(crl_code, 'Unknown')
                         
                         category_details.append({
                             "id": str(idx + 1),
@@ -219,7 +180,8 @@ def get_single_complaint(conn, complaint_id):
             if inference_result is not None:
                 # Get label list from database and update with new subcategories
                 label_list = _get_and_update_label_list(cursor, category_details)
-                complaint_details['crl_list'] = CRL_TO_LABEL
+                conn.commit()  # Commit new labels to database
+                complaint_details['crl_list'] = CRL_DESCRIPTIONS
                 complaint_details['label_list'] = label_list
         
             return {
