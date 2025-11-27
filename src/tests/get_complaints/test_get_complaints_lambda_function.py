@@ -71,7 +71,7 @@ class TestLambdaHandler:
                 'complaint_id': 'CAS-123',
                 'levels': {"1": 0.11, "2": 0.81},
                 'subcategories': {"Broken Needle": 0.855, "Dose confirmation": 0.145},
-                'crl_codes': {"CRL-000100": 0.855, "CRL-000102": 0.145},
+                'crl_codes': {"CRL-000107": 0.855, "CRL-000100": 0.145},
                 'units': 3,
                 'final_level': '2',
                 'priority': 1,
@@ -294,7 +294,7 @@ class TestLambdaHandler:
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_all_complaints_with_search_query(self, mock_get_db):
-        """Test: Get complaints with search query parameter"""
+        """Test: Get complaints with search query parameter - returns search_results"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -334,8 +334,11 @@ class TestLambdaHandler:
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
         assert body['pagination']['total_items'] == 1
-        assert body['complaints'][0]['case_id'] == 'CAS-00348'
+        assert 'search_results' in body
+        assert body['search_results'][0]['case_id'] == 'CAS-00348'
         assert body['caseStats']['total_complaints'] == 18  # 10 + 5 + 3
+        assert 'caseStatus' not in body
+        assert 'complaints' not in body
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_lambda_handler_exception(self, mock_get_db):
@@ -444,7 +447,7 @@ class TestGetAllComplaints:
         assert len(case_status['overdue']) == 0
 
     def test_get_all_complaints_with_search(self):
-        """Test: Get complaints with search query"""
+        """Test: Get complaints with search query - returns search_results field"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -459,7 +462,7 @@ class TestGetAllComplaints:
                 {'stat_name': 'Processed', 'stat_value': 3},
                 {'stat_name': 'Overdue', 'stat_value': 2}
             ],
-            # Search results for "348"
+            # Search results for "348" - all statuses
             [
                 {'complaint_id': 'CAS-00348', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 3, 15), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': True, 'created_at': datetime(2023, 3, 15, 10, 0, 0)},
                 {'complaint_id': 'CAS-01348', 'criticality': 'Medium', 'report_type': 'Study', 'receipt_date': date(2023, 4, 20), 'case_type': 'PC', 'status': 'Processed', 'text_extracted': False, 'created_at': datetime(2023, 4, 20, 11, 0, 0)}
@@ -479,53 +482,15 @@ class TestGetAllComplaints:
         pagination = body['pagination']
         assert pagination['total_items'] == 2
         
-        # Check caseStatus has filtered results
-        case_status = body['caseStatus']
-        assert len(case_status['pending']) == 1
-        assert len(case_status['processed']) == 1
-        assert len(case_status['overdue']) == 0
-
-    def test_get_all_complaints_with_status_and_search(self):
-        """Test: Get complaints with both status filter and search query"""
-        mock_conn = Mock()
-        mock_context, mock_cursor = create_mock_cursor()
-        mock_conn.cursor.return_value = mock_context
-
-        # Mock total count for combined filter
-        mock_cursor.fetchone.return_value = {'total': 1}
+        # Check search_results field exists and contains results
+        assert 'search_results' in body
+        assert len(body['search_results']) == 2
+        assert body['search_results'][0]['case_id'] == 'CAS-00348'
+        assert body['search_results'][1]['case_id'] == 'CAS-01348'
         
-        # Mock stats and combined filter results
-        mock_cursor.fetchall.side_effect = [
-            [
-                {'stat_name': 'Pending', 'stat_value': 5},
-                {'stat_name': 'Processed', 'stat_value': 3},
-                {'stat_name': 'Overdue', 'stat_value': 2}
-            ],
-            # Pending complaints with "34" in ID
-            [
-                {'complaint_id': 'CAS-00348', 'criticality': 'High', 'report_type': 'Spontaneous', 'receipt_date': date(2023, 3, 15), 'case_type': 'AE', 'status': 'Pending', 'text_extracted': True, 'created_at': datetime(2023, 3, 15, 10, 0, 0)}
-            ]
-        ]
-
-        result = lambda_function.get_all_complaints(mock_conn, 1, 'pending', '34')
-
-        assert result['statusCode'] == 200
-        body = json.loads(result['body'])
-        
-        # Check statistics remain constant
-        stats = body['caseStats']
-        assert stats['total_complaints'] == 10  # 5 + 3 + 2
-        
-        # Check pagination reflects combined filter
-        pagination = body['pagination']
-        assert pagination['total_items'] == 1
-        
-        # Check only pending with matching ID
-        case_status = body['caseStatus']
-        assert len(case_status['pending']) == 1
-        assert case_status['pending'][0]['case_id'] == 'CAS-00348'
-        assert len(case_status['processed']) == 0
-        assert len(case_status['overdue']) == 0
+        # caseStatus should not be in response when searching
+        assert 'caseStatus' not in body
+        assert 'complaints' not in body
 
 
 class TestUtilityFunctions:
@@ -631,10 +596,9 @@ class TestUtilityFunctions:
             )
 
 
-    @patch.object(lambda_function, 'CRL_TO_LABEL', ['Dose confirmation', 'Needle bent', 'Device defective'])
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_with_crl_mapping(self, mock_get_db):
-        """Test: CRL codes are mapped to labels and crl_list/label_list are included"""
+        """Test: CRL codes are mapped to descriptions and crl_list/label_list are included"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -675,7 +639,7 @@ class TestUtilityFunctions:
                 'complaint_id': 'CAS-555',
                 'levels': {"2": 0.85},
                 'subcategories': {"Dose confirmation": 0.95},
-                'crl_codes': {"Dose confirmation": 0.95},
+                'crl_codes': {"CRL-000100": 0.95},
                 'units': 5,
                 'final_level': '2',
                 'priority': 1,
@@ -694,12 +658,12 @@ class TestUtilityFunctions:
         assert body['category_details'][0]['crl'] == 'Dose confirmation'
         assert 'crl_list' in body
         assert 'label_list' in body
+        assert isinstance(body['crl_list'], list)
         assert 'Dose confirmation' in body['label_list']
 
-    @patch.object(lambda_function, 'CRL_TO_LABEL', ['Dose confirmation', 'Needle bent'])
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_with_unassigned_crl(self, mock_get_db):
-        """Test: UNASSIGNED CRL code is mapped to 'Not Assigned'"""
+        """Test: UNASSIGNED CRL code is mapped to 'Unknown'"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -751,10 +715,9 @@ class TestUtilityFunctions:
         body = json.loads(result['body'])
         assert body['category_details'][0]['crl'] == 'Unknown'
 
-    @patch.object(lambda_function, 'CRL_TO_LABEL', ['Dose confirmation', 'Needle bent'])
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_with_unknown_crl(self, mock_get_db):
-        """Test: Unknown CRL code is mapped to 'Unknown CRL'"""
+        """Test: Unknown CRL code is mapped to 'Unknown'"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -789,7 +752,7 @@ class TestUtilityFunctions:
                 'complaint_id': 'CAS-777',
                 'levels': {"0": 0.90},
                 'subcategories': {"Some Category": 0.85},
-                'crl_codes': {"Unknown CRL Code": 0.85},
+                'crl_codes': {"CRL-999888": 0.85},
                 'units': 0,
                 'final_level': '0',
                 'priority': 0,

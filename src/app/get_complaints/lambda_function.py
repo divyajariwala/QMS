@@ -223,81 +223,119 @@ def get_all_complaints(conn, page=1, status_filter=None, search_query=None):
             limit = 15
             offset = (page - 1) * limit
             
-            # Build query with optional status filter and search
-            where_conditions = []
-            params = []
-            
-            if status_filter:
-                where_conditions.append("status = %s")
-                params.append(status_filter.title())
-            
+            # Handle search separately - search ignores status filter
             if search_query:
-                where_conditions.append("complaint_id ILIKE %s")
-                params.append(f"%{search_query}%")
-            
-            where_clause = "WHERE " + " AND ".join(where_conditions) if where_conditions else ""
-            
-            # Get total count
-            cursor.execute(f"SELECT COUNT(*) as total FROM complaints {where_clause}", params)
-            total_count = cursor.fetchone()['total']
-            
-            # Get paginated complaints
-            cursor.execute(f"""
-                SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
-                FROM complaints
-                {where_clause}
-                ORDER BY complaint_id DESC
-                LIMIT %s OFFSET %s
-            """, params + [limit, offset])
-            paginated_complaints = cursor.fetchall()
-            
-            # Get complaints for status grouping based on filters
-            if status_filter or search_query:
-                # When filtering, only return filtered results in caseStatus
-                complaints_for_grouping = paginated_complaints
-            else:
-                # When no filter, get all complaints for status grouping
+                # Get total count for search
+                cursor.execute(
+                    "SELECT COUNT(*) as total FROM complaints WHERE complaint_id ILIKE %s",
+                    (f"%{search_query}%",)
+                )
+                total_count = cursor.fetchone()['total']
+                
+                # Get paginated search results
                 cursor.execute("""
                     SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
                     FROM complaints
+                    WHERE complaint_id ILIKE %s
                     ORDER BY complaint_id DESC
-                """)
-                complaints_for_grouping = cursor.fetchall()
+                    LIMIT %s OFFSET %s
+                """, (f"%{search_query}%", limit, offset))
+                search_results = cursor.fetchall()
+                
+                # Calculate pagination info
+                total_pages = (total_count + limit - 1) // limit
+                
+                response_data = {
+                    'caseStats': {
+                        'total_complaints': stats.get('pending', 0) + stats.get('processed', 0) + stats.get('overdue', 0),
+                        'pending': stats.get('pending', 0),
+                        'processed': stats.get('processed', 0),
+                        'overdue': stats.get('overdue', 0),
+                        'avg_cycle_time': stats.get('avg_time', 0)
+                    },
+                    'pagination': {
+                        'current_page': page,
+                        'total_pages': total_pages,
+                        'total_items': total_count,
+                        'items_per_page': limit,
+                        'has_next': page < total_pages,
+                        'has_previous': page > 1
+                    },
+                    'search_results': [{
+                        'case_id': c['complaint_id'],
+                        'criticality': c['criticality'] or 'NA',
+                        'report_type': c['report_type'] or 'NA',
+                        'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
+                        'case_type': c['case_type'].split(',') if c['case_type'] else [],
+                        'status': c['status'].lower(),
+                        'text_extracted': c.get('text_extracted', False),
+                        'created_at': c['created_at'].isoformat() if c.get('created_at') else ''
+                    } for c in search_results]
+                }
+            else:
+                # Normal flow - with optional status filter
+                where_clause = "WHERE status = %s" if status_filter else ""
+                params = [status_filter.title()] if status_filter else []
+                
+                # Get total count
+                cursor.execute(f"SELECT COUNT(*) as total FROM complaints {where_clause}", params)
+                total_count = cursor.fetchone()['total']
+                
+                # Get paginated complaints
+                cursor.execute(f"""
+                    SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                    FROM complaints
+                    {where_clause}
+                    ORDER BY complaint_id DESC
+                    LIMIT %s OFFSET %s
+                """, params + [limit, offset])
+                paginated_complaints = cursor.fetchall()
+                
+                # Get complaints for status grouping
+                if status_filter:
+                    complaints_for_grouping = paginated_complaints
+                else:
+                    cursor.execute("""
+                        SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                        FROM complaints
+                        ORDER BY complaint_id DESC
+                    """)
+                    complaints_for_grouping = cursor.fetchall()
+                
+                # Group complaints by status
+                case_status = _group_by_status(complaints_for_grouping)
+                
+                # Calculate pagination info
+                total_pages = (total_count + limit - 1) // limit
             
-            # Group complaints by status
-            case_status = _group_by_status(complaints_for_grouping)
-            
-            # Calculate pagination info
-            total_pages = (total_count + limit - 1) // limit
-        
-            response_data = {
-                'caseStats': {
-                    'total_complaints': stats.get('pending', 0) + stats.get('processed', 0) + stats.get('overdue', 0),
-                    'pending': stats.get('pending', 0),
-                    'processed': stats.get('processed', 0),
-                    'overdue': stats.get('overdue', 0),
-                    'avg_cycle_time': stats.get('avg_time', 0)
-                },
-                'caseStatus': case_status,
-                'pagination': {
-                    'current_page': page,
-                    'total_pages': total_pages,
-                    'total_items': total_count,
-                    'items_per_page': limit,
-                    'has_next': page < total_pages,
-                    'has_previous': page > 1
-                },
-                'complaints': [{
-                    'case_id': c['complaint_id'],
-                    'criticality': c['criticality'] or 'NA',
-                    'report_type': c['report_type'] or 'NA',
-                    'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
-                    'case_type': c['case_type'].split(',') if c['case_type'] else [],
-                    'status': c['status'].lower(),
-                    'text_extracted': c.get('text_extracted', False),
-                    'created_at': c['created_at'].isoformat() if c.get('created_at') else ''
-                } for c in paginated_complaints]
-            }
+                response_data = {
+                    'caseStats': {
+                        'total_complaints': stats.get('pending', 0) + stats.get('processed', 0) + stats.get('overdue', 0),
+                        'pending': stats.get('pending', 0),
+                        'processed': stats.get('processed', 0),
+                        'overdue': stats.get('overdue', 0),
+                        'avg_cycle_time': stats.get('avg_time', 0)
+                    },
+                    'caseStatus': case_status,
+                    'pagination': {
+                        'current_page': page,
+                        'total_pages': total_pages,
+                        'total_items': total_count,
+                        'items_per_page': limit,
+                        'has_next': page < total_pages,
+                        'has_previous': page > 1
+                    },
+                    'complaints': [{
+                        'case_id': c['complaint_id'],
+                        'criticality': c['criticality'] or 'NA',
+                        'report_type': c['report_type'] or 'NA',
+                        'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
+                        'case_type': c['case_type'].split(',') if c['case_type'] else [],
+                        'status': c['status'].lower(),
+                        'text_extracted': c.get('text_extracted', False),
+                        'created_at': c['created_at'].isoformat() if c.get('created_at') else ''
+                    } for c in paginated_complaints]
+                }
             
             return {
                 'statusCode': 200,
