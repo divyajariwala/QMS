@@ -70,7 +70,7 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
       <Stack direction="row" alignItems="center" spacing={1} className={styles.headerStack}>
         <Box className={styles.headerTitle}>Complaint Category</Box>
       </Stack>
-      <Box className={styles.subtitleBox}>Please review and modify.</Box>
+      {caseStatus !== "processed" && <Box className={styles.subtitleBox}>Please review and modify.</Box>}
 
       {complaintCategories?.map((item) => {
         const isEditing = editingId === item.id;
