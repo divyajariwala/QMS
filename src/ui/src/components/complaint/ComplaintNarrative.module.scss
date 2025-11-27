@@ -12,16 +12,17 @@
   flex-direction: row;
   align-items: center;
   gap: 8px;
-  padding: 16px;
+  margin-left: 16px;
 }
 
 .title {
   font-weight: 600;
-  font-style: normal;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1;
   letter-spacing: 0.04em;
-  color: #29323A;
+  vertical-align: bottom;
+  color: #000000;
+  font-family: inherit !important;
 }
 
 .body {

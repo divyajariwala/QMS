@@ -88,12 +88,11 @@
 .infoItemColumn {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   /* 0.75 * 8px */
 }
 
 .infoItemLabel {
-
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
@@ -132,7 +131,6 @@
 }
 
 .shortDescription {
-
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
@@ -142,7 +140,6 @@
 }
 
 .seeDetailsText {
-
   font-weight: 600;
   font-size: 14px;
   line-height: 20px;
@@ -211,7 +208,7 @@
   padding: 20px;
   background: #ffffff;
   margin-top: 12px;
-  height: 90%;
+  height: 80%;
 }
 
 .emptyCategoryText {
@@ -252,7 +249,7 @@
 }
 
 .cardBox {
-  padding: 24px;
+  padding: 16px 24px;
   border-radius: 16px;
   height: 100%;
   font-family: inherit;

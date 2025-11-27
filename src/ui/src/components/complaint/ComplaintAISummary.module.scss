@@ -28,33 +28,35 @@
 
 .header__title {
   font-weight: 600;
-  font-size: 16px;
-  line-height: 100%;
-  letter-spacing: 4%;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  vertical-align: bottom;
   color: #000000;
+  font-family: inherit !important;
   margin: 0;
   display: inline-block;
+  margin-top: 4px;
 }
 
 .content {
   font-weight: 400;
   font-size: 16px;
-  line-height: 100%;
-  letter-spacing: 4%;
+  line-height: 21px;
+  letter-spacing: 0.04em;
   margin-top: 8px;
   padding-left: 16px;
   margin-bottom: 16px;
   color: #272d37;
-}
 
-.content a {
-  font-weight: 400;
-  font-style: normal;
-  font-size: 16px;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  text-decoration-thickness: auto;
-  text-decoration-line: underline;
-  color: #0089eb;
-  cursor: pointer;
+  a {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0.04em;
+    text-decoration-thickness: auto;
+    text-decoration-line: underline;
+    color: #0089eb;
+    cursor: pointer;
+  }
 }

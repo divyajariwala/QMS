@@ -186,7 +186,6 @@ const ComplaintsIntermediate: React.FC = () => {
         <Grid item xs={12} md={7.1}>
           <div className={styles.cardBox}>
             <div className={styles.cardTitle}>Complaint Category</div>
-            <div className={styles.cardSubtitle}>Please review and modify.</div>
             <div className={styles.emptyCategory}>
               <p className={styles.emptyCategoryText}>There is no complaint category created.</p>
               <button className={styles.classifyBtn} onClick={testClassify}>
