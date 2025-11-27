@@ -354,8 +354,8 @@ export type Case = {
   report_type: string;
   receipt_date: string;
   case_type: string[];
-  text_extracted?: boolean;
-  created_at?: string;
+  text_extracted: boolean;
+  created_at: string;
 };
 
 export type CaseStatus = {
@@ -388,6 +388,13 @@ export type getComplaintsApiResponse = {
   caseStats: CaseStats;
   caseStatus: CaseStatus;
   pagination: PaginationData;
+};
+
+export type searchComplaintsApiResponse = {
+  caseStats: CaseStats;
+  caseStatus: CaseStatus;
+  pagination: PaginationData;
+  search_results: Case[];
 };
 
 export type CategoryDetail = {

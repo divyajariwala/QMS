@@ -1,112 +1,78 @@
 import React, { useState } from "react";
-import Search from "../../assets/icons/search.svg";
 import styles from "./ComplaintsFilter.module.scss";
-import { fetchComplaintDetailById } from "../../services/api.service"; // adjust the import path
-import { ComplaintDetail } from "src/types";
+import { searchComplaintsApiResponse } from "src/types";
+
+interface PaginationObj {
+    current_page: number;
+    total_pages: number;
+    total_items: number;
+    items_per_page: number,
+    has_next: boolean,
+    has_previous: boolean,
+  };
 
 interface ComplaintFilterProps {
   complaintId: string;
   setComplaintId: (val: string) => void;
-  complaintDetail: ComplaintDetail | null;
-  setComplaintDetail: (val: ComplaintDetail | null) => void;
+  setComplaintDetail: (val: searchComplaintsApiResponse | null) => void;
   setSearchActive: (val: boolean) => void;
+  setPagination: (val: PaginationObj) => void;
+  doSearch: (id: string, page?: number) => Promise<void>;
 }
+
+
 
 const ComplaintsFilter = ({
   complaintId,
-  complaintDetail,
   setComplaintId,
   setComplaintDetail,
   setSearchActive,
+  setPagination,
+  doSearch,
 }: ComplaintFilterProps) => {
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Helper function to format complaint ID to "CAS-00017" style
-  const formatComplaintId = (id: string): string => {
-    const trimmed = id.trim();
-
-    if (/^CAS-/i.test(trimmed)) {
-      return trimmed.toUpperCase();
-    }
-
-    const digits = trimmed.replace(/\D/g, "");
-    if (digits.length === 0) {
-      return trimmed.toUpperCase(); // fallback for invalid input
-    }
-
-    const padded = digits.padStart(5, "0");
-    return `CAS-${padded}`;
-  };
-
-  const SearchSvg = () => <img src={Search} alt="Search icon" />;
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setComplaintId(e.target.value);
-    if (e.target.value === "") {
+    const val = e.target.value;
+    setComplaintId(val);
+
+    if (val.trim() === "") {
       setSearchActive(false);
       setError(null);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setComplaintDetail(null);
-    setSearchActive(true);
-
-    if (!complaintId.trim()) {
-      setError("Please enter a complaint id.");
-      return;
-    }
-
-    const formattedId = formatComplaintId(complaintId);
-
-    setLoading(true);
-    try {
-      const detail = await fetchComplaintDetailById(formattedId);
-      setComplaintDetail(detail);
-    } catch (err) {
-      setError("Failed to load the required complaint. Please try again.");
-      console.error(err);
-    } finally {
-      setLoading(false);
+      setComplaintDetail(null);
+      setPagination({
+        current_page: 1,
+        total_pages: 0,
+        total_items: 0,
+        items_per_page: 15,
+        has_next: false,
+        has_previous: false,
+      });
+    } else {
+      setSearchActive(true);
+      doSearch(val, 1).catch(() => {
+        setError("Failed to load the required complaint. Please try again.");
+      });
     }
   };
 
   return (
     <>
-    <div className={styles.container}>
-      <div className={styles.searchBar}>
-        <form className={styles.inputWrapper} onSubmit={handleSubmit}>
-          <span className={styles.searchIcon}>
-            <SearchSvg />
-          </span>
-          <input
-            type="search"
-            placeholder="Search here..."
-            aria-label="Search by complaint id"
-            className={styles.searchInput}
-            value={complaintId}
-            onChange={handleInputChange}
-          />
-          <button
-            type="submit"
-            className={styles.searchButtonInside}
-            aria-label="Search Button"
-            disabled={loading}
-          >
-            <span className={styles.searchButtonIcon}>
-              <SearchSvg />
-            </span>
-            <span className={styles.searchButtonText}>
-              {"Search"}
-            </span>
-          </button>
-        </form>
+      <div className={styles.container}>
+        <div className={styles.searchBar}>
+          <form className={styles.inputWrapper} onSubmit={(e) => e.preventDefault()}>
+            <input
+              type="search"
+              placeholder="Search here..."
+              aria-label="Search by complaint id"
+              className={styles.searchInput}
+              value={complaintId}
+              onChange={handleInputChange}
+            />
+          </form>
+        </div>
       </div>
-    </div>
-    {error && <div className={styles.errorText}>{error}</div>}
+      {error && <div className={styles.errorText}>{error}</div>}
     </>
   );
 };

@@ -9,105 +9,105 @@ import FileUpload from '@components/FileUpload/FileUpload';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import StatusTabs from './StatusTabs';
 import ComplaintsStatusCard from '@components/commonCard/ComplaintsStatusCard';
-import { createComplaint, fetchComplaints } from 'src/services/api.service';
-import { getComplaintsApiResponse, CaseStatusKey, ComplaintDetail, Case } from 'src/types';
+import { createComplaint, fetchComplaints, searchComplaint } from 'src/services/api.service';
+import { getComplaintsApiResponse, CaseStatusKey, searchComplaintsApiResponse } from 'src/types';
 import PaginationComponent from '@components/pagination/PaginationComponent';
 import { usePollingContext } from '@components/polling/PollingProvider';
 import Notification from '@components/Notification/Notification';
 import { useAuth } from '../../auth/useAuth';
 
 const Complaints = () => {
+  // Initial pagination state
   const initialPagination = {
     current_page: 1,
     total_pages: 0,
     total_items: 0,
     items_per_page: 15,
-    has_next: true,
+    has_next: false,
     has_previous: false,
   };
 
+  // States
   const [open, setOpen] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>('');
   const [pageNumber, setPageNumber] = useState<number>(1);
+  const [searchPageNumber, setSearchPageNumber] = useState<number>(1);
   const [openFileUpload, setOpenFileUpload] = useState<boolean>(false);
   const [activeStatus, setActiveStatus] = useState<'pending' | 'processed' | 'overdue'>('pending');
   const [data, setData] = useState<getComplaintsApiResponse>();
+  const [complaintDetail, setComplaintDetail] = useState<searchComplaintsApiResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [pagination, setPagination] = useState(initialPagination);
-  const [complaintId, setComplaintId] = useState("");
-  const [complaintDetail, setComplaintDetail] = useState<ComplaintDetail | null>(null);
+  const [searchPagination, setSearchPagination] = useState(initialPagination);
+  const [complaintId, setComplaintId] = useState('');
   const [searchActive, setSearchActive] = useState<boolean>(false);
   const [openNotification, setOpenNotification] = useState<boolean>(false);
 
+  // Data unpacking
   const { caseStats, caseStatus } = data || {};
   const { pending, processed, overdue } = caseStats || {};
   const { user } = useAuth();
   const displayName = `${user?.profile?.given_name ?? ''}`.trim();
 
-  const {  
-    setShouldPoll,  
+  // Polling context
+  const {
+    setShouldPoll,
     falseCount,
     error,
     done,
-    shouldPoll
+    shouldPoll,
   } = usePollingContext();
 
+  // Breadcrumb items
   const items = [
     { label: 'Home', to: '/' },
     { label: 'Complaints' },
   ];
 
-  const handleFileSelect = (file: File) => {
-    console.log('Selected file:', file);
-  };
+  // Complaints lists
+  const normalComplaints = caseStatus?.[activeStatus as CaseStatusKey] || [];
+  const searchComplaints = complaintDetail?.search_results || [];
 
+  // Handle opening manual complaint modal
   const handleOpen = (event: MouseEvent<HTMLButtonElement>): void => {
     event.preventDefault();
     setOpen(true);
   };
 
+  // Handle closing manual complaint modal
   const handleClose = (): void => {
     setOpen(false);
   };
 
-   const handleCloseNotification = (
-    event?: React.SyntheticEvent | Event,
-    reason?: string,
-  ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+  // Handle closing notification
+  const handleCloseNotification = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') return;
     setOpenNotification(false);
   };
 
+  // Create complaint logic
   const handleCreateComplaint = async () => {
     try {
       setOpen(false);
-      const complaintPayload = {
-        narrative: inputValue,
-      };
+      const complaintPayload = { narrative: inputValue };
       await createComplaint(complaintPayload);
-      const res = await fetchComplaints(activeStatus, pageNumber);
-      setData(res);
-      setPagination(res?.pagination);
+      await fetchData(1); // reset to page 1 to show fresh data
+      setPageNumber(1);
+      setSearchActive(false);
+      setComplaintId('');
       setShouldPoll(true);
-    } catch (error) {
-      console.error('Failed to create complaint:', error);
+    } catch (err) {
+      console.error('Failed to create complaint:', err);
     }
   };
 
-  const handlePageChange = (newPage: number) => {
-    setPageNumber(newPage);
-  };
-
-  const selected = activeStatus;
-
-  const fetchData = async () => {
+  // Fetch complaints for normal mode
+  const fetchData = async (page: number = pageNumber) => {
     setLoading(true);
     try {
-      const res = await fetchComplaints(activeStatus, pageNumber);
+      const res = await fetchComplaints(activeStatus, page);
       setData(res);
-      setPagination(res?.pagination);
+      setPagination(res?.pagination ?? initialPagination);
     } catch (err: any) {
       console.error(err.message);
     } finally {
@@ -115,12 +115,43 @@ const Complaints = () => {
     }
   };
 
+  // Search complaints with pagination
+  const doSearch = async (id: string, page: number = 1) => {
+    const formattedId = id.trim().replace(/\D/g, '');
+
+    if (!formattedId) {
+      return;
+    }
+    try {
+      const detail = await searchComplaint(formattedId, page);
+      setComplaintDetail(detail);
+      setSearchPagination(detail?.pagination ?? initialPagination);
+      setSearchPageNumber(detail?.pagination?.current_page ?? page);
+    } catch (err) {
+      console.error(err);
+      setOpenNotification(true);
+    }
+  };
+
+  // Change normal pagination page
+  const handlePageChange = (newPage: number) => {
+    setPageNumber(newPage);
+    fetchData(newPage);
+  };
+
+  // Change search pagination page
+  const handleSearchPageChange = (newPage: number) => {
+    setSearchPageNumber(newPage);
+    if (complaintId.trim() !== '') doSearch(complaintId, newPage);
+  };
+
+  // Polling related data refresh
   useEffect(() => {
     const fetchOnSingleCardComplete = async () => {
       try {
         const res = await fetchComplaints(activeStatus, pageNumber);
         setData(res);
-        setPagination(res?.pagination);
+        setPagination(res?.pagination ?? initialPagination);
       } catch (err: any) {
         console.error(err.message);
       }
@@ -128,20 +159,19 @@ const Complaints = () => {
     fetchOnSingleCardComplete();
   }, [falseCount]);
 
-
-
-  // Normal fetch when user changes filters or pages
+  // Normal fetch on activeStatus or pageNum change
   useEffect(() => {
-    fetchData();
+    if (!searchActive) fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStatus, pageNumber]);
 
-  // When polling done, stop loading and refresh data
+  // Polling stop & data refresh
   useEffect(() => {
     const fetchOnAllComplete = async () => {
       try {
         const res = await fetchComplaints(activeStatus, pageNumber);
         setData(res);
-        setPagination(res?.pagination);
+        setPagination(res?.pagination ?? initialPagination);
       } catch (err: any) {
         console.error(err.message);
       }
@@ -149,36 +179,18 @@ const Complaints = () => {
     if (done) {
       setShouldPoll(false);
       fetchOnAllComplete();
-      if(error){
-        setOpenNotification(true);
-      }
+      if (error) setOpenNotification(true);
     }
   }, [done]);
 
-  const handleFileUploadSuccess = async () => {
-    setOpenFileUpload(false);
-    await fetchData();  // close modal here
+  const handleFileSelect = (file: File) => {
+    console.log('Selected file:', file);
   };
 
-  const complaints = caseStatus?.[selected as CaseStatusKey];
-
-  function transformToOutput(input: ComplaintDetail): Case[] {
-    const cleanedCaseType = input.case_type.map((ct) => ct.trim());
-
-    const outputObject: Case = {
-      case_id: input.case_id,
-      criticality: input.criticality,
-      report_type: input.report_type,
-      receipt_date: input.receipt_date,
-      case_type: cleanedCaseType,
-      text_extracted: input.text_extracted,
-      created_at: input.created_at,
-    };
-
-    return [outputObject];
-  }
-
-  const searchResult = complaintDetail && transformToOutput(complaintDetail);
+  const handleFileUploadSuccess = async () => {
+    setOpenFileUpload(false);
+    await fetchData(); // Refresh on upload success
+  };
 
   if (loading) return <p>Loading complaints...</p>;
 
@@ -191,54 +203,85 @@ const Complaints = () => {
             Hey there, {displayName}!
             <Box className={styles.pageDetails}>Welcome to Complaints dashboard!</Box>
           </Box>
-
           <Stack className={styles.actions} direction="row" spacing={2}>
             <Button variant="outlined" className={styles.addManuallyButton} onClick={(e) => {
-              handleOpen(e); setActiveStatus('pending'); setPageNumber(1); setSearchActive(false); setComplaintId('')
+              handleOpen(e);
+              setActiveStatus('pending');
+              setPageNumber(1);
+              setSearchActive(false);
+              setComplaintId('');
             }}>
               <img src={PlusIcon} alt="plus" />
               Add Manually
             </Button>
             <Button variant="contained" className={styles.primaryImportButton} onClick={() => {
-              setOpenFileUpload(true); setActiveStatus('pending'); setPageNumber(1); setSearchActive(false); setComplaintId('')
+              setOpenFileUpload(true);
+              setActiveStatus('pending');
+              setPageNumber(1);
+              setSearchActive(false);
+              setComplaintId('');
             }}>
               Import
             </Button>
           </Stack>
         </Stack>
       </Stack>
-      {/* For empty state */}
-      {/* <ComplaintsEmptyState /> */}
+
       <ComplaintsStatusCard complaintStats={caseStats} />
-      {!searchActive && <StatusTabs setPageNumber={setPageNumber} active={activeStatus} setActive={setActiveStatus} pending={pending} processed={processed} overdue={overdue} />}
-      <ComplaintsFilter setSearchActive={setSearchActive} complaintId={complaintId} setComplaintId={setComplaintId} complaintDetail={complaintDetail} setComplaintDetail={setComplaintDetail} />
-      {!searchActive && caseStats && complaints?.map((complaint, index) => {
-        const loading = shouldPoll === true ? (!complaint?.text_extracted && activeStatus === 'pending') : false ;
-        return (
-          <ComplaintsResult
-            key={index}
-            complaint={complaint}
-            selected={selected}
-            activeStatus={activeStatus}
-            loading={loading}
-          />
-        );
-      })}
-      {searchActive && searchResult?.map((complaint, index) => {
-        const loading = shouldPoll === true ? (!complaint?.text_extracted && activeStatus === 'pending') : false ;
-        return (
-          <ComplaintsResult
-            key={index}
-            complaint={complaint}
-            selected={selected}
-            activeStatus={activeStatus}
-            loading={loading}
-          />
-        );
-      })}
-      {!searchActive && complaints && complaints.length > 0 && <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />}
+
+      <ComplaintsFilter
+        setPagination={setSearchPagination}
+        setSearchActive={setSearchActive}
+        complaintId={complaintId}
+        setComplaintId={setComplaintId}
+        setComplaintDetail={setComplaintDetail}
+        doSearch={doSearch}
+      />
+
+      {!searchActive && (
+        <>
+          <StatusTabs setPageNumber={setPageNumber} active={activeStatus} setActive={setActiveStatus}
+            pending={pending} processed={processed} overdue={overdue} />
+          {normalComplaints.length === 0 ? (
+            <p>No complaints found for status '{activeStatus}'.</p>
+          ) : (
+            normalComplaints.map((complaint, index) => (
+              <ComplaintsResult
+                key={complaint.case_id || index}
+                complaint={complaint}
+                selected={activeStatus}
+                activeStatus={activeStatus}
+                loading={shouldPoll && !complaint.text_extracted && activeStatus === 'pending'}
+              />
+            ))
+          )}
+          {normalComplaints.length > 0 && (
+            <PaginationComponent pagination={pagination} onPageChange={handlePageChange} />
+          )}
+        </>
+      )}
+
+      {searchActive && (
+        <>
+          {searchComplaints?.map((complaint, index) => (
+              <ComplaintsResult
+                key={complaint.case_id || index}
+                complaint={complaint}
+                selected={activeStatus}
+                activeStatus={activeStatus}
+                loading={shouldPoll && !complaint.text_extracted && activeStatus === 'pending'}
+              />
+            ))
+          }
+          {searchComplaints?.length > 0 && (
+            <PaginationComponent pagination={searchPagination} onPageChange={handleSearchPageChange} />
+          )}
+        </>
+      )}
+
       <Popup open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />
-      <FileUpload setOpenFileUpload={setOpenFileUpload} onSuccess={handleFileUploadSuccess} setProcessing={setShouldPoll} open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
+      <FileUpload setOpenFileUpload={setOpenFileUpload} onSuccess={handleFileUploadSuccess} setProcessing={setShouldPoll}
+        open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
       <Notification open={openNotification} onClose={handleCloseNotification} position="top" message={"Max retries reached"} type={"error"} />
     </Box>
   );
