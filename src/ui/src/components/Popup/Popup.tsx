@@ -4,10 +4,13 @@ import { PopupProps } from 'src/types';
 import { MAX_LENGTH } from 'src/constants';
 
 const Popup: React.FC<PopupProps> = ({ open, onClose, onSubmit, inputValue, setInputValue }) => {
-  
+
   if (!open) return null;
   const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-      setInputValue(e.target.value);
+    setInputValue(e.target.value);
+    // Auto adjust height
+    e.target.style.height = 'auto'; // reset height
+    e.target.style.height = e.target.scrollHeight + 'px';
   };
 
   const handleSubmit = (e: MouseEvent<HTMLButtonElement>) => {
@@ -17,10 +20,10 @@ const Popup: React.FC<PopupProps> = ({ open, onClose, onSubmit, inputValue, setI
   };
 
   const handleCancel = (e: MouseEvent<HTMLElement>): void => {
-  e.preventDefault();
-  setInputValue('');
-  onClose();
-};
+    e.preventDefault();
+    setInputValue('');
+    onClose();
+  };
 
   return (
     <>
@@ -39,8 +42,6 @@ const Popup: React.FC<PopupProps> = ({ open, onClose, onSubmit, inputValue, setI
               className={styles.textarea}
               value={inputValue}
               onChange={handleInputChange}
-              rows={13}
-              maxLength={MAX_LENGTH}
             />
           </div>
         </section>

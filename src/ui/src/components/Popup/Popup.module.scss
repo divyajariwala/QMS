@@ -13,7 +13,7 @@
   top: 50%;
   left: 50%;
   width: 508px;
-  height: 513px;
+  height: 513px;  /* keep fixed height */
   transform: translate(-50%, -50%);
   background-color: #fff;
   display: flex;
@@ -23,6 +23,7 @@
   z-index: 1000;
   font-family: 'Roboto', sans-serif;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow: visible; /* disable dialog scroll */
 }
 
 .dialogTitle {
@@ -39,12 +40,13 @@
 
 .dialogContent {
   flex-grow: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* enable scroll here */
   display: flex;
   flex-direction: column;
   margin-top: 20px;
   align-items: center;
-  padding: 0 0 0 0;
+  padding: 0;
+  max-height: calc(513px - 64px - 79px - 20px); /* dialog height - header - footer - margin */
 }
 
 .contentWrapper {
@@ -63,7 +65,8 @@
 
 .textarea {
   width: 100%;
-  height: 276px;
+  min-height: 300px;
+  max-height: 300px; /* limit max height */
   resize: none;
   padding: 8px 14px;
   font-family: 'Roboto', sans-serif;
@@ -71,6 +74,7 @@
   line-height: 20px;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+  overflow-y: auto; /* enable textarea scroll if too tall */
   border: 1px solid rgba(0, 0, 0, 0.23);
   border-radius: 4px;
   box-sizing: border-box;

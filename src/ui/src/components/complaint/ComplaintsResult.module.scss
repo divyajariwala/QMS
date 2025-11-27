@@ -201,26 +201,11 @@
 .emptyCategory {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  border: 1px solid #eef2f6;
-  border-radius: 14px;
   padding: 20px;
   background: #ffffff;
-  margin-top: 12px;
-}
-
-.emptyCategoryText {
-  color: #202123;
-  margin-bottom: 18px;
-  font-size: 14px;
-  margin-top: 39px;
-  font-weight: 400;
-  font-style: Regular;
-  font-size: 20px;
-  line-height: 28px;
-  letter-spacing: 0px;
-  text-align: center;
+  margin-top: 190px;
 }
 
 .classifyBtn {
