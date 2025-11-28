@@ -65,6 +65,8 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
     }
   };
 
+  const allUnitsAreZero = complaintCategories.every(cat => cat.unit === 0);
+
   return (
     <Paper variant="outlined" className={styles.rootPaper}>
       <Stack direction="row" alignItems="center" spacing={1} className={styles.headerStack}>
@@ -236,7 +238,13 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
 
               <Grid item xs={2}>
                 <Typography className={styles.nonEditFieldLabel}>Unit</Typography>
-                <Typography className={styles.nonEditFieldValue}>{item.unit}</Typography>
+                <Typography
+                  className={
+                    item.unit === 0 && allUnitsAreZero ? styles.unitRequired : styles.nonEditFieldValue
+                  }
+                >
+                  {item.unit === 0 && allUnitsAreZero ? 'Required' : item.unit}
+                </Typography>
               </Grid>
             </Grid>
           </Paper>
