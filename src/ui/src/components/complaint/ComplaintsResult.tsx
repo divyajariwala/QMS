@@ -91,12 +91,22 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
     },
   ];
 
+  const getStatusText = (): string | undefined => {
+  let status = searching ? complaint?.status : selected ?? '';
+
+  status = status?.toLowerCase();
+
+  if (status === 'pending') return 'IN REVIEW';
+  if (status === '') return ''; // or 'UNKNOWN'
+  return status?.toUpperCase();
+};
+
   return (
     <div className={styles.complaintsCardContainer}>
       <div className={styles.headerRow}>
         <Box>
           <Box className={styles.statusText}>
-            {searching ? (selected === 'pending' ? "IN REVIEW" : selected.toUpperCase()) : (complaint?.status === 'pending' ? "IN REVIEW" : complaint?.status?.toUpperCase())}
+            {getStatusText()}
           </Box>
           <Box className={styles.caseNumberText}>{complaint.case_id}
             {loading && <span className={styles.processText}>Complaint is being processed...</span>}</Box>
