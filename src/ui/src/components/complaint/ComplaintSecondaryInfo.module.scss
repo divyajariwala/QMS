@@ -10,7 +10,7 @@
 
 .complaintSecondaryInfo__row {
   display: flex;
-  gap: 64px;
+  gap: 16px; /* reduce from 64px to match .infoRow gap */
   font-family: inherit !important;
 }
 
@@ -18,64 +18,94 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 120px; /* match .stackColumn width */
   font-family: inherit !important;
 }
 
 .infoItem__label {
-  font-family: inherit !important;
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
   letter-spacing: -0.1px;
   color: #5f6d7e;
   margin: 0;
+  font-family: inherit !important;
+  white-space: nowrap;
 }
 
 .infoItem__valueRow {
   display: flex;
   flex-direction: row;
-  gap: 4px; /* gap={0.5} */
-  align-items: center;
+  gap: 8px; /* match icon-value gap */
+  align-items: flex-start;
   font-family: inherit !important;
 }
 
+/* icon size like .infoItemIcon */
+.infoItem__valueRow img {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* value text like .infoItemValue */
 .infoItem__valueText {
-  font-family: inherit !important;
   font-weight: 600 !important;
   font-size: 16px;
   line-height: 22px;
   letter-spacing: -0.1px;
   color: #272d37;
   margin: 0;
+  font-family: inherit !important;
+  white-space: nowrap;
 }
 
 .infoChip {
+  display: inline-flex;
+  flex-direction: row; /* same as Stack horizontal */
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-family: Inter, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.1px;
+  user-select: none;
+}
+
+/* Chip icon - matches .infoItemIcon size for consistency */
+.infoChip img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* Chip label styled similar to infoItemLabel but with font-weight 500 */
+.infoChip__label {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.1px;
+  color: inherit; /* inherit from chip container */
+  margin: 0;
+  font-family: inherit !important;
+  white-space: nowrap;
+}
+
+.caseType {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: inherit !important;
+}
+
+.caseType__row {
   display: flex;
   flex-direction: row;
   gap: 4px;
   align-items: center;
   font-family: inherit !important;
-}
-
-.infoChip__label {
-  font-family: inherit !important;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.1px;
-  margin: 0;
-}
-
-.caseType {
-  font-family: inherit !important;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.caseType__row {
-  font-family: inherit !important;
-  display: flex;
-  flex-direction: row;
-  gap: 4px;
 }
