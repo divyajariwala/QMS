@@ -111,7 +111,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
           <Box className={styles.caseNumberText}>{complaint.case_id}
             {loading && <span className={styles.processText}>Complaint is being processed...</span>}</Box>
         </Box>
-        {(searching ? (activeStatus !== "processed") : (complaint?.status !== "processed")) && (
+        {(!searching ? (activeStatus !== "processed") : (complaint?.status !== "processed")) && (
           <ComplaintsDueDateChip
             type={getDueStatus(complaint.created_at).type}
             label={getDueStatus(complaint.created_at).label}
