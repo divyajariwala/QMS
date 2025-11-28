@@ -42,7 +42,7 @@ resource "aws_cognito_identity_provider" "cognito_identity_provider" {
     client_secret             = var.openam_client_secret
     oidc_issuer               = "https://login.microsoftonline.com/${var.openam_tenant_id}/v2.0"
     attributes_request_method = "GET"
-    authorize_scopes          = "openid email profile uid"
+    authorize_scopes          = "openid email profile"
     authorize_url             = "https://login.microsoftonline.com/${var.openam_tenant_id}/oauth2/v2.0/authorize"
     token_url                 = "https://login.microsoftonline.com/${var.openam_tenant_id}/oauth2/v2.0/token"
     attributes_url            = "https://graph.microsoft.com/oidc/userinfo"
