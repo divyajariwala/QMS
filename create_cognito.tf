@@ -40,18 +40,17 @@ resource "aws_cognito_identity_provider" "cognito_identity_provider" {
   provider_details = {
     client_id                 = var.openam_client_id
     client_secret             = var.openam_client_secret
-    oidc_issuer               = var.openam_issuer
+    oidc_issuer               = "https://login.microsoftonline.com/${var.openam_tenant_id}/v2.0"
     attributes_request_method = "GET"
     authorize_scopes          = "openid email profile uid"
-    authorize_url             = "${var.openam_issuer}/authorize"
-    token_url                 = "${var.openam_issuer}/access_token"
-    attributes_url            = "${var.openam_issuer}/userinfo"
-    jwks_uri                  = "${var.openam_issuer}/.well-known/jwks.json"
+    authorize_url             = "https://login.microsoftonline.com/${var.openam_tenant_id}/oauth2/v2.0/authorize"
+    token_url                 = "https://login.microsoftonline.com/${var.openam_tenant_id}/oauth2/v2.0/token"
+    attributes_url            = "https://graph.microsoft.com/oidc/userinfo"
+    jwks_uri                  = "https://login.microsoftonline.com/${var.openam_tenant_id}/discovery/v2.0/keys"
   }
   attribute_mapping = {
     "email"        = "email"
     "given_name"   = "given_name"
     "family_name"  = "family_name"
-    "preferred_username" = "uid"
   }
 }

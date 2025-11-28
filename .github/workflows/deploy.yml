@@ -302,7 +302,7 @@ jobs:
         run: terraform init -input=false
 
       - name: Plan Terraform Changes
-        run: terraform plan -input=false -var-file="conf/dev/terraform.tfvars" -var "openam_client_secret=${{ secrets.VITE_OIDC_CLIENT_SECRET }}" -out=tfplan
+        run: terraform plan -input=false -var-file="conf/dev/terraform.tfvars" -var "openam_client_secret=${{ secrets.OPENAM_CLIENT_SECRET }}" -var "openam_client_id=${{ secrets.OPENAM_CLIENT_ID }}" -var "openam_tenant_id=${{ secrets.OPENAM_TENANT_ID }}" -out=tfplan
 
       - name: Apply Terraform Changes
         run: terraform apply -auto-approve tfplan

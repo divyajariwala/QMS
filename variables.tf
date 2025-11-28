@@ -42,14 +42,12 @@ variable "event_bridge_role_arn" {
   type = string
 }
 
-variable "openam_issuer" {
-  type        = string
-  default     = "https://login-stg.pwc.com/openam/oauth2"
+variable "openam_tenant_id" {
+  type = string
 }
 
 variable "openam_client_id" {
   type        = string
-  default = "urn:pwc-qmsai-cognito"
 }
 
 variable "openam_client_secret" {
@@ -106,23 +104,6 @@ variable "lambda_configs" {
     })))
   }))
 }
-
-# variable "dynamodb_configs" {
-#   type = list(object({
-#     table_name = string
-#     part_key   = object({ key_name = string, key_type = string })
-#     sort_key   = optional(object({ key_name = string, key_type = string }))
-#     global_secondary_indexes = optional(list(object({
-#       name               = string
-#       hash_key           = string
-#       hash_key_type      = optional(string) # "S" | "N" | "B"
-#       range_key          = optional(string)
-#       range_key_type     = optional(string) # "S" | "N" | "B"
-#       projection_type    = string
-#       non_key_attributes = optional(list(string))
-#     })))
-#   }))
-# }
 
 variable "serverless_min_acu" {
   description = "Minimum ACUs for Serverless v2 (e.g., 0.5, 1, 2)"
