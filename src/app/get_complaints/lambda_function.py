@@ -108,43 +108,31 @@ def get_single_complaint(conn, complaint_id):
 
                 # Transform inference data to category details
                 if inference_result and isinstance(inference_result, dict):
-                    levels_raw = inference_result.get('levels')
-                    subcategories_raw = inference_result.get('subcategories')
-                    crl_codes_raw = inference_result.get('crl_codes')
-                    
-                    levels = levels_raw if isinstance(levels_raw, dict) else {}
-                    subcategories = subcategories_raw if isinstance(subcategories_raw, dict) else {}
-                    crl_codes = crl_codes_raw if isinstance(crl_codes_raw, dict) else {}
+                    levels = inference_result.get('levels') if isinstance(inference_result.get('levels'), dict) else {}
+                    subcategories = inference_result.get('subcategories') if isinstance(inference_result.get('subcategories'), dict) else {}
+                    crl_codes = inference_result.get('crl_codes') if isinstance(inference_result.get('crl_codes'), dict) else {}
                     units = inference_result.get('units', 0)
                     priority = inference_result.get('priority', 0)
                     priority_str = "Low" if priority == 0 else "High" if priority <= 2 else "Medium" if priority <= 4 else "Low"
                     
-                    # Convert to lists maintaining order
-                    level_items = list(levels.items())
-                    subcat_items = list(subcategories.items())
-                    crl_items = list(crl_codes.items())
+                    # Sort by confidence score (highest to lowest)
+                    sorted_levels = sorted(levels.items(), key=lambda x: x[1], reverse=True)
+                    sorted_subcats = sorted(subcategories.items(), key=lambda x: x[1], reverse=True)
+                    sorted_crls = sorted(crl_codes.items(), key=lambda x: x[1], reverse=True)
                     
-                    # Create array with sequential IDs
-                    for idx in range(len(subcat_items)):
-                        level_key = level_items[idx][0] if idx < len(level_items) else ''
-                        subcat_label = subcat_items[idx][0] if idx < len(subcat_items) else ''
-                        subcat_pct = subcat_items[idx][1] if idx < len(subcat_items) else 0
-                        crl_code = crl_items[idx][0] if idx < len(crl_items) else ''
-                        
-                        # Map CRL code to description using mapping
-                        if crl_code == 'UNASSIGNED' or not crl_code:
-                            crl_label = 'Unknown'
-                        else:
-                            crl_label = CRL_TO_LABEL.get(crl_code, 'Unknown')
+                    # Build category details from sorted subcategories
+                    for idx, (subcat, conf) in enumerate(sorted_subcats):
+                        level = sorted_levels[idx][0] if idx < len(sorted_levels) else ''
+                        crl = sorted_crls[idx][0] if idx < len(sorted_crls) else ''
                         
                         category_details.append({
                             "id": str(idx + 1),
-                            "label": subcat_label,
-                            "level": level_key,
-                            "crl": crl_label,
+                            "label": subcat,
+                            "level": level,
+                            "crl": "NA" if crl == "UNASSIGNED" else subcat,
                             "priority": priority_str,
                             "unit": units,
-                            "percentage": subcat_pct * 100
+                            "percentage": conf * 100
                         })
         
             # Transform database record to response format
