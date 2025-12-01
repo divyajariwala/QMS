@@ -69,7 +69,7 @@ class TestLambdaHandler:
             {
                 'inference_id': 5,
                 'complaint_id': 'CAS-123',
-                'levels': {"1": 0.11, "2": 0.81},
+                'levels': {"2": 0.81, "1": 0.11},
                 'subcategories': {"Broken Needle": 0.855, "Dose confirmation": 0.145},
                 'crl_codes': {"CRL-000107": 0.855, "CRL-000100": 0.145},
                 'units': 3,
@@ -598,7 +598,7 @@ class TestUtilityFunctions:
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_with_crl_mapping(self, mock_get_db):
-        """Test: CRL codes are mapped to descriptions and crl_list/label_list are included"""
+        """Test: CRL field equals subcategory and crl_list/label_list are included"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -655,6 +655,7 @@ class TestUtilityFunctions:
         body = json.loads(result['body'])
         assert body['complaintClassified'] is True
         assert len(body['category_details']) == 1
+        assert body['category_details'][0]['label'] == 'Dose confirmation'
         assert body['category_details'][0]['crl'] == 'Dose confirmation'
         assert 'crl_list' in body
         assert 'label_list' in body
@@ -663,7 +664,7 @@ class TestUtilityFunctions:
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_with_unassigned_crl(self, mock_get_db):
-        """Test: UNASSIGNED CRL code is mapped to 'Unknown'"""
+        """Test: UNASSIGNED CRL code is mapped to 'NA'"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -713,11 +714,12 @@ class TestUtilityFunctions:
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['category_details'][0]['crl'] == 'Unknown'
+        assert body['category_details'][0]['label'] == 'Unknown Category'
+        assert body['category_details'][0]['crl'] == 'NA'
 
     @patch.object(lambda_function, 'get_db_connection')
-    def test_get_single_complaint_with_unknown_crl(self, mock_get_db):
-        """Test: Unknown CRL code is mapped to 'Unknown'"""
+    def test_get_single_complaint_with_regular_crl(self, mock_get_db):
+        """Test: Regular CRL code maps to subcategory value"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
@@ -767,7 +769,8 @@ class TestUtilityFunctions:
 
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
-        assert body['category_details'][0]['crl'] == 'Unknown'
+        assert body['category_details'][0]['label'] == 'Some Category'
+        assert body['category_details'][0]['crl'] == 'Some Category'
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_no_crl_lists_when_not_classified(self, mock_get_db):

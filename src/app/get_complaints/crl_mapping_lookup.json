@@ -9,7 +9,7 @@
   "Device defective": "CRL-000098",
   "Device in the locked position after activation": "CRL-999999",
   "Device not working - Autoinjector/Syringe": "CRL-000099",
-  "Dose confirmation": "CRL-000100",
+  "Dose Confirmation": "CRL-000100",
   "Injection button difficult to press": "CRL-000101",
   "Injection incomplete - Autoinjector/Syringe": "CRL-000102",
   "Injection takes too long": "CRL-000103",
@@ -18,12 +18,12 @@
   "Leaking after injection from device": "CRL-000104",
   "Leaking unspecified - Autoinjector/Syringe": "CRL-000105",
   "Miscellaneous Sub-Category": "CRL-999999",
-  "Needle bent": "CRL-000106",
+  "Needle Bent": "CRL-000106",
   "Needle broken": "CRL-000107",
   "Needle did not retract": "CRL-999999",
   "Needle not fully extended": "CRL-000108",
   "Pen was used from package": "CRL-000109",
   "Rigid needle shield was not removed": "CRL-999999",
   "Upside down injection": "CRL-000110",
-  "Unknown":"UNASSIGNED"
+  "Miscellaneous Sub-Category":"UNASSIGNED"
 }
