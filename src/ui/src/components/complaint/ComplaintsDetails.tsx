@@ -26,6 +26,8 @@ const ComplaintsDetails: React.FC = () => {
   const [isApproved, setIsApproved] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [crlList, setCrlList] = useState<string[]>([]);
+  const [type, setType] = useState<"success" | "error">("success");
+  const [message, setMessage] = useState<string>('');
   const [labelList, setLabelList] = useState<string[]>([]);
   const { complaintId } = useParams<{ complaintId: string | undefined }>();
   const complaintHeaderData = {
@@ -61,11 +63,20 @@ const ComplaintsDetails: React.FC = () => {
   }
 
   const handleSubmit = async () => {
+    const allUnitsZero = complaintDetails?.category_details?.every(cat => cat.unit === 0);
+    if (allUnitsZero) {
+      setType("error");
+      setMessage("Unit is required");
+      handleShowNotification();
+      return; // Block submission
+    }
     setLoading(true);
     try {
       if (complaintDetails) {
         await postApproveComplaint(complaintDetails);
         setIsApproved(true);
+        setType("success");
+        setMessage("Approved and Sent to QMS");
         handleShowNotification();
         fetchData();
       }
@@ -170,7 +181,7 @@ const ComplaintsDetails: React.FC = () => {
           />
         </Grid>
       </Grid>
-      <Notification open={open} onClose={handleCloseNotification} position='top' />
+      <Notification open={open} onClose={handleCloseNotification} position='top' type={type} message={message} />
     </Box>
   );
 };

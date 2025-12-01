@@ -65,12 +65,14 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
     }
   };
 
+  const allUnitsAreZero = complaintCategories.every(cat => cat.unit === 0);
+
   return (
     <Paper variant="outlined" className={styles.rootPaper}>
       <Stack direction="row" alignItems="center" spacing={1} className={styles.headerStack}>
         <Box className={styles.headerTitle}>Complaint Category</Box>
       </Stack>
-      <Box className={styles.subtitleBox}>Please review and modify.</Box>
+      {caseStatus !== "processed" && <Box className={styles.subtitleBox}>Please review and modify.</Box>}
 
       {complaintCategories?.map((item) => {
         const isEditing = editingId === item.id;
@@ -86,12 +88,15 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                   onChange={(e) => handleEditChange("label", e.target.value)}
                   className={styles.selectMinSize}
                   classes={{ root: styles.editSelectRoot }}
+                  MenuProps={{
+                    classes: { paper: styles.rootPaper }
+                  }}
                 >
                   {labelList?.map((opt, index) => (
-                      <MenuItem key={index} value={opt}>
-                        {opt}
-                      </MenuItem>
-                    ))}
+                    <MenuItem key={index} value={opt} className={styles.menuItem}>
+                      {opt}
+                    </MenuItem>
+                  ))}
                 </Select>
 
                 <Box className={`${styles.percentageBox} ${getPercentageClass(editedData.percentage)}`}>
@@ -124,10 +129,13 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     fullWidth
                     className={styles.editSelectRoot}
                     variant="outlined"
+                    MenuProps={{
+                      classes: { paper: styles.rootPaper }
+                    }}
                   >
                     {/* Replace this with your real CRL options */}
                     {crlList?.map((opt, index) => (
-                      <MenuItem key={index} value={opt}>
+                      <MenuItem key={index} value={opt} className={styles.menuItem}>
                         {opt}
                       </MenuItem>
                     ))}
@@ -144,9 +152,9 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
                     className={styles.editSelectRoot}
                     variant="outlined"
                   >
-                    <MenuItem value="High">High</MenuItem>
-                    <MenuItem value="Medium">Medium</MenuItem>
-                    <MenuItem value="Low">Low</MenuItem>
+                    <MenuItem value="High" className={styles.menuItem}>High</MenuItem >
+                    <MenuItem value="Medium" className={styles.menuItem}>Medium</MenuItem>
+                    <MenuItem value="Low" className={styles.menuItem}>Low</MenuItem>
                   </Select>
                 </Grid>
 
@@ -230,7 +238,13 @@ const ComplaintCategory: React.FC<ComplaintCategoryProps> = ({
 
               <Grid item xs={2}>
                 <Typography className={styles.nonEditFieldLabel}>Unit</Typography>
-                <Typography className={styles.nonEditFieldValue}>{item.unit}</Typography>
+                <Typography
+                  className={
+                    item.unit === 0 && allUnitsAreZero ? styles.unitRequired : styles.nonEditFieldValue
+                  }
+                >
+                  {item.unit === 0 && allUnitsAreZero ? 'Required' : item.unit}
+                </Typography>
               </Grid>
             </Grid>
           </Paper>

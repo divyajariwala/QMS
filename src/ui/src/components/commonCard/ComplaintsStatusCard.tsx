@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./StatusCards.module.scss";
 
 import StatusCard from "./StatusCard";
-import { formatHoursToDays } from "src/helpers"
+import { formatDays } from "src/helpers"
 import { complaintStatsProps } from "src/types";
 import DeviationsIcon from "../../assets/icons/deviationsCard.svg";
 import CycleIcon from "../../assets/icons/cycleTime.svg";
@@ -24,8 +24,8 @@ const ComplaintsStatusCard: React.FC<complaintStatsProps> = ({ complaintStats })
         ]}
       />
 
-      <StatusCard iconSrc={CycleIcon} iconAlt="Cycle Time" title="Cycle Time (Avg)" page="complaints" cardValue={formatHoursToDays(avg_cycle_time)} legend={[
-        { label: "Avg Time", value: formatHoursToDays(avg_cycle_time) }
+      <StatusCard iconSrc={CycleIcon} iconAlt="Cycle Time" title="Cycle Time (Avg)" page="complaints" cardValue={formatDays(avg_cycle_time)} legend={[
+        { label: "Avg Time", value: formatDays(avg_cycle_time) }
       ]} />
     </div>
   );

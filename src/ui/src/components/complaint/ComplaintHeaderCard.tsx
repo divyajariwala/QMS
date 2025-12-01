@@ -46,10 +46,10 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
             )}
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
               <Box className={styles.caseIdText}>{caseId}</Box>
-              <ComplaintsDueDateChip
+              {(caseStatus === 'pending' || caseStatus === 'overdue') &&<ComplaintsDueDateChip
                 type={createdAt && getDueStatus(createdAt).type}
                 label={createdAt && getDueStatus(createdAt).label}
-              />
+              />}
               <Box className={styles.flexGrow} />
               {(caseStatus === 'pending' || caseStatus === 'overdue') && <button type="button" className={styles.approveSendButton} onClick={onApproveAndSend}>
                 <CheckIcon />

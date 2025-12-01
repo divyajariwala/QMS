@@ -26,7 +26,7 @@ const InfoItem = ({
 }: InfoItemProps & { loading?: boolean }) => (
   <div className={styles.stackColumn}>
     <Box className={styles.infoItemLabel}>{label}</Box>
-    <div className={styles.iconValueRow}>
+    <div className={loading ? styles.iconValueRowLoading : styles.iconValueRowStatic}>
       <img src={iconSrc} alt={iconAlt} className={styles.infoItemIcon} />
       {loading ? (
         <Skeleton variant="rectangular" width={100} height={24} />
@@ -51,15 +51,14 @@ const Chip = ({
   </div>
 );
 
-const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activeStatus, loading }) => {
+const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activeStatus, loading, searching }) => {
   const navigate = useNavigate();
-
   const handleSeeDetailsClick = () => {
     if (!loading) {
-      if (activeStatus === 'processed') {
+      if (searching ? complaint?.status === 'processed' : activeStatus === "processed") {
         navigate(`/approveComplaints/${complaint.case_id}`);
       }
-      if (activeStatus === 'pending' || activeStatus === 'overdue') {
+      if (searching ? (complaint?.status === 'pending' || complaint?.status === 'overdue') : (activeStatus === 'pending' || activeStatus === 'overdue')) {
         navigate(`/complaints/${complaint.case_id}`);
       }
     }
@@ -92,15 +91,27 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
     },
   ];
 
+  const getStatusText = (): string | undefined => {
+  let status = searching ? complaint?.status : selected ?? '';
+
+  status = status?.toLowerCase();
+
+  if (status === 'pending') return 'IN REVIEW';
+  if (status === '') return ''; // or 'UNKNOWN'
+  return status?.toUpperCase();
+};
+
   return (
     <div className={styles.complaintsCardContainer}>
       <div className={styles.headerRow}>
         <Box>
-          <Box className={styles.statusText}>{selected === 'pending' ? "IN REVIEW" : selected.toUpperCase()}</Box>
+          <Box className={styles.statusText}>
+            {getStatusText()}
+          </Box>
           <Box className={styles.caseNumberText}>{complaint.case_id}
             {loading && <span className={styles.processText}>Complaint is being processed...</span>}</Box>
         </Box>
-        {activeStatus !== "processed" && (
+        {(!searching ? (activeStatus !== "processed") : (complaint?.status !== "processed")) && (
           <ComplaintsDueDateChip
             type={getDueStatus(complaint.created_at).type}
             label={getDueStatus(complaint.created_at).label}

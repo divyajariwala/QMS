@@ -3,8 +3,10 @@ import {
   COMPLAINT_SESSION_ID,
   COMPLAINT_USER_NAME,
 } from '../constants';
-import { ComplaintResult, SessionData, UIResultsParams, ComplaintRequest, CreateComplaintResponse, getComplaintsApiResponse,
-   ComplaintDetail, ApproveComplaintResponse, ApproveComplaintRequest } from '../types';
+import {
+  ComplaintResult, SessionData, UIResultsParams, ComplaintRequest, CreateComplaintResponse, getComplaintsApiResponse,
+  ComplaintDetail, ApproveComplaintResponse, ApproveComplaintRequest, searchComplaintsApiResponse
+} from '../types';
 
 import { API_BASE_URL } from 'src/config';
 
@@ -371,6 +373,18 @@ export async function modifyExtractedDetails(
   }
 
   const data: ModifyExtractedDetailsPayload = await response.json();
+  return data;
+}
+
+export async function searchComplaint(complaint_id: string, page: number): Promise<searchComplaintsApiResponse> {
+  const url = `${API_BASE_URL}dev/getComplaints?search=${complaint_id}&page=${page}`
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: searchComplaintsApiResponse = await response.json();
   return data;
 }
 

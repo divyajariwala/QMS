@@ -4,6 +4,24 @@
   height: 100%;
   background-color: #fff;
   font-family: inherit !important;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f0f0f0;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 4px;
+    border: 2px solid #f0f0f0;
+  }
 }
 
 .headerStack {
@@ -11,7 +29,8 @@
 }
 
 .MuiMenu-paper {
-  font-family: inherit !important; /* or specify your font stack */
+  font-family: inherit !important;
+  /* or specify your font stack */
 }
 
 .MuiList-root .MuiMenuItem-root {
@@ -49,16 +68,17 @@
 }
 
 .nonEditLabel {
-  font-weight: 600;
-  font-size: 16px;
-  color: #000;
-  font-family: inherit !important; 
+  font-weight: 500 !important;
+  font-size: 15px !important;
+  color: #000 !important;
+  font-family: inherit !important;
+  line-height: 22px;
 }
 
 .percentageBox {
   font-weight: 600;
-  font-size: 14px; 
-  font-family: inherit !important;  
+  font-size: 14px;
+  font-family: inherit !important;
   padding: 4px 8px;
   border-radius: 6px;
   user-select: none;
@@ -100,31 +120,35 @@
 .nonEditGrid {
   font-size: 13px;
   margin-top: 8px;
-   font-family: inherit !important;
+  font-family: inherit !important;
 }
 
 .nonEditFieldLabel {
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.1px;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  letter-spacing: -0.1px !important;
   color: #5f6d7e;
   margin-bottom: 4px;
-  font-family: inherit !important;  
+  font-family: inherit !important;
 }
 
 .nonEditFieldValue {
- font-family: inherit !important;
-  font-weight: 600;
-  font-size: 15px;
+  font-family: inherit !important;
   color: #272d37;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  line-height: 22px !important;
+  letter-spacing: -0.1px !important;
 }
 
 .nonEditFieldValueBold {
   font-family: inherit !important;
-  font-weight: 700;
-  font-size: 15px;
   color: #272d37;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  line-height: 22px !important;
+  letter-spacing: -0.1px !important;
 }
 
 .editIconButton {
@@ -227,6 +251,11 @@
   background: #fff;
   border-radius: 4px;
   font-family: inherit !important;
+  color: #272d37;
+  font-weight: 500 !important;
+  font-size: 15px !important;
+  line-height: 22px !important;
+  letter-spacing: -0.1px !important;
 }
 
 .editLabel {
@@ -306,4 +335,19 @@
   display: block;
   margin: auto;
   pointer-events: none;
+}
+
+.menuItem {
+  font-family: inherit !important;
+  color: #272d37;
+  font-weight: 500 !important;
+  font-size: 15px !important;
+  line-height: 22px !important;
+  letter-spacing: -0.1px !important;
+}
+
+.unitRequired {
+  color: red;
+  font-weight: 600 !important;
+  font-family: inherit !important;
 }
