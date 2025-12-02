@@ -11,7 +11,8 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
   complaintData,
   caseStatus,
   setOpenModifyDetails,
-  createdAt
+  createdAt,
+  processingFile
 }) => {
   const {
     caseId,
@@ -46,7 +47,7 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
               {(caseStatus !== 'processed') && <button
                 type="button"
                 className={`${styles.modifyBtn}`}
-                onClick={() => setOpenModifyDetails(true)}
+                onClick={() => { if (!processingFile) setOpenModifyDetails(true) }}
               >
                 <img src={Edit} /><span className={styles.label}>Modify Details</span>
               </button>}
