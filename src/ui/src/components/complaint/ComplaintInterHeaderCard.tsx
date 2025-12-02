@@ -47,6 +47,7 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
               {(caseStatus !== 'processed') && <button
                 type="button"
                 className={`${styles.modifyBtn}`}
+                disabled={processingFile}
                 onClick={() => { if (!processingFile) setOpenModifyDetails(true) }}
               >
                 <img src={Edit} /><span className={styles.label}>Modify Details</span>
