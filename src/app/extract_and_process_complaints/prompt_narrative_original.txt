@@ -1,0 +1,117 @@
+You are tasked with extracting structured information from complaint documents such as complaint narrative texts or PDF complaint reports. The objective is to identify and extract specific standard fields according to the following definitions and guidelines.
+
+Fields to Extract and Their Definitions
+
+Criticality
+
+Definition: Criticality refers to the potential risk posed to a patient by a product defect. It assesses not just the defect itself but the likelihood and severity of harm that could result.
+
+Standard Values:
+
+Critical (or Critical - life threatening)
+Major (or Major - serious risk)
+Minor (or Minor - minimal impact)
+
+Key guidelines:
+For Product Complaints, criticality often appears as a designated field in the document with values such as "Critical", "Major", or "Minor." It may sometimes be phrased as "Critical - life threatening", "Major - serious risk", or "Minor - minimal impact."
+For Adverse Event Reports, the document does not typically contain a criticality field explicitly; therefore, this field should not be extracted from AE reports unless clearly stated in the narrative.
+When criticality is not explicitly given, infer it only if there's clear, unambiguous language indicating risk levels aligned to the categories above.
+
+Report Type
+
+Definition:
+
+The report type classifies the origin or kind of complaint report.
+
+Categories for Product Complaints:
+
+Spontaneous
+Internal
+Field/Service
+Sales/Commercial
+Returned Goods
+Distributor/Partner
+Solicited Program
+
+Categories for Adverse Events:
+
+Spontaneous
+Clinical Trials
+Literature
+Key guidelines:
+The report type may be explicitly stated as a field, mentioned in the narrative, or implied by the document name.
+For Product Complaints, look for the above list of report types.
+For Adverse Events, look for report source/type fields or narrative mentions stating "Spontaneous", "Clinical Trials", or "Literature."
+If multiple types are mentioned, prioritize explicit field values over narrative references.
+
+Category Type
+
+Definition:
+
+Category Type refers to the product classification or higher-level complaint classification.
+Product Complaints Examples:
+
+Medical Device
+Pharmaceutical Drug
+Pill / Tablet
+Capsule
+Injectable / Vial
+Topical Product
+Biologic / Vaccine
+Diagnostic Kit
+Consumer Health Product (OTC)
+Supplements / Vitamins
+Laboratory Equipment
+
+
+Key guidelines:
+For Product Complaints, this may appear as a "Category" field, but it varies by client; extracting from the narrative is often necessary.
+For Adverse Event Reports, there is no "Category" field; extract this information from the narrative or other document sections where product identifiers or classifications appear.
+Use the most specific applicable category. If none apply, leave blank.
+Extraction Instructions
+Use exact field values when available.
+When fields are missing, use narrative context and document title or metadata to infer values only if the evidence is clear and unambiguous.
+Do NOT guess or extrapolate if not explicitly supported by the text.
+Prioritize fields over narrative for structured data when both are available.
+Include the exact text snippet that supports the extraction for traceability.
+
+AE/PC Classification Guidelines:
+
+Before extracting information, understand these key definitions:
+
+- **AE (Adverse Event)**: An AE refers to any harmful or abnormal effect experienced by a patient, which could be caused by a medication, medical device, or exposure to a chemical. This includes, but is not limited to, symptoms, illness, injury, hospitalization, or death.
+  
+- **PC (Product Complaint)**: A PC relates to dissatisfaction with or an issue concerning a medical product's identity, strength, quality, or purity. This also includes reports of suspected counterfeit/falsified products or defects in the product.
+
+- **Both**: The narrative clearly mentions both AE and PC. For instance, a patient might report experiencing an adverse effect from a product while also mentioning defects in the product itself.
+
+- **Neither**: The narrative mentions neither AE nor PC. This would be the case for general queries or situations that do not relate to the product or patient's health.
+
+Examples:
+1. "Patient experienced severe headaches and nausea after taking the medication. They also complained the pills were discolored." → Both AE and PC (symptoms + product quality issue)
+2. "Patient reports no issues with the medication but is seeking a refill because they have finished their prescription." → Neither (no adverse events or product complaints)
+3. "Patient had a reaction after using the product, leading to a rash and swelling around the area where the patch was applied. They also stated that the patch felt defective." → Both AE and PC (reaction + defective product)
+4. "The patient requested information about the proper use of the medication but did not report any issues or side effects." → Neither (only usage inquiry)
+
+Your task is to extract the following information from the provided narrative text:
+- Case ID (if mentioned, otherwise 'N/A')
+- Receipt Date (if mentioned, otherwise 'N/A') 
+- Criticality (infer from narrative content. Expected values are "Critical", "Major", "Minor")
+- Report Type is not applicable. Value should be NA
+- Case Type (infer if it's Product Complaint, Adverse Event, or both using the AE/PC Classification Guidelines above. If ambiguous or borderline, classify based on the definitions provided)
+- Category (infer the category of complaint)
+- Narrative (the complete text provided)
+- Narrative Summary (Summary should be proportionate to the size of the narrative. Generate a concise 50-500 word summary of the narrative capturing key points. Smaller narratives(50-150 words) should have smaller summaries while longer narrative(200+ words)s should have proportionately longer summaries )
+- Primary Reporter name and address (if mentioned, otherwise 'N/A')
+- Patient Name (if mentioned, otherwise 'N/A')
+- Physician Name (if mentioned, otherwise 'N/A')
+- Product Details including drug name, dosage, lot number, expiration date (extract what's available, use 'N/A' for missing)
+
+Instructions:
+1. Analyze the narrative text carefully
+2. Extract explicit information where available
+3. Infer missing information based on context where reasonable
+4. Generate a professional 100-150 word summary of the narrative including patient issue, product involved, and outcome
+5. Use 'N/A' for information that cannot be determined
+6. Return all information using the extract_narrative_info tool
+
