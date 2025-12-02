@@ -373,7 +373,7 @@ class TestProcessWithBedrock:
     @patch('boto3.client')
     @patch('lambda_function.load_tool_spec')
     def test_process_with_bedrock_success(self, mock_load_spec, mock_boto3):
-        """Test: Successful Bedrock processing"""
+        """Test: Successful Bedrock processing with Haiku model"""
         mock_bedrock = Mock()
         mock_boto3.return_value = mock_bedrock
         mock_load_spec.return_value = {'toolSpec': {'name': 'test'}}
@@ -392,6 +392,10 @@ class TestProcessWithBedrock:
         result = lambda_function.process_with_bedrock(messages, 'pdf')
         
         assert result == {'extracted': 'data'}
+        # Verify Haiku model is used
+        mock_bedrock.converse.assert_called_once()
+        call_args = mock_bedrock.converse.call_args
+        assert call_args[1]['modelId'] == 'anthropic.claude-3-haiku-20240307-v1:0'
 
     @patch('lambda_function.get_default_extraction_data')
     @patch('lambda_function.load_tool_spec')
@@ -494,7 +498,7 @@ class TestLambdaHandler:
 
     @patch('lambda_function.process_single_complaint')
     def test_lambda_handler_sqs_batch_success(self, mock_process_single):
-        """Test: Successful SQS batch processing"""
+        """Test: Successful SQS batch processing with parallel execution"""
         mock_process_single.return_value = {
             'success': True,
             'complaint_id': 'CAS-123',
@@ -527,7 +531,41 @@ class TestLambdaHandler:
         assert body['success'] is True
         assert body['processed_count'] == 2
         assert len(body['results']) == 2
+        # Verify parallel processing - both complaints processed
         assert mock_process_single.call_count == 2
+
+    @patch('lambda_function.process_single_complaint')
+    def test_lambda_handler_parallel_batch_processing(self, mock_process_single):
+        """Test: Parallel batch processing with 10 complaints"""
+        mock_process_single.return_value = {
+            'success': True,
+            'complaint_id': 'CAS-TEST',
+            'input_type': 'narrative'
+        }
+
+        # Create batch of 10 complaints
+        sqs_event = {
+            'Records': [
+                {
+                    'body': json.dumps({
+                        'complaint_id': f'CAS-{i}',
+                        'file_id': f'file-{i}',
+                        'narrative_text': f'Test narrative {i}'
+                    })
+                }
+                for i in range(10)
+            ]
+        }
+
+        result = lambda_function.lambda_handler(sqs_event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['success'] is True
+        assert body['processed_count'] == 10
+        assert len(body['results']) == 10
+        # Verify all 10 complaints were processed
+        assert mock_process_single.call_count == 10
 
     @patch('lambda_function.validate_event')
     @patch('lambda_function.construct_narrative_prompt')

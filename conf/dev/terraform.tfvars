@@ -123,10 +123,10 @@ lambda_configs = [
     sqs_trigger = [
       {
         queue_name         = "preload-complaints"
-        visibility_timeout = 5000
-        max_receive_count  = 1000
-        batch_size         = 500
-        max_batch_window   = 20
+        visibility_timeout = 900
+        max_receive_count  = 3
+        batch_size         = 10
+        max_batch_window   = 5
         max_concurrency    = 10
       }
     ]
