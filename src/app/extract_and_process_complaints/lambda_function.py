@@ -319,7 +319,7 @@ def lambda_handler(event, context):
         # Handle SQS batch events
         if 'Records' in event:
             # OPTIMIZED: Parallel batch processing
-            with ThreadPoolExecutor(max_workers=10) as executor:
+            with ThreadPoolExecutor(max_workers=30) as executor:
                 futures = [
                     executor.submit(process_single_complaint, json.loads(record['body']))
                     for record in event['Records']
