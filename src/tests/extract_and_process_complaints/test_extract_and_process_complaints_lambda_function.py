@@ -292,10 +292,10 @@ class TestPdfToImages:
             assert all(img is not None for img in result)
 
     @patch('fitz.open')
-    def test_pdf_to_images_max_pages(self, mock_fitz):
-        """Test: PDF with more than MAX_PAGES"""
+    def test_pdf_to_images_all_pages(self, mock_fitz):
+        """Test: PDF with multiple pages processes all pages"""
         mock_doc = MagicMock()
-        mock_doc.page_count = 25  # More than MAX_PAGES (20)
+        mock_doc.page_count = 25
         mock_fitz.return_value = mock_doc
 
         mock_page = Mock()
@@ -309,7 +309,7 @@ class TestPdfToImages:
             mock_image_open.return_value = mock_image
 
             result = lambda_function.pdf_to_images(b'pdf-data')
-            assert len(result) == 20  # Should be limited to MAX_PAGES
+            assert len(result) == 25
 
     @patch('fitz.open')
     def test_pdf_to_images_error(self, mock_fitz):
@@ -784,6 +784,46 @@ class TestEdgeCases:
         with pytest.raises(ValueError):
             lambda_function.validate_event({})
 
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.fetch_pdf_from_s3')
+    @patch('lambda_function.pdf_to_images')
+    @patch('lambda_function.update_complaint_in_db')
+    def test_process_single_complaint_empty_pdf(self, mock_update_db, mock_pdf_to_images, mock_fetch_pdf, mock_validate):
+        """Test: Empty PDF with no pages"""
+        mock_validate.return_value = 'pdf'
+        mock_fetch_pdf.return_value = b'pdf-data'
+        mock_pdf_to_images.return_value = []
+
+        message_data = {
+            'complaint_id': 'CAS-123',
+            'file_id': 'file-456',
+            's3path': 's3://bucket/empty.pdf'
+        }
+
+        result = lambda_function.process_single_complaint(message_data)
+        
+        assert result['success'] is True
+        update_call_args = mock_update_db.call_args[0]
+        assert update_call_args[1]['narrative'] == 'Empty PDF - No Pages'
+
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.update_complaint_in_db')
+    def test_process_single_complaint_empty_narrative(self, mock_update_db, mock_validate):
+        """Test: Empty narrative text"""
+        mock_validate.return_value = 'narrative'
+
+        message_data = {
+            'complaint_id': 'CAS-123',
+            'file_id': 'file-456',
+            'narrative_text': '   '
+        }
+
+        result = lambda_function.process_single_complaint(message_data)
+        
+        assert result['success'] is True
+        update_call_args = mock_update_db.call_args[0]
+        assert update_call_args[1]['narrative'] == 'Empty Narrative'
+
     @patch('lambda_function.get_connection_string')
     def test_update_complaint_invalid_dates(self, mock_get_connection):
         """Test: Invalid date handling in database update"""
@@ -804,7 +844,30 @@ class TestEdgeCases:
                 'product_details': {'expiration_date': 'also-invalid'}
             }
 
-            # Should not raise exception, invalid dates should be set to None
+            lambda_function.update_complaint_in_db('CAS-123', extracted_data)
+            mock_cursor.execute.assert_called_once()
+
+    @patch('lambda_function.get_connection_string')
+    def test_update_complaint_malformed_nested_objects(self, mock_get_connection):
+        """Test: Malformed primary_reporter or product_details"""
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
+        
+        with patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_conn = MagicMock()
+            mock_cursor = MagicMock()
+            mock_conn.__enter__.return_value = mock_conn
+            mock_conn.__exit__.return_value = False
+            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+            mock_conn.cursor.return_value.__exit__.return_value = False
+            mock_connect.return_value = mock_conn
+
+            extracted_data = {
+                'narrative': 'Test',
+                'narrative_summary': 'Test summary',
+                'primary_reporter': 'Not a dict',
+                'product_details': None
+            }
+
             lambda_function.update_complaint_in_db('CAS-123', extracted_data)
             mock_cursor.execute.assert_called_once()
 
@@ -812,7 +875,24 @@ class TestEdgeCases:
         """Test: PDF prompt with empty images list"""
         with patch('builtins.open', mock_open(read_data='Test prompt')):
             result = lambda_function.construct_pdf_prompt([])
-            assert len(result[0]['content']) == 1  # Only text, no images
+            assert len(result[0]['content']) == 1
+
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.update_complaint_in_db')
+    def test_process_single_complaint_missing_narrative_key(self, mock_update_db, mock_validate):
+        """Test: Missing narrative_text key"""
+        mock_validate.return_value = 'narrative'
+
+        message_data = {
+            'complaint_id': 'CAS-123',
+            'file_id': 'file-456'
+        }
+
+        result = lambda_function.process_single_complaint(message_data)
+        
+        assert result['success'] is True
+        update_call_args = mock_update_db.call_args[0]
+        assert update_call_args[1]['narrative'] == 'Empty Narrative'
 
 
 if __name__ == "__main__":
