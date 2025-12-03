@@ -169,6 +169,7 @@ def get_single_complaint(conn, complaint_id):
                 # Get label list from database and update with new subcategories
                 label_list = _get_and_update_label_list(cursor, category_details)
                 conn.commit()  # Commit new labels to database
+                CRL_DESCRIPTIONS.append('NA')
                 complaint_details['crl_list'] = CRL_DESCRIPTIONS
                 complaint_details['label_list'] = label_list
         
