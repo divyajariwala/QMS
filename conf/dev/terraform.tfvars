@@ -125,9 +125,9 @@ lambda_configs = [
         queue_name         = "preload-complaints"
         visibility_timeout = 900
         max_receive_count  = 3
-        batch_size         = 30
+        batch_size         = 10
         max_batch_window   = 5
-        max_concurrency    = 30
+        max_concurrency    = 10
       }
     ]
   },

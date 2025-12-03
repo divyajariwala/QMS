@@ -183,6 +183,7 @@ class TestGetDefaultExtractionData:
         result = lambda_function.get_default_extraction_data('pdf')
         
         assert result['case_id'] == 'N/A'
+        assert result['narrative'] == ''  # Empty for PDF
         assert result['narrative_summary'] == 'N/A'
         assert result['criticality'] == 'N/A'
         assert result['primary_reporter']['name'] == 'N/A'
@@ -194,13 +195,14 @@ class TestGetDefaultExtractionData:
         assert isinstance(result['category'], list)
         assert isinstance(result['case_type'], list)
 
-    def test_get_default_extraction_data_narrative(self):
-        """Test: Get default extraction data for narrative"""
-        result = lambda_function.get_default_extraction_data('narrative')
+    def test_get_default_extraction_data_narrative_preserved(self):
+        """Test: Get default extraction data with preserved narrative"""
+        result = lambda_function.get_default_extraction_data('narrative', 'Test narrative text')
         
         assert result['case_id'] == 'N/A'
+        assert result['narrative'] == 'Test narrative text'  # Preserved
         assert result['narrative_summary'] == 'N/A'
-        assert all(value == 'N/A' or value == '' or isinstance(value, (list, dict)) 
+        assert all(value == 'N/A' or value == 'Test narrative text' or value == '' or isinstance(value, (list, dict)) 
                    for value in result.values())
 
 
@@ -400,13 +402,14 @@ class TestProcessWithBedrock:
     @patch('lambda_function.get_default_extraction_data')
     @patch('lambda_function.load_tool_spec')
     @patch('boto3.client')
-    def test_process_with_bedrock_no_tool_use(self, mock_boto3, mock_load_spec, mock_get_default):
-        """Test: No tool use found returns default NA values"""
+    def test_process_with_bedrock_no_tool_use_pdf(self, mock_boto3, mock_load_spec, mock_get_default):
+        """Test: No tool use found for PDF returns default with error message"""
         mock_bedrock = Mock()
         mock_boto3.return_value = mock_bedrock
         mock_load_spec.return_value = {'toolSpec': {'name': 'test'}}
         mock_get_default.return_value = {
             'case_id': 'N/A',
+            'narrative': 'PDF Extraction Failed',
             'narrative_summary': 'N/A',
             'primary_reporter': {'name': 'N/A', 'address': 'N/A'}
         }
@@ -420,11 +423,41 @@ class TestProcessWithBedrock:
         }
 
         messages = [{'role': 'user', 'content': [{'text': 'test'}]}]
-        result = lambda_function.process_with_bedrock(messages, 'pdf')
+        result = lambda_function.process_with_bedrock(messages, 'pdf', 'PDF Extraction Failed')
+        
+        assert result['narrative'] == 'PDF Extraction Failed'
+        mock_get_default.assert_called_once_with('pdf', 'PDF Extraction Failed')
+
+    @patch('lambda_function.get_default_extraction_data')
+    @patch('lambda_function.load_tool_spec')
+    @patch('boto3.client')
+    def test_process_with_bedrock_no_tool_use_narrative(self, mock_boto3, mock_load_spec, mock_get_default):
+        """Test: No tool use found for narrative returns default with preserved narrative"""
+        mock_bedrock = Mock()
+        mock_boto3.return_value = mock_bedrock
+        mock_load_spec.return_value = {'toolSpec': {'name': 'test'}}
+        mock_get_default.return_value = {
+            'case_id': 'N/A',
+            'narrative': 'Test narrative',
+            'narrative_summary': 'N/A',
+            'primary_reporter': {'name': 'N/A', 'address': 'N/A'}
+        }
+        
+        mock_bedrock.converse.return_value = {
+            'output': {
+                'message': {
+                    'content': [{'text': 'no tool use'}]
+                }
+            }
+        }
+
+        messages = [{'role': 'user', 'content': [{'text': 'test'}]}]
+        result = lambda_function.process_with_bedrock(messages, 'narrative', 'Test narrative')
         
         assert result['case_id'] == 'N/A'
+        assert result['narrative'] == 'Test narrative'
         assert result['narrative_summary'] == 'N/A'
-        mock_get_default.assert_called_once_with('pdf')
+        mock_get_default.assert_called_once_with('narrative', 'Test narrative')
 
 
 class TestUpdateComplaintInDb:
@@ -647,6 +680,90 @@ class TestProcessSingleComplaint:
         assert result['complaint_id'] == 'CAS-123'
         assert result['input_type'] == 'narrative'
         mock_update_db.assert_called_once()
+
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.construct_narrative_prompt')
+    @patch('lambda_function.process_with_bedrock')
+    @patch('lambda_function.update_complaint_in_db')
+    def test_process_single_complaint_narrative_preserved_on_failure(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_validate):
+        """Test: Narrative is preserved even when LLM tool use fails"""
+        mock_validate.return_value = 'narrative'
+        mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
+        # LLM returns data without narrative (tool use failed)
+        mock_bedrock.return_value = {'case_id': 'N/A', 'narrative_summary': 'N/A'}
+
+        message_data = {
+            'complaint_id': 'CAS-123',
+            'file_id': 'file-456',
+            'narrative_text': 'Original narrative text'
+        }
+
+        result = lambda_function.process_single_complaint(message_data)
+
+        assert result['success'] is True
+        # Verify narrative was preserved
+        update_call_args = mock_update_db.call_args[0]
+        assert update_call_args[1]['narrative'] == 'Original narrative text'
+
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.fetch_pdf_from_s3')
+    @patch('lambda_function.pdf_to_images')
+    @patch('lambda_function.images_to_base64')
+    @patch('lambda_function.construct_pdf_prompt')
+    @patch('lambda_function.process_with_bedrock')
+    @patch('lambda_function.update_complaint_in_db')
+    def test_process_single_complaint_pdf_extraction_failure_sets_error_message(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_images_to_base64, mock_pdf_to_images, mock_fetch_pdf, mock_validate):
+        """Test: PDF complaint gets error message when extraction fails"""
+        mock_validate.return_value = 'pdf'
+        mock_fetch_pdf.return_value = b'pdf-data'
+        mock_pdf_to_images.return_value = [Mock()]
+        mock_images_to_base64.return_value = ['base64-image']
+        mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
+        # Extraction failed - returns default with error message
+        mock_bedrock.return_value = {'case_id': 'N/A', 'narrative': 'PDF Extraction Failed', 'narrative_summary': 'N/A'}
+
+        message_data = {
+            'complaint_id': 'CAS-123',
+            'file_id': 'file-456',
+            's3path': 's3://bucket/file.pdf'
+        }
+
+        result = lambda_function.process_single_complaint(message_data)
+        
+        assert result['success'] is True
+        # Verify narrative was set to error message
+        update_call_args = mock_update_db.call_args[0]
+        assert update_call_args[1]['narrative'] == 'PDF Extraction Failed'
+
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.fetch_pdf_from_s3')
+    @patch('lambda_function.pdf_to_images')
+    @patch('lambda_function.images_to_base64')
+    @patch('lambda_function.construct_pdf_prompt')
+    @patch('lambda_function.process_with_bedrock')
+    @patch('lambda_function.update_complaint_in_db')
+    def test_process_single_complaint_pdf_empty_narrative_sets_error_message(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_images_to_base64, mock_pdf_to_images, mock_fetch_pdf, mock_validate):
+        """Test: PDF complaint gets error message when narrative is empty"""
+        mock_validate.return_value = 'pdf'
+        mock_fetch_pdf.return_value = b'pdf-data'
+        mock_pdf_to_images.return_value = [Mock()]
+        mock_images_to_base64.return_value = ['base64-image']
+        mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
+        # Extraction returned data but narrative is empty
+        mock_bedrock.return_value = {'case_id': 'TEST', 'narrative': ''}
+
+        message_data = {
+            'complaint_id': 'CAS-123',
+            'file_id': 'file-456',
+            's3path': 's3://bucket/file.pdf'
+        }
+
+        result = lambda_function.process_single_complaint(message_data)
+        
+        assert result['success'] is True
+        # Verify narrative was set to error message
+        update_call_args = mock_update_db.call_args[0]
+        assert update_call_args[1]['narrative'] == 'PDF Extraction Failed'
 
     @patch('lambda_function.validate_event')
     def test_process_single_complaint_validation_error(self, mock_validate):
