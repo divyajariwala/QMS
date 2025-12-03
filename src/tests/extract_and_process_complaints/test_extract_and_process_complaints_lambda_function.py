@@ -761,9 +761,9 @@ class TestProcessSingleComplaint:
         result = lambda_function.process_single_complaint(message_data)
         
         assert result['success'] is True
-        # Verify narrative was set to error message
+        # Verify narrative was set to error message (empty narrative triggers 'Not a Product Complaint Document')
         update_call_args = mock_update_db.call_args[0]
-        assert update_call_args[1]['narrative'] == 'PDF Extraction Failed'
+        assert update_call_args[1]['narrative'] == 'Not a Product Complaint Document'
 
     @patch('lambda_function.validate_event')
     def test_process_single_complaint_validation_error(self, mock_validate):
