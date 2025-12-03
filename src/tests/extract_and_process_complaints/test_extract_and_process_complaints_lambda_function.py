@@ -536,14 +536,14 @@ class TestLambdaHandler:
 
     @patch('lambda_function.process_single_complaint')
     def test_lambda_handler_parallel_batch_processing(self, mock_process_single):
-        """Test: Parallel batch processing with 10 complaints"""
+        """Test: Parallel batch processing with 30 complaints"""
         mock_process_single.return_value = {
             'success': True,
             'complaint_id': 'CAS-TEST',
             'input_type': 'narrative'
         }
 
-        # Create batch of 10 complaints
+        # Create batch of 30 complaints
         sqs_event = {
             'Records': [
                 {
@@ -553,7 +553,7 @@ class TestLambdaHandler:
                         'narrative_text': f'Test narrative {i}'
                     })
                 }
-                for i in range(10)
+                for i in range(30)
             ]
         }
 
@@ -562,10 +562,10 @@ class TestLambdaHandler:
         assert result['statusCode'] == 200
         body = json.loads(result['body'])
         assert body['success'] is True
-        assert body['processed_count'] == 10
-        assert len(body['results']) == 10
-        # Verify all 10 complaints were processed
-        assert mock_process_single.call_count == 10
+        assert body['processed_count'] == 30
+        assert len(body['results']) == 30
+        # Verify all 30 complaints were processed
+        assert mock_process_single.call_count == 30
 
     @patch('lambda_function.validate_event')
     @patch('lambda_function.construct_narrative_prompt')
