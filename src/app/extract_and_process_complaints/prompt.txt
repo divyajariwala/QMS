@@ -1,5 +1,7 @@
 Extract structured information from pharmaceutical complaint reports (Ashfield, MedWatch, or other sources).
 
+IMPORTANT: If the document is NOT a pharmaceutical/medical product complaint report (e.g., invoice, general document, unrelated content), you MUST use the extract_case_info tool with ALL fields set to "N/A" and narrative set to "Not a Product Complaint Document".
+
 CLASSIFICATION:
 - AE (Adverse Event): Harmful effect on patient (symptoms, illness, injury, hospitalization, death)
 - PC (Product Complaint): Product quality issue (defect, contamination, counterfeit)
