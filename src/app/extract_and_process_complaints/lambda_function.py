@@ -31,7 +31,6 @@ logger.setLevel(logging.INFO)
 
 # Configuration
 MAX_PDF_SIZE_MB = 50
-MAX_PAGES = 20
 ENV = os.environ.get('env', 'dev')
 DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
@@ -140,14 +139,13 @@ def fetch_pdf_from_s3(s3_path):
         raise
 
 def pdf_to_images(pdf_data):
-    """Convert PDF pages to PIL Images"""
+    """Convert all PDF pages to PIL Images"""
     doc = None
     try:
         doc = fitz.open(stream=pdf_data, filetype="pdf")
-        page_count = min(doc.page_count, MAX_PAGES)
         images = []
         
-        for page_num in range(page_count):
+        for page_num in range(doc.page_count):
             page = doc[page_num]
             pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
             img_data = pix.tobytes("png")
@@ -235,8 +233,10 @@ def update_complaint_in_db(complaint_id, extracted_data):
                 result = extracted_data
                 logger.info(f"Extracted data keys: {result.keys()}")
                 logger.info(f"Narrative summary from LLM: {result.get('narrative_summary', 'NOT FOUND')}")
-                primary_reporter = result.get('primary_reporter', {})
-                product_details = result.get('product_details', {})
+                
+                # Safely handle missing or malformed nested objects
+                primary_reporter = result.get('primary_reporter') if isinstance(result.get('primary_reporter'), dict) else {}
+                product_details = result.get('product_details') if isinstance(result.get('product_details'), dict) else {}
                 
                 # Convert arrays to strings
                 category = ', '.join(result.get('category', [])) if result.get('category') else None
@@ -370,23 +370,39 @@ def process_single_complaint(message_data):
             # PDF processing
             pdf_data = fetch_pdf_from_s3(message_data['s3path'])
             images = pdf_to_images(pdf_data)
-            base64_images = images_to_base64(images)
-            messages = construct_pdf_prompt(base64_images)
-            extracted_data = process_with_bedrock(messages, 'pdf', 'PDF Extraction Failed')
             
-            # Ensure narrative is set to error message if extraction failed
-            if not extracted_data.get('narrative'):
-                extracted_data['narrative'] = 'PDF Extraction Failed'
+            # Handle empty PDF
+            if not images:
+                logger.warning(f"PDF has no pages for complaint {complaint_id}")
+                extracted_data = get_default_extraction_data('pdf', 'Empty PDF - No Pages')
+            else:
+                base64_images = images_to_base64(images)
+                messages = construct_pdf_prompt(base64_images)
+                extracted_data = process_with_bedrock(messages, 'pdf', 'PDF Extraction Failed')
+                
+                # Check if document is not a complaint
+                narrative = extracted_data.get('narrative', '')
+                if 'Not a Product Complaint' in narrative or not narrative:
+                    extracted_data['narrative'] = 'Not a Product Complaint Document'
             
         elif input_type == 'narrative':
             # Direct narrative processing - preserve input narrative
-            narrative_text = message_data['narrative_text']
-            messages = construct_narrative_prompt(narrative_text)
-            extracted_data = process_with_bedrock(messages, 'narrative', narrative_text)
+            narrative_text = message_data.get('narrative_text', '').strip()
             
-            # Ensure narrative is preserved even if tool use fails
-            if not extracted_data.get('narrative'):
-                extracted_data['narrative'] = narrative_text
+            # Handle empty narrative
+            if not narrative_text:
+                logger.warning(f"Empty narrative text for complaint {complaint_id}")
+                extracted_data = get_default_extraction_data('narrative', 'Empty Narrative')
+            else:
+                messages = construct_narrative_prompt(narrative_text)
+                extracted_data = process_with_bedrock(messages, 'narrative', narrative_text)
+                
+                # Check if text is not a complaint
+                if 'Not a Product Complaint' in extracted_data.get('narrative_summary', ''):
+                    extracted_data['narrative'] = narrative_text
+                    extracted_data['narrative_summary'] = 'Not a Product Complaint'
+                elif not extracted_data.get('narrative'):
+                    extracted_data['narrative'] = narrative_text
         
         # Update database
         update_complaint_in_db(complaint_id, extracted_data)

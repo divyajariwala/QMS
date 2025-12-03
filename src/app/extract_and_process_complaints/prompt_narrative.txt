@@ -1,5 +1,7 @@
 Extract structured information from the complaint narrative text below.
 
+IMPORTANT: If the text is NOT related to pharmaceutical/medical product complaints (e.g., random text, unrelated content), you MUST use the extract_narrative_info tool with ALL fields set to "N/A" and narrative_summary set to "Not a Product Complaint".
+
 CLASSIFICATION:
 - AE (Adverse Event): Harmful effect on patient
 - PC (Product Complaint): Product quality/defect issue
