@@ -218,13 +218,9 @@ def process_with_bedrock(messages, spec_type='pdf', narrative_text=''):
             if isinstance(item, dict) and 'toolUse' in item:
                 return item['toolUse']['input']
         
-        # If no tool use found, return None for PDFs (will be handled as error)
-        # For narratives, return default with preserved narrative text
+        # If no tool use found, return default with preserved narrative text
         logger.warning(f"No tool use found in response for {spec_type}")
-        if spec_type == 'pdf':
-            return None  # Signal PDF extraction failure
-        else:
-            return get_default_extraction_data(spec_type, narrative_text)
+        return get_default_extraction_data(spec_type, narrative_text)
     except Exception as e:
         logger.error(f"Bedrock error: {str(e)}")
         raise
@@ -360,19 +356,6 @@ def lambda_handler(event, context):
         }
 
 
-def delete_complaint_from_db(complaint_id):
-    """Delete complaint record from database"""
-    try:
-        conninfo = get_connection_string()
-        with psycopg.connect(conninfo) as conn:
-            with conn.cursor() as cur:
-                cur.execute("DELETE FROM complaints WHERE complaint_id = %s", (complaint_id,))
-                conn.commit()
-                logger.info(f"Deleted complaint {complaint_id} from database")
-    except Exception as e:
-        logger.error(f"Error deleting complaint {complaint_id}: {str(e)}")
-        raise
-
 def process_single_complaint(message_data):
     """Process a single complaint from SQS message"""
     complaint_id = message_data.get('complaint_id', 'unknown')
@@ -389,13 +372,11 @@ def process_single_complaint(message_data):
             images = pdf_to_images(pdf_data)
             base64_images = images_to_base64(images)
             messages = construct_pdf_prompt(base64_images)
-            extracted_data = process_with_bedrock(messages, 'pdf')
+            extracted_data = process_with_bedrock(messages, 'pdf', 'PDF Extraction Failed')
             
-            # Check if PDF extraction failed (no tool use or empty narrative)
-            if extracted_data is None or not extracted_data.get('narrative'):
-                logger.error(f"PDF extraction failed for complaint {complaint_id} - no narrative extracted")
-                delete_complaint_from_db(complaint_id)
-                raise ValueError(f"PDF extraction failed: no narrative found for complaint {complaint_id}")
+            # Ensure narrative is set to error message if extraction failed
+            if not extracted_data.get('narrative'):
+                extracted_data['narrative'] = 'PDF Extraction Failed'
             
         elif input_type == 'narrative':
             # Direct narrative processing - preserve input narrative
