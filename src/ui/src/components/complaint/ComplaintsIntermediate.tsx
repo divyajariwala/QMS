@@ -170,6 +170,7 @@ const ComplaintsIntermediate: React.FC = () => {
         caseStatus={complaintDetails?.caseStatus}
         setOpenModifyDetails={setOpenModifyDetails}
         createdAt={complaintDetails?.created_at}
+        processingFile={processingFile}
       />
       <ComplaintSecondaryInfo
         infoItems={infoItems}
@@ -188,7 +189,7 @@ const ComplaintsIntermediate: React.FC = () => {
             <div className={styles.cardTitle}>Complaint Category</div>
             <div className={styles.emptyCategory}>
               <p className={styles.emptyCategoryText}>There is no complaint category created.</p>
-              <button className={styles.classifyBtn} onClick={testClassify}>
+              <button className={styles.classifyBtn} onClick={testClassify} disabled={processingFile}>
                 Classify Complaint <img src={ArrowRight} alt="" />
               </button>
             </div>

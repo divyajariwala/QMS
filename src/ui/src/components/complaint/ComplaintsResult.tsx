@@ -163,7 +163,6 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
       </div>
 
       <div className={styles.bottomRow} onClick={handleSeeDetailsClick}>
-        <Box className={styles.shortDescription}>Short Description</Box>
         <div className={styles.seeDetailsRow}>
           <Box className={styles.seeDetailsText}>See Details</Box>
           <KeyboardArrowRightIcon style={{ cursor: "pointer" }} />

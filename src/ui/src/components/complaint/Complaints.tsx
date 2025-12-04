@@ -15,6 +15,7 @@ import PaginationComponent from '@components/pagination/PaginationComponent';
 import { usePollingContext } from '@components/polling/PollingProvider';
 import Notification from '@components/Notification/Notification';
 import { useAuth } from '../../auth/useAuth';
+import { useStatus } from 'src/context/StatusProvider';
 
 const Complaints = () => {
   // Initial pagination state
@@ -33,7 +34,7 @@ const Complaints = () => {
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [searchPageNumber, setSearchPageNumber] = useState<number>(1);
   const [openFileUpload, setOpenFileUpload] = useState<boolean>(false);
-  const [activeStatus, setActiveStatus] = useState<'pending' | 'processed' | 'overdue'>('pending');
+  const { activeStatus, setActiveStatus } = useStatus();
   const [data, setData] = useState<getComplaintsApiResponse>();
   const [complaintDetail, setComplaintDetail] = useState<searchComplaintsApiResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

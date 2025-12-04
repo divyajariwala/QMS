@@ -23,6 +23,7 @@ import Complaints from "@components/complaint/Complaints";
 import ComplaintsIntermediate from "@components/complaint/ComplaintsIntermediate";
 import ComplaintsDetails from "@components/complaint/ComplaintsDetails";
 import { PollingProvider } from "@components/polling/PollingProvider";
+import { StatusProvider } from './context/StatusProvider';
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -56,8 +57,9 @@ const isAuthorized = cId || sId;
 const App = () => {
   return (
     <BrowserRouter>
-    <PollingProvider>
       <AuthProvider>
+        <PollingProvider>
+        <StatusProvider>
         <ThemeProvider theme={theme}>
           <ErrorBoundary
             FallbackComponent={ErrorFallback}
@@ -125,8 +127,9 @@ const App = () => {
             </Routes>
           </ErrorBoundary>
         </ThemeProvider>
+        </StatusProvider>
+        </PollingProvider>
       </AuthProvider>
-      </PollingProvider>
     </BrowserRouter>
   );
 };

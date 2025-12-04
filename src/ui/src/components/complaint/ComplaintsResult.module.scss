@@ -127,7 +127,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   cursor: pointer;
 }
 
@@ -232,6 +232,11 @@
 
 .classifyBtn {
   filter: brightness(0.95);
+}
+
+.classifyBtn:disabled {
+  filter: brightness(0.5); /* reduce brightness */
+  cursor: not-allowed;
 }
 
 .cardBox {

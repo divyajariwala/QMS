@@ -213,6 +213,7 @@ export interface ComplaintInterHeaderCardProps {
   caseStatus: string | undefined;
   setOpenModifyDetails: (val: boolean) => void;
   createdAt: string | undefined;
+  processingFile: boolean;
 }
 
 export interface ComplaintsDueDateChipProps {
