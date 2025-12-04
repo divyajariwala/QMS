@@ -91,6 +91,7 @@ def mock_extracted_data():
             'drug_name': 'TestDrug',
             'dosage': '100mg',
             'lot_no': 'LOT123',
+            'part_no': 'PART456',
             'expiration_date': '2024-12-31'
         }
     }
@@ -192,6 +193,7 @@ class TestGetDefaultExtractionData:
         assert result['physician_name'] == 'N/A'
         assert result['product_details']['drug_name'] == 'N/A'
         assert result['product_details']['lot_no'] == 'N/A'
+        assert result['product_details']['part_no'] == 'N/A'
         assert isinstance(result['category'], list)
         assert isinstance(result['case_type'], list)
 
@@ -481,9 +483,10 @@ class TestUpdateComplaintInDb:
             lambda_function.update_complaint_in_db('CAS-123', mock_extracted_data)
             
             mock_cursor.execute.assert_called_once()
-            # Verify text_extracted is set to TRUE in the SQL
+            # Verify text_extracted is set to TRUE and part_number is in SQL
             call_args = mock_cursor.execute.call_args[0]
             assert 'text_extracted = TRUE' in call_args[0]
+            assert 'part_number = %s' in call_args[0]
             mock_conn.commit.assert_called_once()
 
     @patch('lambda_function.get_connection_string')
