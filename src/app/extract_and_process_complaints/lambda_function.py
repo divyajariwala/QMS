@@ -115,6 +115,7 @@ def get_default_extraction_data(spec_type='pdf', narrative_text=''):
             'drug_name': 'N/A',
             'dosage': 'N/A',
             'lot_no': 'N/A',
+            'part_no': 'N/A',
             'expiration_date': 'N/A'
         }
     }
@@ -238,6 +239,9 @@ def update_complaint_in_db(complaint_id, extracted_data):
                 primary_reporter = result.get('primary_reporter') if isinstance(result.get('primary_reporter'), dict) else {}
                 product_details = result.get('product_details') if isinstance(result.get('product_details'), dict) else {}
                 
+                # Extract part number
+                part_number = product_details.get('part_no') if product_details.get('part_no') != 'N/A' else None
+                
                 # Convert arrays to strings
                 category = ', '.join(result.get('category', [])) if result.get('category') else None
                 case_type = ', '.join(result.get('case_type', [])) if result.get('case_type') else None
@@ -272,6 +276,7 @@ def update_complaint_in_db(complaint_id, extracted_data):
                     lot_no = %s,
                     dosage = %s,
                     expiration_date = %s,
+                    part_number = %s,
                     criticality = %s,
                     case_type = %s,
                     report_type = %s,
@@ -296,6 +301,7 @@ def update_complaint_in_db(complaint_id, extracted_data):
                     product_details.get('lot_no') if product_details.get('lot_no') != 'N/A' else None,
                     product_details.get('dosage') if product_details.get('dosage') != 'N/A' else None,
                     expiration_date,
+                    part_number,
                     result.get('criticality') if result.get('criticality') != 'N/A' else None,
                     case_type,
                     result.get('report_type') if result.get('report_type') != 'N/A' else None,
