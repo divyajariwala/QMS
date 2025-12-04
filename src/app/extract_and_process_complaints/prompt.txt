@@ -21,11 +21,11 @@ EXTRACT THESE FIELDS:
 9. primary_reporter: {"name": "reporter name", "address": "reporter address"} (use NA if not available)
 10. patient_name: Patient name (use NA if not available)
 11. physician_name: Physician name (use NA if not available)
-12. product_details: {"drug_name": "name", "dosage": "amount", "lot_no": "number", "part_no": "number", "expiration_date": "YYYY-MM-DD"} (use NA for missing fields). For expiration_date, convert any format (YYYY, MM/YYYY, DD/MM/YYYY, DD-MM-YYYY, etc.) to YYYY-MM-DD. Use 01 for missing month/day.
+12. product_details: {"drug_name": "name", "dosage": "amount", "lot_no": "number", "part_no": "number", "expiration_date": "YYYY-MM-DD"} (use NA for missing fields). For expiration_date, only extract if a complete, valid date is available; use NA if only partial date information is provided.
 
 RULES:
 - Extract exact values when available
 - Use NA for missing/unclear information
 - Do not infer criticality unless explicitly stated
-- For dates, use YYYY-MM-DD format (convert YYYY → YYYY-01-01, MM/YYYY → YYYY-MM-01)
+- For dates, use YYYY-MM-DD format (only if complete date is available)
 - Return all fields using extract_case_info tool

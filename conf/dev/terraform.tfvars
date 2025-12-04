@@ -116,7 +116,7 @@ lambda_configs = [
       env                          = "dev"
       dynamodb_table_base_name     = "complaints-metadata"
       classify_sqs_queue_base_name = "classify-complaints"
-      model_id = "arn:aws:bedrock:us-east-1:120569648189:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0"
+      model_id = "anthropic.claude-3-haiku-20240307-v1:0"
       db_secret_base_name = "aurora-postgres-master"
       db_region = "us-east-1"
     }
