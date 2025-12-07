@@ -24,6 +24,8 @@ import ComplaintsIntermediate from "@components/complaint/ComplaintsIntermediate
 import ComplaintsDetails from "@components/complaint/ComplaintsDetails";
 import { PollingProvider } from "@components/polling/PollingProvider";
 import { StatusProvider } from './context/StatusProvider';
+import 'react-toastify/dist/ReactToastify.css';
+
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -65,7 +67,7 @@ const App = () => {
             FallbackComponent={ErrorFallback}
             onError={errorHandler}
           >
-            <ToastContainer />
+            <ToastContainer position="top-center" autoClose={3000} />
             <Routes>
               <Route path="/auth/callback" element={<Callback />} />
               <Route

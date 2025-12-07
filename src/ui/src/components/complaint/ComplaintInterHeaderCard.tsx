@@ -4,6 +4,7 @@ import Edit from '../../assets/icons/edit.svg'
 
 import { Paper, Box, Stack, Grid } from '@mui/material';
 import ComplaintsDueDateChip from './ComplaintsDueDateChip';
+import { formatDateMMM_D_YYYY } from 'src/utils';
 import { ComplaintInterHeaderCardProps } from 'src/types';
 import { getDueStatus } from 'src/helpers';
 
@@ -93,7 +94,7 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
 
                 <Grid item xs={8} sm={3}>
                   <Box className={`${styles.labelText} ${styles.mt2}`}>Expiration Date</Box>
-                  <Box className={styles.valueText}>{expirationDate}</Box>
+                  <Box className={styles.valueText}>{expirationDate ? formatDateMMM_D_YYYY(expirationDate) : 'NA'}</Box>
                 </Grid>
 
                 <Grid item xs={8} sm={3}>
