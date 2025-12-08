@@ -20,7 +20,7 @@ EXTRACT:
 9. primary_reporter: {"name": "name", "address": "address"} or NA
 10. patient_name: Name or NA
 11. physician_name: Name or NA
-12. product_details: {"drug_name": "name", "dosage": "amount", "lot_no": "number", "part_no": "number", "expiration_date": "YYYY-MM-DD"} or NA for missing. Extract all product identifiers including Lot, Part/Pat number, and Expiration date from narrative text.
+12. product_details: {"drug_name": "name", "dosage": "amount", "lot_no": "number", "part_no": "number", "expiration_date": "YYYY-MM-DD"} or NA for missing. Extract all product identifiers including Lot, Part/Pat number, and Expiration date from narrative text. For expiration_date, only extract if a complete, valid date is available; use NA if only partial date information (year only, month/year only) is provided.
 
 Return using extract_narrative_info tool.
 
