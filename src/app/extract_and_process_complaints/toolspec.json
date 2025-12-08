@@ -58,11 +58,12 @@
           },
           "product_details": {
             "type": "object",
-            "description": "Structured product information including drug name, dosage, lot number, and expiration date; NA if unavailable",
+            "description": "Structured product information including drug name, dosage, lot number, part number, and expiration date; NA if unavailable",
             "properties": {
               "drug_name": { "type": "string" },
               "dosage": { "type": "string" },
               "lot_no": { "type": "string" },
+              "part_no": { "type": "string" },
               "expiration_date": { "type": "string" }
             }
           }
