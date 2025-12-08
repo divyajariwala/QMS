@@ -23,7 +23,6 @@ import ModifyDetails from '../../components/modifyDetails/ModifyDetails';
 import ProcessingNotification from '@components/processingNotification/ProcessingNotification';
 import { usePollingClassify } from '@components/polling/PollingClassify';
 import styles from "./ComplaintsResult.module.scss";
-import { error } from 'console';
 
 const ComplaintsIntermediate: React.FC = () => {
   const [open, setOpen] = useState(false);
