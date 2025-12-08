@@ -143,7 +143,7 @@ def get_single_complaint(conn, complaint_id):
                 'criticality': complaint['criticality'] or 'NA',
                 'report_type': complaint['report_type'] or 'NA',
                 'ai_summary': complaint['narrative_summary'] or '',
-                'case_type': complaint['case_type'].split(',') if complaint['case_type'] else [],
+                'case_type': [t.strip() for t in complaint['case_type'].split(',')] if complaint['case_type'] else [],
                 'narrative': complaint['narrative'] or '',
                 'primary_reporter': {
                     'name': complaint['primary_reporter'] or '',
@@ -255,7 +255,7 @@ def get_all_complaints(conn, page=1, status_filter=None, search_query=None):
                         'criticality': c['criticality'] or 'NA',
                         'report_type': c['report_type'] or 'NA',
                         'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
-                        'case_type': c['case_type'].split(',') if c['case_type'] else [],
+                        'case_type': [t.strip() for t in c['case_type'].split(',')] if c['case_type'] else [],
                         'status': c['status'].lower(),
                         'text_extracted': c.get('text_extracted', False),
                         'created_at': c['created_at'].isoformat() if c.get('created_at') else ''
@@ -319,7 +319,7 @@ def get_all_complaints(conn, page=1, status_filter=None, search_query=None):
                         'criticality': c['criticality'] or 'NA',
                         'report_type': c['report_type'] or 'NA',
                         'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
-                        'case_type': c['case_type'].split(',') if c['case_type'] else [],
+                        'case_type': [t.strip() for t in c['case_type'].split(',')] if c['case_type'] else [],
                         'status': c['status'].lower(),
                         'text_extracted': c.get('text_extracted', False),
                         'created_at': c['created_at'].isoformat() if c.get('created_at') else ''
@@ -384,7 +384,7 @@ def _group_by_status(complaints):
             'criticality': complaint['criticality'] or 'NA',
             'report_type': complaint['report_type'] or 'NA',
             'receipt_date': complaint['receipt_date'].isoformat() if complaint['receipt_date'] else '',
-            'case_type': complaint['case_type'].split(',') if complaint['case_type'] else [],
+            'case_type': [t.strip() for t in complaint['case_type'].split(',')] if complaint['case_type'] else [],
             'text_extracted': complaint.get('text_extracted', False),
             'created_at': complaint['created_at'].isoformat() if complaint.get('created_at') else ''
         }
