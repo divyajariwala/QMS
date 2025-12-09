@@ -1,0 +1,19 @@
+{
+  "toolSpec": {
+    "name": "extract_criticality",
+    "description": "Extract criticality level from narrative summary",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "criticality": {
+            "type": "string",
+            "enum": ["Critical", "Major", "Minor", "Medium", "N/A"],
+            "description": "Risk level: Critical (life threatening), Major (serious risk), Minor (minimal impact), Medium (moderate concern), or N/A if unclear"
+          }
+        },
+        "required": ["criticality"]
+      }
+    }
+  }
+}

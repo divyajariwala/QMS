@@ -1,31 +1,7 @@
-Extract structured information from pharmaceutical complaint reports (Ashfield, MedWatch, or other sources).
+DEPRECATED: This prompt is replaced by a 3-step extraction process.
 
-IMPORTANT: If the document is NOT a pharmaceutical/medical product complaint report (e.g., invoice, general document, unrelated content), you MUST use the extract_case_info tool with ALL fields set to "N/A" and narrative set to "Not a Product Complaint Document".
+Step 1: prompt_step1.txt - Extracts basic info and narrative summary
+Step 2: prompt_narrative_step2_criticality.txt - Extracts criticality from summary
+Step 3: prompt_narrative_step3_classification.txt - Extracts category and case_type from summary
 
-CLASSIFICATION:
-- AE (Adverse Event): Harmful effect on patient (symptoms, illness, injury, hospitalization, death)
-- PC (Product Complaint): Product quality issue (defect, contamination, counterfeit)
-- Both: Report contains both AE and PC
-- Neither: General inquiry, no AE or PC
-
-EXTRACT THESE FIELDS:
-
-1. case_id: Unique identifier (Ashfield: "Case" field; MedWatch: "Mfr Report #")
-2. receipt_date: Date received (Ashfield: "Date of Receipt"; MedWatch: "Date Received by Manufacturer" in section G)
-3. criticality: Risk level - Critical/Major/Minor (extract only if explicitly stated; use NA if unclear)
-4. category: Product type (Medical Device, Pharmaceutical Drug, Pill/Tablet, Capsule, Injectable, Topical, Biologic, etc.)
-5. case_type: [Adverse Event], [Product Complaint], or [Adverse Event, Product Complaint] based on classification above
-6. report_type: Source type - Spontaneous, Internal, Field/Service, Clinical Trials, Literature (use NA if not stated)
-7. narrative: Full complaint description (Ashfield: "Product Complaint" section; MedWatch: section B "Describe Event or Problem")
-8. narrative_summary: Generate 50-150 word summary proportionate to narrative length, covering patient issue, product, and outcome
-9. primary_reporter: {"name": "reporter name", "address": "reporter address"} (use NA if not available)
-10. patient_name: Patient name (use NA if not available)
-11. physician_name: Physician name (use NA if not available)
-12. product_details: {"drug_name": "name", "dosage": "amount", "lot_no": "number", "part_no": "number", "expiration_date": "YYYY-MM-DD"} (use NA for missing fields). For expiration_date, only extract if a complete, valid date is available; use NA if only partial date information is provided.
-
-RULES:
-- Extract exact values when available
-- Use NA for missing/unclear information
-- Do not infer criticality unless explicitly stated
-- For dates, use YYYY-MM-DD format (only if complete date is available)
-- Return all fields using extract_case_info tool
+This file is kept for backward compatibility only.

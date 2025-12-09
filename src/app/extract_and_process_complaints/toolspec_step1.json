@@ -1,0 +1,71 @@
+{
+  "toolSpec": {
+    "name": "extract_case_basic_info",
+    "description": "Extract basic case information and narrative summary from complaint documents",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "description": "Unique case identifier from the complaint report"
+          },
+          "receipt_date": {
+            "type": "string",
+            "description": "Date the complaint report was received"
+          },
+          "report_type": {
+            "type": "string",
+            "description": "Type or source of report"
+          },
+          "narrative": {
+            "type": "string",
+            "description": "Full detailed narrative describing the complaint"
+          },
+          "narrative_summary": {
+            "type": "string",
+            "description": "Concise (50-150 words) AI-generated summary capturing patient condition, product issues, severity, and outcome"
+          },
+          "primary_reporter": {
+            "type": "object",
+            "description": "Name and address of the primary reporter; use NA if not available",
+            "properties": {
+              "name": { "type": "string" },
+              "address": { "type": "string" }
+            }
+          },
+          "patient_name": {
+            "type": "string",
+            "description": "Name of the patient; NA if unavailable"
+          },
+          "physician_name": {
+            "type": "string",
+            "description": "Name of the physician; NA if unavailable"
+          },
+          "product_details": {
+            "type": "object",
+            "description": "Structured product information; NA if unavailable",
+            "properties": {
+              "drug_name": { "type": "string" },
+              "dosage": { "type": "string" },
+              "lot_no": { "type": "string" },
+              "part_no": { "type": "string" },
+              "expiration_date": { "type": "string" }
+            }
+          }
+        },
+        "required": [
+          "case_id",
+          "receipt_date",
+          "report_type",
+          "narrative",
+          "narrative_summary",
+          "primary_reporter",
+          "patient_name",
+          "physician_name",
+          "product_details"
+        ]
+      }
+    }
+  }
+}

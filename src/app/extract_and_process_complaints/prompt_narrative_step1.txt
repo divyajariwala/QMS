@@ -1,0 +1,24 @@
+Extract structured information from the complaint narrative text below.
+
+IMPORTANT: If the text is NOT related to pharmaceutical/medical product complaints (e.g., random text, unrelated content), you MUST use the extract_narrative_basic_info tool with ALL fields set to "N/A" and narrative_summary set to "Not a Product Complaint".
+
+EXTRACT:
+1. case_id: If mentioned (otherwise NA)
+2. receipt_date: If mentioned in YYYY-MM-DD format (otherwise NA)
+3. report_type: NA (not applicable for narratives)
+4. narrative: The complete text provided
+5. narrative_summary: Generate 50-150 word summary that captures:
+   - Patient condition and adverse effects (if any)
+   - Product quality issues or defects (if any)
+   - Severity and impact of the incident
+   - Product information and outcome
+   This summary will be used to determine criticality, category, and case type.
+6. primary_reporter: {"name": "name", "address": "address"} or NA
+7. patient_name: Name or NA
+8. physician_name: Name or NA
+9. product_details: {"drug_name": "name", "dosage": "amount", "lot_no": "number", "part_no": "number", "expiration_date": "YYYY-MM-DD"} or NA for missing. Extract all product identifiers including Lot, Part/Pat number, and Expiration date from narrative text. For expiration_date, only extract if a complete, valid date is available; use NA if only partial date information (year only, month/year only) is provided.
+
+Return using extract_narrative_basic_info tool.
+
+Narrative:
+
