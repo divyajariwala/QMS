@@ -212,22 +212,34 @@ class TestLoadToolSpec:
     """Tests for load_tool_spec function"""
 
     @patch('builtins.open', mock_open(read_data='{"toolSpec": {"name": "test"}}'))
-    def test_load_pdf_tool_spec(self):
-        """Test: Load PDF tool specification"""
-        result = lambda_function.load_tool_spec('pdf')
+    def test_load_pdf_tool_spec_step1(self):
+        """Test: Load PDF tool specification step 1"""
+        result = lambda_function.load_tool_spec('pdf', step=1)
         assert result == {"toolSpec": {"name": "test"}}
 
     @patch('builtins.open', mock_open(read_data='{"toolSpec": {"name": "narrative"}}'))
-    def test_load_narrative_tool_spec(self):
-        """Test: Load narrative tool specification"""
-        result = lambda_function.load_tool_spec('narrative')
+    def test_load_narrative_tool_spec_step1(self):
+        """Test: Load narrative tool specification step 1"""
+        result = lambda_function.load_tool_spec('narrative', step=1)
         assert result == {"toolSpec": {"name": "narrative"}}
+
+    @patch('builtins.open', mock_open(read_data='{"toolSpec": {"name": "criticality"}}'))
+    def test_load_tool_spec_step2(self):
+        """Test: Load tool specification step 2"""
+        result = lambda_function.load_tool_spec('narrative', step=2)
+        assert result == {"toolSpec": {"name": "criticality"}}
+
+    @patch('builtins.open', mock_open(read_data='{"toolSpec": {"name": "classification"}}'))
+    def test_load_tool_spec_step3(self):
+        """Test: Load tool specification step 3"""
+        result = lambda_function.load_tool_spec('narrative', step=3)
+        assert result == {"toolSpec": {"name": "classification"}}
 
     @patch('builtins.open', side_effect=FileNotFoundError())
     def test_load_tool_spec_file_not_found(self, mock_open):
         """Test: FileNotFoundError when tool spec not found"""
         with pytest.raises(FileNotFoundError):
-            lambda_function.load_tool_spec('pdf')
+            lambda_function.load_tool_spec('pdf', step=1)
 
 
 class TestFetchPdfFromS3:
@@ -347,28 +359,48 @@ class TestImagesToBase64:
 class TestConstructPrompts:
     """Tests for prompt construction functions"""
 
-    def test_construct_pdf_prompt(self):
-        """Test: PDF prompt construction"""
+    def test_construct_pdf_prompt_step1(self):
+        """Test: PDF prompt construction step 1"""
         base64_images = ['iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==']
         
         with patch('builtins.open', mock_open(read_data='Test prompt')):
-            result = lambda_function.construct_pdf_prompt(base64_images)
+            result = lambda_function.construct_pdf_prompt(base64_images, step=1)
             
             assert len(result) == 1
             assert result[0]['role'] == 'user'
             assert len(result[0]['content']) == 2  # 1 image + 1 text
 
-    def test_construct_narrative_prompt(self):
-        """Test: Narrative prompt construction"""
+    def test_construct_narrative_prompt_step1(self):
+        """Test: Narrative prompt construction step 1"""
         narrative = "Test narrative text"
         
         with patch('builtins.open', mock_open(read_data='Test prompt from file')):
-            result = lambda_function.construct_narrative_prompt(narrative)
+            result = lambda_function.construct_narrative_prompt(narrative, step=1)
         
         assert len(result) == 1
         assert result[0]['role'] == 'user'
         assert narrative in result[0]['content'][0]['text']
         assert 'Test prompt from file' in result[0]['content'][0]['text']
+
+    def test_construct_narrative_prompt_step2(self):
+        """Test: Narrative prompt construction step 2 (criticality)"""
+        summary = "Patient experienced severe reaction"
+        
+        with patch('builtins.open', mock_open(read_data='Extract criticality')):
+            result = lambda_function.construct_narrative_prompt(summary, step=2)
+        
+        assert len(result) == 1
+        assert summary in result[0]['content'][0]['text']
+
+    def test_construct_narrative_prompt_step3(self):
+        """Test: Narrative prompt construction step 3 (classification)"""
+        summary = "Product defect reported"
+        
+        with patch('builtins.open', mock_open(read_data='Extract classification')):
+            result = lambda_function.construct_narrative_prompt(summary, step=3)
+        
+        assert len(result) == 1
+        assert summary in result[0]['content'][0]['text']
 
 
 class TestProcessWithBedrock:
@@ -376,8 +408,8 @@ class TestProcessWithBedrock:
 
     @patch('boto3.client')
     @patch('lambda_function.load_tool_spec')
-    def test_process_with_bedrock_success(self, mock_load_spec, mock_boto3):
-        """Test: Successful Bedrock processing with Haiku model"""
+    def test_process_with_bedrock_success_step1(self, mock_load_spec, mock_boto3):
+        """Test: Successful Bedrock processing step 1 with Haiku model"""
         mock_bedrock = Mock()
         mock_boto3.return_value = mock_bedrock
         mock_load_spec.return_value = {'toolSpec': {'name': 'test'}}
@@ -393,19 +425,64 @@ class TestProcessWithBedrock:
         }
 
         messages = [{'role': 'user', 'content': [{'text': 'test'}]}]
-        result = lambda_function.process_with_bedrock(messages, 'pdf')
+        result = lambda_function.process_with_bedrock(messages, 'pdf', step=1)
         
         assert result == {'extracted': 'data'}
-        # Verify Haiku model is used
         mock_bedrock.converse.assert_called_once()
         call_args = mock_bedrock.converse.call_args
         assert call_args[1]['modelId'] == 'anthropic.claude-3-haiku-20240307-v1:0'
 
+    @patch('boto3.client')
+    @patch('lambda_function.load_tool_spec')
+    def test_process_with_bedrock_step2_criticality(self, mock_load_spec, mock_boto3):
+        """Test: Bedrock processing step 2 returns criticality"""
+        mock_bedrock = Mock()
+        mock_boto3.return_value = mock_bedrock
+        mock_load_spec.return_value = {'toolSpec': {'name': 'extract_criticality'}}
+        
+        mock_bedrock.converse.return_value = {
+            'output': {
+                'message': {
+                    'content': [
+                        {'toolUse': {'input': {'criticality': 'Critical'}}}
+                    ]
+                }
+            }
+        }
+
+        messages = [{'role': 'user', 'content': [{'text': 'summary'}]}]
+        result = lambda_function.process_with_bedrock(messages, 'narrative', step=2)
+        
+        assert result == {'criticality': 'Critical'}
+
+    @patch('boto3.client')
+    @patch('lambda_function.load_tool_spec')
+    def test_process_with_bedrock_step3_classification(self, mock_load_spec, mock_boto3):
+        """Test: Bedrock processing step 3 returns classification"""
+        mock_bedrock = Mock()
+        mock_boto3.return_value = mock_bedrock
+        mock_load_spec.return_value = {'toolSpec': {'name': 'extract_classification'}}
+        
+        mock_bedrock.converse.return_value = {
+            'output': {
+                'message': {
+                    'content': [
+                        {'toolUse': {'input': {'category': ['Pharmaceutical Drug'], 'case_type': ['Adverse Event']}}}
+                    ]
+                }
+            }
+        }
+
+        messages = [{'role': 'user', 'content': [{'text': 'summary'}]}]
+        result = lambda_function.process_with_bedrock(messages, 'narrative', step=3)
+        
+        assert result == {'category': ['Pharmaceutical Drug'], 'case_type': ['Adverse Event']}
+
     @patch('lambda_function.get_default_extraction_data')
     @patch('lambda_function.load_tool_spec')
     @patch('boto3.client')
-    def test_process_with_bedrock_no_tool_use_pdf(self, mock_boto3, mock_load_spec, mock_get_default):
-        """Test: No tool use found for PDF returns default with error message"""
+    def test_process_with_bedrock_no_tool_use_step1(self, mock_boto3, mock_load_spec, mock_get_default):
+        """Test: No tool use found for step 1 returns default"""
         mock_bedrock = Mock()
         mock_boto3.return_value = mock_bedrock
         mock_load_spec.return_value = {'toolSpec': {'name': 'test'}}
@@ -425,16 +502,58 @@ class TestProcessWithBedrock:
         }
 
         messages = [{'role': 'user', 'content': [{'text': 'test'}]}]
-        result = lambda_function.process_with_bedrock(messages, 'pdf', 'PDF Extraction Failed')
+        result = lambda_function.process_with_bedrock(messages, 'pdf', 'PDF Extraction Failed', step=1)
         
         assert result['narrative'] == 'PDF Extraction Failed'
         mock_get_default.assert_called_once_with('pdf', 'PDF Extraction Failed')
 
+    @patch('lambda_function.load_tool_spec')
+    @patch('boto3.client')
+    def test_process_with_bedrock_no_tool_use_step2(self, mock_boto3, mock_load_spec):
+        """Test: No tool use found for step 2 returns default criticality"""
+        mock_bedrock = Mock()
+        mock_boto3.return_value = mock_bedrock
+        mock_load_spec.return_value = {'toolSpec': {'name': 'test'}}
+        
+        mock_bedrock.converse.return_value = {
+            'output': {
+                'message': {
+                    'content': [{'text': 'no tool use'}]
+                }
+            }
+        }
+
+        messages = [{'role': 'user', 'content': [{'text': 'test'}]}]
+        result = lambda_function.process_with_bedrock(messages, 'narrative', '', step=2)
+        
+        assert result == {'criticality': 'N/A'}
+
+    @patch('lambda_function.load_tool_spec')
+    @patch('boto3.client')
+    def test_process_with_bedrock_no_tool_use_step3(self, mock_boto3, mock_load_spec):
+        """Test: No tool use found for step 3 returns default classification"""
+        mock_bedrock = Mock()
+        mock_boto3.return_value = mock_bedrock
+        mock_load_spec.return_value = {'toolSpec': {'name': 'test'}}
+        
+        mock_bedrock.converse.return_value = {
+            'output': {
+                'message': {
+                    'content': [{'text': 'no tool use'}]
+                }
+            }
+        }
+
+        messages = [{'role': 'user', 'content': [{'text': 'test'}]}]
+        result = lambda_function.process_with_bedrock(messages, 'narrative', '', step=3)
+        
+        assert result == {'category': [], 'case_type': []}
+
     @patch('lambda_function.get_default_extraction_data')
     @patch('lambda_function.load_tool_spec')
     @patch('boto3.client')
-    def test_process_with_bedrock_no_tool_use_narrative(self, mock_boto3, mock_load_spec, mock_get_default):
-        """Test: No tool use found for narrative returns default with preserved narrative"""
+    def test_process_with_bedrock_no_tool_use_narrative_step1(self, mock_boto3, mock_load_spec, mock_get_default):
+        """Test: No tool use found for narrative step 1 returns default with preserved narrative"""
         mock_bedrock = Mock()
         mock_boto3.return_value = mock_bedrock
         mock_load_spec.return_value = {'toolSpec': {'name': 'test'}}
@@ -454,7 +573,7 @@ class TestProcessWithBedrock:
         }
 
         messages = [{'role': 'user', 'content': [{'text': 'test'}]}]
-        result = lambda_function.process_with_bedrock(messages, 'narrative', 'Test narrative')
+        result = lambda_function.process_with_bedrock(messages, 'narrative', 'Test narrative', step=1)
         
         assert result['case_id'] == 'N/A'
         assert result['narrative'] == 'Test narrative'
@@ -608,11 +727,16 @@ class TestLambdaHandler:
     @patch('lambda_function.process_with_bedrock')
     @patch('lambda_function.update_complaint_in_db')
     def test_lambda_handler_direct_invocation(self, mock_update_db, mock_bedrock, mock_construct_prompt,
-                                            mock_validate, sample_narrative_event, mock_extracted_data):
-        """Test: Direct invocation (non-SQS)"""
+                                            mock_validate, sample_narrative_event):
+        """Test: Direct invocation (non-SQS) with 3-step chaining"""
         mock_validate.return_value = 'narrative'
         mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
-        mock_bedrock.return_value = mock_extracted_data
+        
+        # 3-step responses
+        step1_data = {'case_id': 'TEST', 'narrative': 'Test', 'narrative_summary': 'Summary'}
+        step2_data = {'criticality': 'Minor'}
+        step3_data = {'category': ['Pharmaceutical Drug'], 'case_type': ['Adverse Event']}
+        mock_bedrock.side_effect = [step1_data, step2_data, step3_data]
 
         result = lambda_function.lambda_handler(sample_narrative_event, {})
 
@@ -621,6 +745,7 @@ class TestLambdaHandler:
         assert body['success'] is True
         assert body['complaint_id'] == 'CAS-789'
         assert body['input_type'] == 'narrative'
+        assert mock_bedrock.call_count == 3
 
     @patch('lambda_function.process_single_complaint')
     def test_lambda_handler_sqs_processing_error(self, mock_process_single):
@@ -665,11 +790,28 @@ class TestProcessSingleComplaint:
     @patch('lambda_function.construct_narrative_prompt')
     @patch('lambda_function.process_with_bedrock')
     @patch('lambda_function.update_complaint_in_db')
-    def test_process_single_complaint_narrative(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_validate, mock_extracted_data):
-        """Test: Process single narrative complaint"""
+    def test_process_single_complaint_narrative_3step(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_validate):
+        """Test: Process single narrative complaint with 3-step chaining"""
         mock_validate.return_value = 'narrative'
         mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
-        mock_bedrock.return_value = mock_extracted_data
+        
+        # Step 1: Basic info
+        step1_data = {
+            'case_id': 'RGL23-000070',
+            'narrative': 'Test narrative',
+            'narrative_summary': 'Patient experienced adverse reaction',
+            'receipt_date': '2023-01-01',
+            'primary_reporter': {'name': 'John Doe', 'address': '123 Main St'},
+            'patient_name': 'Jane Patient',
+            'physician_name': 'Dr. Smith',
+            'product_details': {'drug_name': 'TestDrug', 'dosage': '100mg', 'lot_no': 'LOT123', 'part_no': 'PART456', 'expiration_date': '2024-12-31'}
+        }
+        # Step 2: Criticality
+        step2_data = {'criticality': 'Critical'}
+        # Step 3: Classification
+        step3_data = {'category': ['Pharmaceutical Drug'], 'case_type': ['Adverse Event']}
+        
+        mock_bedrock.side_effect = [step1_data, step2_data, step3_data]
 
         message_data = {
             'complaint_id': 'CAS-123',
@@ -682,6 +824,7 @@ class TestProcessSingleComplaint:
         assert result['success'] is True
         assert result['complaint_id'] == 'CAS-123'
         assert result['input_type'] == 'narrative'
+        assert mock_bedrock.call_count == 3
         mock_update_db.assert_called_once()
 
     @patch('lambda_function.validate_event')
@@ -689,11 +832,12 @@ class TestProcessSingleComplaint:
     @patch('lambda_function.process_with_bedrock')
     @patch('lambda_function.update_complaint_in_db')
     def test_process_single_complaint_narrative_preserved_on_failure(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_validate):
-        """Test: Narrative is preserved even when LLM tool use fails"""
+        """Test: Narrative is preserved even when LLM tool use fails in step 1"""
         mock_validate.return_value = 'narrative'
         mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
-        # LLM returns data without narrative (tool use failed)
-        mock_bedrock.return_value = {'case_id': 'N/A', 'narrative_summary': 'N/A'}
+        # Step 1 returns data without narrative
+        step1_data = {'case_id': 'N/A', 'narrative_summary': 'N/A'}
+        mock_bedrock.return_value = step1_data
 
         message_data = {
             'complaint_id': 'CAS-123',
@@ -704,26 +848,37 @@ class TestProcessSingleComplaint:
         result = lambda_function.process_single_complaint(message_data)
 
         assert result['success'] is True
-        # Verify narrative was preserved
         update_call_args = mock_update_db.call_args[0]
         assert update_call_args[1]['narrative'] == 'Original narrative text'
+        assert update_call_args[1]['criticality'] == 'N/A'
+        assert update_call_args[1]['category'] == []
+        assert update_call_args[1]['case_type'] == []
 
     @patch('lambda_function.validate_event')
     @patch('lambda_function.fetch_pdf_from_s3')
     @patch('lambda_function.pdf_to_images')
     @patch('lambda_function.images_to_base64')
     @patch('lambda_function.construct_pdf_prompt')
+    @patch('lambda_function.construct_narrative_prompt')
     @patch('lambda_function.process_with_bedrock')
     @patch('lambda_function.update_complaint_in_db')
-    def test_process_single_complaint_pdf_extraction_failure_sets_error_message(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_images_to_base64, mock_pdf_to_images, mock_fetch_pdf, mock_validate):
-        """Test: PDF complaint gets error message when extraction fails"""
+    def test_process_single_complaint_pdf_3step_success(self, mock_update_db, mock_bedrock, mock_construct_narrative, mock_construct_prompt, mock_images_to_base64, mock_pdf_to_images, mock_fetch_pdf, mock_validate):
+        """Test: PDF complaint with 3-step chaining"""
         mock_validate.return_value = 'pdf'
         mock_fetch_pdf.return_value = b'pdf-data'
         mock_pdf_to_images.return_value = [Mock()]
         mock_images_to_base64.return_value = ['base64-image']
         mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
-        # Extraction failed - returns default with error message
-        mock_bedrock.return_value = {'case_id': 'N/A', 'narrative': 'PDF Extraction Failed', 'narrative_summary': 'N/A'}
+        mock_construct_narrative.return_value = [{'role': 'user', 'content': []}]
+        
+        # Step 1: Basic info
+        step1_data = {'case_id': 'TEST', 'narrative': 'Full narrative', 'narrative_summary': 'Summary of complaint'}
+        # Step 2: Criticality
+        step2_data = {'criticality': 'Major'}
+        # Step 3: Classification
+        step3_data = {'category': ['Medical Device'], 'case_type': ['Product Complaint']}
+        
+        mock_bedrock.side_effect = [step1_data, step2_data, step3_data]
 
         message_data = {
             'complaint_id': 'CAS-123',
@@ -734,9 +889,11 @@ class TestProcessSingleComplaint:
         result = lambda_function.process_single_complaint(message_data)
         
         assert result['success'] is True
-        # Verify narrative was set to error message
+        assert mock_bedrock.call_count == 3
         update_call_args = mock_update_db.call_args[0]
-        assert update_call_args[1]['narrative'] == 'PDF Extraction Failed'
+        assert update_call_args[1]['narrative'] == 'Full narrative'
+        assert update_call_args[1]['criticality'] == 'Major'
+        assert update_call_args[1]['category'] == ['Medical Device']
 
     @patch('lambda_function.validate_event')
     @patch('lambda_function.fetch_pdf_from_s3')
@@ -746,13 +903,13 @@ class TestProcessSingleComplaint:
     @patch('lambda_function.process_with_bedrock')
     @patch('lambda_function.update_complaint_in_db')
     def test_process_single_complaint_pdf_empty_narrative_sets_error_message(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_images_to_base64, mock_pdf_to_images, mock_fetch_pdf, mock_validate):
-        """Test: PDF complaint gets error message when narrative is empty"""
+        """Test: PDF complaint gets error message when narrative is empty in step 1"""
         mock_validate.return_value = 'pdf'
         mock_fetch_pdf.return_value = b'pdf-data'
         mock_pdf_to_images.return_value = [Mock()]
         mock_images_to_base64.return_value = ['base64-image']
         mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
-        # Extraction returned data but narrative is empty
+        # Step 1 returns empty narrative
         mock_bedrock.return_value = {'case_id': 'TEST', 'narrative': ''}
 
         message_data = {
@@ -764,9 +921,44 @@ class TestProcessSingleComplaint:
         result = lambda_function.process_single_complaint(message_data)
         
         assert result['success'] is True
-        # Verify narrative was set to error message (empty narrative triggers 'Not a Product Complaint Document')
+        assert mock_bedrock.call_count == 1  # Only step 1 called
         update_call_args = mock_update_db.call_args[0]
         assert update_call_args[1]['narrative'] == 'Not a Product Complaint Document'
+        assert update_call_args[1]['criticality'] == 'N/A'
+        assert update_call_args[1]['category'] == []
+        assert update_call_args[1]['case_type'] == []
+
+    @patch('lambda_function.validate_event')
+    @patch('lambda_function.construct_narrative_prompt')
+    @patch('lambda_function.process_with_bedrock')
+    @patch('lambda_function.update_complaint_in_db')
+    def test_process_single_complaint_not_a_complaint(self, mock_update_db, mock_bedrock, mock_construct_prompt, mock_validate):
+        """Test: Process narrative that is not a product complaint"""
+        mock_validate.return_value = 'narrative'
+        mock_construct_prompt.return_value = [{'role': 'user', 'content': []}]
+        # Step 1 identifies it's not a complaint
+        step1_data = {
+            'case_id': 'N/A',
+            'narrative': 'Random text',
+            'narrative_summary': 'Not a Product Complaint'
+        }
+        mock_bedrock.return_value = step1_data
+
+        message_data = {
+            'complaint_id': 'CAS-123',
+            'file_id': 'file-456',
+            'narrative_text': 'Random unrelated text'
+        }
+
+        result = lambda_function.process_single_complaint(message_data)
+
+        assert result['success'] is True
+        assert mock_bedrock.call_count == 1  # Only step 1, no steps 2 and 3
+        update_call_args = mock_update_db.call_args[0]
+        assert update_call_args[1]['narrative_summary'] == 'Not a Product Complaint'
+        assert update_call_args[1]['criticality'] == 'N/A'
+        assert update_call_args[1]['category'] == []
+        assert update_call_args[1]['case_type'] == []
 
     @patch('lambda_function.validate_event')
     def test_process_single_complaint_validation_error(self, mock_validate):

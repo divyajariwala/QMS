@@ -87,9 +87,17 @@ def validate_event(event):
     else:
         raise ValueError("Must provide either 'narrative_text' or 's3path'")
 
-def load_tool_spec(spec_type='pdf'):
-    """Load appropriate tool specification"""
-    filename = 'toolspec.json' if spec_type == 'pdf' else 'toolspec_narrative.json'
+def load_tool_spec(spec_type='pdf', step=1):
+    """Load appropriate tool specification for given step"""
+    if step == 1:
+        filename = 'toolspec_step1.json' if spec_type == 'pdf' else 'toolspec_narrative_step1.json'
+    elif step == 2:
+        filename = 'toolspec_narrative_step2.json'
+    elif step == 3:
+        filename = 'toolspec_narrative_step3.json'
+    else:
+        filename = 'toolspec.json' if spec_type == 'pdf' else 'toolspec_narrative.json'
+    
     try:
         with open(filename, 'r') as file:
             return json.load(file)
@@ -171,7 +179,7 @@ def images_to_base64(images):
         base64_images.append(img_base64)
     return base64_images
 
-def construct_pdf_prompt(base64_images):
+def construct_pdf_prompt(base64_images, step=1):
     """Construct Bedrock message for PDF processing"""
     content = []
     for img_base64 in base64_images:
@@ -182,26 +190,40 @@ def construct_pdf_prompt(base64_images):
             }
         })
     
-    with open('prompt.txt', 'r') as file:
+    prompt_file = 'prompt_step1.txt' if step == 1 else 'prompt.txt'
+    with open(prompt_file, 'r') as file:
         prompt_text = file.read()
     
     content.append({"text": prompt_text})
     return [{"role": "user", "content": content}]
 
-def construct_narrative_prompt(narrative_text):
+def construct_narrative_prompt(narrative_text, step=1):
     """Construct Bedrock message for narrative processing"""
-    with open('prompt_narrative.txt', 'r') as file:
+    if step == 1:
+        prompt_file = 'prompt_narrative_step1.txt'
+        prompt_suffix = f"\n\nNarrative: {narrative_text}"
+    elif step == 2:
+        prompt_file = 'prompt_narrative_step2_criticality.txt'
+        prompt_suffix = f"\n\n{narrative_text}"
+    elif step == 3:
+        prompt_file = 'prompt_narrative_step3_classification.txt'
+        prompt_suffix = f"\n\n{narrative_text}"
+    else:
+        prompt_file = 'prompt_narrative.txt'
+        prompt_suffix = f"\n\nNarrative: {narrative_text}"
+    
+    with open(prompt_file, 'r') as file:
         prompt_text = file.read()
     
-    prompt = f"{prompt_text}\n\nNarrative: {narrative_text}"
+    prompt = f"{prompt_text}{prompt_suffix}"
     
     return [{"role": "user", "content": [{"text": prompt}]}]
 
-def process_with_bedrock(messages, spec_type='pdf', narrative_text=''):
+def process_with_bedrock(messages, spec_type='pdf', narrative_text='', step=1):
     """Process messages through Bedrock with appropriate tool spec"""
     try:
         bedrock_runtime = boto3.client('bedrock-runtime')
-        tool_spec = load_tool_spec(spec_type)
+        tool_spec = load_tool_spec(spec_type, step)
         
         response = bedrock_runtime.converse(
             modelId="anthropic.claude-3-haiku-20240307-v1:0",
@@ -218,8 +240,13 @@ def process_with_bedrock(messages, spec_type='pdf', narrative_text=''):
                 return item['toolUse']['input']
         
         # If no tool use found, return default with preserved narrative text
-        logger.warning(f"No tool use found in response for {spec_type}")
-        return get_default_extraction_data(spec_type, narrative_text)
+        logger.warning(f"No tool use found in response for {spec_type} step {step}")
+        if step == 1:
+            return get_default_extraction_data(spec_type, narrative_text)
+        elif step == 2:
+            return {'criticality': 'N/A'}
+        elif step == 3:
+            return {'category': [], 'case_type': []}
     except Exception as e:
         logger.error(f"Bedrock error: {str(e)}")
         raise
@@ -373,7 +400,7 @@ def process_single_complaint(message_data):
         
         # Process based on input type
         if input_type == 'pdf':
-            # PDF processing
+            # PDF processing - 3-step chaining
             pdf_data = fetch_pdf_from_s3(message_data['s3path'])
             images = pdf_to_images(pdf_data)
             
@@ -382,17 +409,44 @@ def process_single_complaint(message_data):
                 logger.warning(f"PDF has no pages for complaint {complaint_id}")
                 extracted_data = get_default_extraction_data('pdf', 'Empty PDF - No Pages')
             else:
+                # Step 1: Extract basic info and narrative summary
+                logger.info(f"Step 1: Extracting basic info from PDF for complaint {complaint_id}")
                 base64_images = images_to_base64(images)
-                messages = construct_pdf_prompt(base64_images)
-                extracted_data = process_with_bedrock(messages, 'pdf', 'PDF Extraction Failed')
+                messages = construct_pdf_prompt(base64_images, step=1)
+                extracted_data = process_with_bedrock(messages, 'pdf', 'PDF Extraction Failed', step=1)
                 
                 # Check if document is not a complaint
                 narrative = extracted_data.get('narrative', '')
                 if 'Not a Product Complaint' in narrative or not narrative:
                     extracted_data['narrative'] = 'Not a Product Complaint Document'
+                    extracted_data['criticality'] = 'N/A'
+                    extracted_data['category'] = []
+                    extracted_data['case_type'] = []
+                
+                # Only proceed with steps 2 and 3 if we have a valid summary
+                if extracted_data.get('narrative_summary') and 'Not a Product Complaint' not in extracted_data.get('narrative', ''):
+                    narrative_summary = extracted_data['narrative_summary']
+                    
+                    # Step 2: Extract criticality from summary
+                    logger.info(f"Step 2: Extracting criticality from PDF for complaint {complaint_id}")
+                    messages_step2 = construct_narrative_prompt(narrative_summary, step=2)
+                    criticality_data = process_with_bedrock(messages_step2, 'pdf', narrative_summary, step=2)
+                    extracted_data['criticality'] = criticality_data.get('criticality', 'N/A')
+                    
+                    # Step 3: Extract category and case_type from summary
+                    logger.info(f"Step 3: Extracting classification from PDF for complaint {complaint_id}")
+                    messages_step3 = construct_narrative_prompt(narrative_summary, step=3)
+                    classification_data = process_with_bedrock(messages_step3, 'pdf', narrative_summary, step=3)
+                    extracted_data['category'] = classification_data.get('category', [])
+                    extracted_data['case_type'] = classification_data.get('case_type', [])
+                else:
+                    # Set defaults if no valid summary
+                    extracted_data['criticality'] = 'N/A'
+                    extracted_data['category'] = []
+                    extracted_data['case_type'] = []
             
         elif input_type == 'narrative':
-            # Direct narrative processing - preserve input narrative
+            # Direct narrative processing - 3-step chaining
             narrative_text = message_data.get('narrative_text', '').strip()
             
             # Handle empty narrative
@@ -400,15 +454,42 @@ def process_single_complaint(message_data):
                 logger.warning(f"Empty narrative text for complaint {complaint_id}")
                 extracted_data = get_default_extraction_data('narrative', 'Empty Narrative')
             else:
-                messages = construct_narrative_prompt(narrative_text)
-                extracted_data = process_with_bedrock(messages, 'narrative', narrative_text)
+                # Step 1: Extract basic info and narrative summary
+                logger.info(f"Step 1: Extracting basic info for complaint {complaint_id}")
+                messages = construct_narrative_prompt(narrative_text, step=1)
+                extracted_data = process_with_bedrock(messages, 'narrative', narrative_text, step=1)
                 
                 # Check if text is not a complaint
                 if 'Not a Product Complaint' in extracted_data.get('narrative_summary', ''):
                     extracted_data['narrative'] = narrative_text
                     extracted_data['narrative_summary'] = 'Not a Product Complaint'
+                    extracted_data['criticality'] = 'N/A'
+                    extracted_data['category'] = []
+                    extracted_data['case_type'] = []
                 elif not extracted_data.get('narrative'):
                     extracted_data['narrative'] = narrative_text
+                
+                # Only proceed with steps 2 and 3 if we have a valid summary
+                if extracted_data.get('narrative_summary') and extracted_data['narrative_summary'] != 'Not a Product Complaint':
+                    narrative_summary = extracted_data['narrative_summary']
+                    
+                    # Step 2: Extract criticality from summary
+                    logger.info(f"Step 2: Extracting criticality for complaint {complaint_id}")
+                    messages_step2 = construct_narrative_prompt(narrative_summary, step=2)
+                    criticality_data = process_with_bedrock(messages_step2, 'narrative', narrative_summary, step=2)
+                    extracted_data['criticality'] = criticality_data.get('criticality', 'N/A')
+                    
+                    # Step 3: Extract category and case_type from summary
+                    logger.info(f"Step 3: Extracting classification for complaint {complaint_id}")
+                    messages_step3 = construct_narrative_prompt(narrative_summary, step=3)
+                    classification_data = process_with_bedrock(messages_step3, 'narrative', narrative_summary, step=3)
+                    extracted_data['category'] = classification_data.get('category', [])
+                    extracted_data['case_type'] = classification_data.get('case_type', [])
+                else:
+                    # Set defaults if no valid summary
+                    extracted_data['criticality'] = 'N/A'
+                    extracted_data['category'] = []
+                    extracted_data['case_type'] = []
         
         # Update database
         update_complaint_in_db(complaint_id, extracted_data)

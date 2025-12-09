@@ -1,0 +1,40 @@
+{
+  "toolSpec": {
+    "name": "extract_classification",
+    "description": "Extract category and case type from narrative summary",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Medical Device",
+                "Pharmaceutical Drug",
+                "Pill/Tablet",
+                "Capsule",
+                "Injectable",
+                "Topical",
+                "Biologic",
+                "Vaccine",
+                "Other"
+              ]
+            },
+            "description": "Product classification; may be multiple values"
+          },
+          "case_type": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Adverse Event", "Product Complaint", "Neither"]
+            },
+            "description": "Classification: Adverse Event, Product Complaint, or both"
+          }
+        },
+        "required": ["category", "case_type"]
+      }
+    }
+  }
+}
