@@ -1,0 +1,26 @@
+Extract structured information from pharmaceutical complaint reports (Ashfield, MedWatch, or other sources).
+
+IMPORTANT: If the document is NOT a pharmaceutical/medical product complaint report (e.g., invoice, general document, unrelated content), you MUST use the extract_case_basic_info tool with ALL fields set to "N/A" and narrative set to "Not a Product Complaint Document".
+
+EXTRACT THESE FIELDS:
+
+1. case_id: Unique identifier (Ashfield: "Case" field; MedWatch: "Mfr Report #")
+2. receipt_date: Date received (Ashfield: "Date of Receipt"; MedWatch: "Date Received by Manufacturer" in section G)
+3. report_type: Source type - Spontaneous, Internal, Field/Service, Clinical Trials, Literature (use NA if not stated)
+4. narrative: Full complaint description (Ashfield: "Product Complaint" section; MedWatch: section B "Describe Event or Problem")
+5. narrative_summary: Generate 50-150 word summary that captures:
+   - Patient condition and adverse effects (if any)
+   - Product quality issues or defects (if any)
+   - Severity and impact of the incident
+   - Product information and outcome
+   This summary will be used to determine criticality, category, and case type.
+6. primary_reporter: {"name": "reporter name", "address": "reporter address"} (use NA if not available)
+7. patient_name: Patient name (use NA if not available)
+8. physician_name: Physician name (use NA if not available)
+9. product_details: {"drug_name": "name", "dosage": "amount", "lot_no": "number", "part_no": "number", "expiration_date": "YYYY-MM-DD"} (use NA for missing fields). For expiration_date, only extract if a complete, valid date is available; use NA if only partial date information is provided.
+
+RULES:
+- Extract exact values when available
+- Use NA for missing/unclear information
+- For dates, use YYYY-MM-DD format (only if complete date is available)
+- Return all fields using extract_case_basic_info tool

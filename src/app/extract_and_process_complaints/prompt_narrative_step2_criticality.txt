@@ -1,0 +1,17 @@
+Based on the narrative summary below, determine the CRITICALITY level of this pharmaceutical complaint.
+
+CRITICALITY DEFINITIONS:
+- Critical: Life-threatening situation, death, permanent disability, hospitalization, or severe adverse event
+- Major: Serious health risk, significant product defect affecting safety or efficacy, requires medical intervention
+- Minor: Minimal health impact, cosmetic defect, packaging issue, no significant safety concern
+- Medium: Moderate concern between Major and Minor
+
+RULES:
+- Only use the exact terms: Critical, Major, Minor, or Medium
+- If the summary explicitly states a criticality level, use that exact term
+- If not explicitly stated, infer based on severity indicators in the summary
+- If unclear or not a product complaint, return "N/A"
+
+Return using extract_criticality tool with a single field: criticality
+
+Narrative Summary:

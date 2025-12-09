@@ -1,0 +1,28 @@
+Based on the narrative summary below, determine the CATEGORY and CASE TYPE of this pharmaceutical complaint.
+
+CASE TYPE CLASSIFICATION:
+- Adverse Event (AE): Harmful effect on patient - symptoms, illness, injury, hospitalization, death
+- Product Complaint (PC): Product quality/defect issue - contamination, defect, packaging problem, counterfeit
+- Both: Contains both AE and PC elements
+- Neither: General inquiry only, no AE or PC
+
+CATEGORY OPTIONS (select all that apply):
+- Medical Device
+- Pharmaceutical Drug
+- Pill/Tablet
+- Capsule
+- Injectable
+- Topical
+- Biologic
+- Vaccine
+- Other
+
+RULES:
+- case_type must be an array with one or more of: ["Adverse Event"], ["Product Complaint"], ["Adverse Event", "Product Complaint"], or ["Neither"]
+- category must be an array of applicable product types from the options above
+- If not a product complaint, return case_type: ["Neither"] and category: []
+- Base classification strictly on the summary content
+
+Return using extract_classification tool with two fields: category (array), case_type (array)
+
+Narrative Summary:
