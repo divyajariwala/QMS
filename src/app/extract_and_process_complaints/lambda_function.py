@@ -339,8 +339,32 @@ def update_complaint_in_db(complaint_id, extracted_data):
                 conn.commit()
                 logger.info(f"Updated complaint {complaint_id} in database")
                 
+                # Check if case_type is adverse events only
+                case_types = result.get('case_type', [])
+                if case_types and len(case_types) == 1 and case_types[0].lower() == 'adverse events':
+                    logger.info(f"Moving complaint {complaint_id} to adverse_events table")
+                    move_to_adverse_events(cur, complaint_id)
+                    conn.commit()
+                
     except Exception as e:
         logger.error(f"Database error: {str(e)}")
+        raise
+
+def move_to_adverse_events(cur, complaint_id):
+    """Move complaint to adverse_events table and delete from complaints"""
+    try:
+        # Insert into adverse_events
+        cur.execute("""
+            INSERT INTO adverse_events 
+            SELECT * FROM complaints WHERE complaint_id = %s
+        """, (complaint_id,))
+        
+        # Delete from complaints
+        cur.execute("DELETE FROM complaints WHERE complaint_id = %s", (complaint_id,))
+        
+        logger.info(f"Successfully moved complaint {complaint_id} to adverse_events table")
+    except Exception as e:
+        logger.error(f"Error moving complaint to adverse_events: {str(e)}")
         raise
 
 def lambda_handler(event, context):

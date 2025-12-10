@@ -817,9 +817,6 @@ class TestUtilityFunctions:
         assert 'label_list' not in body
 
 
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
-
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_processed_complaint(self, mock_get_db):
         """Test: Get processed complaint - should fetch from processed_complaints table"""
@@ -860,6 +857,12 @@ if __name__ == "__main__":
                 ]
             }
         ]
+        
+        # Mock fetchall for label_list query
+        mock_cursor.fetchall.return_value = [
+            {'label': 'Dose confirmation'},
+            {'label': 'Needle issue'}
+        ]
 
         event = {
             'queryStringParameters': {'complaint_id': 'CAS-789'}
@@ -875,3 +878,109 @@ if __name__ == "__main__":
         assert len(body['category_details']) == 2
         assert body['category_details'][0]['label'] == 'Dose confirmation'
         assert body['category_details'][1]['label'] == 'Needle issue'
+
+
+class TestGetAdverseEvents:
+    """Tests for get_adverse_events function"""
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_adverse_events_success(self, mock_get_db):
+        """Test: Get adverse events only and mixed cases"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # Mock adverse events only from adverse_events table
+        # Mock mixed cases from complaints table
+        mock_cursor.fetchall.side_effect = [
+            [
+                {
+                    'complaint_id': 'CAS-001',
+                    'criticality': 'High',
+                    'report_type': 'Spontaneous',
+                    'receipt_date': date(2023, 1, 1),
+                    'case_type': 'Adverse Events',
+                    'status': 'Pending',
+                    'text_extracted': True,
+                    'created_at': datetime(2023, 1, 1, 10, 0, 0)
+                }
+            ],
+            [
+                {
+                    'complaint_id': 'CAS-002',
+                    'criticality': 'Medium',
+                    'report_type': 'Study',
+                    'receipt_date': date(2023, 1, 2),
+                    'case_type': 'Adverse Events, Product Complaint',
+                    'status': 'Pending',
+                    'text_extracted': True,
+                    'created_at': datetime(2023, 1, 2, 11, 0, 0)
+                }
+            ]
+        ]
+
+        event = {'queryStringParameters': {'adverse_events': 'true'}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert 'adverse_events' in body
+        assert 'pagination' in body
+        assert len(body['adverse_events']) == 2
+        assert body['adverse_events'][0]['case_id'] == 'CAS-001'
+        assert body['adverse_events'][1]['case_id'] == 'CAS-002'
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_adverse_events_with_pagination(self, mock_get_db):
+        """Test: Adverse events with pagination"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # Create 20 adverse events
+        adverse_only = [{
+            'complaint_id': f'CAS-{str(i).zfill(3)}',
+            'criticality': 'High',
+            'report_type': 'Spontaneous',
+            'receipt_date': date(2023, 1, i % 28 + 1),
+            'case_type': 'Adverse Events',
+            'status': 'Pending',
+            'text_extracted': True,
+            'created_at': datetime(2023, 1, i % 28 + 1, 10, 0, 0)
+        } for i in range(20)]
+
+        mock_cursor.fetchall.side_effect = [adverse_only, []]
+
+        event = {'queryStringParameters': {'adverse_events': 'true', 'page': '2'}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['pagination']['current_page'] == 2
+        assert body['pagination']['total_items'] == 20
+        assert body['pagination']['total_pages'] == 2
+        assert len(body['adverse_events']) == 5
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_adverse_events_empty(self, mock_get_db):
+        """Test: No adverse events found"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        mock_cursor.fetchall.side_effect = [[], []]
+
+        event = {'queryStringParameters': {'adverse_events': 'true'}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert len(body['adverse_events']) == 0
+        assert body['pagination']['total_items'] == 0
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])
