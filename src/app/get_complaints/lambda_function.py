@@ -25,9 +25,10 @@ CRL_DESCRIPTIONS = sorted(LABEL_TO_CRL.keys())
 def lambda_handler(event, context):
     """
     Lambda function handler to retrieve complaints data from PostgreSQL.
-    Supports two endpoints:
+    Supports three endpoints:
     - GET /getComplaints - Returns all complaints with stats
     - GET /getComplaints?complaint_id=CAS-xxx - Returns specific complaint details
+    - GET /getComplaints?adverse_events=true - Returns adverse events only and mixed cases
     """
     try:
         # Get database connection
@@ -36,6 +37,7 @@ def lambda_handler(event, context):
         # Get query parameters
         query_parameters = event.get('queryStringParameters', {})
         complaint_id = query_parameters.get('complaint_id') if query_parameters else None
+        adverse_events = query_parameters.get('adverse_events') if query_parameters else None
         page = int(query_parameters.get('page', 1)) if query_parameters and query_parameters.get('page') else 1
         status_filter = query_parameters.get('status') if query_parameters else None
         search_query = query_parameters.get('search') if query_parameters else None
@@ -43,6 +45,9 @@ def lambda_handler(event, context):
         if complaint_id:
             # Handle single complaint request: /getComplaints?complaint_id=xxx
             return get_single_complaint(conn, complaint_id)
+        elif adverse_events == 'true':
+            # Handle adverse events request: /getComplaints?adverse_events=true
+            return get_adverse_events(conn, page)
         else:
             # Handle all complaints request: /getComplaints
             return get_all_complaints(conn, page, status_filter, search_query)
@@ -421,6 +426,85 @@ def _get_and_update_label_list(cursor, category_details):
             label_list.append(label)
     
     return sorted(label_list)
+
+def get_adverse_events(conn, page=1):
+    """
+    Get adverse events only cases from adverse_events table and 
+    mixed adverse events + product complaints from complaints table
+    """
+    try:
+        with conn.cursor(row_factory=dict_row) as cursor:
+            limit = 15
+            offset = (page - 1) * limit
+            
+            # Get adverse events only from adverse_events table
+            cursor.execute("""
+                SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                FROM adverse_events
+                ORDER BY complaint_id DESC
+            """)
+            adverse_only = cursor.fetchall()
+            
+            # Get mixed cases (adverse events + product complaints) from complaints table
+            cursor.execute("""
+                SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                FROM complaints
+                WHERE case_type ILIKE '%adverse events%' AND case_type ILIKE '%product complaint%'
+                ORDER BY complaint_id DESC
+            """)
+            mixed_cases = cursor.fetchall()
+            
+            # Combine results
+            all_results = adverse_only + mixed_cases
+            total_count = len(all_results)
+            
+            # Apply pagination
+            paginated_results = all_results[offset:offset + limit]
+            
+            # Calculate pagination info
+            total_pages = (total_count + limit - 1) // limit
+            
+            response_data = {
+                'pagination': {
+                    'current_page': page,
+                    'total_pages': total_pages,
+                    'total_items': total_count,
+                    'items_per_page': limit,
+                    'has_next': page < total_pages,
+                    'has_previous': page > 1
+                },
+                'adverse_events': [{
+                    'case_id': c['complaint_id'],
+                    'criticality': c['criticality'] or 'NA',
+                    'report_type': c['report_type'] or 'NA',
+                    'receipt_date': c['receipt_date'].isoformat() if c['receipt_date'] else '',
+                    'case_type': [t.strip() for t in c['case_type'].split(',')] if c['case_type'] else [],
+                    'status': c['status'].lower(),
+                    'text_extracted': c.get('text_extracted', False),
+                    'created_at': c['created_at'].isoformat() if c.get('created_at') else ''
+                } for c in paginated_results]
+            }
+            
+            return {
+                'statusCode': 200,
+                'headers': _get_cors_headers(),
+                'body': json.dumps(response_data, default=str)
+            }
+    
+    except Exception as e:
+        print(f"Error getting adverse events: {str(e)}")
+        return {
+            'statusCode': 500,
+            'headers': _get_cors_headers(),
+            'body': json.dumps({
+                'success': False,
+                'error': 'Failed to retrieve adverse events',
+                'message': str(e)
+            })
+        }
+    finally:
+        if conn:
+            conn.close()
 
 def _get_cors_headers():
     """
