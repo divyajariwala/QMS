@@ -857,6 +857,12 @@ class TestUtilityFunctions:
                 ]
             }
         ]
+        
+        # Mock fetchall for label_list query
+        mock_cursor.fetchall.return_value = [
+            {'label': 'Dose confirmation'},
+            {'label': 'Needle issue'}
+        ]
 
         event = {
             'queryStringParameters': {'complaint_id': 'CAS-789'}
