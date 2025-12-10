@@ -608,6 +608,58 @@ class TestUpdateComplaintInDb:
             assert 'part_number = %s' in call_args[0]
             mock_conn.commit.assert_called_once()
 
+    @patch('lambda_function.move_to_adverse_events')
+    @patch('lambda_function.get_connection_string')
+    def test_update_complaint_adverse_events_only(self, mock_get_connection, mock_move):
+        """Test: Adverse events only case is moved to adverse_events table"""
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
+        
+        with patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_conn = MagicMock()
+            mock_cursor = MagicMock()
+            mock_conn.__enter__.return_value = mock_conn
+            mock_conn.__exit__.return_value = False
+            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+            mock_conn.cursor.return_value.__exit__.return_value = False
+            mock_connect.return_value = mock_conn
+
+            extracted_data = {
+                'narrative': 'Test',
+                'narrative_summary': 'Test summary',
+                'case_type': ['Adverse Events']
+            }
+
+            lambda_function.update_complaint_in_db('CAS-123', extracted_data)
+            
+            mock_move.assert_called_once_with(mock_cursor, 'CAS-123')
+            assert mock_conn.commit.call_count == 2
+
+    @patch('lambda_function.move_to_adverse_events')
+    @patch('lambda_function.get_connection_string')
+    def test_update_complaint_mixed_case_not_moved(self, mock_get_connection, mock_move):
+        """Test: Mixed case (adverse events + product complaint) is not moved"""
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
+        
+        with patch('lambda_function.psycopg.connect') as mock_connect:
+            mock_conn = MagicMock()
+            mock_cursor = MagicMock()
+            mock_conn.__enter__.return_value = mock_conn
+            mock_conn.__exit__.return_value = False
+            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+            mock_conn.cursor.return_value.__exit__.return_value = False
+            mock_connect.return_value = mock_conn
+
+            extracted_data = {
+                'narrative': 'Test',
+                'narrative_summary': 'Test summary',
+                'case_type': ['Adverse Events', 'Product Complaint']
+            }
+
+            lambda_function.update_complaint_in_db('CAS-123', extracted_data)
+            
+            mock_move.assert_not_called()
+            mock_conn.commit.assert_called_once()
+
     @patch('lambda_function.get_connection_string')
     def test_update_complaint_with_na_values(self, mock_get_connection):
         """Test: Update complaint with N/A values"""
@@ -1088,6 +1140,30 @@ class TestEdgeCases:
         assert result['success'] is True
         update_call_args = mock_update_db.call_args[0]
         assert update_call_args[1]['narrative'] == 'Empty Narrative'
+
+
+class TestMoveToAdverseEvents:
+    """Tests for move_to_adverse_events function"""
+
+    def test_move_to_adverse_events_success(self):
+        """Test: Successfully move complaint to adverse_events table"""
+        mock_cursor = MagicMock()
+        
+        lambda_function.move_to_adverse_events(mock_cursor, 'CAS-123')
+        
+        assert mock_cursor.execute.call_count == 2
+        insert_call = mock_cursor.execute.call_args_list[0][0]
+        delete_call = mock_cursor.execute.call_args_list[1][0]
+        assert 'INSERT INTO adverse_events' in insert_call[0]
+        assert 'DELETE FROM complaints' in delete_call[0]
+
+    def test_move_to_adverse_events_error(self):
+        """Test: Error handling in move_to_adverse_events"""
+        mock_cursor = MagicMock()
+        mock_cursor.execute.side_effect = Exception("Database error")
+        
+        with pytest.raises(Exception):
+            lambda_function.move_to_adverse_events(mock_cursor, 'CAS-123')
 
 
 if __name__ == "__main__":
