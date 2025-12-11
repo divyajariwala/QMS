@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getComplaintsApiResponse } from 'src/types';
+import { API_BASE_URL } from 'src/config';
 
 export const usePolling = (shouldPoll: boolean, maxRetries = 10) => {
   const [pollingData, setPollingData] = useState<getComplaintsApiResponse | null>(null);
@@ -45,7 +46,7 @@ export const usePolling = (shouldPoll: boolean, maxRetries = 10) => {
 
       try {
         const res = await fetch(
-          'https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/getComplaints?status=pending&page=1'
+          `${API_BASE_URL}dev/getComplaints?status=pending&page=1`
         );
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 

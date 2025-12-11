@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { API_BASE_URL } from 'src/config';
 import { ComplaintDetail } from 'src/types';
 
 export const usePollingClassify = (shouldPoll: boolean, id: string | undefined, maxRetries = 5) => {
@@ -43,7 +44,7 @@ export const usePollingClassify = (shouldPoll: boolean, id: string | undefined, 
       setPolling(true);
       setError(null);
       try {
-        const url = new URL("https://zz0xp1ci31.execute-api.us-east-1.amazonaws.com/dev/getComplaints");
+        const url = new URL(`${API_BASE_URL}dev/getComplaints`);
         if (id) url.searchParams.append("complaint_id", id);
 
         const res = await fetch(url.toString());
