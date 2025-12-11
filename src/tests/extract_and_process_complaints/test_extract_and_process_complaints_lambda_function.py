@@ -589,6 +589,8 @@ class TestUpdateComplaintInDb:
         """Test: Successful complaint update in database with text_extracted set to true"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         mock_extracted_data['narrative_summary'] = 'AI generated summary of the narrative'
+        # Change to mixed case type to avoid triggering adverse event move
+        mock_extracted_data['case_type'] = ['Adverse Event', 'Product Complaint']
         
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_conn = MagicMock()
@@ -601,11 +603,13 @@ class TestUpdateComplaintInDb:
 
             lambda_function.update_complaint_in_db('CAS-123', mock_extracted_data)
             
+            # Should only have 1 execute call (UPDATE) since it's not pure adverse event
             mock_cursor.execute.assert_called_once()
             # Verify text_extracted is set to TRUE and part_number is in SQL
             call_args = mock_cursor.execute.call_args[0]
             assert 'text_extracted = TRUE' in call_args[0]
             assert 'part_number = %s' in call_args[0]
+            # Should only have 1 commit since no move happens
             mock_conn.commit.assert_called_once()
 
     @patch('lambda_function.move_to_adverse_events')
