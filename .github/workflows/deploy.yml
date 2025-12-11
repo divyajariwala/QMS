@@ -260,6 +260,7 @@ jobs:
           PIP_DISABLE_PIP_VERSION_CHECK: "1"
           PIP_NO_INPUT: "1"
         run: |
+          python -m pip install "pycares>=4.9,<5.0"
           python -m pip install checkov
           checkov -d . --skip-path src/ --skip-path conf/ --quiet --check MEDIUM,HIGH,CRITICAL
           
