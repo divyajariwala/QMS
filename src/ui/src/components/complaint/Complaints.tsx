@@ -14,7 +14,7 @@ import { getComplaintsApiResponse, CaseStatusKey, searchComplaintsApiResponse } 
 import PaginationComponent from '@components/pagination/PaginationComponent';
 import { usePollingContext } from '@components/polling/PollingProvider';
 import Notification from '@components/Notification/Notification';
-import { useAuth } from '../../auth/useAuth';
+import { useAuth } from "react-oidc-context";
 import { useStatus } from 'src/context/StatusProvider';
 
 const Complaints = () => {
@@ -47,8 +47,8 @@ const Complaints = () => {
   // Data unpacking
   const { caseStats, caseStatus } = data || {};
   const { pending, processed, overdue } = caseStats || {};
-  const { user } = useAuth();
-  const displayName = `${user?.profile?.given_name ?? ''}`.trim();
+  const auth = useAuth();
+  const displayName = `${auth?.user?.profile?.given_name ?? ''}`.trim();
 
   // Polling context
   const {

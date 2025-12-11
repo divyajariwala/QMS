@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import pwcLogo from "../../assets/images/pwcLogo.svg";
 import { Avatar, Badge, styled, Tab, Tabs, Tooltip } from "@mui/material";
-import { useAuth } from "../../auth/useAuth";
+import { useAuth } from "react-oidc-context";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -49,12 +49,12 @@ const stringAvatar = (display: string) => ({
  * @returns A react component.
  */
 const Header = () => {
-  const { user } = useAuth();
+  const auth = useAuth();
   const location = useLocation();
 
-  const displayName = `${user?.profile?.given_name ?? ""} ${
-    user?.profile?.family_name ?? ""
-    }`.trim();
+  const displayName = `${auth?.user?.profile?.given_name ?? ""} ${
+    auth?.user?.profile?.family_name ?? ""
+  }`.trim();
 
   const navLinks = [
     { label: "Dashboard", path: "/" },
