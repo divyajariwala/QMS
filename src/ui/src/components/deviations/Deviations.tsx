@@ -7,7 +7,7 @@ import { deviationsData, caseStatsMock } from 'src/mockData/mockData';
 import StatusTabs from './StatusTabs';
 import DeviationsStatusCard from '@components/commonCard/DeviationsStatusCard';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
-import { useAuth } from "../../auth/useAuth";
+import { useAuth } from "react-oidc-context";
 
 const Deviations = () => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -15,8 +15,8 @@ const Deviations = () => {
     { label: 'Home', to: '/' },
     { label: 'Deviations' },
   ];
-  const { user } = useAuth();
-  const displayName = `${user?.profile?.given_name ?? ""}`.trim();
+  const auth = useAuth();
+  const displayName = `${auth?.user?.profile?.given_name ?? ""}`.trim();
 
   return (
     <Box component="main">

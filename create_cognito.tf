@@ -13,6 +13,7 @@ resource "aws_cognito_user_pool_client" "spa_client" {
   generate_secret = false
   callback_urls = [
     "https://${aws_cloudfront_distribution.cloudfront_distribution.domain_name}/auth/callback",
+    "http://localhost:3000/auth/callback",
   ]
   allowed_oauth_flows = ["code"]
   allowed_oauth_flows_user_pool_client = true
@@ -22,7 +23,6 @@ resource "aws_cognito_user_pool_client" "spa_client" {
     "profile"
   ]
   supported_identity_providers = [
-    "COGNITO",
     "OpenAM",
   ]
   explicit_auth_flows = [

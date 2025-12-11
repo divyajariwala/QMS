@@ -225,12 +225,9 @@ jobs:
           VITE_API_URL: development
         run: |
           npm install
-          VITE_OIDC_AUTHORITY="${{ secrets.VITE_OIDC_AUTHORITY }}" \
-          VITE_OIDC_CLIENT_ID="${{ secrets.VITE_OIDC_CLIENT_ID }}" \
-          VITE_OIDC_REDIRECT_URI="${{ secrets.VITE_OIDC_REDIRECT_URI }}" \
-          VITE_OIDC_POST_LOGOUT_REDIRECT_URI="${{ secrets.VITE_OIDC_POST_LOGOUT_REDIRECT_URI }}" \
-          VITE_OIDC_SCOPE="${{ secrets.VITE_OIDC_SCOPE }}" \
-          VITE_OIDC_CLIENT_SECRET="${{ secrets.VITE_OIDC_CLIENT_SECRET }}" \
+          VITE_CALLBACK_URL="${{ secrets.VITE_CALLBACK_URL }}" \
+          VITE_AUTHORITY_URL="${{ secrets.VITE_AUTHORITY_URL }}" \
+          VITE_CLIENT_ID="${{ secrets.VITE_CLIENT_ID }}" \
           npm run build:dev
           ls -la dist || true
 
