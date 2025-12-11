@@ -1,14 +1,13 @@
 import * as React from 'react';
 import { Box, Typography, Card, CardContent, Grid } from '@mui/material';
 import dashboardBg from '../../assets/images/qmsBackground.svg';
-import { useAuth } from "../../auth/useAuth";
+import { useAuth } from "react-oidc-context";
 
 const HEADER_HEIGHT = 65; 
 
 const Dashboard = () => {
-  const { user } = useAuth();
-
-  const displayName = `${user?.profile?.given_name ?? ""}`.trim();
+  const auth = useAuth();
+  const displayName = `${auth?.user?.profile?.given_name ?? ""}`.trim();
   return (
     <Box
       component="main"
