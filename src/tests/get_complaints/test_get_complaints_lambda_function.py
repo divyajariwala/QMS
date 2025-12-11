@@ -981,6 +981,110 @@ class TestGetAdverseEvents:
         assert len(body['adverse_events']) == 0
         assert body['pagination']['total_items'] == 0
 
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_adverse_events_with_search(self, mock_get_db):
+        """Test: Search adverse events with query parameter"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # Mock search results from both tables
+        mock_cursor.fetchall.side_effect = [
+            [{
+                'complaint_id': 'CAS-00348',
+                'criticality': 'High',
+                'report_type': 'Spontaneous',
+                'receipt_date': date(2023, 3, 15),
+                'case_type': 'Adverse Event',
+                'status': 'Pending',
+                'text_extracted': True,
+                'created_at': datetime(2023, 3, 15, 10, 0, 0)
+            }],
+            [{
+                'complaint_id': 'CAS-01348',
+                'criticality': 'Medium',
+                'report_type': 'Study',
+                'receipt_date': date(2023, 4, 20),
+                'case_type': 'Adverse Event, Product Complaint',
+                'status': 'Pending',
+                'text_extracted': True,
+                'created_at': datetime(2023, 4, 20, 11, 0, 0)
+            }]
+        ]
+
+        event = {'queryStringParameters': {'adverse_events': 'true', 'search': '348'}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert len(body['adverse_events']) == 2
+        assert body['adverse_events'][0]['case_id'] == 'CAS-00348'
+        assert body['adverse_events'][1]['case_id'] == 'CAS-01348'
+        
+        # Verify SQL queries use escaped percent signs
+        calls = mock_cursor.execute.call_args_list
+        assert any('%%,%%' in str(call) for call in calls)
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_complaints_search_excludes_pure_adverse_events(self, mock_get_db):
+        """Test: Complaints page search excludes pure adverse events"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # Mock stats and search results (excluding pure adverse events)
+        mock_cursor.fetchall.side_effect = [
+            [
+                {'stat_name': 'Pending', 'stat_value': 5},
+                {'stat_name': 'Processed', 'stat_value': 3},
+                {'stat_name': 'Overdue', 'stat_value': 2}
+            ],
+            # Search results - only product complaints and mixed cases
+            [
+                {
+                    'complaint_id': 'CAS-00123',
+                    'criticality': 'High',
+                    'report_type': 'Spontaneous',
+                    'receipt_date': date(2023, 1, 23),
+                    'case_type': 'Product Complaint',
+                    'status': 'Pending',
+                    'text_extracted': True,
+                    'created_at': datetime(2023, 1, 23, 10, 0, 0)
+                },
+                {
+                    'complaint_id': 'CAS-00456',
+                    'criticality': 'Medium',
+                    'report_type': 'Study',
+                    'receipt_date': date(2023, 4, 12),
+                    'case_type': 'Product Complaint, Adverse Event',
+                    'status': 'Processed',
+                    'text_extracted': True,
+                    'created_at': datetime(2023, 4, 12, 11, 0, 0)
+                }
+            ]
+        ]
+
+        mock_cursor.fetchone.return_value = {'total': 2}
+
+        event = {'queryStringParameters': {'search': '123'}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert 'search_results' in body
+        assert len(body['search_results']) == 2
+        # Verify no pure adverse events in results
+        for result in body['search_results']:
+            case_types = result['case_type']
+            if len(case_types) == 1:
+                assert 'Adverse Event' not in case_types[0]
+        
+        # Verify SQL queries use escaped percent signs for LIKE patterns
+        calls = mock_cursor.execute.call_args_list
+        assert any('%%,%%' in str(call) for call in calls)
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
