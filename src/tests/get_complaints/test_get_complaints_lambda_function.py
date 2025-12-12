@@ -101,13 +101,13 @@ class TestLambdaHandler:
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_not_found(self, mock_get_db):
-        """Test: Single complaint not found"""
+        """Test: Single complaint not found in both tables"""
         mock_conn = Mock()
         mock_context, mock_cursor = create_mock_cursor()
         mock_conn.cursor.return_value = mock_context
         mock_get_db.return_value = mock_conn
 
-        # Mock no complaint found
+        # Mock no complaint found in either table
         mock_cursor.fetchone.return_value = None
 
         event = {
@@ -120,6 +120,58 @@ class TestLambdaHandler:
         body = json.loads(result['body'])
         assert body['success'] is False
         assert body['error'] == 'Complaint not found'
+
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_get_single_complaint_from_adverse_events_table(self, mock_get_db):
+        """Test: Fetch pure adverse event from adverse_events table"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # First query returns None (not in complaints table)
+        # Second query returns data (found in adverse_events table)
+        mock_cursor.fetchone.side_effect = [
+            None,  # Not found in complaints table
+            {
+                'complaint_id': 'CAS-818',
+                'receipt_date': date(2020, 2, 5),
+                'criticality': 'Minor',
+                'report_type': 'Spontaneous',
+                'narrative_summary': 'Pure adverse event summary',
+                'case_type': 'Adverse Event',
+                'narrative': 'Pure adverse event narrative',
+                'primary_reporter': 'Jane Doe',
+                'primary_reporter_address': '456 Oak St',
+                'patient_name': 'John Patient',
+                'physician': 'Dr. Jones',
+                'drug': 'Test Drug AE',
+                'lot_no': 'LOT818',
+                'dosage': '150mg',
+                'expiration_date': date(2025, 6, 15),
+                'part_number': 'PN818',
+                'status': 'Pending',
+                'text_extracted': True,
+                'created_at': datetime(2025, 12, 11, 11, 17, 43),
+                'file_name': 'adverse.pdf',
+                's3_url': 's3://bucket/adverse.pdf'
+            },
+            None  # No inference result
+        ]
+
+        event = {
+            'queryStringParameters': {'complaint_id': 'CAS-818'}
+        }
+
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['case_id'] == 'CAS-818'
+        assert body['case_type'] == ['Adverse Event']
+        assert body['criticality'] == 'Minor'
+        assert body['caseStatus'] == 'pending'
+        assert body['complaintClassified'] is False
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_complaint_no_inference(self, mock_get_db):
