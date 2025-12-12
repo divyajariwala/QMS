@@ -1,0 +1,88 @@
+.actions {
+  display: inline-flex;
+  gap: 12px;
+  font-family: inherit; /* inherit font from index.css */
+
+  /* Target MUI Button root inside CSS module */
+  :global(.MuiButton-root),
+  :global(.MuiButtonBase-root.MuiButton-root) {
+    font-family: inherit !important; /* use index.css font */
+    border-radius: 5px !important;
+    padding: 10px 16px !important;
+    box-shadow: 0px 1px 2px 0px #1018280a;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    line-height: 20px !important;
+    letter-spacing: 0;
+    text-transform: none !important;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    transition: background-color 0.3s ease, border 0.3s ease;
+  }
+
+  /* Primary variant */
+  :global(.MuiButton-root).primaryImportButton {
+    background-color: #437ef7 !important;
+    color: #fff !important;
+    border: 1px solid transparent !important;
+  }
+  :global(.MuiButton-root).primaryImportButton:hover {
+    background-color: #437ef7 !important;
+  }
+
+  /* Outline variant */
+  :global(.MuiButton-root).addManuallyButton {
+    background-color: #fff !important;
+    border: 1px solid #dae0e6 !important;
+    color: #437EF7 !important;
+  }
+  :global(.MuiButton-root).addManuallyButton:hover {
+    border-color: #dae0e6 !important;
+    background-color: #fff !important;
+  }
+
+  /* Optional: align icons spacing consistently */
+  :global(.MuiButton-root .MuiButton-startIcon),
+  :global(.MuiButton-root .MuiButton-endIcon) {
+    margin: 0 !important;
+  }
+}
+
+/* If you also have plain <button> elements that should look the same */
+.baseButton {
+  border-radius: 5px;
+  gap: 6px;
+  padding: 10px 16px;
+  box-shadow: 0px 1px 2px 0px #1018280a;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, border 0.3s ease;
+  font-family: inherit; /* uses index.css font */
+}
+.pageTitle {
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 38px;
+  letter-spacing: -1%;
+  color: #272D37;
+}
+
+.pageDetails {
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  color:#5F6D7E;
+}
