@@ -70,21 +70,27 @@ const ComplaintsDetails: React.FC = () => {
       handleShowNotification();
       return; // Block submission
     }
-    setLoading(true);
     try {
       if (complaintDetails) {
         await postApproveComplaint(complaintDetails);
+        const data = await fetchComplaintDetailById(complaintId);
+        if (data?.category_details) {
+          data.category_details = data.category_details.sort((a, b) => b.percentage - a.percentage);
+        }
+        setComplaintDetails(data);
+        setCrlList(data?.crl_list);
+        setLabelList(data?.label_list);
         setIsApproved(true);
         setType("success");
         setMessage("Approved and Sent to QMS");
         handleShowNotification();
-        fetchData();
       }
 
     } catch (err: any) {
+      setType("error");
+      setMessage("Submission failed: Try again");
+      handleShowNotification();
       console.log(err.message || "Unknown error");
-    } finally {
-      setLoading(false);
     }
   };
 

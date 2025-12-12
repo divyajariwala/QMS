@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Grid } from '@mui/material';
 import ProductComplaintIcon from "../../assets/icons/productComplaint.svg";
@@ -30,11 +31,12 @@ const ComplaintsIntermediate: React.FC = () => {
   const [headerData, setHeaderData] = useState<any>(null); // holds editable header fields
   const [processingFile, setProcessingFile] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [message, setMessage] = useState<string>('');
   const { complaintId } = useParams<{ complaintId: string | undefined }>();
   const navigate = useNavigate();
-  const { done } = usePollingClassify(processingFile, complaintId);
+  const { done, error } = usePollingClassify(processingFile, complaintId);
 
-   const handleClassify = () => {
+  const handleClassify = () => {
     navigate(`/approveComplaints/${complaintDetails?.case_id}`);
   };
 
@@ -53,15 +55,21 @@ const ComplaintsIntermediate: React.FC = () => {
   // Load complaint details 
   useEffect(() => {
     if (complaintId && !processingFile) fetchData();
+    if (error) {
+      setMessage('Maximium retries reached');
+      setProcessingFile(false);
+      setOpen(true);
+    }
     if (done) {
       setProcessingFile(false);
       handleClassify();
     }
-  }, [complaintId, processingFile, done]);
+  }, [complaintId, processingFile, done, error]);
 
   // Initialize headerData from complaintDetails whenever complaintDetails changes
   useEffect(() => {
     if (!complaintDetails) return;
+    const expirationDateRaw = complaintDetails?.product_details?.expiration_date ?? '';
     setHeaderData({
       status: complaintDetails?.caseStatus ?? '',
       caseId: complaintDetails?.case_id ?? '',
@@ -72,7 +80,7 @@ const ComplaintsIntermediate: React.FC = () => {
       drug: complaintDetails?.product_details?.drug ?? '',
       lotNumber: complaintDetails?.product_details?.lot_no ?? '',
       doseAmount: complaintDetails?.product_details?.dosage ?? '',
-      expirationDate: complaintDetails?.product_details?.expiration_date ?? '',
+      expirationDate: expirationDateRaw,
       partNumber: complaintDetails?.product_details?.part_number ?? '',
       receipt_date: complaintDetails?.receipt_date ?? ''
     });
@@ -135,13 +143,14 @@ const ComplaintsIntermediate: React.FC = () => {
       receipt_date: data.reportDate ?? headerData?.receipt_date,
     };
     try {
-      const result = await modifyExtractedDetails(newHeaderData);
-      console.log('Modified details response:', result);
+      await modifyExtractedDetails(newHeaderData);
+      const data = await fetchComplaintDetailById(complaintId);
+      setComplaintDetails(data);
+      toast.success("Details modified successfully!");
     } catch (err) {
+      toast.error("Failed to modify details. Please try again.");
       console.error('Error calling modifyExtractedDetails:', err);
     }
-
-    await fetchData();
     setOpenModifyDetails(false);
   };
 
@@ -202,7 +211,7 @@ const ComplaintsIntermediate: React.FC = () => {
         open={openModifyDetails}
         onClose={() => setOpenModifyDetails(false)}
       />
-      <Notification open={open} onClose={handleCloseNotification} position="top" message="Processed Successfully" />
+      <Notification open={open} onClose={handleCloseNotification} position="top" type={'error'} message={message} />
       <ProcessingNotification loading={processingFile} />
     </Box>
   );
