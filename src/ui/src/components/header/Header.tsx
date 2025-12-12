@@ -59,8 +59,8 @@ const Header = () => {
   const navLinks = [
     { label: "Dashboard", path: "/" },
     { label: "Complaints", path: "/complaints" },
-    { label: "Deviation", path: "/deviations" },
-    { label: "Adverse Event", path: "/adverseEvent" },
+    { label: "Deviations", path: "/deviations" },
+    { label: "Adverse Events", path: "/adverseEvent" },
   ];
 
   // Find the index of current tab by checking if location pathname starts with path
