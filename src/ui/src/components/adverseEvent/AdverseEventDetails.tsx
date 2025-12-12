@@ -53,7 +53,7 @@ const AdverseEventDetails: React.FC = () => {
 
   const items = [
     { label: 'Home', to: '/' },
-    { label: 'Adverse Event', to: '/adverseEvent' },
+    { label: 'Adverse Events', to: '/adverseEvent' },
     { label: complaintDetails?.case_id.toString() },
   ];
 

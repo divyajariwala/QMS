@@ -34,7 +34,7 @@ const AdverseEvent = () => {
   // Breadcrumb items
   const items = [
     { label: 'Home', to: '/' },
-    { label: 'Adverse Event' },
+    { label: 'Adverse Events' },
   ];
 
   // Complaints lists
@@ -97,7 +97,7 @@ const AdverseEvent = () => {
         <Stack direction="row" alignItems={'baseline'} justifyContent={'space-between'}>
           <Box className={styles.pageTitle}>
             Hey there, {displayName}!
-            <Box className={styles.pageDetails}>Welcome to Adverse Event!</Box>
+            <Box className={styles.pageDetails}>Welcome to Adverse Events!</Box>
           </Box>
         </Stack>
       </Stack>
