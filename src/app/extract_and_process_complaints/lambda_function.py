@@ -336,15 +336,22 @@ def update_complaint_in_db(complaint_id, extracted_data):
                     complaint_id
                 ))
                 
-                conn.commit()
-                logger.info(f"Updated complaint {complaint_id} in database")
-                
-                # Check if case_type is adverse events only
+                # Check if case_type is adverse event only BEFORE committing
                 case_types = result.get('case_type', [])
-                if case_types and len(case_types) == 1 and case_types[0].lower() == 'adverse events':
-                    logger.info(f"Moving complaint {complaint_id} to adverse_events table")
+                is_adverse_event_only = case_types and len(case_types) == 1 and case_types[0].lower() in ['adverse event', 'adverse events']
+                
+                if is_adverse_event_only:
+                    logger.info(f"Complaint {complaint_id} is adverse event only - will move to adverse_events table")
+                    # Commit the update first
+                    conn.commit()
+                    # Then move to adverse_events table
                     move_to_adverse_events(cur, complaint_id)
                     conn.commit()
+                    logger.info(f"Successfully moved complaint {complaint_id} to adverse_events table")
+                else:
+                    # Just commit the update
+                    conn.commit()
+                    logger.info(f"Updated complaint {complaint_id} in database")
                 
     except Exception as e:
         logger.error(f"Database error: {str(e)}")
