@@ -257,6 +257,25 @@ lambda_configs = [
         http_method = "POST"
       }
     ]
+  },
+  {
+    function_name = "extract-and-process-deviations"
+    path          = "src/app/extract_and_process_deviations"
+    environment_variables = {
+      env                 = "dev"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region           = "us-east-1"
+    }
+    sqs_trigger = [
+      {
+        queue_name         = "process-deviations"
+        visibility_timeout = 900
+        max_receive_count  = 3
+        batch_size         = 10
+        max_batch_window   = 5
+        max_concurrency    = 10
+      }
+    ]
   }
 ]
 
