@@ -20,8 +20,8 @@ def get_secret(secret_name, region_name):
             SecretId=secret_name
         )
     except ClientError as e:
-        logger.error(f"Error retrieving secret {secret_name}: {str(e)}")
-        raise e
+        logger.error(f"Error retrieving secret: {e.response['Error']['Code']}")
+        raise
 
     secret = get_secret_value_response['SecretString']
     return json.loads(secret)
