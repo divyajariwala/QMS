@@ -552,3 +552,21 @@ export type ApproveComplaintRequest = {
   caseStatus: string;
   category_details: CategoryDetailApi[];
 };
+
+export interface PaginationObj {
+    current_page: number;
+    total_pages: number;
+    total_items: number;
+    items_per_page: number,
+    has_next: boolean,
+    has_previous: boolean,
+  };
+
+export interface AdverseEventFilterProps {
+  complaintId: string;
+  setComplaintId: (val: string) => void;
+  setComplaintDetail: (val: searchAdverseEventsApiResponse | null) => void;
+  setSearchActive: (val: boolean) => void;
+  setPagination: (val: PaginationObj) => void;
+  doSearch: (id: string, page?: number) => Promise<void>;
+}

@@ -1,26 +1,6 @@
 import React, { useState } from "react";
 import styles from "./AdverseEventFilter.module.scss";
-import { searchAdverseEventsApiResponse } from "src/types";
-
-interface PaginationObj {
-    current_page: number;
-    total_pages: number;
-    total_items: number;
-    items_per_page: number,
-    has_next: boolean,
-    has_previous: boolean,
-  };
-
-interface AdverseEventFilterProps {
-  complaintId: string;
-  setComplaintId: (val: string) => void;
-  setComplaintDetail: (val: searchAdverseEventsApiResponse | null) => void;
-  setSearchActive: (val: boolean) => void;
-  setPagination: (val: PaginationObj) => void;
-  doSearch: (id: string, page?: number) => Promise<void>;
-}
-
-
+import { AdverseEventFilterProps } from "src/types";
 
 const AdverseEventFilter = ({
   complaintId,
