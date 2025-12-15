@@ -1,0 +1,114 @@
+.paper {
+  margin-top: 24px;
+  padding: 24px;
+  position: relative;
+  background-color: #fff;
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+
+.flexContainer {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.stackCustom {
+  min-width: 0;
+  margin-bottom: 16px;
+}
+
+.leftSide {
+  flex: 1;
+  min-width: 0;
+  padding-right: 16px;
+  box-sizing: border-box;
+}
+
+.statusText {
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  text-transform: uppercase;
+  color: #3B3B3B;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.statusTextGreen {
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  text-transform: uppercase;
+  color: #4EB523;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.caseIdText {
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 38px;
+  letter-spacing: -0.01em;
+  color: #272D37;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.topRowInner {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  width: 100%;
+  gap: 16px;
+}
+
+.flexGrow {
+  flex-grow: 1;
+}
+
+.infoGridContainer {
+  margin-top: 8px;
+  align-items: flex-start;
+  border-radius: 10px;
+}
+
+.labelText {
+
+  font-weight: 400;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.1px;
+  color: #5F6D7E;
+  margin: 0;
+}
+
+.primaryReporterName {
+
+  font-weight: 700;
+  font-style: normal;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  color: #272D37;
+  margin: 0;
+}
+
+.valueText {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.1px;
+  color: #272D37;
+  margin: 0;
+}
+
+.mt2 {
+  margin-top: 16px;
+}
