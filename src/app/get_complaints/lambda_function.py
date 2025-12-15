@@ -47,7 +47,7 @@ def lambda_handler(event, context):
             return get_single_complaint(conn, complaint_id)
         elif adverse_events == 'true':
             # Handle adverse events request: /getComplaints?adverse_events=true
-            return get_adverse_events(conn, page)
+            return get_adverse_events(conn, page, search_query)
         else:
             # Handle all complaints request: /getComplaints
             return get_all_complaints(conn, page, status_filter, search_query)
@@ -66,11 +66,11 @@ def lambda_handler(event, context):
 
 def get_single_complaint(conn, complaint_id):
     """
-    Get single complaint details by complaint_id
+    Get single complaint details by complaint_id from both complaints and adverse_events tables
     """
     try:
         with conn.cursor(row_factory=dict_row) as cursor:
-            # Query complaint with inference data
+            # Try complaints table first
             cursor.execute("""
                 SELECT c.*, f.file_name, f.s3_url
                 FROM complaints c
@@ -79,6 +79,16 @@ def get_single_complaint(conn, complaint_id):
             """, (complaint_id,))
             
             complaint = cursor.fetchone()
+            
+            # If not found in complaints, try adverse_events table
+            if not complaint:
+                cursor.execute("""
+                    SELECT ae.*, f.file_name, f.s3_url
+                    FROM adverse_events ae
+                    LEFT JOIN files f ON ae.file_id = f.file_id
+                    WHERE ae.complaint_id = %s
+                """, (complaint_id,))
+                complaint = cursor.fetchone()
             
             if not complaint:
                 return {
@@ -219,18 +229,20 @@ def get_all_complaints(conn, page=1, status_filter=None, search_query=None):
             
             # Handle search separately - search ignores status filter
             if search_query:
-                # Get total count for search
-                cursor.execute(
-                    "SELECT COUNT(*) as total FROM complaints WHERE complaint_id ILIKE %s",
-                    (f"%{search_query}%",)
-                )
+                # Get total count for search (exclude pure adverse events)
+                cursor.execute("""
+                    SELECT COUNT(*) as total FROM complaints 
+                    WHERE complaint_id ILIKE %s
+                    AND NOT (case_type NOT LIKE '%%,%%' AND (case_type ILIKE '%%adverse event%%' OR case_type ILIKE '%%adverse events%%'))
+                """, (f"%{search_query}%",))
                 total_count = cursor.fetchone()['total']
                 
-                # Get paginated search results
+                # Get paginated search results (exclude pure adverse events)
                 cursor.execute("""
                     SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
                     FROM complaints
                     WHERE complaint_id ILIKE %s
+                    AND NOT (case_type NOT LIKE '%%,%%' AND (case_type ILIKE '%%adverse event%%' OR case_type ILIKE '%%adverse events%%'))
                     ORDER BY complaint_id DESC
                     LIMIT %s OFFSET %s
                 """, (f"%{search_query}%", limit, offset))
@@ -427,7 +439,7 @@ def _get_and_update_label_list(cursor, category_details):
     
     return sorted(label_list)
 
-def get_adverse_events(conn, page=1):
+def get_adverse_events(conn, page=1, search_query=None):
     """
     Get adverse events only cases from adverse_events table and 
     mixed adverse events + product complaints from complaints table
@@ -437,22 +449,44 @@ def get_adverse_events(conn, page=1):
             limit = 15
             offset = (page - 1) * limit
             
-            # Get adverse events only from adverse_events table
-            cursor.execute("""
-                SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
-                FROM adverse_events
-                ORDER BY complaint_id DESC
-            """)
-            adverse_only = cursor.fetchall()
-            
-            # Get mixed cases (adverse events + product complaints) from complaints table
-            cursor.execute("""
-                SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
-                FROM complaints
-                WHERE case_type ILIKE '%adverse events%' AND case_type ILIKE '%product complaint%'
-                ORDER BY complaint_id DESC
-            """)
-            mixed_cases = cursor.fetchall()
+            if search_query:
+                # Search in adverse_events table
+                cursor.execute("""
+                    SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                    FROM adverse_events
+                    WHERE complaint_id ILIKE %s
+                    ORDER BY complaint_id DESC
+                """, (f"%{search_query}%",))
+                adverse_only = cursor.fetchall()
+                
+                # Search in mixed cases from complaints table
+                cursor.execute("""
+                    SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                    FROM complaints
+                    WHERE complaint_id ILIKE %s
+                      AND case_type LIKE '%%,%%' 
+                      AND (case_type ILIKE '%%adverse event%%' OR case_type ILIKE '%%adverse events%%')
+                    ORDER BY complaint_id DESC
+                """, (f"%{search_query}%",))
+                mixed_cases = cursor.fetchall()
+            else:
+                # Get all adverse events from adverse_events table
+                cursor.execute("""
+                    SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                    FROM adverse_events
+                    ORDER BY complaint_id DESC
+                """)
+                adverse_only = cursor.fetchall()
+                
+                # Get all mixed cases from complaints table
+                cursor.execute("""
+                    SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
+                    FROM complaints
+                    WHERE case_type LIKE '%%,%%' 
+                      AND (case_type ILIKE '%%adverse event%%' OR case_type ILIKE '%%adverse events%%')
+                    ORDER BY complaint_id DESC
+                """)
+                mixed_cases = cursor.fetchall()
             
             # Combine results
             all_results = adverse_only + mixed_cases
