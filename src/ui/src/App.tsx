@@ -26,6 +26,7 @@ import { PollingProvider } from "@components/polling/PollingProvider";
 import { StatusProvider } from "./context/StatusProvider";
 import { useAuth } from "react-oidc-context";
 import SessionCleaner from "./auth/SessionCleaner";
+import DeviationsIntermediate from "@components/deviations/DeviationsIntermediate";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -98,6 +99,14 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <Deviations />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/deviations/:deviationId"
+                    element={
+                      <ProtectedRoute>
+                        <DeviationsIntermediate />
                       </ProtectedRoute>
                     }
                   />

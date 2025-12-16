@@ -21,21 +21,21 @@ export interface InvokeApiPayload {
 
 export interface CategoryInvokeResponse {
   response: {
-    "MD5OfMessageBody": string;
-    "MessageId": string;
-    "ResponseMetadata": {
-      "RequestId": string;
-      "HTTPStatusCode": number;
-      "HTTPHeaders": {
+    MD5OfMessageBody: string;
+    MessageId: string;
+    ResponseMetadata: {
+      RequestId: string;
+      HTTPStatusCode: number;
+      HTTPHeaders: {
         "x-amzn-requestid": string;
-        "date": string;
+        date: string;
         "content-type": string;
         "content-length": string;
-        "connection": string;
-      },
-      "RetryAttempts": number;
+        connection: string;
+      };
+      RetryAttempts: number;
     };
-  }
+  };
 }
 
 export interface FetchResultsResponseDatailItem {
@@ -124,7 +124,7 @@ export interface AuthContextType {
   signOut: () => Promise<void>;
   getAccessToken: () => Promise<string | undefined>;
   isLoading: boolean;
-};
+}
 
 export interface BreadcrumbItem {
   label: string | undefined;
@@ -216,6 +216,28 @@ export interface ComplaintInterHeaderCardProps {
   processingFile: boolean;
 }
 
+export interface DeviationInterHeaderCardProps {
+  deviationData: {
+    status?: string | undefined;
+    caseId?: string | undefined;
+    overdueDays?: number | undefined;
+    primaryReporter?: Record<string, any> | undefined;
+    patientName?: string | undefined;
+    physicianName?: string | undefined;
+    drug?: string | undefined;
+    lotNumber?: string | undefined;
+    doseAmount?: string | undefined;
+    expirationDate?: string | undefined;
+    partNumber?: string | undefined;
+    receipt_date: string | undefined;
+  };
+  caseStatus: string | undefined;
+  setOpenModifyDetails: (val: boolean) => void;
+  createdAt: string | undefined;
+  processingFile: boolean;
+  deviationId: string | undefined;
+}
+
 export interface ComplaintsDueDateChipProps {
   type: "Overdue" | "Today" | "Tomorrow" | "Due" | "" | undefined;
   label: string | undefined;
@@ -248,7 +270,7 @@ export interface SecondaryInfoCardProps {
   adverseEventIconSrc: string;
   productComplaintsChipClassName?: string;
   adverseEventChipClassName?: string;
-  caseType: string[]
+  caseType: string[];
 }
 
 export interface StatusTabItem {
@@ -265,10 +287,10 @@ export interface ComplaintProps {
     case_type: string[];
     text_extracted: boolean;
     created_at: string;
-    status?: 'pending' | 'processed' | 'overdue';
-  },
+    status?: "pending" | "processed" | "overdue";
+  };
   selected: string;
-  activeStatus: 'pending' | 'processed' | 'overdue';
+  activeStatus: "pending" | "processed" | "overdue";
   loading: boolean;
   searching: boolean;
 }
@@ -280,13 +302,13 @@ export interface ButtonGroupProps {
 
 export interface DeviationProps {
   deviation: {
-    "Recieved Date": string,
-    "Processed Date": string,
-    "Due Date": string,
-    "rcaStatus": string,
-    "gradingStatus": string,
-    "status": string,
-    "progress": number;
+    "Recieved Date": string;
+    "Processed Date": string;
+    "Due Date": string;
+    rcaStatus: string;
+    gradingStatus: string;
+    status: string;
+    progress: number;
     "Case Number": string;
   };
 }
@@ -315,7 +337,13 @@ export interface FileUploadPopupProps {
   setOpenFileUpload: (val: boolean) => void;
 }
 
-export type fileUploadStatus = 'idle' | 'uploading' | 'importing' | 'extracting' | 'success' | 'error';
+export type fileUploadStatus =
+  | "idle"
+  | "uploading"
+  | "importing"
+  | "extracting"
+  | "success"
+  | "error";
 
 export type FooterProps = { year?: number; className?: string };
 
@@ -376,7 +404,6 @@ export type CaseStats = {
   best_time: number;
   longest_time: number;
 };
-
 
 export interface PaginationData {
   current_page: number;
@@ -447,15 +474,17 @@ export interface ComplaintDetail {
 export type CaseStatusKey = "pending" | "processed" | "overdue";
 
 export interface complaintStatsProps {
-  complaintStats: {
-    "total_complaints": number,
-    "pending": number,
-    "processed": number,
-    "overdue": number,
-    "avg_cycle_time": number,
-    "best_time": number,
-    "longest_time": number,
-  } | undefined
+  complaintStats:
+    | {
+        total_complaints: number;
+        pending: number;
+        processed: number;
+        overdue: number;
+        avg_cycle_time: number;
+        best_time: number;
+        longest_time: number;
+      }
+    | undefined;
 }
 
 export type CategoryDetailApi = {
@@ -495,7 +524,7 @@ export type ApproveComplaintResponse = {
     product_details: ProductDetailsApi;
     caseStatus: string;
     category_details: CategoryDetailApi[];
-  }
+  };
 };
 
 export type ApproveComplaintRequest = {
