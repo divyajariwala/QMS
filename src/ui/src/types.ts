@@ -195,6 +195,23 @@ export interface ComplaintHeaderCardProps {
   createdAt: string | undefined;
 }
 
+export interface AdverseEventHeaderProps {
+  complaintData: {
+    status?: string | undefined;
+    caseId?: string | undefined;
+    overdueDays?: number | undefined;
+    primaryReporter?: Record<string, any> | undefined;
+    patientName?: string | undefined;
+    physicianName?: string | undefined;
+    drug?: string | undefined;
+    lotNumber?: string | undefined;
+    doseAmount?: string | undefined;
+    expirationDate?: string | undefined;
+    partNumber?: string | undefined;
+    receipt_date: string | undefined;
+  };
+}
+
 export interface ComplaintInterHeaderCardProps {
   complaintData: {
     status?: string | undefined;
@@ -276,6 +293,18 @@ export interface SecondaryInfoCardProps {
 export interface StatusTabItem {
   label: string;
   count: number | undefined;
+}
+
+export interface AdverseEventCardProps {
+  complaint: {
+    case_id: string;
+    criticality: string;
+    report_type: string;
+    receipt_date: string; // You might want to correct this to 'receipt_date' if it's a typo
+    case_type: string[];
+    text_extracted: boolean;
+    created_at: string;
+  }
 }
 
 export interface ComplaintProps {
@@ -420,11 +449,21 @@ export type getComplaintsApiResponse = {
   pagination: PaginationData;
 };
 
+export type getAdverseEventsApiResponse = {
+  pagination: PaginationData;
+  adverse_events: Case[];
+};
+
 export type searchComplaintsApiResponse = {
   caseStats: CaseStats;
   caseStatus: CaseStatus;
   pagination: PaginationData;
   search_results: Case[];
+};
+
+export type searchAdverseEventsApiResponse = {
+  pagination: PaginationData;
+  adverse_events: Case[];
 };
 
 export type CategoryDetail = {
@@ -542,3 +581,21 @@ export type ApproveComplaintRequest = {
   caseStatus: string;
   category_details: CategoryDetailApi[];
 };
+
+export interface PaginationObj {
+    current_page: number;
+    total_pages: number;
+    total_items: number;
+    items_per_page: number,
+    has_next: boolean,
+    has_previous: boolean,
+  };
+
+export interface AdverseEventFilterProps {
+  complaintId: string;
+  setComplaintId: (val: string) => void;
+  setComplaintDetail: (val: searchAdverseEventsApiResponse | null) => void;
+  setSearchActive: (val: boolean) => void;
+  setPagination: (val: PaginationObj) => void;
+  doSearch: (id: string, page?: number) => Promise<void>;
+}

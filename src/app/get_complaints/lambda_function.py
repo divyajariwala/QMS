@@ -66,11 +66,11 @@ def lambda_handler(event, context):
 
 def get_single_complaint(conn, complaint_id):
     """
-    Get single complaint details by complaint_id
+    Get single complaint details by complaint_id from both complaints and adverse_events tables
     """
     try:
         with conn.cursor(row_factory=dict_row) as cursor:
-            # Query complaint with inference data
+            # Try complaints table first
             cursor.execute("""
                 SELECT c.*, f.file_name, f.s3_url
                 FROM complaints c
@@ -79,6 +79,16 @@ def get_single_complaint(conn, complaint_id):
             """, (complaint_id,))
             
             complaint = cursor.fetchone()
+            
+            # If not found in complaints, try adverse_events table
+            if not complaint:
+                cursor.execute("""
+                    SELECT ae.*, f.file_name, f.s3_url
+                    FROM adverse_events ae
+                    LEFT JOIN files f ON ae.file_id = f.file_id
+                    WHERE ae.complaint_id = %s
+                """, (complaint_id,))
+                complaint = cursor.fetchone()
             
             if not complaint:
                 return {

@@ -68,7 +68,7 @@ const ComplaintSecondaryInfo: React.FC<SecondaryInfoCardProps> = ({
               className={adverseEventChipClassName}
             />)}
             {!caseType?.includes("Product Complaint") &&
-                !caseType.includes("Adverse Event") && (
+                !caseType?.includes("Adverse Event") && (
                   <Box className={styles.infoItem__valueText}>NA</Box>
                 )}
           </div>

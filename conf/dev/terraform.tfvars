@@ -241,6 +241,22 @@ lambda_configs = [
         http_method = "POST"
       },
     ]
+  },
+  {
+    function_name = "upload-deviations"
+    path          = "src/app/upload_deviations"
+    environment_variables = {
+      env                 = "dev"
+      sqs_queue_base_name = "process-deviations"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region           = "us-east-1"
+    }
+    api_gateway_paths = [
+      {
+        path_name   = "uploadDeviations"
+        http_method = "POST"
+      }
+    ]
   }
 ]
 

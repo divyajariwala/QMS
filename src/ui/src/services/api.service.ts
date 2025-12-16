@@ -5,7 +5,9 @@ import {
 } from '../constants';
 import {
   ComplaintResult, SessionData, UIResultsParams, ComplaintRequest, CreateComplaintResponse, getComplaintsApiResponse,
-  ComplaintDetail, ApproveComplaintResponse, ApproveComplaintRequest, searchComplaintsApiResponse
+  ComplaintDetail, ApproveComplaintResponse, ApproveComplaintRequest, searchComplaintsApiResponse,
+  searchAdverseEventsApiResponse,
+  getAdverseEventsApiResponse
 } from '../types';
 
 import { API_BASE_URL } from 'src/config';
@@ -279,6 +281,19 @@ export async function fetchComplaints(status: string, page: Number): Promise<get
   return data;
 }
 
+export async function fetchAdverseEvent(page: Number): Promise<getAdverseEventsApiResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}dev/getComplaints?adverse_events=true&page=${page}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: getAdverseEventsApiResponse = await response.json();
+  return data;
+}
+
 export async function fetchComplaintDetailById(complaint_id: string | undefined): Promise<ComplaintDetail> {
   const url = new URL(`${API_BASE_URL}dev/getComplaints`);
   if(complaint_id) url.searchParams.append("complaint_id", complaint_id);
@@ -385,6 +400,18 @@ export async function searchComplaint(complaint_id: string, page: number): Promi
   }
 
   const data: searchComplaintsApiResponse = await response.json();
+  return data;
+}
+
+export async function searchAdverseEvent(complaint_id: string, page: number): Promise<searchAdverseEventsApiResponse> {
+  const url = `${API_BASE_URL}dev/getComplaints?adverse_events=true&search=${complaint_id}&page=${page}`
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: searchAdverseEventsApiResponse = await response.json();
   return data;
 }
 

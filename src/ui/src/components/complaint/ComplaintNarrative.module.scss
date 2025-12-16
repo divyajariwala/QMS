@@ -37,7 +37,11 @@
   padding: 16px;
   max-height: 552px;
   overflow-y: auto;
-   scroll-behavior: smooth;
+  scroll-behavior: smooth;
+
+  /* Firefox scrollbar style */
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f0f0f0;
 
   /* Optional: scrollbar styles (Webkit browsers) */
   &::-webkit-scrollbar {
@@ -45,7 +49,7 @@
   }
 
   &::-webkit-scrollbar-track {
-    background: #f0f0f0; 
+    background: #f0f0f0;
     border-radius: 4px;
   }
 
@@ -55,7 +59,4 @@
     border: 2px solid #f0f0f0;
   }
 
-  /* Firefox scrollbar style */
-  scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 #f0f0f0;
 }

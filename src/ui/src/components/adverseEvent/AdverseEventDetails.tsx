@@ -3,11 +3,9 @@ import { useParams } from "react-router-dom";
 import { Box, Grid } from '@mui/material';
 import ProductComplaintIcon from "../../assets/icons/productComplaint.svg";
 import AdverseEventIcon from "../../assets/icons/adverseEvent.svg";
-import ComplaintHeaderCard from './ComplaintHeaderCard';
-import ComplaintSecondaryInfo from './ComplaintSecondaryInfo';
-import ComplaintAISummary from './ComplaintAISummary';
-import ComplaintNarrative from './ComplaintNarrative';
-import ComplaintCategory from './ComplaintCategory';
+import AdverseEventHeader from './AdverseEventHeader';
+import ComplaintSecondaryInfo from '../complaint/ComplaintSecondaryInfo';
+import ComplaintNarrative from '../complaint/ComplaintNarrative';
 import { ComplaintDetail } from 'src/types';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import CriticalityIcon from "../../assets/icons/criticality.svg";
@@ -16,19 +14,12 @@ import CategoryIcon from "../../assets/icons/category.svg";
 import ReceiptDateIcon from "../../assets/icons/receiptDate.svg";
 import { formatDateMMM_D_YYYY } from 'src/utils';
 import { calculateOverdueDays } from 'src/helpers';
-import { fetchComplaintDetailById, postApproveComplaint } from 'src/services/api.service';
-import Notification from '@components/Notification/Notification';
-import styles from "./ComplaintsResult.module.scss";
+import { fetchComplaintDetailById } from 'src/services/api.service';
+import styles from "./AdverseEventDetails.module.scss";
 
-const ComplaintsDetails: React.FC = () => {
-  const [open, setOpen] = useState(false);
+const AdverseEventDetails: React.FC = () => {
   const [complaintDetails, setComplaintDetails] = useState<ComplaintDetail | null>(null);
-  const [isApproved, setIsApproved] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const [crlList, setCrlList] = useState<string[]>([]);
-  const [type, setType] = useState<"success" | "error">("success");
-  const [message, setMessage] = useState<string>('');
-  const [labelList, setLabelList] = useState<string[]>([]);
   const { complaintId } = useParams<{ complaintId: string | undefined }>();
   const complaintHeaderData = {
     status: complaintDetails?.caseStatus,
@@ -53,8 +44,6 @@ const ComplaintsDetails: React.FC = () => {
         data.category_details = data.category_details.sort((a, b) => b.percentage - a.percentage);
       }
       setComplaintDetails(data);
-      setCrlList(data?.crl_list);
-      setLabelList(data?.label_list);
     } catch (err: any) {
       console.log(err.message || "Failed to load complaint details.");
     } finally {
@@ -62,55 +51,9 @@ const ComplaintsDetails: React.FC = () => {
     }
   }
 
-  const handleSubmit = async () => {
-    const allUnitsZero = complaintDetails?.category_details?.every(cat => cat.unit === 0);
-    if (allUnitsZero) {
-      setType("error");
-      setMessage("Unit is required");
-      handleShowNotification();
-      return; // Block submission
-    }
-    try {
-      if (complaintDetails) {
-        await postApproveComplaint(complaintDetails);
-        const data = await fetchComplaintDetailById(complaintId);
-        if (data?.category_details) {
-          data.category_details = data.category_details.sort((a, b) => b.percentage - a.percentage);
-        }
-        setComplaintDetails(data);
-        setCrlList(data?.crl_list);
-        setLabelList(data?.label_list);
-        setIsApproved(true);
-        setType("success");
-        setMessage("Approved and Sent to QMS");
-        handleShowNotification();
-      }
-
-    } catch (err: any) {
-      setType("error");
-      setMessage("Submission failed: Try again");
-      handleShowNotification();
-      console.log(err.message || "Unknown error");
-    }
-  };
-
-  const handleShowNotification = () => {
-    setOpen(true);
-  };
-
-  const handleCloseNotification = (
-    event?: React.SyntheticEvent | Event,
-    reason?: string,
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpen(false);
-  };
-
   const items = [
     { label: 'Home', to: '/' },
-    { label: 'Complaints', to: '/complaints' },
+    { label: 'Adverse Events', to: '/adverseEvent' },
     { label: complaintDetails?.case_id.toString() },
   ];
 
@@ -149,12 +92,8 @@ const ComplaintsDetails: React.FC = () => {
   return (
     <Box className={styles.rootBox}>
       <CommonBreadcrumbs items={items} />
-      <ComplaintHeaderCard
+      <AdverseEventHeader
         complaintData={complaintHeaderData}
-        onApproveAndSend={handleSubmit}
-        caseStatus={complaintDetails?.caseStatus}
-        isApproved={isApproved}
-        createdAt={complaintDetails?.created_at}
       />
       <ComplaintSecondaryInfo
         infoItems={infoItems}
@@ -164,32 +103,11 @@ const ComplaintsDetails: React.FC = () => {
         adverseEventChipClassName={styles.adverseEventChip}
         caseType={complaintDetails?.case_type as string[]}
       />
-      <ComplaintAISummary ai_summary={complaintDetails?.ai_summary as string} />
-      <Grid container spacing={3} className={styles.gridWithMarginTop}>
-        <Grid item xs={12} md={4.9}>
+        <Grid item xs={12} md={12} mt={3}>
           <ComplaintNarrative narrative={complaintDetails?.narrative as string} />
         </Grid>
-        <Grid item xs={12} md={7.1}>
-          <ComplaintCategory
-            crlList={crlList}
-            labelList={labelList}
-            caseStatus={complaintDetails?.caseStatus}
-            complaintCategories={complaintDetails?.category_details || []}
-            setComplaintCategories={(newCategoryDetails) => {
-              setComplaintDetails((prev) => {
-                if (!prev) return prev;
-                const clonedPrev = JSON.parse(JSON.stringify(prev));
-                clonedPrev.category_details = newCategoryDetails;
-                return clonedPrev;
-              });
-            }}
-
-          />
-        </Grid>
-      </Grid>
-      <Notification open={open} onClose={handleCloseNotification} position='top' type={type} message={message} />
     </Box>
   );
 };
 
-export default ComplaintsDetails;
+export default AdverseEventDetails;

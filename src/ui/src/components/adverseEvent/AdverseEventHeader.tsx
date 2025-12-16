@@ -1,19 +1,10 @@
 import React from 'react';
-import styles from './ComplaintHeaderCard.module.scss';
-import Edit from '../../assets/icons/edit.svg'
-
+import styles from './AdverseEventHeader.module.scss';
 import { Paper, Box, Stack, Grid } from '@mui/material';
-import ComplaintsDueDateChip from './ComplaintsDueDateChip';
-import { formatDateMMM_D_YYYY } from 'src/utils';
-import { ComplaintInterHeaderCardProps } from 'src/types';
-import { getDueStatus } from 'src/helpers';
+import { AdverseEventHeaderProps } from 'src/types';
 
-const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
-  complaintData,
-  caseStatus,
-  setOpenModifyDetails,
-  createdAt,
-  processingFile
+const AdverseEventHeader: React.FC<AdverseEventHeaderProps> = ({
+  complaintData
 }) => {
   const {
     caseId,
@@ -24,8 +15,7 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
     lotNumber,
     doseAmount,
     expirationDate,
-    partNumber,
-    receipt_date,
+    partNumber
   } = complaintData || {};
 
   return (
@@ -33,26 +23,9 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
       <Box className={styles.flexContainer}>
         <Box className={styles.leftSide}>
           <Stack spacing={0.5} className={styles.stackCustom}>
-            {caseStatus === 'pending' ? (
-              <Box className={styles.statusText}>IN REVIEW</Box>
-            ) : (
-              <Box className={styles.statusText}>{caseStatus?.toUpperCase()}</Box>
-            )}
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
               <Box className={styles.caseIdText}>{caseId}</Box>
-              <ComplaintsDueDateChip
-                type={createdAt && getDueStatus(createdAt).type}
-                label={createdAt && getDueStatus(createdAt).label}
-              />
               <Box className={styles.flexGrow} />
-              {(caseStatus !== 'processed') && <button
-                type="button"
-                className={`${styles.modifyBtn}`}
-                disabled={processingFile}
-                onClick={() => { if (!processingFile) setOpenModifyDetails(true) }}
-              >
-                <img src={Edit} /><span className={styles.label}>Modify Details</span>
-              </button>}
             </Stack>
           </Stack>
 
@@ -94,7 +67,7 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
 
                 <Grid item xs={8} sm={3}>
                   <Box className={`${styles.labelText} ${styles.mt2}`}>Expiration Date</Box>
-                  <Box className={styles.valueText}>{expirationDate ? formatDateMMM_D_YYYY(expirationDate) : 'NA'}</Box>
+                  <Box className={styles.valueText}>{expirationDate}</Box>
                 </Grid>
 
                 <Grid item xs={8} sm={3}>
@@ -110,4 +83,4 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
   );
 };
 
-export default ComplaintInterHeaderCard;
+export default AdverseEventHeader;

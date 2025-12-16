@@ -59,19 +59,22 @@ const Header = () => {
   const navLinks = [
     { label: "Dashboard", path: "/" },
     { label: "Complaints", path: "/complaints" },
-    { label: "Deviation", path: "/deviations" },
+    { label: "Deviations", path: "/deviations" },
+    { label: "Adverse Events", path: "/adverseEvent" },
   ];
 
   // Find the index of current tab by checking if location pathname starts with path
-  const currentTab =
-    location.pathname === "/"
-      ? 0
-      : (location.pathname.startsWith("/complaints") ||
-        location.pathname.startsWith("/approveComplaints"))
-        ? 1
-        : location.pathname.startsWith("/deviations")
-          ? 2
-          : -1;
+ const currentTab =
+  location.pathname === "/"
+    ? 0
+    : (location.pathname.startsWith("/complaints") ||
+      location.pathname.startsWith("/approveComplaints"))
+    ? 1
+    : location.pathname.startsWith("/deviations")
+    ? 2
+    : location.pathname.startsWith("/adverseEvent")
+    ? 3
+    : 0;
 
   return (
     <header className="qms-header">
@@ -89,7 +92,7 @@ const Header = () => {
           </div>
           <div className="qms-header-container-navbar-center">
             <Tabs
-              value={currentTab !== -1 ? currentTab : 0}
+              value={currentTab}
               TabIndicatorProps={{ style: { display: "none" } }}
             >
               {navLinks.map(({ label, path }) => (

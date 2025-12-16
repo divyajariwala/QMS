@@ -22,11 +22,13 @@ import CreateNarrative from "@components/Complaints/createNarrative";
 import Complaints from "@components/complaint/Complaints";
 import ComplaintsIntermediate from "@components/complaint/ComplaintsIntermediate";
 import ComplaintsDetails from "@components/complaint/ComplaintsDetails";
+import AdverseEvent from "@components/adverseEvent/AdverseEvent";
 import { PollingProvider } from "@components/polling/PollingProvider";
 import { StatusProvider } from "./context/StatusProvider";
 import { useAuth } from "react-oidc-context";
 import SessionCleaner from "./auth/SessionCleaner";
 import DeviationsIntermediate from "@components/deviations/DeviationsIntermediate";
+import AdverseEventDetails from "@components/adverseEvent/AdverseEventDetails";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -111,6 +113,14 @@ const App = () => {
                     }
                   />
                   <Route
+                    path="/adverseEvent"
+                    element={
+                      <ProtectedRoute>
+                        <AdverseEvent />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/createNarrative"
                     element={
                       <ProtectedRoute>
@@ -139,6 +149,14 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <ComplaintsDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/adverseEvent/:complaintId"
+                    element={
+                      <ProtectedRoute>
+                        <AdverseEventDetails />
                       </ProtectedRoute>
                     }
                   />
