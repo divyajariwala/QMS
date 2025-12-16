@@ -1,0 +1,35 @@
+{
+  "toolSpec": {
+    "name": "extract_deviation_info",
+    "description": "Extract deviation investigation information from documents",
+    "inputSchema": {
+      "json": {
+        "type": "object",
+        "properties": {
+          "investigation_summary": {
+            "type": "string",
+            "description": "Complete investigation summary text exactly as it appears in the document"
+          },
+          "description": {
+            "type": "string",
+            "description": "Full description of the deviation exactly as it appears in the document"
+          },
+          "immediate_steps_taken": {
+            "type": "string",
+            "description": "Complete text of immediate corrective steps taken exactly as it appears in the document"
+          },
+          "capa_overview": {
+            "type": "string",
+            "description": "Complete CAPA (Corrective and Preventive Action) overview text exactly as it appears in the document"
+          }
+        },
+        "required": [
+          "investigation_summary",
+          "description",
+          "immediate_steps_taken",
+          "capa_overview"
+        ]
+      }
+    }
+  }
+}
