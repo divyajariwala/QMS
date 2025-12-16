@@ -1,0 +1,196 @@
+.investigationSummary {
+  padding: 16px;
+  border-radius: 16px !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+
+  .header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-left: 16px;
+    justify-content: space-between;
+  }
+  .headerIcons,
+  .headerIcons:hover {
+    height: 40px;
+    background-color: #ffffff;
+    border: 1px solid #dae0e6;
+    padding: 0;
+    min-width: 40px;
+    border-radius: 5px;
+    box-shadow: none;
+  }
+
+  .headerText {
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 28px;
+    color: #202123;
+    margin: 0;
+    font-family: inherit !important;
+  }
+
+  .subText {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    color: #6d7175;
+    margin: 0;
+    font-family: inherit !important;
+    text-align: center;
+  }
+
+  .emptyState {
+    margin-top: 25%;
+    margin-bottom: 10%;
+  }
+
+  .emptyStateImage {
+    width: 160px;
+    height: 160px;
+    margin-bottom: 5%;
+  }
+
+  .title {
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    vertical-align: bottom;
+    color: #000000;
+    font-family: inherit !important;
+  }
+
+  .importBtn {
+    color: #202223;
+    width: 92px;
+    height: 36px;
+    border: 1px solid #babfc3;
+    border-radius: 4px;
+    text-transform: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px;
+    justify-content: space-between;
+  }
+
+  .addBtn {
+    font-family: inherit;
+    text-transform: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #202223;
+    padding: 10px;
+    width: 128px;
+    height: 36px;
+    justify-content: space-between;
+  }
+
+  .btnCancel {
+    width: 83px;
+    height: 36px;
+    font-family: inherit !important;
+    padding: 8px 20px;
+    border-radius: 10px;
+    border: 1px solid #dae0e6;
+    color: #272d37;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+    text-transform: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+      border-color: #bac3d2;
+      background-color: rgba(218, 224, 230, 0.1);
+    }
+  }
+
+  .btnSubmit {
+    width: 99px;
+    height: 36px;
+    font-family: inherit !important;
+    padding: 8px 20px;
+    border-radius: 10px;
+    background-color: #0089eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-transform: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+      background-color: #0076cc;
+    }
+  }
+
+  .textarea {
+    width: 100%;
+    min-height: 300px;
+    max-height: 300px; /* limit max height */
+    resize: none;
+    padding: 8px 14px;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    overflow-y: auto; /* enable textarea scroll if too tall */
+    border: 1px solid rgba(0, 0, 0, 0.23);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-weight: 400;
+    outline-offset: -2px;
+    margin-top: 16px;
+
+    &:focus {
+      border-color: #0089eb;
+      outline: 2px solid #0089eb;
+    }
+  }
+
+  .body {
+    font-weight: 400;
+    font-style: normal;
+    font-size: 16px;
+    line-height: 21px;
+    letter-spacing: 0.04em;
+    color: #29323a;
+    white-space: pre-line;
+    overflow-y: auto;
+    padding: 16px;
+    max-height: 552px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f0f0f0;
+
+    /* Optional: scrollbar styles (Webkit browsers) */
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f0f0f0;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #c1c1c1;
+      border-radius: 4px;
+      border: 2px solid #f0f0f0;
+    }
+  }
+}

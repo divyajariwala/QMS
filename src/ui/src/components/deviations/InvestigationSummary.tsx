@@ -1,0 +1,158 @@
+import { useState, useEffect, MouseEvent } from "react";
+import {
+  Paper,
+  Stack,
+  Box,
+  Button,
+  Typography,
+} from "@mui/material";
+import styles from "./InvestigationSummary.module.scss";
+import PlusIcon from "../../assets/icons/plus.svg";
+import EmptyImg from "../../assets/images/emptyState.svg";
+
+type Props = {
+  summary: string;
+  setSummary: (value: string) => void;
+  onAddCard?: () => void;
+};
+
+const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
+  const hasSummary = summary.trim().length > 0;
+  const [draft, setDraft] = useState<string>(summary);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setDraft(summary);
+    }
+  }, [summary, isEditing]);
+
+  const startEditing = (event?: MouseEvent<HTMLButtonElement>): void => {
+    event?.preventDefault();
+    setDraft(summary); // initialize with current summary (can be empty)
+    setIsEditing(true);
+  };
+
+  const cancelEditing = (): void => {
+    setDraft(summary); // revert to original
+    setIsEditing(false);
+  };
+
+  const saveEditing = (): void => {
+    const next = draft.trim();
+    setSummary(next);
+    setIsEditing(false);
+  };
+
+  useEffect(() => {
+    if (!isEditing) return;
+    const handler = (e: KeyboardEvent) => {
+      const isSave = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s";
+      const isEsc = e.key === "Escape";
+
+      if (isSave) {
+        e.preventDefault();
+        saveEditing();
+      } else if (isEsc) {
+        e.preventDefault();
+        cancelEditing();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isEditing, draft]);
+
+  return (
+    <Paper variant="outlined" className={styles.investigationSummary}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        className={styles.header}
+      >
+        <Box className={styles.title}>Investigation Summary</Box>
+
+        {!hasSummary && !isEditing && (
+          <Button
+            variant="contained"
+            onClick={startEditing}
+            className={styles.headerIcons}
+          >
+            <img src={PlusIcon} alt="plus" />
+          </Button>
+        )}
+      </Stack>
+
+      <Box className={hasSummary ? styles.body : styles.bodyEmpty}>
+        {isEditing ? (
+          <Stack spacing={2} className={styles.editorContainer}>
+            <textarea
+              id="summary"
+              autoFocus
+              className={styles.textarea}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+            />
+            <Stack direction="row" spacing={1} justifyContent="flex-end">
+              <Button
+                variant="outlined"
+                onClick={cancelEditing}
+                className={styles.btnCancel}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={saveEditing}
+                disabled={draft.trim().length === 0}
+                className={styles.btnSubmit}
+              >
+                Save
+              </Button>
+            </Stack>
+          </Stack>
+        ) : (
+          <>
+            {hasSummary ? (
+              <Stack spacing={2} className={styles.summaryContainer}>
+                <Box className={styles.summaryText}>{summary}</Box>
+              </Stack>
+            ) : (
+              <Stack
+                alignItems="center"
+                justifyContent="center"
+                spacing={2}
+                className={styles.emptyState}
+              >
+                <img
+                  className={styles.emptyStateImage}
+                  src={EmptyImg}
+                  alt="Empty"
+                />
+                <Typography className={styles.headerText}>
+                  There is currently no data to display.
+                </Typography>
+                <Typography className={styles.subText}>
+                  To begin, import a file for processing or manually input your
+                  narrative.
+                </Typography>
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    variant="text"
+                    onClick={startEditing}
+                    className={styles.addBtn}
+                  >
+                    <img src={PlusIcon} alt="plus" />
+                    Add Manually
+                  </Button>
+                </Stack>
+              </Stack>
+            )}
+          </>
+        )}
+      </Box>
+    </Paper>
+  );
+};
+
+export default InvestigationSummary;

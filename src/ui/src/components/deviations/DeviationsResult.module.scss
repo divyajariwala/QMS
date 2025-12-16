@@ -1,7 +1,6 @@
 .chipBase {
   border-radius: 5px;
   padding: 4px 10px;
-  font-family: inherit !important;
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
@@ -25,19 +24,19 @@
   margin-top: 16px;
 }
 
-
 .complaintsCardContainer {
-  background-color: #fff;
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
+  background-color: #fff; // white background simulates Paper
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2); // soft shadow like Paper
+  border-radius: 10px; // rounded corners (default Paper radius)
   padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 12px;
+  /* 1.5 * 8px */
   margin-top: 20px;
-  height: 224px;
+  /* 2.5 * 8px */
 }
 
 .headerRow {
@@ -49,7 +48,6 @@
 }
 
 .statusText {
-  font-family: inherit !important;
   font-weight: 600;
   font-size: 12px;
   line-height: 24px;
@@ -59,8 +57,92 @@
   margin: 0;
 }
 
+.cardBox {
+  padding: 16px 24px;
+  border-radius: 16px;
+  height: 100%;
+  font-family: inherit;
+  background: #ffffff;
+  border: 1px solid #e6e8eb;
+  border-bottom: none;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.cardTitle {
+  font-weight: 600;
+  font-style: SemiBold;
+  font-size: 18px;
+  line-height: 100%;
+  letter-spacing: 4%;
+  vertical-align: bottom;
+}
+
+.cardSubtitle {
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  color: #5f6d7e;
+}
+
+.classifyBtn {
+  background: #0060d7;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0px 1px 2px 0px #1018280a;
+  width: 152px;
+  height: 40px;
+  gap: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.emptyCategory {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+
+  .emptyCategoryText {
+    color: #8b8c8f;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.classifyBtn {
+  filter: brightness(0.95);
+}
+
+.classifyBtn:disabled {
+  cursor: not-allowed;
+  background-color: #dae0e6;
+  color: #ffffff;
+}
+
+.processText {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.1px;
+  color: #3b3b3b;
+  margin-left: 50px;
+  text-transform: none;
+}
+
 .caseNumberText {
-  font-family: inherit !important;
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
@@ -73,15 +155,9 @@
 .infoRow {
   display: flex;
   flex-direction: row;
-  gap: 64px;
-  font-family: inherit !important;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -0.1px;
-  color: #5F6D7E;
+  gap: 16px;
+  /* 8 * 8px */
 }
-
 .infoItemColumn {
   display: flex;
   flex-direction: column;
@@ -294,8 +370,8 @@
   font-family: inherit !important;
   border-radius: 6px !important;
   text-transform: none;
-  color: #0089EB !important;
-  border: 1px solid #0089EB !important;
+  color: #0089eb !important;
+  border: 1px solid #0089eb !important;
   background: transparent;
   justify-content: flex-start;
   font-weight: 500;
@@ -311,9 +387,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #F9FAFB;
-  color: #6A7282;
-  border: 1px solid #0000001A;
+  background: #f9fafb;
+  color: #6a7282;
+  border: 1px solid #0000001a;
   border-radius: 6px;
   padding: 8px 12px;
   font-weight: 500;
@@ -362,7 +438,7 @@
   justify-content: center;
   gap: 8px;
   background: #e6f9ee;
-  color: #2C8646;
+  color: #2c8646;
   padding: 8px 12px;
   border-radius: 6px;
   height: 36px;
@@ -383,8 +459,8 @@
   border-radius: 6px !important;
   text-transform: none !important;
   font-family: inherit !important;
-  color: #9810FA !important;
-  border: 1px solid #9810FA !important;
+  color: #9810fa !important;
+  border: 1px solid #9810fa !important;
   background: transparent;
   justify-content: center;
   padding-left: 12px;

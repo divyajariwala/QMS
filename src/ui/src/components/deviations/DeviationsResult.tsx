@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, LinearProgress, Button, Radio } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ComplaintsDueDateChip from "../../components/complaint/ComplaintsDueDateChip";
 import Calendar from "../../assets/icons/calendar.svg";
 import styles from "./DeviationsResult.module.scss";
@@ -10,14 +10,21 @@ import { getDueStatus } from "src/helpers";
 import { DeviationProps } from "src/types";
 
 const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
+  const navigate = useNavigate();
   const headerStatusRaw = (deviation?.status ?? "").toString().trim();
   const headerStatusUpper = headerStatusRaw.toUpperCase();
   const caseNumber = deviation?.["Case Number"];
   const receivedDate = deviation?.["Recieved Date"];
   const dueDate = deviation?.["Due Date"];
   const progress = deviation?.progress ? deviation.progress : 0;
-  const rcaStatusUpper = (deviation?.rcaStatus ?? "").toString().trim().toUpperCase();
-  const gradingStatusUpper = (deviation?.gradingStatus ?? "").toString().trim().toUpperCase();
+  const rcaStatusUpper = (deviation?.rcaStatus ?? "")
+    .toString()
+    .trim()
+    .toUpperCase();
+  const gradingStatusUpper = (deviation?.gradingStatus ?? "")
+    .toString()
+    .trim()
+    .toUpperCase();
   const isInReview = headerStatusUpper === "IN-REVIEW";
   const gradingPendingHeader = /GRADING/.test(headerStatusUpper) && !isInReview;
   const showGradingPendingView =
@@ -28,11 +35,10 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
   const dueInfo = getDueStatus(dueDate);
   const onStartRca = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("Start RCA for", caseNumber);
+    navigate(`/deviations/${caseNumber}`);
   };
   const onStartGrading = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("Start Grading for", caseNumber);
   };
 
   return (
@@ -58,7 +64,9 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
       <div className={styles.progressSection}>
         <div className={styles.progressHeader}>
           <span className={styles.progressLabel}>Overall Progress</span>
-          <span className={styles.progressPercent}>{`${Math.round(progress)}%`}</span>
+          <span className={styles.progressPercent}>{`${Math.round(
+            progress
+          )}%`}</span>
         </div>
         <div className={styles.progressBarBackground}>
           <div
@@ -75,7 +83,10 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
           </div>
           {showGradingPendingView && rcaStatusUpper === "COMPLETED" ? (
             <div className={styles.completedPill}>
-              <CheckCircleOutlineIcon fontSize="small" className={styles.completedIcon} />
+              <CheckCircleOutlineIcon
+                fontSize="small"
+                className={styles.completedIcon}
+              />
               <span>Completed</span>
             </div>
           ) : (
