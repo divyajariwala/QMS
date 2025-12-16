@@ -1,23 +1,6 @@
-Based on the following Investigation Summary, identify the specific and fundamental root cause.
-
-The root cause should:
-- Be the deepest fundamental cause of the problem
-- If addressed, would have prevented the incident
-- Be specific and actionable
-- Be supported by evidence from the Investigation Summary
+Based on the following Investigation Summary, identify the fundamental root cause.
 
 Investigation Summary:
 {investigation_summary}
 
-Respond in JSON format with the following structure:
-{
-  "root_cause": {
-    "cause": "Specific description of the root cause",
-    "explanation": "Detailed explanation of why this is the fundamental cause",
-    "prevention_approach": "How addressing this cause would have prevented the problem",
-    "recommended_actions": [
-      "Recommended corrective action 1",
-      "Recommended corrective action 2"
-    ]
-  }
-}
+Write a clear paragraph explaining the deepest, most fundamental cause of the problem. This should be the underlying reason that, if addressed, would have prevented the incident. Focus on systemic issues rather than surface-level problems.
