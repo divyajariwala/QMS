@@ -283,7 +283,7 @@ lambda_configs = [
     environment_variables = {
       env                 = "dev"
       aws_region          = "us-east-1"
-      llm_model_id        = "anthropic.claude-3-5-sonnet-20241022-v2:0"
+      llm_model_id        = "anthropic.claude-3-haiku-20240307-v1:0"
       db_secret_base_name = "aurora-postgres-master"
     }
     api_gateway_paths = [

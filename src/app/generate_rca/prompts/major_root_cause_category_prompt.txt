@@ -1,21 +1,15 @@
 Based on the following Investigation Summary, determine the major root cause category.
 
-The major categories can include:
+Investigation Summary:
+{investigation_summary}
+
+Select ONE of the following categories that best fits:
 - Procedure issue
-- Process/manufacturing equipment issue
+- Process/manufacturing equipment issue  
 - Company personnel issue
 - Training issue
 - System/software issue
 - Documentation issue
 - Quality control issue
 
-Investigation Summary:
-{investigation_summary}
-
-Respond in JSON format with the following structure:
-{
-  "major_root_cause_category": {
-    "category": "Major category name",
-    "explanation": "Detailed explanation of why this is the major category"
-  }
-}
+Respond with ONLY the category name, nothing else.

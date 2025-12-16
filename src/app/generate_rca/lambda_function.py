@@ -1,7 +1,6 @@
 import json
 import boto3
 import os
-from typing import Dict, Any
 import logging
 from utils import response, handle_cors_preflight, parse_event_body
 
@@ -19,94 +18,154 @@ DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 # Bedrock client
 bedrock_client = boto3.client('bedrock-runtime', region_name=AWS_REGION)
 
+
 def load_prompt(prompt_file: str) -> str:
     """
     Load a prompt file from prompts/ folder
     """
     try:
-        prompt_path = os.path.join(os.path.dirname(__file__), 'prompts', prompt_file)
-        with open(prompt_path, 'r', encoding='utf-8') as file:
-            return file.read()
+        # Try different possible paths for Lambda deployment
+        possible_paths = [
+            os.path.join(os.path.dirname(__file__), 'prompts', prompt_file),
+            os.path.join('/var/task', 'prompts', prompt_file),
+            os.path.join('/var/task', prompt_file),
+            prompt_file
+        ]
+        
+        for prompt_path in possible_paths:
+            if os.path.exists(prompt_path):
+                with open(prompt_path, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                    logger.info(f"Loaded prompt file: {prompt_file}")
+                    return content
+        
+        raise FileNotFoundError(f"Prompt file {prompt_file} not found")
+        
     except Exception as e:
         logger.error(f"Error loading prompt file {prompt_file}: {str(e)}")
         raise
 
-def call_bedrock_model(prompt: str, model_id: str = None) -> str:
+
+def call_bedrock(prompt_text: str) -> str:
     """
-    Call the Bedrock model with the given prompt
+    Call Bedrock Claude model with a prompt using the Converse API.
+    
+    Args:
+        prompt_text: The formatted prompt string
+        
+    Returns:
+        Plain text response from Claude
     """
     try:
-        # Use environment variable model ID if not provided
-        if model_id is None:
-            model_id = MODEL_ID
-            
-        body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 4000,
-            "messages": [
+        logger.info(f"Calling Bedrock model: {MODEL_ID}")
+        
+        response = bedrock_client.converse(
+            modelId=MODEL_ID,
+            messages=[
                 {
                     "role": "user",
-                    "content": prompt
+                    "content": [{"text": prompt_text}]
                 }
             ],
-            "temperature": 0.1
-        }
-        
-        response = bedrock_client.invoke_model(
-            modelId=model_id,
-            body=json.dumps(body)
+            inferenceConfig={
+                "maxTokens": 2048,
+                "temperature": 0
+            }
         )
         
-        response_body = json.loads(response['body'].read())
-        return response_body['content'][0]['text']
+        response_text = response['output']['message']['content'][0]['text']
+        logger.info(f"Response received, length: {len(response_text)} chars")
+        
+        return response_text.strip()
         
     except Exception as e:
-        logger.error(f"Error calling Bedrock model: {str(e)}")
+        logger.error(f"Error calling Bedrock: {str(e)}")
         raise
 
-def generate_issues(investigation_summary: str) -> Dict[str, Any]:
+
+def generate_issues(investigation_summary: str) -> str:
     """
     Generates the Issues section of the RCA
-    """
-    prompt_template = load_prompt('issues_prompt.txt')
-    prompt = prompt_template.format(investigation_summary=investigation_summary)
     
-    response = call_bedrock_model(prompt)
-    return json.loads(response)
+    Returns:
+        Plain text description of issues
+    """
+    try:
+        prompt_template = load_prompt('issues_prompt.txt')
+        prompt = prompt_template.format(investigation_summary=investigation_summary)
+        
+        result = call_bedrock(prompt)
+        logger.info("Successfully generated Issues section")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error generating Issues: {str(e)}")
+        raise
 
-def generate_major_root_cause_category(investigation_summary: str) -> Dict[str, Any]:
+
+def generate_major_root_cause_category(investigation_summary: str) -> str:
     """
-    Generates the major root cause category of the root cause
-    """
-    prompt_template = load_prompt('major_root_cause_category_prompt.txt')
-    prompt = prompt_template.format(investigation_summary=investigation_summary)
+    Generates the major root cause category
     
-    response = call_bedrock_model(prompt)
-    return json.loads(response)
+    Returns:
+        Plain text category name
+    """
+    try:
+        prompt_template = load_prompt('major_root_cause_category_prompt.txt')
+        prompt = prompt_template.format(investigation_summary=investigation_summary)
+        
+        result = call_bedrock(prompt)
+        logger.info("Successfully generated Major Root Cause Category")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error generating Major Category: {str(e)}")
+        raise
 
-def generate_near_root_cause(investigation_summary: str) -> Dict[str, Any]:
+
+def generate_near_root_cause(investigation_summary: str) -> str:
     """
     Generates the near root cause
-    """
-    prompt_template = load_prompt('near_root_cause_prompt.txt')
-    prompt = prompt_template.format(investigation_summary=investigation_summary)
     
-    response = call_bedrock_model(prompt)
-    return json.loads(response)
+    Returns:
+        Plain text description of near root cause
+    """
+    try:
+        prompt_template = load_prompt('near_root_cause_prompt.txt')
+        prompt = prompt_template.format(investigation_summary=investigation_summary)
+        
+        result = call_bedrock(prompt)
+        logger.info("Successfully generated Near Root Cause")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error generating Near Root Cause: {str(e)}")
+        raise
 
-def generate_root_cause(investigation_summary: str) -> Dict[str, Any]:
+
+def generate_root_cause(investigation_summary: str) -> str:
     """
     Generates the root cause
-    """
-    prompt_template = load_prompt('root_cause_prompt.txt')
-    prompt = prompt_template.format(investigation_summary=investigation_summary)
     
-    response = call_bedrock_model(prompt)
-    return json.loads(response)
+    Returns:
+        Plain text description of root cause
+    """
+    try:
+        prompt_template = load_prompt('root_cause_prompt.txt')
+        prompt = prompt_template.format(investigation_summary=investigation_summary)
+        
+        result = call_bedrock(prompt)
+        logger.info("Successfully generated Root Cause")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error generating Root Cause: {str(e)}")
+        raise
+
 
 def lambda_handler(event, context):
     try:
-        logger.info(f"Region: {AWS_REGION}, Model: {MODEL_ID}")
+        logger.info(f"Environment: {ENV}, Region: {AWS_REGION}, Model: {MODEL_ID}")
         logger.info(f"Received event: {json.dumps(event)}")
         
         # Handle OPTIONS request for CORS preflight
@@ -116,42 +175,44 @@ def lambda_handler(event, context):
         # Parse event body
         body = parse_event_body(event)
         investigation_summary = body.get('investigation_summary')
+        deviation_id = body.get('deviation_id')
         
         if not investigation_summary:
             return response(400, "investigation_summary is required")
         
+        if not isinstance(investigation_summary, str):
+            return response(400, f"investigation_summary must be a string")
+        
+        if not investigation_summary.strip():
+            return response(400, "investigation_summary cannot be empty")
+        
         logger.info("Starting RCA generation process")
         
+        # Generate each section as plain text
         logger.info("Generating Issues section")
-        issues = generate_issues(investigation_summary)
+        issues_text = generate_issues(investigation_summary)
         
         logger.info("Generating Major Root Cause Category")
-        major_category = generate_major_root_cause_category(investigation_summary)
+        major_category_text = generate_major_root_cause_category(investigation_summary)
         
         logger.info("Generating Near Root Cause")
-        near_cause = generate_near_root_cause(investigation_summary)
+        near_cause_text = generate_near_root_cause(investigation_summary)
         
         logger.info("Generating Root Cause")
-        root_cause = generate_root_cause(investigation_summary)
+        root_cause_text = generate_root_cause(investigation_summary)
         
+        # Structure result as plain text fields
         rca_result = {
-            'deviation_id': body.get('deviation_id'),
-            'rca_analysis': {
-                'issues': issues.get('issues', []),
-                'major_root_cause_category': major_category.get('major_root_cause_category', {}),
-                'near_root_cause': near_cause.get('near_root_cause', {}),
-                'root_cause': root_cause.get('root_cause', {}),
-                'generated_timestamp': context.aws_request_id
-            }
+            'deviation_id': deviation_id,
+            'issues': issues_text,
+            'major_root_cause_category': major_category_text,
+            'near_root_cause': near_cause_text,
+            'root_cause': root_cause_text
         }
         
         logger.info("RCA generation completed successfully")
         
         return response(200, "RCA generated successfully", rca_result)
-        
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON decode error: {str(e)}")
-        return response(400, "Invalid JSON format", {"details": str(e)})
         
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")

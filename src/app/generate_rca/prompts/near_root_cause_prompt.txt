@@ -1,19 +1,6 @@
 Analyze the following Investigation Summary and identify the near root cause.
 
-The near root cause should:
-- Be more specific than the major category
-- Identify the immediate factor that contributed to the problem
-- Be directly related to the events described
-- Be something that can be addressed with corrective actions
-
 Investigation Summary:
 {investigation_summary}
 
-Respond in JSON format with the following structure:
-{
-  "near_root_cause": {
-    "cause": "Description of the near root cause",
-    "explanation": "Detailed explanation of how this cause contributed to the problem",
-    "evidence": "Evidence from the Investigation Summary that supports this conclusion"
-  }
-}
+The near root cause should identify the immediate factor that contributed to the problem. Write a clear paragraph explaining what directly led to the issue. Focus on the proximate cause that can be addressed with corrective actions.
