@@ -35,12 +35,10 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
   const dueInfo = getDueStatus(dueDate);
   const onStartRca = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("Start RCA for", caseNumber);
     navigate(`/deviations/${caseNumber}`);
   };
   const onStartGrading = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("Start Grading for", caseNumber);
   };
 
   return (

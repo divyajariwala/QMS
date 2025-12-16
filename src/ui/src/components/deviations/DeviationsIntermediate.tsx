@@ -30,7 +30,6 @@ const DeviationsIntermediate: React.FC = () => {
   ];
 
   if (loading) return <p>Loading details...</p>;
-  console.log(summary);
 
   return (
     <Box className={styles.rootBox}>
