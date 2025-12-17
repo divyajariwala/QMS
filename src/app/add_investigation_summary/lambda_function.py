@@ -27,10 +27,63 @@ _connection_string = None
 def lambda_handler(event, context):
     try:
         body = json.loads(event['body']) if isinstance(event.get('body'), str) else event
+        
+        # Validate required fields
+        if 'deviationId' not in body:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': 'Missing required field: deviationId'})
+            }
+        
+        if 'summary' not in body:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': 'Missing required field: summary'})
+            }
+        
         deviation_id = body['deviationId']
         summary = body['summary']
         
-        update_investigation_summary(deviation_id, summary)
+        # Validate field types and values
+        if not isinstance(deviation_id, str) or not deviation_id.strip():
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': 'deviationId must be a non-empty string'})
+            }
+        
+        if not isinstance(summary, str) or not summary.strip():
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': 'summary must be a non-empty string'})
+            }
+        
+        rows_updated = update_investigation_summary(deviation_id, summary)
+        
+        if rows_updated == 0:
+            return {
+                'statusCode': 404,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': f'Deviation not found: {deviation_id}'})
+            }
         
         return {
             'statusCode': 200,
@@ -49,7 +102,7 @@ def lambda_handler(event, context):
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            'body': json.dumps({'error': f'Database error: {str(e)}'})
+            'body': json.dumps({'error': f'Internal server error: {str(e)}'})
         }
 
 def get_connection_string():
@@ -87,8 +140,15 @@ def update_investigation_summary(deviation_id, summary):
                 """
                 
                 cur.execute(update_query, (summary, deviation_id))
+                rows_updated = cur.rowcount
                 conn.commit()
-                logger.info(f"Updated investigation summary for deviation_id: {deviation_id}")
+                
+                if rows_updated > 0:
+                    logger.info(f"Updated investigation summary for deviation_id: {deviation_id}")
+                else:
+                    logger.warning(f"No rows updated for deviation_id: {deviation_id}")
+                
+                return rows_updated
                 
     except Exception as e:
         logger.error(f"Database error updating investigation summary: {str(e)}")
