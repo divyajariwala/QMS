@@ -6,9 +6,9 @@
       "json": {
         "type": "object",
         "properties": {
-          "investigation_summary": {
+          "title": {
             "type": "string",
-            "description": "Complete investigation summary text exactly as it appears in the document"
+            "description": "Title or heading of the deviation exactly as it appears in the document"
           },
           "description": {
             "type": "string",
@@ -18,16 +18,36 @@
             "type": "string",
             "description": "Complete text of immediate corrective steps taken exactly as it appears in the document"
           },
-          "capa_overview": {
+          "quality_risk_evaluation": {
             "type": "string",
-            "description": "Complete CAPA (Corrective and Preventive Action) overview text exactly as it appears in the document"
+            "description": "Quality risk evaluation or classification rationale text exactly as it appears in the document"
+          },
+          "investigation_summary": {
+            "type": "string",
+            "description": "Complete investigation details or summary text exactly as it appears in the document"
+          },
+          "capa_plan": {
+            "type": "string",
+            "description": "Complete CAPA (Corrective and Preventive Action) plan or CAPA overview text exactly as it appears in the document"
+          },
+          "recurrence_check_details": {
+            "type": "string",
+            "description": "Recurrence check details or monitoring information exactly as it appears in the document"
+          },
+          "effectiveness_check_plan": {
+            "type": "string",
+            "description": "Effectiveness check plan text exactly as it appears in the document"
           }
         },
         "required": [
-          "investigation_summary",
+          "title",
           "description",
           "immediate_steps_taken",
-          "capa_overview"
+          "quality_risk_evaluation",
+          "investigation_summary",
+          "capa_plan",
+          "recurrence_check_details",
+          "effectiveness_check_plan"
         ]
       }
     }

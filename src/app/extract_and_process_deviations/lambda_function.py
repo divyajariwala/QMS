@@ -135,10 +135,14 @@ def process_with_bedrock(messages):
         
         logger.warning("No tool use found in response")
         return {
-            'investigation_summary': 'N/A',
+            'title': 'N/A',
             'description': 'N/A',
             'immediate_steps_taken': 'N/A',
-            'capa_overview': 'N/A'
+            'quality_risk_evaluation': 'N/A',
+            'investigation_summary': 'N/A',
+            'capa_plan': 'N/A',
+            'recurrence_check_details': 'N/A',
+            'effectiveness_check_plan': 'N/A'
         }
     except Exception as e:
         logger.error(f"Bedrock error: {str(e)}")
@@ -151,19 +155,27 @@ def update_deviation_in_db(deviation_id, extracted_data):
             with conn.cursor() as cur:
                 update_query = """
                 UPDATE deviations SET
-                    investigation_summary = %s,
+                    title = %s,
                     description = %s,
                     immediate_steps_taken = %s,
-                    capa_overview = %s,
+                    quality_risk_evaluation = %s,
+                    investigation_summary = %s,
+                    capa_plan = %s,
+                    recurrence_check_details = %s,
+                    effectiveness_check_plan = %s,
                     text_extracted = TRUE
                 WHERE deviation_id = %s
                 """
                 
                 cur.execute(update_query, (
-                    extracted_data.get('investigation_summary'),
+                    extracted_data.get('title'),
                     extracted_data.get('description'),
                     extracted_data.get('immediate_steps_taken'),
-                    extracted_data.get('capa_overview'),
+                    extracted_data.get('quality_risk_evaluation'),
+                    extracted_data.get('investigation_summary'),
+                    extracted_data.get('capa_plan'),
+                    extracted_data.get('recurrence_check_details'),
+                    extracted_data.get('effectiveness_check_plan'),
                     deviation_id
                 ))
                 
@@ -187,10 +199,14 @@ def process_single_deviation(message_data):
         if not images:
             logger.warning(f"PDF has no pages for deviation {deviation_id}")
             extracted_data = {
-                'investigation_summary': 'Empty PDF - No Pages',
+                'title': 'Empty PDF - No Pages',
                 'description': 'N/A',
                 'immediate_steps_taken': 'N/A',
-                'capa_overview': 'N/A'
+                'quality_risk_evaluation': 'N/A',
+                'investigation_summary': 'N/A',
+                'capa_plan': 'N/A',
+                'recurrence_check_details': 'N/A',
+                'effectiveness_check_plan': 'N/A'
             }
         else:
             base64_images = images_to_base64(images)
