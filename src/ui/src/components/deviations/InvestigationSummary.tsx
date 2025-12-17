@@ -117,7 +117,7 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
                   There is currently no data to display.
                 </Typography>
                 <Typography className={styles.subText}>
-                  To begin, manually input your summary.
+                  To begin RCA, please manually input the investigation summary.
                 </Typography>
                 <Stack direction="row" spacing={1}>
                   <Button
