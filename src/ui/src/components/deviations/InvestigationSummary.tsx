@@ -1,11 +1,5 @@
 import { useState, useEffect, MouseEvent } from "react";
-import {
-  Paper,
-  Stack,
-  Box,
-  Button,
-  Typography,
-} from "@mui/material";
+import { Paper, Stack, Box, Button, Typography } from "@mui/material";
 import styles from "./InvestigationSummary.module.scss";
 import PlusIcon from "../../assets/icons/plus.svg";
 import EmptyImg from "../../assets/images/emptyState.svg";
@@ -71,16 +65,6 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
         className={styles.header}
       >
         <Box className={styles.title}>Investigation Summary</Box>
-
-        {!hasSummary && !isEditing && (
-          <Button
-            variant="contained"
-            onClick={startEditing}
-            className={styles.headerIcons}
-          >
-            <img src={PlusIcon} alt="plus" />
-          </Button>
-        )}
       </Stack>
 
       <Box className={hasSummary ? styles.body : styles.bodyEmpty}>
@@ -107,7 +91,7 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
                 disabled={draft.trim().length === 0}
                 className={styles.btnSubmit}
               >
-                Save
+                Submit
               </Button>
             </Stack>
           </Stack>
@@ -133,8 +117,7 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
                   There is currently no data to display.
                 </Typography>
                 <Typography className={styles.subText}>
-                  To begin, import a file for processing or manually input your
-                  narrative.
+                  To begin RCA, please manually input the investigation summary.
                 </Typography>
                 <Stack direction="row" spacing={1}>
                   <Button
