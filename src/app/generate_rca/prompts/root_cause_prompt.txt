@@ -1,0 +1,6 @@
+Based on the following Investigation Summary, identify the fundamental root cause.
+
+Investigation Summary:
+{investigation_summary}
+
+Write a clear paragraph explaining the deepest, most fundamental cause of the problem. This should be the underlying reason that, if addressed, would have prevented the incident. Focus on systemic issues rather than surface-level problems.
