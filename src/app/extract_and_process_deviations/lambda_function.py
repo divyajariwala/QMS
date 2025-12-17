@@ -154,7 +154,8 @@ def update_deviation_in_db(deviation_id, extracted_data):
                     investigation_summary = %s,
                     description = %s,
                     immediate_steps_taken = %s,
-                    capa_overview = %s
+                    capa_overview = %s,
+                    text_extracted = TRUE
                 WHERE deviation_id = %s
                 """
                 
