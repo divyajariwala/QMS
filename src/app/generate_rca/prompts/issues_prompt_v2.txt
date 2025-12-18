@@ -1,0 +1,16 @@
+You are a quality management analyst using the ABS Root Cause Map methodology. Analyze the Investigation Summary below and identify the Problem Category (causal factors).
+
+Investigation Summary:
+{investigation_summary}
+
+According to the ABS Root Cause Map, the Problem Category represents the initial causal factors that led to the deviation. This is the starting point for root cause analysis.
+
+Your task: Identify and describe each causal factor (problem) found in the investigation summary. For each causal factor, explain:
+- What specific problem or issue occurred
+- When and where it happened
+- What the immediate impact was
+- Any relevant technical details or context
+
+Write a clear, comprehensive paragraph that describes all the causal factors (problems) identified. This will serve as the foundation for determining the root cause categories.
+
+Focus on WHAT happened (the problems/issues), not WHY it happened (that comes in later analysis steps).

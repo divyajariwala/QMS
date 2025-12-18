@@ -251,7 +251,7 @@ def generate_issues(investigation_summary: str) -> str:
         Plain text description of issues
     """
     try:
-        prompt_template = load_prompt('issues_prompt.txt')
+        prompt_template = load_prompt('issues_prompt_v2.txt')
         prompt = prompt_template.format(investigation_summary=investigation_summary)
         
         result = call_bedrock(prompt)
@@ -271,7 +271,7 @@ def generate_major_root_cause_category(investigation_summary: str) -> str:
         Plain text category name
     """
     try:
-        prompt_template = load_prompt('major_root_cause_category_prompt.txt')
+        prompt_template = load_prompt('major_root_cause_category_prompt_v2.txt')
         prompt = prompt_template.format(investigation_summary=investigation_summary)
         
         result = call_bedrock(prompt)
@@ -291,7 +291,7 @@ def generate_near_root_cause(investigation_summary: str) -> str:
         Plain text description of near root cause
     """
     try:
-        prompt_template = load_prompt('near_root_cause_prompt.txt')
+        prompt_template = load_prompt('near_root_cause_prompt_v2.txt')
         prompt = prompt_template.format(investigation_summary=investigation_summary)
         
         result = call_bedrock(prompt)
@@ -311,7 +311,7 @@ def generate_root_cause(investigation_summary: str) -> str:
         Plain text description of root cause
     """
     try:
-        prompt_template = load_prompt('root_cause_prompt.txt')
+        prompt_template = load_prompt('root_cause_prompt_v2.txt')
         prompt = prompt_template.format(investigation_summary=investigation_summary)
         
         result = call_bedrock(prompt)
@@ -321,6 +321,78 @@ def generate_root_cause(investigation_summary: str) -> str:
     except Exception as e:
         logger.error(f"Error generating Root Cause: {str(e)}")
         raise
+
+
+def categorize_rca(investigation_summary: str, issues_text: str, major_category_text: str,
+                   near_cause_text: str, root_cause_text: str) -> dict:
+    """
+    Categorizes the RCA analysis into specific ABS taxonomy categories
+    
+    Args:
+        investigation_summary: Original investigation summary
+        issues_text: Generated issues text
+        major_category_text: Generated major category text
+        near_cause_text: Generated near cause text
+        root_cause_text: Generated root cause text
+        
+    Returns:
+        Dict with category assignments for each section
+    """
+    try:
+        prompt_template = load_prompt('categorize_rca_prompt.txt')
+        prompt = prompt_template.format(
+            investigation_summary=investigation_summary,
+            issues_text=issues_text,
+            major_category_text=major_category_text,
+            near_cause_text=near_cause_text,
+            root_cause_text=root_cause_text
+        )
+        
+        logger.info("Categorizing RCA analysis")
+        
+        # Call Bedrock and parse JSON response
+        response = bedrock_client.converse(
+            modelId=MODEL_ID,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [{"text": prompt}]
+                }
+            ],
+            inferenceConfig={
+                "maxTokens": 1024,
+                "temperature": 0
+            }
+        )
+        
+        response_text = response['output']['message']['content'][0]['text']
+        logger.info(f"Categorization response: {response_text[:200]}...")
+        
+        # Parse JSON response
+        categories = json.loads(response_text)
+        logger.info(f"Successfully categorized RCA: {categories}")
+        
+        return categories
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse categorization JSON: {str(e)}")
+        logger.error(f"Response text: {response_text if 'response_text' in locals() else 'N/A'}")
+        # Return default categories if parsing fails
+        return {
+            "issues_category": "Other",
+            "major_root_cause_category": major_category_text,
+            "near_root_cause_category": "Other",
+            "root_cause_category": "Other"
+        }
+    except Exception as e:
+        logger.error(f"Error categorizing RCA: {str(e)}")
+        # Return default categories if categorization fails
+        return {
+            "issues_category": "Other",
+            "major_root_cause_category": major_category_text,
+            "near_root_cause_category": "Other",
+            "root_cause_category": "Other"
+        }
 
 
 def lambda_handler(event, context):
@@ -384,6 +456,16 @@ def lambda_handler(event, context):
         logger.info("Generating Root Cause")
         root_cause_text = generate_root_cause(investigation_summary)
         
+        # Categorize the RCA analysis
+        logger.info("Categorizing RCA analysis")
+        categories = categorize_rca(
+            investigation_summary=investigation_summary,
+            issues_text=issues_text,
+            major_category_text=major_category_text,
+            near_cause_text=near_cause_text,
+            root_cause_text=root_cause_text
+        )
+        
         # Save to database
         logger.info("Saving RCA to database")
         rca_id = save_rca_to_database(
@@ -395,13 +477,17 @@ def lambda_handler(event, context):
             created_by=body.get('created_by', 'system')
         )
         
-        # Structure result as plain text fields
+        # Structure result with text and categories
         rca_result = {
             'deviation_id': deviation_id,
             'issues': issues_text,
+            'issues_category': categories.get('issues_category'),
             'major_root_cause_category': major_category_text,
+            'major_root_cause_category_validated': categories.get('major_root_cause_category'),
             'near_root_cause': near_cause_text,
-            'root_cause': root_cause_text
+            'near_root_cause_category': categories.get('near_root_cause_category'),
+            'root_cause': root_cause_text,
+            'root_cause_category': categories.get('root_cause_category')
         }
         
         # Add rca_id if save was successful
