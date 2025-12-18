@@ -2,7 +2,9 @@ import json
 import boto3
 import os
 import logging
+import psycopg
 from utils import response, handle_cors_preflight, parse_event_body
+from secrets_util import get_db_credentials
 
 # Logging configuration
 logger = logging.getLogger()
@@ -17,6 +19,164 @@ DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 
 # Bedrock client
 bedrock_client = boto3.client('bedrock-runtime', region_name=AWS_REGION)
+
+
+def get_rca_from_database(deviation_id: str):
+    """
+    Retrieve existing RCA analysis from the database.
+    
+    Args:
+        deviation_id: The deviation ID
+        
+    Returns:
+        Dict with RCA data or None if not found
+    """
+    if not DB_SECRET_NAME:
+        logger.warning("DB_SECRET_NAME not set, skipping database fetch")
+        return None
+    
+    logger.info(f"Fetching RCA for deviation: {deviation_id}")
+    
+    try:
+        # Get database credentials from Secrets Manager
+        db_creds = get_db_credentials(DB_SECRET_NAME, AWS_REGION)
+        
+        # Build connection string
+        conn_string = (
+            f"host={db_creds['host']} "
+            f"port={db_creds.get('port', 5432)} "
+            f"dbname={db_creds['dbname']} "
+            f"user={db_creds['username']} "
+            f"password={db_creds['password']} "
+            f"sslmode=require"
+        )
+        
+        with psycopg.connect(conn_string) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT 
+                        id,
+                        deviation_id,
+                        issues,
+                        major_root_cause_category,
+                        near_root_cause,
+                        root_cause,
+                        created_at,
+                        updated_at,
+                        created_by
+                    FROM rca_analysis
+                    WHERE deviation_id = %s
+                """, (deviation_id,))
+                
+                row = cur.fetchone()
+                
+                if not row:
+                    logger.info(f"No RCA found for deviation: {deviation_id}")
+                    return None
+                
+                rca_data = {
+                    'rca_id': row[0],
+                    'deviation_id': row[1],
+                    'issues': row[2],
+                    'major_root_cause_category': row[3],
+                    'near_root_cause': row[4],
+                    'root_cause': row[5],
+                    'created_at': row[6].isoformat() if row[6] else None,
+                    'updated_at': row[7].isoformat() if row[7] else None,
+                    'created_by': row[8]
+                }
+                
+                logger.info(f"✅ Found RCA with id: {rca_data['rca_id']}")
+                return rca_data
+                
+    except Exception as e:
+        logger.error(f"❌ Error fetching RCA from database: {str(e)}")
+        raise
+
+
+def save_rca_to_database(deviation_id: str, issues: str, major_category: str, 
+                         near_cause: str, root_cause: str, created_by: str = 'system'):
+    """
+    Save or update RCA analysis in the database.
+    
+    Args:
+        deviation_id: The deviation ID
+        issues: Issues text
+        major_category: Major root cause category
+        near_cause: Near root cause text
+        root_cause: Root cause text
+        created_by: User who triggered the RCA generation
+        
+    Returns:
+        RCA ID if successful
+    """
+    if not DB_SECRET_NAME:
+        logger.warning("DB_SECRET_NAME not set, skipping database save")
+        return None
+    
+    logger.info(f"Saving RCA for deviation: {deviation_id}")
+    
+    try:
+        # Get database credentials from Secrets Manager
+        db_creds = get_db_credentials(DB_SECRET_NAME, AWS_REGION)
+        
+        # Build connection string
+        conn_string = (
+            f"host={db_creds['host']} "
+            f"port={db_creds.get('port', 5432)} "
+            f"dbname={db_creds['dbname']} "
+            f"user={db_creds['username']} "
+            f"password={db_creds['password']} "
+            f"sslmode=require"
+        )
+        
+        with psycopg.connect(conn_string) as conn:
+            with conn.cursor() as cur:
+                # Use INSERT ... ON CONFLICT to handle both insert and update
+                cur.execute("""
+                    INSERT INTO rca_analysis (
+                        deviation_id,
+                        issues,
+                        major_root_cause_category,
+                        major_root_cause_category_explanation,
+                        near_root_cause,
+                        root_cause,
+                        created_by,
+                        created_at,
+                        updated_at
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                    )
+                    ON CONFLICT (deviation_id) 
+                    DO UPDATE SET
+                        issues = EXCLUDED.issues,
+                        major_root_cause_category = EXCLUDED.major_root_cause_category,
+                        major_root_cause_category_explanation = EXCLUDED.major_root_cause_category_explanation,
+                        near_root_cause = EXCLUDED.near_root_cause,
+                        root_cause = EXCLUDED.root_cause,
+                        updated_at = CURRENT_TIMESTAMP
+                    RETURNING id, created_at
+                """, (
+                    deviation_id,
+                    issues,
+                    major_category,
+                    major_category,  # Using same value for explanation
+                    near_cause,
+                    root_cause,
+                    created_by
+                ))
+                
+                result = cur.fetchone()
+                conn.commit()
+                
+                logger.info(f"✅ Saved RCA to database: ID={result[0]}, created_at={result[1]}")
+                return result[0]
+                
+    except Exception as e:
+        logger.error(f"❌ Error saving RCA to database: {str(e)}")
+        # Don't raise - we still want to return results even if DB save fails
+        # This makes the system more resilient
+        return None
 
 
 def load_prompt(prompt_file: str) -> str:
@@ -172,6 +332,29 @@ def lambda_handler(event, context):
         if event.get('httpMethod') == 'OPTIONS':
             return handle_cors_preflight()
         
+        # Handle GET request to retrieve existing RCA
+        if event.get('httpMethod') == 'GET':
+            query_params = event.get('queryStringParameters', {})
+            deviation_id = query_params.get('deviation_id') if query_params else None
+            
+            if not deviation_id:
+                return response(400, "deviation_id query parameter is required")
+            
+            logger.info(f"GET request for deviation: {deviation_id}")
+            
+            try:
+                rca_data = get_rca_from_database(deviation_id)
+                
+                if not rca_data:
+                    return response(404, f"No RCA found for deviation: {deviation_id}")
+                
+                return response(200, "RCA retrieved successfully", rca_data)
+                
+            except Exception as e:
+                logger.error(f"Error retrieving RCA: {str(e)}")
+                return response(500, "Error retrieving RCA", {"details": str(e)})
+        
+        # Handle POST request to generate new RCA
         # Parse event body
         body = parse_event_body(event)
         investigation_summary = body.get('investigation_summary')
@@ -201,6 +384,17 @@ def lambda_handler(event, context):
         logger.info("Generating Root Cause")
         root_cause_text = generate_root_cause(investigation_summary)
         
+        # Save to database
+        logger.info("Saving RCA to database")
+        rca_id = save_rca_to_database(
+            deviation_id=deviation_id,
+            issues=issues_text,
+            major_category=major_category_text,
+            near_cause=near_cause_text,
+            root_cause=root_cause_text,
+            created_by=body.get('created_by', 'system')
+        )
+        
         # Structure result as plain text fields
         rca_result = {
             'deviation_id': deviation_id,
@@ -210,9 +404,14 @@ def lambda_handler(event, context):
             'root_cause': root_cause_text
         }
         
-        logger.info("RCA generation completed successfully")
-        
-        return response(200, "RCA generated successfully", rca_result)
+        # Add rca_id if save was successful
+        if rca_id:
+            rca_result['rca_id'] = rca_id
+            logger.info(f"✅ RCA generation and save completed successfully for {deviation_id}")
+            return response(200, "RCA generated and saved successfully", rca_result)
+        else:
+            logger.warning(f"⚠️ RCA generated but not saved to database for {deviation_id}")
+            return response(200, "RCA generated successfully (database save skipped)", rca_result)
         
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
