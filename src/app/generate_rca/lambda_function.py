@@ -58,9 +58,12 @@ def get_rca_from_database(deviation_id: str):
                         id,
                         deviation_id,
                         issues,
+                        issues_category,
                         major_root_cause_category,
                         near_root_cause,
+                        near_root_cause_category,
                         root_cause,
+                        root_cause_category,
                         created_at,
                         updated_at,
                         created_by
@@ -78,12 +81,15 @@ def get_rca_from_database(deviation_id: str):
                     'rca_id': row[0],
                     'deviation_id': row[1],
                     'issues': row[2],
-                    'major_root_cause_category': row[3],
-                    'near_root_cause': row[4],
-                    'root_cause': row[5],
-                    'created_at': row[6].isoformat() if row[6] else None,
-                    'updated_at': row[7].isoformat() if row[7] else None,
-                    'created_by': row[8]
+                    'issues_category': row[3],
+                    'major_root_cause_category': row[4],
+                    'near_root_cause': row[5],
+                    'near_root_cause_category': row[6],
+                    'root_cause': row[7],
+                    'root_cause_category': row[8],
+                    'created_at': row[9].isoformat() if row[9] else None,
+                    'updated_at': row[10].isoformat() if row[10] else None,
+                    'created_by': row[11]
                 }
                 
                 logger.info(f"✅ Found RCA with id: {rca_data['rca_id']}")
@@ -94,17 +100,21 @@ def get_rca_from_database(deviation_id: str):
         raise
 
 
-def save_rca_to_database(deviation_id: str, issues: str, major_category: str, 
-                         near_cause: str, root_cause: str, created_by: str = 'system'):
+def save_rca_to_database(deviation_id: str, issues: str, issues_category: str,
+                         major_category: str, near_cause: str, near_cause_category: str,
+                         root_cause: str, root_cause_category: str, created_by: str = 'system'):
     """
     Save or update RCA analysis in the database.
     
     Args:
         deviation_id: The deviation ID
         issues: Issues text
-        major_category: Major root cause category
+        issues_category: Issues dropdown category
+        major_category: Major root cause category text
         near_cause: Near root cause text
+        near_cause_category: Near root cause dropdown category
         root_cause: Root cause text
+        root_cause_category: Root cause dropdown category
         created_by: User who triggered the RCA generation
         
     Returns:
@@ -137,32 +147,41 @@ def save_rca_to_database(deviation_id: str, issues: str, major_category: str,
                     INSERT INTO rca_analysis (
                         deviation_id,
                         issues,
+                        issues_category,
                         major_root_cause_category,
                         major_root_cause_category_explanation,
                         near_root_cause,
+                        near_root_cause_category,
                         root_cause,
+                        root_cause_category,
                         created_by,
                         created_at,
                         updated_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                     )
                     ON CONFLICT (deviation_id) 
                     DO UPDATE SET
                         issues = EXCLUDED.issues,
+                        issues_category = EXCLUDED.issues_category,
                         major_root_cause_category = EXCLUDED.major_root_cause_category,
                         major_root_cause_category_explanation = EXCLUDED.major_root_cause_category_explanation,
                         near_root_cause = EXCLUDED.near_root_cause,
+                        near_root_cause_category = EXCLUDED.near_root_cause_category,
                         root_cause = EXCLUDED.root_cause,
+                        root_cause_category = EXCLUDED.root_cause_category,
                         updated_at = CURRENT_TIMESTAMP
                     RETURNING id, created_at
                 """, (
                     deviation_id,
                     issues,
+                    issues_category,
                     major_category,
                     major_category,  # Using same value for explanation
                     near_cause,
+                    near_cause_category,
                     root_cause,
+                    root_cause_category,
                     created_by
                 ))
                 
@@ -466,14 +485,17 @@ def lambda_handler(event, context):
             root_cause_text=root_cause_text
         )
         
-        # Save to database
+        # Save to database with categories
         logger.info("Saving RCA to database")
         rca_id = save_rca_to_database(
             deviation_id=deviation_id,
             issues=issues_text,
+            issues_category=categories.get('issues_category', 'Other'),
             major_category=major_category_text,
             near_cause=near_cause_text,
+            near_cause_category=categories.get('near_root_cause_category', 'Other'),
             root_cause=root_cause_text,
+            root_cause_category=categories.get('root_cause_category', 'Other'),
             created_by=body.get('created_by', 'system')
         )
         
