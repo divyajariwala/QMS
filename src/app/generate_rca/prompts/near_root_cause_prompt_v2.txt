@@ -1,0 +1,31 @@
+You are a quality management analyst using the ABS Root Cause Map methodology. Analyze the Investigation Summary and identify the near root cause.
+
+Investigation Summary:
+{investigation_summary}
+
+Based on the ABS Root Cause Map, identify the Near Root Cause from one of these categories:
+
+EQUIPMENT/SOFTWARE ISSUES:
+- Design Issue
+- Equipment Reliability Issue
+- Procedure/Instruction Issue
+- Materials/Parts Issue
+- Utility/Support Equipment Issue
+- Other Equipment Issue
+
+PERSONNEL ISSUES:
+- Procedure Issue
+- Training/Guidance Issue
+- Human Factors Issue
+- Tech/Craftsman Issue
+- Supervision Issue
+- No Communication or Not Timely
+- Company Issue
+
+OTHER ISSUES:
+- Natural Phenomena
+- External Events
+- External Facilities/Activity
+- Cause Cannot Be Determined
+
+Write a clear paragraph explaining the near root cause. Start by stating which category it falls under, then explain how this immediate factor contributed to the problem.
