@@ -225,6 +225,96 @@ def load_prompt(prompt_file: str) -> str:
         raise
 
 
+def load_category_options():
+    """
+    Load category options from rca-edit-data.json for dropdown population
+    Excludes 'definition' and 'number' fields from the response
+    
+    Returns:
+        Dict with category options for each dropdown
+    """
+    try:
+        # Try different possible paths for Lambda deployment
+        possible_paths = [
+            os.path.join(os.path.dirname(__file__), 'rca-edit-data.json'),
+            os.path.join('/var/task', 'rca-edit-data.json'),
+            'rca-edit-data.json'
+        ]
+        
+        for json_path in possible_paths:
+            if os.path.exists(json_path):
+                with open(json_path, 'r', encoding='utf-8') as file:
+                    rca_data = json.load(file)
+                    
+                    # Process Factors (Problem Categories grouped by factor)
+                    factors = []
+                    for factor in rca_data.get('Factors', []):
+                        factor_obj = {
+                            'factor_name': factor['factor_name'],
+                            'ProblemCategories': []
+                        }
+                        
+                        for category in factor.get('ProblemCategories', []):
+                            # Exclude 'definition' and 'number'
+                            category_obj = {
+                                'name': category['name']
+                            }
+                            factor_obj['ProblemCategories'].append(category_obj)
+                        
+                        factors.append(factor_obj)
+                    
+                    # Process Major Root Cause Categories
+                    major_categories = []
+                    for major_cat in rca_data.get('MajorRootCauseCategories', []):
+                        major_obj = {
+                            'description': major_cat['description'],
+                            'properties': {
+                                'details': []
+                            }
+                        }
+                        
+                        # Process details (Near Root Causes)
+                        for detail in major_cat.get('properties', {}).get('details', []):
+                            detail_obj = {
+                                'NearRootCauses': detail['NearRootCauses'],
+                                'rootcauses': []
+                            }
+                            
+                            # Process root causes
+                            for root_cause in detail.get('rootcauses', []):
+                                # Exclude 'definition' and 'number'
+                                root_cause_obj = {
+                                    'name': root_cause['name']
+                                }
+                                detail_obj['rootcauses'].append(root_cause_obj)
+                            
+                            major_obj['properties']['details'].append(detail_obj)
+                        
+                        major_categories.append(major_obj)
+                    
+                    # Build response structure
+                    options = {
+                        'Factors': factors,
+                        'MajorRootCauseCategories': major_categories
+                    }
+                    
+                    logger.info("Successfully loaded category options from rca-edit-data.json")
+                    return options
+        
+        logger.warning("rca-edit-data.json not found, returning empty options")
+        return {
+            'Factors': [],
+            'MajorRootCauseCategories': []
+        }
+        
+    except Exception as e:
+        logger.error(f"Error loading category options: {str(e)}")
+        return {
+            'Factors': [],
+            'MajorRootCauseCategories': []
+        }
+
+
 def call_bedrock(prompt_text: str) -> str:
     """
     Call Bedrock Claude model with a prompt using the Converse API.
@@ -499,7 +589,10 @@ def lambda_handler(event, context):
             created_by=body.get('created_by', 'system')
         )
         
-        # Structure result with text and categories
+        # Load category options from JSON file
+        category_options = load_category_options()
+        
+        # Structure result with text, categories, and dropdown options
         rca_result = {
             'deviation_id': deviation_id,
             'issues': issues_text,
@@ -509,7 +602,8 @@ def lambda_handler(event, context):
             'near_root_cause': near_cause_text,
             'near_root_cause_category': categories.get('near_root_cause_category'),
             'root_cause': root_cause_text,
-            'root_cause_category': categories.get('root_cause_category')
+            'root_cause_category': categories.get('root_cause_category'),
+            'category_options': category_options  # Include dropdown options
         }
         
         # Add rca_id if save was successful
