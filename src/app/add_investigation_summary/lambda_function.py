@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 
 import psycopg
 from psycopg.rows import dict_row
@@ -63,6 +64,17 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'deviationId must be a non-empty string'})
             }
         
+        # Validate deviationId format (DV-XXXXX)
+        if not re.match(r'^DV-\d{5}$', deviation_id):
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': 'deviationId must be in format DV-XXXXX'})
+            }
+        
         if not isinstance(summary, str) or not summary.strip():
             return {
                 'statusCode': 400,
@@ -95,14 +107,14 @@ def lambda_handler(event, context):
         }
         
     except Exception as e:
-        logger.error(f"Error: {str(e)}")
+        logger.exception("Unexpected error in lambda_handler")
         return {
             'statusCode': 500,
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            'body': json.dumps({'error': f'Internal server error: {str(e)}'})
+            'body': json.dumps({'error': 'Internal server error'})
         }
 
 def get_connection_string():
@@ -151,5 +163,5 @@ def update_investigation_summary(deviation_id, summary):
                 return rows_updated
                 
     except Exception as e:
-        logger.error(f"Database error updating investigation summary: {str(e)}")
+        logger.exception("Database error updating investigation summary")
         raise
