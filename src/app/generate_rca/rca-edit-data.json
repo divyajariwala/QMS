@@ -1,0 +1,2032 @@
+{
+  "Factors": [
+    {
+      "factor_name": "Equipment/Software Issues",
+      "ProblemCategories": [
+        {
+          "name": "Process/Manufacturing Equipment Issue",
+          "number": "7",
+          "definition": "Definition: Did variations in the performance of process or manufacturing equipment cause the problem? Was there a  performance gap for process or manufacturing equipment? Did process or manufacturing equipment vary from the  design intent? Examples of items coded under this node include:  Valves (including relief valves)  Piping  Pumps  Reactors  Controls  Indicators  Switches  Computers (this node only addresses computer hardware; software is addressed by Node #8)  Displays  Flares  Conveyors Note 1: Utilities are coded under the Utility/Support Equipment Issue (#10) node. Note 2: Equipment that is not used in the manufacturing process is addressed under the Other Equipment Issue  (#11) node. Note 3: This node only addresses the hardware portion of the computer system. Computer software issues are  addressed under the Software Issue (#8) node"
+        },
+        {
+          "name": "Software Issue",
+          "number": "8",
+          "definition": "Definition: Was there a performance gap with the software? Did the software fail to perform as desired?  Examples of items coded under this node include:  Access™  Maximo®  Operations applications  Computerized maintenance management system  Learning management system  Distributed control system Note 1: This node only addresses software. Computer hardware issues are categorized under the Process/Manufacturing Equipment Issue (#7) node"
+        },
+        {
+          "name": "Material/Product Issue",
+          "number": "9",
+          "definition": "Definition: Was there a variation or change in raw materials or products that led to the incident? Was there a difference between  the anticipated raw materials or products and those actually used or produced in the process? Examples of items coded under this node include:  Raw materials  Chemicals  Intermediates  Finished products  Lubricating oils  Sealing rings  Glues/adhesives  Spare parts Note 1: Processing and manufacturing equipment is addressed under the Process/Manufacturing Equipment Issue  (#7) node"
+        },
+        {
+          "name": "Utility/Support Equipment Issue",
+          "number": "10",
+          "definition": "Definition: Was there a performance gap in the performance of utility systems? Did the utility systems fail to perform as  desired? Were there variations in the quality or characteristics of the utility systems? Typical utility systems include compressed air systems, fire protection systems, electrical supply systems, HVAC  (heating, ventilation, and air conditioning) systems, and cooling systems. These systems do not directly produce or  manufacture the product. Instead, their operation supports the process/manufacturing equipment. Examples of items coded under this node include:  Air  Gas  Electrical  Water  Fire detection systems  Fire protection systems (deluge, sprinkler)  Lighting  HVAC Purchased utilities, such as electricity, steam, and water, should also be coded here"
+        },
+        {
+          "name": "Other Equipment Issue",
+          "number": "11",
+          "definition": "Definition: Did performance gaps in the storage equipment, structural components, transportation equipment, or other equipment  lead to the problem? Did any of these types of equipment fail to perform as desired? Were there variations in the  quality or characteristics of the equipment? Typical equipment addressed by this node includes:  Storage equipment  Warehouse areas*  Warehouse shelving*  Storage racks*  Storage containers*  Drums*  Container and storage location markings* Material handling equipment**  Cranes (mobile and stationary)  Davits  Forklifts  Manlifts  Structures  o Process buildings  Control buildings  Office buildings  Portable buildings  Wheelbarrows  Floor elements  Roofs  Walls  Containment dikes  Office cubical elements  Transportation equipment**  Trucks  Cars  Bicycles/tricycles  Powered scooters  Portable buildings  Other vehicles  Trains  Roads  Shuttles  Elevators  Escalators  Safety equipment**  Fire extinguishers  Respirators  Fire/rescue trucks  Wind socks  * includes storage for raw materials, intermediate products, and finished products ** includes spare parts for these items"
+        }
+      ]
+    },
+    {
+      "factor_name": "Personnel Issues",
+      "ProblemCategories": [
+        {
+          "name": "Company Personnel Issue",
+          "number": "12",
+          "definition": "Definition: Was a direct-hire company employee involved? Are the employees involved covered by the normal company  training programs? Are they covered by the management systems that cover company employees? Typical personnel addressed by this node include:  Company operators  Company mechanics  Company electricians  Company instrumentation technicians  Company delivery personnel Direct-hire personnel directly involved in the offloading of raw materials and loading of finished products (e.g., tank  truck drivers) are typically included in this node. Other vendors (vending machine contractors, freight truck drivers)  are usually categorized under the Third-Party Personnel Issue (#14) node. Note 1: Distinguishing between company, contract, and third-party personnel can be important because of the  different management systems that control the behavior of these personnel"
+        },
+        {
+          "name": "Contract Personnel Issue",
+          "number": "13",
+          "definition": "Definition: Was a contract employee involved? Was the person involved covered by the contract employee training program? Is  the person involved directly supervised by someone who does not work for your company? Does this person have  to meet different requirements than a “regular” employee? Typical personnel addressed by this node include:  Contract operators  Contract mechanics  Contract electricians  Contract sales personnel  Contract delivery personnel Contract personnel involved in the delivery of materials that involve direct interaction with the process/manufacturing  system are typically addressed by this node. Other vendors (vending machine contractors, truck drivers) are usually  categorized under the Third-Party Personnel Issue (#14) node. Note 1: Distinguishing between company, contract, and third-party personnel can be important because of the  different management systems that control the work performed by these groups"
+        },
+        {
+          "name": "Third-Party Personnel Issue",
+          "number": "14",
+          "definition": "Definition: Were third-party personnel involved in the incident? Third-party personnel typically include:  Vendors  Deliver drivers  Regulators  Transient contractors  Visitors  Members of the public  Family members of employees Note 1: Distinguishing between company, contract, and third-party personnel can be important because of the  different management systems that control the work performed by these groups. Note 2: It may not be possible to further define intermediate cause or root causes associated with this problem  category due to lack of information"
+        }
+      ]
+    },
+    {
+      "factor_name": "Other Issues",
+      "ProblemCategories": [
+        {
+          "name": "Natural Phenomena",
+          "number": "15",
+          "definition": "Definition: Was the incident a result of a natural phenomena event? Natural phenomena include: Tornadoes Hurricanes  Earthquakes Lightning Floods Seiches Tidal waves Earthquakes Forest fires Mud slides Other events"
+        },
+        {
+          "name": "External Events",
+          "number": "16",
+          "definition": "Definition: Was the incident the result of an external event that cannot be controlled by the organization? Was the incident  caused by events that took place outside the facility? Typical issues coded under this node include:  Release from outside the facility  Fire in an adjacent facility  Supplier problems  Actions of the public  Commercial shipping companies external to the organization (e.g., a trucking company not owned by the organization)"
+        },
+        {
+          "name": "External Sabotage and Other Criminal Activity",
+          "number": "17",
+          "definition": "Definition: Did malicious acts by personnel external to the organization cause or contribute to the causal factor? Did criminal activity by external personnel contribute to the causal factor? Typical issues that are coded under this node include:  Explosions resulting from external sabotage and other criminal activity  Fires resulting from external sabotage and other criminal activity  Tampering with product  Tampering with raw materials Note 1:  It may not be possible to further define intermediate causes or root causes associated with this problem  category due to limited availability of relevant data. Note 2:  Sabotage and criminal activities involving internal personnel are coded under the Personnel Performance  Issue; Individual Issue; Sabotage or Criminal Activity* (#223) node"
+        },
+        {
+          "name": "Cause Cannot be Determined",
+          "number": "6",
+          "definition": "Definition: This major root cause category addresses issues related to the design process, including the design input data and  the design output. Was the incident caused by problems related to the design process or problems related to the design and inherent  capabilities of the equipment? Was there a failure to consider all the appropriate design inputs during the design phase? Was the design output,  such as drawings and specifications, complete? Were the design input and output inconsistent? Did the design  review process fail to detect errors? Was there a failure to perform an independent design review? Note 1: The Human Factors Issue (#146) node addresses issues that are related to how the output of the design  processes addressed the specific needs of the humans that will use the system or equipment. For example, the  Human Factors Issue (#146) node includes issues such as:  Tools/equipment  Workplace layout  Workplace environment  Physical workload  Mental workload  Error mitigation"
+        }
+      ]
+    }
+  ],
+  "MajorRootCauseCategories": [
+    {
+      "description": "Design Issue",
+      "number": "18",
+	  "definition": "Definition: This major root cause category addresses issues related to the design process, including the design input data and  the design output. Was the incident caused by problems related to the design process or problems related to the design and inherent  capabilities of the equipment? Was there a failure to consider all the appropriate design inputs during the design phase? Was the design output,  such as drawings and specifications, complete? Were the design input and output inconsistent? Did the design  review process fail to detect errors? Was there a failure to perform an independent design review? Note 1: The Human Factors Issue (#146) node addresses issues that are related to how the output of the design  processes addressed the specific needs of the humans that will use the system or equipment. For example, the  Human Factors Issue (#146) node includes issues such as:  Tools/equipment  Workplace layout  Workplace environment  Physical workload  Mental workload  Error mitigation",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Design Input Issue",
+            "number": "19",
+            "definition": "Definition: Was there a failure to consider all the appropriate design inputs during the design phase? Was the design input  inconsistent and incomplete?",
+            "rootcauses": [
+              {
+                "name": "Design Scope Issue",
+                "number": "20",
+                "definition": "Definition: Did the design scope fail to consider all interactions of the equipment with other processes and equipment in the  facility? "
+              },
+              {
+                "name": "Design Input Data Issue",
+                "number": "21",
+                "definition": "Definition: Was there a problem with the input data for the design? Was there a failure to consider all the appropriate design  inputs during the design phase? Were the design criteria so stringent that they could not be met? Were some criteria  conflicting? Were requirements out of date? Was there difficulty in accessing the necessary codes and standards? Was a novel design or concept applied for  which there was no applicable prescriptive standard? Do applicable standards lack sufficient detail to be easily  interpreted? Was the detail provided insufficient to make interpretation of the standard easy? Is there disagreement  with the criteria in an existing standard? Does the current standard fail to address a new technology or material? Was  the wrong standard, code, or guideline applied? Was the wrong version referenced? Were there changes in practice or technology not addressed by an industry standard? Was an emerging technology  employed by the company for which no standard existed? Do two applicable standards contain conflicting requirements? Are there conflicting requirements within a  standard? Did a change in the use of the equipment require the application of a different standard? Was there a failure to identify customer requirements that should have been incorporated into the design? Was  there a failure to communicate customer requirements to appropriate personnel? Were the customer requirements  confusing? Were there inconsistencies among the customer requirements standards? Were there inconsistencies  among the customer requirements that were used and the actual customer requirements? Were the wrong customer  standards applied? Were the customer requirements incorrect? Was the design incompatible with the system performance objectives or design requirements? Were the required design data not available at the time the design was finalized? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Design Output Issue",
+            "number": "22",
+            "definition": "Definition: Were there problems with management practices to track design requirements and relate them to the design outputs?  Did the specifications fail to include all of the requirements? Were some criteria left out of the design output? Were the drawings and other specifications incorrect? Should prototype tests have been conducted but were not?  Were compatibility studies and tests performed? Note 1:  If the design output was incorrect because the design input was incorrect, that should be coded under the  Design Input Issue (#19) node.",
+            "rootcauses": [
+              {
+                "name": "Design Output Incorrect",
+                "number": "23",
+                "definition": "Definition: Were there problems with management practices to track design requirements and relate them to the design outputs?  Did the specifications fail to include all of the requirements? Were some criteria left out of the design output? Were the drawings and other specifications incorrect? Should prototype tests have been conducted but were not?  Were compatibility studies and tests performed? Note 1:  If the design output was incorrect because the design input was incorrect, that should be coded under the  Design Input Issue (#19) node"
+              },
+              {
+                "name": "Design Output Unclear or Inconsistent",
+                "number": "24",
+                "definition": "Definition: Were there differences among output documents? Did the drawings and other design specifications contain  inconsistent requirements? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Design Review/Verification Issue",
+            "number": "25",
+            "definition": "Definition: Was there a problem with the design review/verification process? Was a design review/verification not performed?  Did the review/verification process fail to detect a problem in the design? Note 1: This node includes normal design reviews. Hazard reviews, pre-startup safety reviews, change control  reviews, and other risk identification methods are addressed by the Hazard/Defect Identification and Analysis  Issue (#94) node.",
+            "rootcauses": [
+              {
+                "name": "No Review/Verification",
+                "number": "26",
+                "definition": "Definition: Was there a failure to perform a design/review verification? "
+              },
+              {
+                "name": "Review/Verification Issue",
+                "number": "27",
+                "definition": "Definition: Was there a problem with the design/review verification process? Did the review/verification process fail to detect  a problem in the design? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Equipment Reliability Program Issue",
+      "number": "28",
+      "definition": "Definition: This major root cause category addresses issues related to the overall maintenance program, including its design and  implementation. It addresses a variety of maintenance types as follows:  Periodic maintenance  Event-based maintenance  Condition-based maintenance  Fault-finding maintenance and inspection  Corrective maintenance  Routine inspection and servicing Was there a problem related to the design of the maintenance program? Was the wrong type of maintenance specified  for the equipment? Are there problems with the analysis process used to determine the appropriate maintenance  requirements? Does the repair activity fail to cover the required scope? Was there a problem related to the implementation of maintenance activities? Was the repair incorrectly performed?  Was the troubleshooting less than adequate? Did the monitoring activity fail to detect a failing component? Was  there a failure to perform the maintenance activity when it should have been (i.e., following a shutdown, before a  startup, when vibration readings reached a trigger point)? Note 1:  Some organizations use the reliability-centered maintenance process as the primary driver of their equipment  reliability program. Note 2:  Problems associated with determining what maintenance to perform should be coded under the Equipment  Reliability Program Design Issue (#29) node. Problems associated with implementation of the maintenance should  be coded under the other Cause Types under this node (#33, #37, #42, #47, #51, and #54). Note 3:  Different terms are sometimes used to refer to the maintenance types specified by the cause types used on  the Root Cause Map™. Examples include:  Periodic maintenance or preventive maintenance  Event-based maintenance or proactive maintenance  Condition-based maintenance or predictive maintenance  Fault-finding maintenance and inspection issues or failure-finding maintenance and inspections  Corrective maintenance or repair work  Routine inspection and servicing issue or routine rounds Note 4:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book.",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Equipment Reliability Program Design Issue",
+            "number": "29",
+            "definition": "Definition: Was there a problem related to the design of the maintenance program? Was the wrong type of maintenance specified  for the equipment? Are there problems with the analysis process used to determine the appropriate maintenance  requirements? Does the repair activity fail to cover the required scope? Note 1:  Some organizations use the reliability-centered maintenance process as the primary driver of their equipment  reliability program. Note 2:  This section only addressed the design of the reliability program. Implementation of the reliability program  is addressed under the other reliability program Cause Types nodes (#33, #37, #42, #47, #51, and #54).",
+            "rootcauses": [
+              {
+                "name": "Critical Equipment Not Identified",
+                "number": "30",
+                "definition": "Definition: Was critical equipment (e.g., equipment that should have been included in the maintenance program) not identified?  Was no maintenance specified for the equipment because no one realized the risk significance of the equipment? Note 1:  This node is appropriate when the organization does not realize the risk-importance of the equipment and  does not identify it as a critical piece of equipment. If the organization has identified the equipment as critical,  but has not identified any maintenance anyway, then No or Inappropriate Maintenance Selected (#31) is the  appropriate node. Note 2:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "No or Inappropriate Maintenance Selected",
+                "number": "31",
+                "definition": "Definition: Did the organization fail to develop an equipment reliability program for this piece of equipment? Did the organization  fail to analyze the maintenance needs for this piece of equipment? Was an inappropriate maintenance method specified for the equipment? Are there problems with the analysis process  that is used to determine the appropriate maintenance requirements? Was their a failure to assign resources based on the risk analysis? Are some high-priority maintenance tasks not  being specified because other low-priority maintenance tasks are being specified instead? Note 1: If the maintenance needs were analyzed and it was incorrectly determined that no maintenance was  appropriate, it is appropriate to code this situation under this node also. Note 2:  If the organization did not assign maintenance to the equipment because it did not identify the equipment  as critical, then Critical Equipment Not Identified (#30) is appropriate. Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Risk Acceptance Issue",
+                "number": "32",
+                "definition": "Definition: Were the wrong or inappropriate risk-acceptance criteria used for analyzing the maintenance needs? Was corrective  maintenance assigned even though the consequences of failure are very high? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Periodic Maintenance Issue",
+            "number": "33",
+            "definition": "Definition: Was the frequency of the periodic maintenance incorrect (i.e., too long or too short)? Was the scope of the periodic  maintenance activity inappropriate (i.e., too broad or too narrow)? Was the maintenance activity incorrectly  performed? Note 1:  The Scope Issue (#34) node addresses which periodic maintenance activities were supposed to be done.  The Frequency Specification Issue (#35) node addresses when they were supposed to be done. The Implementation  Issue (#36) node addresses what was actually performed. Note 2:  Periodic maintenance is sometimes referred to as preventive maintenance. Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book.",
+            "rootcauses": [
+              {
+                "name": "Scope Issue",
+                "number": "34",
+                "definition": "Definition: Was the scope of the periodic maintenance activity inappropriate (i.e., too broad or too narrow)? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Frequency Specification Issue",
+                "number": "35",
+                "definition": "Definition: Was the frequency of the periodic maintenance task incorrectly specified (either too frequently or not often  enough)? Note 1:  This node addresses how often the periodic maintenance is supposed to be done. Implementation Issue  (#36) addresses how often the task was actually performed. Note 2:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Implementation Issue",
+                "number": "36",
+                "definition": "Definition: Was the periodic maintenance activity incorrectly performed? Was there a failure to service all required components?  Were some items included on the schedule that were never performed? Was there a failure to perform periodic maintenance at the specified (i.e., scheduled) frequency? Were some periodic  maintenance tasks being skipped? Note 1:  This node addresses how often the periodic maintenance is actually done. Frequency Specification Issue  (#35) addresses how often the task was supposed to be performed. Note 2:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Event-based Maintenance Issue",
+            "number": "37",
+            "definition": "Definition: Was the scope of the event-based maintenance inappropriate? Was there a failure to perform event-based maintenance  when it should have been performed (i.e., following a shutdown, before a startup, at the beginning of winter)? Was  the work incorrectly performed? Note 1:  The Scope Issue (#38) node addresses problems with what (the scope) should be done. The Event  Specification Issue (#39) node addresses selection of the appropriate triggering event. The Monitoring Issue (#40)  node addresses problems with determining when the triggering event occurs. The Implementation Issue (#41) node  addresses performance of the repair activity. Note 2:  Event-based maintenance is sometimes referred to as proactive maintenance. Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book",
+            "rootcauses": [
+              {
+                "name": "Scope Issue",
+                "number": "38",
+                "definition": "Definition: Was the scope of the event-based maintenance inappropriate? Was the scope too broad or too narrow? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Event Specification Issue",
+                "number": "39",
+                "definition": "Definition: Was an incorrect triggering event specified for the event-based maintenance? Was no triggering event specified for  the event-based maintenance? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Monitoring Issue",
+                "number": "40",
+                "definition": "Definition: Was there a failure to implement an event-based monitoring program to determine when the triggering events  occurred? Was there a failure to notify maintenance when these events occurred? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Implementation Issue",
+                "number": "41",
+                "definition": "Definition: Was there a failure to perform the event-based maintenance as it should have been? Were some parts of the specified  task not performed? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Condition-based Maintenance Issue",
+            "number": "42",
+            "definition": "Definition: Did the condition monitoring activity fail to detect a failing component? Was there a failure to perform the monitoring  activity? Was the correct parameter being monitored to detect failure? Was the predictive maintenance incorrectly  performed? Note 1:  The Scope Issue (#43) node addresses the scope of the condition-based maintenance process. Detection  Method Issue (#44) node addresses what is supposed to be monitored. The Monitoring Issue (#45) node addresses  performing the monitoring task. The Data Interpretation Issue (#46) node addresses the interpretation of the data  that is collected from the field. Note 2:  Once the condition-based maintenance activity has detected a problem that needs to be resolved, the issue  then proceeds to the Corrective Maintenance Issue (#51) cause type. This cause type addresses the subsequent  Troubleshooting/Corrective Action Issue (#52) and Repair Implementation Issue (#53). Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book.",
+            "rootcauses": [
+              {
+                "name": "Scope Issue",
+                "number": "43",
+                "definition": "Definition: Was the scope of the condition-based maintenance work inappropriate? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Detection Method Issue",
+                "number": "44",
+                "definition": "Definition: Was the incorrect parameter being monitored to detect failure? Was there insufficient time to detect an impending  failure before the failures actually occurs? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Monitoring Issue",
+                "number": "45",
+                "definition": "Definition: Was there a failure to perform the monitoring activities? Were some equipment or components not monitored?  Did the monitoring fail to detect a failing component? Was there a failure to perform the monitoring frequently  enough? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Data Interpretation Issue",
+                "number": "46",
+                "definition": "Definition: Were the data collected in the field being improperly interpreted? Was there a failure to perform the data analysis? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Fault-finding Maintenance and Inspection Issue",
+            "number": "47",
+            "definition": "Definition: Did hidden failures contribute to the loss event? Could these hidden failures have been detected by testing the  equipment? Note 1:  Fault-finding maintenance and inspection are usually applicable to standby systems or the detection of  hidden failures in systems. Note 2:  The Scope Issue (#48) node addresses the scope of the fault-finding maintenance and inspection process.  Scheduling/Frequency Issue (#49) node addresses when the maintenance should be performed. The Implementation  Issue (#50) node addresses performing the fault-finding maintenance or inspection task. Once the fault-finding maintenance and inspection activity has detected a problem that needs to be resolved, the  issue then proceeds to the Corrective Maintenance Issue (#51) cause type. This cause type addresses the subsequent  Troubleshooting/Corrective Action Issue (#52) and the Repair Implementation Issue (#53). Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book",
+            "rootcauses": [
+              {
+                "name": "Scope Issue",
+                "number": "48",
+                "definition": "Definition: Did the fault-finding maintenance and inspection issue testing fail to include all applicable portions of the system  (i.e., detection system, control systems, actuation systems, and the actual components)? Note 1:  Fault-finding maintenance and inspection are usually applicable to standby systems or the detection of  hidden failures in systems. Note 2:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Scheduling/Frequency Issue",
+                "number": "49",
+                "definition": "Definition: Was the fault-finding maintenance scheduled to be performed at an incorrect interval? Was the maintenance  scheduled to be performed too frequently? Was it not scheduled to be performed often enough? Note 1:  Fault-finding maintenance and inspection are usually applicable to standby systems or the detection of  hidden failures in systems. Note 2:  This node addresses how often the maintenance should be performed. If scheduled tests are not actually  being performed, this is addressed by the Implementation Issue (#50) node. Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at the back of this book"
+              },
+              {
+                "name": "Implementation Issue",
+                "number": "50",
+                "definition": "Definition: Was the fault-finding maintenance actually being performed at the incorrect interval? Was the maintenance actually  performed too frequently? Was it not being performed often enough? Note 1:  Fault-finding maintenance and inspection are usually applicable to standby systems or the detection of  hidden failures in systems. Note 2:  This node addresses how often the maintenance is actually performed. If tests are not scheduled to be  performed, this is addressed by the Scheduling/Frequency Issue (#49) node. Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Corrective Maintenance Issue",
+            "number": "51",
+            "definition": "Definition: Was the problem misdiagnosed? Was the corrective maintenance repair performed incorrectly? Note 1:  Corrective maintenance deals with failures that have already occurred and impending failures that have  been identified by other maintenance types. When the other maintenance tasks identify the need for corrective  maintenance to repair or restore a component to service, the corrective maintenance activity is addressed by the  Corrective Maintenance Issue (#51, #52, #53) nodes. Note 2:  The Troubleshooting/Corrective Action Issue (#52) node addresses problems with determining what  repair/restoration activities need to be performed. The Repair Implementation Issue (#53) node addresses problems  with performing the repair. Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book",
+            "rootcauses": [
+              {
+                "name": "Troubleshooting/Corrective Action Issue",
+                "number": "52",
+                "definition": "Definition: Was the problem misdiagnosed? Was the wrong problem corrected because the troubleshooting was insufficient? Note 1:  Corrective maintenance deals with failures that have already occurred and impending failures that have  been identified by other maintenance types. When the other maintenance tasks identify the need for corrective  maintenance to repair or restore a component to service, the corrective maintenance activity is addressed by the  Corrective Maintenance Issue (#51, #52, #53) nodes. Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Repair Implementation Issue",
+                "number": "53",
+                "definition": "Definition: Was the corrective maintenance repair performed incorrectly? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Routine Inspection and Servicing Issue",
+            "number": "54",
+            "definition": "Definition: Was there a failure to perform routine inspections of equipment? Are personnel unaware of the types of problems  they should look for? Was there a problem with the performance of the routine servicing activities? Was there a  problem with the documentation of the problem in the maintenance system? Note 1:  Routine inspection and servicing maintenance is separated from the other types of maintenance because it  is normally performed by operators instead of maintenance personnel. As a result, different management systems  usually influence performance. Note 2:  The Scope Issue (#55) node addresses what is performed. The Scheduling/Frequency Issue (#56) node  addresses how often and when the activities should be performed. The Troubleshooting/Corrective Action Issue  (#57) node addresses problems with the performance of the repair activities. Note 3:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book",
+            "rootcauses": [
+              {
+                "name": "Scope Issue",
+                "number": "55",
+                "definition": "Definition: Was the scope of the routine servicing and inspection (rounds) inappropriate (i.e., too broad or too narrow)? Are  some portions of the plant not covered by routine rounds? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Scheduling/Frequency Issue",
+                "number": "56",
+                "definition": "Definition: Was the frequency of the routine servicing and inspection (rounds) incorrect (i.e., too often or not often enough)? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Troubleshooting/Corrective Action Issue",
+                "number": "57",
+                "definition": "Definition: Were the routine servicing and inspection (rounds) being performed at the wrong frequency? Do the routine servicing  and inspection (rounds) fail to cover all areas that are specified? Note 1:  For an explanation of the various types of maintenance used on the Root Cause Map™, see Appendix A at  the back of this book"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Documentation and Records Issue",
+      "number": "58",
+      "definition": "Definition: This major root cause category addresses issues related to most documentation. It includes:  Equipment records and manuals  Operational and maintenance history  Risk assessment records  Personnel records  Other documents and records It does NOT include procedures, standards, or policies. Does an equipment records program exist for the equipment or component? Is it inadequate or out of date? Does  it contain the incorrect information? Does it fail to contain all the information necessary to ensure equipment and  process reliability? Are operational and maintenance records maintained? Are they inaccurate? Are they out of date? Are risk assessment records maintained? Are they inaccurate? Are they out of date? Are personnel records maintained? Are they inaccurate? Are they out of date? Are other records maintained? Are they inaccurate? Are they out of date?",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Equipment Records and Manuals Issue",
+            "number": "59",
+            "definition": "Definition: Have problems with design records caused problems with the operation, maintenance, or modification of  equipment? Was there an error, omission, or other problem with the manuals provided by the manufacturer? Did the facility  personnel not have access to the manufacturers’ manuals? Did a missing, deficient, or poorly maintained manufacturer’s manual or drawing contribute to a problem? Were  manufacturers’ manuals containing important design information missing? Were the manufacturers’ manuals or  drawings deficient in providing useful and necessary design information? Had drawings or manufacturers’ manuals  been poorly maintained? Were the manuals inaccessible or difficult to access by the personnel who needed them? Was an “unofficial” copy of a record or drawing used? Was the error caused by improper control of as-built documents? Examples of documents that are addressed by this node include:  Original equipment manufacturers’ manuals  Material requirements  Bill of materials  Drawings Note 1:  Problems with procedures are covered under the Procedure Issue (#122) node, and problems with policies  are addressed under the Standards, Policies, and Administrative Controls (SPAC) Issue and Standards, Policies,  and Administrative Controls (SPAC) Not Used nodes",
+            "rootcauses": [
+              {
+                "name": "Documentation Content Inaccurate or Incomplete",
+                "number": "60",
+                "definition": "Definition: Were there errors or omissions in the content of the documents? Did the documents contain confusing or contradictory  information? Examples of documents that are addressed by this node include:  Original equipment manufacturers’ manuals  Material requirements  Bill of materials  Drawings"
+              },
+              {
+                "name": "Documents Not Available or Missing",
+                "number": "61",
+                "definition": "Definition: Were the documents not available, missing, or difficult to obtain? Examples of documents that are addressed by this node include:  Original equipment manufacturers’ manuals  Material requirements  Bill of materials  Drawings"
+              },
+              {
+                "name": "Out-of-date Documents Used",
+                "number": "62",
+                "definition": "Definition: Were the documents out of date? Did documents fail to reflect the current status of the system? Was there a failure  to update drawings and documents when changes were made? Was there a problem with the system for controlling documents? Did the system fail to provide appropriate methods  for keeping documents up to date? Was there a failure to keep all official copies of the document updated? Were  unofficial copies or outdated copies used in the field? Examples of documents that are addressed by this node include:  Original equipment manufacturers’ manuals  Material requirements  Bill of materials Drawings "
+              },
+              {
+                "name": "Uncertain",
+                "number": "",
+				"definition": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": "",
+				"definition": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Operational and Maintenance History Issue",
+            "number": "63",
+            "definition": "Definition: Was the history for the equipment incomplete? Would more complete knowledge of the equipment history have  prevented the incident or lessened its severity? Was the information difficult to obtain or analyze? Were logs, work requests, or other formal documentation not complete or up to date? Did an error in a work request cause the incident? Do logs, work requests, and other work control documents contain insufficient detail? Are personnel unaware of threats and hazards to operations? Were personnel unaware of the relevant aspects of the  immediate situation and expectations for the near future? Was there a failure to have all the required information at  hand to form a realistic assessment of the risks of the current situation? Examples of documents that are addressed by this node include:  Operator logs  Computer logs  Work requests  Batch sheets",
+            "rootcauses": [
+              {
+                "name": "Documentation Content Inaccurate or Incomplete",
+                "number": "64",
+                "definition": "Definition: Were there errors or omissions in the content of the documents? Were there errors or omissions in the documents? Do documents used in the field have markups to make them  useful? Were logs, work requests, or other formal documentation incomplete? Do logs, work requests, and other work control documents contain insufficient detail? Examples of documents that are addressed by this node include: Operator logs  Computer logs  Work requests  Batch sheets"
+              },
+              {
+                "name": "Documents Not Available or Missing",
+                "number": "65",
+                "definition": "Definition: Were documents not available, missing, or inconvenient to obtain? Were documents not available because they did not exist or were difficult to locate? Examples of documents that are addressed by this node include:  Operator logs  Computer logs  Work requests Batch sheets"
+              },
+              {
+                "name": "Out-of-date Documents Used",
+                "number": "66",
+                "definition": "Definition: Was there a problem with updating documents when changes were made? Was the system for controlling documents insufficient or inappropriate? Did the system fail to provide appropriate  methods for keeping documents up to date? Was there a failure to keep all official copies of the document updated?  Were unofficial copies or outdated copies used in the field? Examples of documents that are addressed by this node include:  Operator logs  Computer logs  Work requests Batch sheets"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Risk Assessment Records Issue",
+            "number": "67",
+            "definition": "Definition: Were risk assessment records inaccurate or incomplete? Were risk assessment records not available or missing?  Were risk assessment records out of date? Examples of documents that are addressed by this node include:  HAZOP (hazard and operability) analysis  PHA (process hazard analysis)  RCA (root cause analysis)  FMEA (failure modes and effects analysis)  Reliability program analysis  Inspection analysis  Management of change  Readiness reviews",
+            "rootcauses": [
+              {
+                "name": "Documentation Content Inaccurate or Incomplete",
+                "number": "68",
+                "definition": "Definition: Were there errors or omissions in the content of the documents? Do documents fail to contain all of the required information? Do documents used by personnel have markups to  make them useful? Did the risk assessment documents contain confusing or contradictory information? Examples of documents that are addressed by this node include:  HAZOP (hazard and operability) analysis  PHA (process hazard analysis)  RCA (root cause analysis)  FMEA (failure modes and effects analysis)  Reliability program analysis  Inspection analysis  Management of change  Readiness reviews"
+              },
+              {
+                "name": "Documents Not Available or Missing",
+                "number": "69",
+                "definition": "Definition: Were the documents not available, missing, or inconvenient to obtain? Were documents not available because they did not exist or were difficult to locate? Examples of documents that are addressed by this node include:  HAZOP (hazard and operability) analysis  PHA (process hazard analysis)  RCA (root cause analysis)  FMEA (failure modes and effects analysis)  Reliability program analysis  Inspection analysis  Management of change  Readiness reviews"
+              },
+              {
+                "name": "Out-of-date Documents Used",
+                "number": "70",
+                "definition": "Definition: Was the system for controlling documents inadequate or inappropriate? Did the system fail to provide methods  for keeping documents up to date? Was there a failure to keep all official copies of each document updated? Were  unofficial copies or outdated copies used in the field? Were documents updated when changes were made? Examples of documents that are addressed by this node include:  HAZOP (hazard and operability) analysis  PHA (process hazard analysis)  RCA (root cause analysis)  FMEA (failure modes and effects analysis)  Reliability program analysis  Inspection analysis  Management of change  Readiness reviews"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Personnel Records Issue",
+            "number": "71",
+            "definition": "Definition: Was the training record system incomplete or not up to date? Did it inaccurately reflect the employee’s training?  Was there a failure to use the records to determine worker selection and assignments to tasks? Did the records show training that the individual had not received? Did the records incorrectly indicate the  individual’s qualifications? Did the training records fail to show the individual’s current status for job qualification? Did the qualification expire  and was this not reflected in the training records? Examples of documents that are addressed by this node include:  Hiring records  Training records  Qualification records",
+            "rootcauses": [
+              {
+                "name": "Documentation Content Inaccurate or Incomplete",
+                "number": "72",
+                "definition": "Definition: Were there errors or omissions in the content of the documents? Did the documents fail to reflect the current status? Do documents fail to contain all of the required information?  Do documents used by personnel have markups to make them useful? Examples of documents that are addressed by this node include:  Hiring records  Training records  Qualification records"
+              },
+              {
+                "name": "Documents Not Available or Missing",
+                "number": "73",
+                "definition": "Definition: Was the document not available, missing, or inconvenient to obtain? Were documents not available because they did not exist or were difficult to locate? Examples of documents that are addressed by this node include:  Hiring records  Training records  Qualification records"
+              },
+              {
+                "name": "Out-of-date Documents Used",
+                "number": "74",
+                "definition": "Definition: Was there a failure to update documents when changes were made? Did an inadequate or inappropriate system exist for controlling documents? Did the system fail to provide methods  for keeping documents up to date? Was there a failure to keep all official copies of the document updated? Were  unofficial copies or outdated copies used? Examples of documents that are addressed by this node include: Hiring records Training records Qualification records"
+              },
+              {
+                "name": "Uncertain",
+                "number": "",
+				"definition": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": "",
+				"definition": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Other Documents and Records Issue",
+            "number": "75",
+            "definition": "Definition: Were documents inaccurate or incomplete? Were documents not available or missing? Were documents out of  date? Was there a failure to incorporate customer requirements into documentation processes? Was there an issue with the documentation that was developed as a result of an inspection? Did the document  contain errors or omissions? Were the records not created? Examples of documents that are addressed by this node include:  Inspection records  Purchasing records  Regulatory compliance  Financial records  Marketing materials  Bills  Contracts  Inventory records Examples of records that are NOT addressed by this node include:  Equipment Records and Manuals Issue (#59)  Operational and Maintenance History Issue (#63)  Risk Assessment Records Issue (#67)  Personnel Records Issue (#71)",
+            "rootcauses": [
+              {
+                "name": "Documentation Content Inaccurate or Incomplete",
+                "number": "76",
+                "definition": "Definition: Were there errors or omissions in the content of the documents? Did documents fail to reflect the current status? Do documents fail to contain all of the required information? Do  documents used by personnel have markups to make them useful? Examples of documents that are addressed by this node include:  Inspection records  Purchasing records  Regulatory compliance  Financial records  Marketing materials  Bills  Contracts  Inventory records Do contracts address the following?  Safety requirements  Training  Experience  Liability  Scheduling  Management"
+              },
+              {
+                "name": "Documents Not Available or Missing",
+                "number": "77",
+                "definition": "Definition: Was the document not available, missing, or inconvenient to obtain? Were documents not available because they did not exist or were difficult to locate? Examples of documents that are addressed by this node include:  Inspection records  Purchasing records  Regulatory compliance  Financial records  Marketing materials  Bills  Contracts  Inventory records"
+              },
+              {
+                "name": "Out-of-date Documents Used",
+                "number": "78",
+                "definition": "Definition: Was there a failure to update documents when changes were made? Did an inadequate or inappropriate system exist for controlling documents? Did the system fail to provide methods  for keeping documents up to date? Was there a failure to keep all official copies of the document updated? Were  unofficial copies or outdated copies used? Examples of documents that are addressed by this node include:  Inspection records  Purchasing records  Regulatory compliance Financial records Marketing materials  Bills  Contracts Inventory records"
+              },
+              {
+                "name": "Uncertain",
+                "number": "",
+				"definition": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": "",
+				"definition": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": "",
+				"definition": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": "",
+				"definition": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "58",
+            "definition": "Documentation and Records Issue",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": "",
+				"definition": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": "",
+				"definition": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Material/Parts and Product Issue",
+      "number": "79",
+      "definition": "Definition: This major root cause category addresses issues related to raw materials, intermediate products, and finished  products. Was the problem the result of inadequate control of changes to procurement specifications or purchase orders? Did  product acceptance requirements fail to match design requirements or were they otherwise unacceptable? Note 1:  The Materials/Parts Issue (#80-86) section only applies to raw materials and parts, whereas the Product  Control and Acceptance Issue (#87-93) section applies to manufactured/finished products",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Materials/Parts Issue",
+            "number": "80",
+            "definition": "Definition: Was the error the result of inadequate control of changes to procurement specifications or purchase orders for raw  materials or parts? Did product acceptance requirements fail to match design requirements or were they otherwise  unacceptable? Note 1:  This section (nodes #80-86)) only applies to raw materials and parts received from outside the facility or  organization, whereas the Product Control and Acceptance Issue (#87-#93) section applies to products manufactured  within the facility or organization",
+            "rootcauses": [
+              {
+                "name": "Purchasing Specification Issue",
+                "number": "81",
+                "definition": "Definition: Did the purchase specifications for raw materials/parts fail to include:  A schedule for delivery of the materials  Material packaging and shipping requirements  Safety requirements  Reliability requirements  Quality requirements  Liability clauses  Payment schedules Were changes made to purchase orders or procurement specifications without the proper reviews and approvals?  Did the changes result in purchase of the wrong materials or parts? Did changes in contract language cause safety,  reliability, quality, or legal problems? Were incorrect materials substituted? Were material or part specifications substituted without authorization? Did the  requirements fail to specify “no substitution”? Note 1:  This node applies to what was specified, not what was actually received. See Acceptance Criteria Issue  (#83) for problems with what was actually received by the facility"
+              },
+              {
+                "name": "Packaging/Transportation Issue",
+                "number": "82",
+                "definition": "Definition: Was material improperly packaged? Was it damaged because of improper packaging? Was equipment exposed to adverse conditions because the packaging had been damaged? Was the material transported improperly? Was it  damaged during shipping? "
+              },
+              {
+                "name": "Acceptance Criteria Issue",
+                "number": "83",
+                "definition": "Definition: Was there difficulty in understanding or implementing the acceptance criteria for raw materials and parts? Were the  acceptance criteria ambiguous or unclear? Note 1:  This node only applies to raw materials and parts procured from outside your facility. Acceptance criteria  for manufactured items (fabricated within your facility) are specified as part of the Product Control and Acceptance  Issue (#87-93) section"
+              },
+              {
+                "name": "Acceptance Testing Implementation Issue",
+                "number": "84",
+                "definition": "Definition: Was there a failure to perform tests to implement the acceptance criteria? Were the tests inconsistent with the  acceptance criteria? Did the tests fail to address all acceptance criteria? Note 1:  This node only addresses inspections performed by warehouse personnel. Inspections performed by quality  assurance personnel should be addressed under the Inspection/Audit/Measurement Issue (#116) node or one of its subnodes"
+              },
+              {
+                "name": "Handling and Storage Issue",
+                "number": "85",
+                "definition": "Definition: Was the problem caused by inadequate material/part handling? Were materials/parts stored improperly? Were they  damaged in storage? Were they weather damaged? Were the materials/parts stored in an environment (heat, cold,  acid, fumes, etc.) that damaged them? Were material/equipment/parts issued after their shelf life was exceeded  or used after their shelf life was exceeded? Were spare parts/materials and equipment stored improperly? Was  inadequate preventive maintenance (cleaning, lubrications, etc.) performed on spares? Were spare parts and materials  improperly labeled? Did unauthorized access to the spare parts storage area result in problems in locating or retrieving spare parts? Was  the control of access insufficient? "
+              },
+              {
+                "name": "Inventory Level Issue",
+                "number": "86",
+                "definition": "Definition: Was there a problem with inventory levels, such as not enough inventory, too much inventory, poorly organized  inventory, or inventory that is not available at the time it is needed? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Product Control and Acceptance Issue",
+            "number": "87",
+            "definition": "Definition: Was there a problem with products and materials manufactured by the facility, including intermediate and final  products? Did manufactured goods fail to meet acceptance criteria? Were products manufactured, handled, stored,  packaged, or shipped incorrectly? Was the shelf life for the product exceeded? Note 1:  This node applies to materials produced within the facility, including intermediate and finished products.  Problems related to purchased materials and parts produced outside the facility or organization are address by the  Materials/Parts Issue (#80) section.",
+            "rootcauses": [
+              {
+                "name": "Product Specification Issue",
+                "number": "88",
+                "definition": "Definition: Was there a failure to include all performance requirements in product specification requirements? Were some customer requirements not addressed in the product specifications? Were inappropriate or out-of-date  codes and standards used in the product specifications? "
+              },
+              {
+                "name": "Product Acceptance Criteria Issue",
+                "number": "89",
+                "definition": "Definition: Were acceptance criteria for manufactured items inadequate? Was it difficult to determine whether the manufactured  material or item was acceptable? "
+              },
+              {
+                "name": "Inspection Issue",
+                "number": "90",
+                "definition": "Definition: Were inspections of the finished products inconsistent with the acceptance requirements? Did a lack of inspection  lead to safety, reliability, or quality problems? Was there a problem with the inspection of manufactured parts,  materials, and final products prior to shipment? Are inspection requirements unreasonable to implement? Do  intellectual products (i.e., reports, analyses, and data) fail to meet requirements? Note 1:  This node only applies to materials and work products produced within your facility. Inspections of all  materials and work products received from outside the facility are addressed as part of the procurement process  under Materials/Parts Issue (#80)."
+              },
+              {
+                "name": "Packaging, Handling, Transportation Issue",
+                "number": "91",
+                "definition": "Definition: Was material improperly packaged? Was it damaged because of improper packaging? Was equipment exposed to  adverse conditions because the packaging had been damaged? Was the material transported improperly? Was it  damaged during shipping? Was the problem caused by inadequate material handling? Note 1:   If the damage to the item occurs after the item leaves your control, then code this issue under External Factors  (#4). This is appropriate only if the company performing the shipping is not controlled by your organization"
+              },
+              {
+                "name": "Storage Issue",
+                "number": "92",
+                "definition": "Definition: Was material stored improperly? Was it damaged in storage? Did it have weather damage? Was it stored in an  environment (heat, cold, acid, fumes, etc.) that damaged it? Was product improperly stored? Were products shipped  after the shelf life was exceeded? Was inadequate preventive maintenance (cleaning, lubrications, etc.) performed  on finished product in storage? "
+              },
+              {
+                "name": "Inventory Level Issue",
+                "number": "93",
+                "definition": "Definition: Was there a problem with inventory, such as not enough inventory, too much inventory, poorly organized inventory,  or inventory that is not available at the time it is needed?"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Hazard/Defect Identification and Analysis Issue",
+      "number": "94",
+      "definition": "Definition: Start here with each causal factor. Select the appropriate path(s) through the Root Cause Map™ to identify causes  at each level of the map. Examples Causal factors are front-line personnel performance gaps and equipment performance gaps. Example 1 Desired Performance: Analyze a sample from each product tank prior to transferring it to a storage tank. Actual Performance: The operator did not take a sample prior to transferring material from a product tank to a  storage tank. As a result, the material in the storage tank may no longer meet specifications.  Example 2 Desired Performance: Do not have fan bearings fail in service. Actual Performance: The outboard fan bearing on a fan failed.  Example 3 Desired Performance: Close the sample valve following maintenance. Actual Performance: The mechanic failed to close the sample valve following maintenance.  Example 4 Desired Performance: The reactor feed pump should supply 18 to 22 gallons per minute of catalyst to the reactor. Actual Performance: The reactor feed pump supplied 27 gallons per minute of catalyst to the reactor.  Typical Recommendations Recommendations that address causal factors are typically Level 1 recommendations. They fix the specific failure  or error that occurred. Example 1 Situation: Operator did not take a sample prior to transferring material from a product tank to a storage tank. Level 1 Recommendation: Take a sample from the storage tank to verify that the product is acceptable.  Example 2 Situation: The outboard fan bearing on a fan failed. Level 1 Recommendation: Replace the bearing.  Example 3 Situation: The mechanic failed to close the sample valve following maintenance. Level 1 Recommendation: Close the sample valve.  Example 4 Situation: The reactor feed pump supplied 27 gallons per minute of catalyst to the reactor. Level 1 Recommendation: Adjust the reactor feed pump so it supplies 27 gallons per minute of catalyst to the  reactor.  Levels 2, 3, and 4 recommendations address the lower levels of the Root Cause Map™ (see Section 6 of the Root  Cause Analysis Handbook for details on recommendation levels). Copyright 2010 © ABSG Consulting Inc. Incorporates changes up to 070710 6 - Cause Cannot be Determined Definition: This node addresses issues that cannot be coded elsewhere on the map because of insufficient information. Typical issues that are coded under this node include:  No data exist  Data are not available to the facility  The facility doesn’t want to pay for the data",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Readiness Review Issue",
+            "number": "95",
+            "definition": "Definition: Was there failure to verify that new equipment and installations conform to specifications prior to startup? Was there  a failure to functionally test new or modified components prior to startup? Note 1:  Readiness reviews are performed to verify that all appropriate equipment is ready for operation and  procedures, documents and assessments are updated, and training is completed. Readiness reviews are performed  for (1) new processes, (2) processes that have been shut down for modification, and (3) processes that have been  administratively shut down for other reasons. Readiness reviews only involve verification of the condition of  the equipment, documents, and processes. Installation of equipment, training workers to operate the equipment,  updating drawings, etc., are not part of readiness review activities.",
+            "rootcauses": [
+              {
+                "name": "Review Not Performed",
+                "number": "96",
+                "definition": "Definition: Was there a failure to perform a readiness review? Was a readiness review designated but not performed?"
+              },
+              {
+                "name": "Implementation Issue",
+                "number": "97",
+                "definition": "Definition: Was the readiness review poorly performed? Was there a failure to consider all significant risks during the readiness  review?"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Change Control Issue",
+            "number": "98",
+            "definition": "Definition: Was a change assessment performed? Was there a delay in performing the change assessment? Was the change  assessment improperly or inappropriately performed? Was control of design/field changes inadequate? Note 1:  Change control issues address the OSHA process safety management (PSM) management of change  element.",
+            "rootcauses": [
+              {
+                "name": "Change Identification Issue",
+                "number": "99",
+                "definition": "Definition: Was there a failure to identify the change to the system? Was the definition of change less than adequate? Did  personnel fail to understand the definition of “change” versus “replacement-in-kind”?"
+              },
+              {
+                "name": "No Change Assessment Performed",
+                "number": "100",
+                "definition": "Definition: Did personnel fail to perform a change assessment when it was required? Did personnel fail to realize that a change  assessment was required?"
+              },
+              {
+                "name": "Change Assessment Issue",
+                "number": "101",
+                "definition": "Definition: Was the change assessment improperly scoped? Did the change assessment scope fail to include all appropriate  items and considerations? Did the change assessment fail to dig deep enough to identify relevant hazards and risks?  Was the review abbreviated due to time requirements (e.g., an emergency change)? "
+              },
+              {
+                "name": "Change Assessment Timing Issue",
+                "number": "102",
+                "definition": "Definition: Was there a failure to perform the change assessment in a timely manner? Was there a failure to implement corrective  actions identified in the change review? "
+              },
+              {
+                "name": "Risk Acceptance Issue",
+                "number": "103",
+                "definition": "Definition: Were the risk acceptance criteria used during the change assessment set inappropriately? Were the risk acceptance  criteria improperly applied? Were risks deemed acceptable that should have been reduced? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Proactive Risk/Safety/Reliability/Quality/Security Analysis Issue",
+            "number": "104",
+            "definition": "Definition: Was the problem caused by an inadequate hazard review of the system? Was there a failure to perform a risk  assessment of the system? Was there a failure to identify the safety, reliability, quality, and security hazards? Typical analyses addressed by this node include:  Process hazard analyses  Hazard and operability analyses  Reliability analyses  Security vulnerability analyses  Failure modes and effects analyses  Reliability-centered maintenance analyses  Enterprise risk management analyses  Project risk management analyses  Fault tree analyses  Event tree analyses  Probabilistic risk assessments  Job safety analyses  Note 1:  Proactive analyses are performed before a failure occurs. Reactive analyses are performed after a failure  occurs. Reactive analyses are addressed under nodes #110-115. Note 2:  This node addresses general proactive analyses. Analyses performed specifically as part of a change  assessment are addressed under the Change Control Issue (#98) node. Note 3:  Normally, pre-job briefings are addressed under the Job Plan/Instructions to Workers Issue (#187) node.  However, if the pre-job briefing includes the performance of a job safety analysis (JSA) and the causal factor  occurred as a result of failure to properly perform the JSA, it is appropriate to code under this node.",
+            "rootcauses": [
+              {
+                "name": "Analysis Not Performed",
+                "number": "105",
+                "definition": "Definition: Was there a failure to perform a safety/hazard/risk review? Typical analyses addressed by this node include:  Process hazard analyses  Hazard and operability analyses  Reliability analyses  Security vulnerability analyses  Failure modes and effects analyses  Reliability-centered maintenance analyses  Enterprise risk management analyses  Project risk management analyses  Fault tree analyses  Event tree analyses  Probabilistic risk assessments  Job safety analyses"
+              },
+              {
+                "name": "Analysis Issue",
+                "number": "106",
+                "definition": "Definition: Was the safety/hazard/risk review procedure inappropriate? Does it provide insufficient guidance for the scope of  the review? Are the resources needed to perform the review not available? Are personnel inadequately trained in  use of the procedure? Did the analysis fail to consider all modes of operation/maintenance or other required hazard review issues? Did the  review fail to address the requirements of all applicable orders, regulations, and guides? Typical analyses addressed by this node include:  Process hazard analyses  Hazard and operability analyses  Reliability analyses  Security vulnerability analyses  Failure modes and effects analyses  Reliability-centered maintenance analyses  Enterprise risk management analyses  Project risk management analyses  Fault tree analyses  Event tree analyses  Probabilistic risk assessments  Job safety analyses  Note 1:  This node addresses situations where the analysis identified the wrong hazards, causes, or consequences.  Situations where the correct hazards, causes, and consequences were identified but incorrect or ineffective  recommendations are specified are addressed by the Recommendation Identification Issue (#107) node"
+              },
+              {
+                "name": "Recommendation Identification Issue",
+                "number": "107",
+                "definition": "Definition: Were actions unsuccessful in controlling risk? Should other actions have been identified? Did the actions fail to  address the causes and consequences identified in the analysis? Typical analyses addressed by this node include:  Process hazard analyses  Hazard and operability analyses  Reliability analyses  Security vulnerability analyses  Failure modes and effects analyses  Reliability-centered maintenance analyses  Enterprise risk management analyses  Project risk management analyses  Fault tree analyses  Event tree analyses  Probabilistic risk assessments  Job safety analyses  Note 1:  This node addresses situations where the analysis identified the correct hazards, causes, and consequences,  but incorrect or ineffective recommendations are specified. Situations where the incorrect hazards, causes, and  consequences have been identified are addressed by the Analysis Issue (#106) node"
+              },
+              {
+                "name": "Recommendation Implementation Issue",
+                "number": "108",
+                "definition": "Definition: Was there a failure to implement the recommendations from the safety/hazard/risk/reliability/quality/security  review? Was there a problem in implementing the recommendations from the safety/hazard/risk/reliability/quality/security review? Was there a failure to assign the recommendation to a specific individual? Did management fail to  monitor the implementation of recommendations? Typical analyses addressed by this node include:  Process hazard analyses  Hazard and operability analyses  Reliability analyses  Security vulnerability analyses  Failure modes and effects analyses  Reliability-centered maintenance analyses  Enterprise risk management analyses  Project risk management analyses  Fault tree analyses  Event tree analyses  Probabilistic risk assessments  Job safety analyses"
+              },
+              {
+                "name": "Risk Acceptance Issue",
+                "number": "109",
+                "definition": "Definition: Were inappropriate risk acceptance criteria used during the safety/hazard/risk/reliability/quality/security review?  Were the risk acceptance criteria improperly applied? Were risks deemed acceptable that should have been  reduced? Typical analyses addressed by this node include:  Process hazard analyses  Hazard and operability analyses  Reliability analyses  Security vulnerability analyses  Failure modes and effects analyses  Reliability-centered maintenance analyses  Enterprise risk management analyses  Project risk management analyses  Fault tree analyses  Event tree analyses  Probabilistic risk assessments  Job safety analyses"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Reactive Risk/Safety/Reliability/Quality/Security Analysis Issue",
+            "number": "110",
+            "definition": "Definition: Was an incident caused by failure to provide recommendations for known deficiencies or failure to implement  recommendations before known deficiencies recur? Had the problem occurred before and never been reported?  Did an investigation fail to identify the issue? Did the recommendations that were implemented fail to correct the  problem? Note 1:  Reactive analyses are triggered whenever a deficiency is identified regardless of whether a loss or accident  occurs. Reactive analyses also address information investigations and analyses. Note 2:  If the problem/deficiency could/should have been identified as part of a proactive analysis or was identified  in a proactive safety/hazard/risk/reliability/quality/security review, then code the incident in that portion of the Root  Cause Map™ (nodes #104-109) and not here.",
+            "rootcauses": [
+              {
+                "name": "Problem/Incident Reporting/Identification Issue",
+                "number": "111",
+                "definition": "Definition: Are personnel failing to report incidents that have significant impacts on health, safety, reliability, quality, or  security? Are personnel unaware of the types of incidents that should be reported? Are personnel not familiar with  the methods for incident reporting? Are employees punished for reporting problems? Was there a failure to identify chronic problems? Was there a failure to use a database to analyze the historical data  to identify recurring problems? Were the historical data misinterpreted? Was there a failure to identify a similar past incident? Note 1:  Coding under the Rewards/Incentives Issue (#211) node may also be appropriate"
+              },
+              {
+                "name": "Investigation Issue",
+                "number": "112",
+                "definition": "Definition: Was the problem misdiagnosed? Was there a failure to involve knowledgeable personnel in the problem analysis?  Was insufficient emphasis placed on problem diagnosis? Was there a failure to identify the underlying causes? Was the information needed to perform the investigation unavailable? Were personnel unavailable for interviews? Was there a failure to perform an investigation or analysis of the incident or problem? Was a near miss reported but  not investigated? Note 1:  This node addresses situations where the analysis identified the wrong causes of the problem. Situations  where the correct causes were identified but incorrect or ineffective recommendations were specified are addressed  by the Recommendation Identification Issue (#113) node"
+              },
+              {
+                "name": "Recommendation Identification Issue",
+                "number": "113",
+                "definition": "Definition: Start here with each causal factor. Select the appropriate path(s) through the Root Cause Map™ to identify causes  at each level of the map. Examples Causal factors are front-line personnel performance gaps and equipment performance gaps. Example 1 Desired Performance: Analyze a sample from each product tank prior to transferring it to a storage tank. Actual Performance: The operator did not take a sample prior to transferring material from a product tank to a  storage tank. As a result, the material in the storage tank may no longer meet specifications.  Example 2 Desired Performance: Do not have fan bearings fail in service. Actual Performance: The outboard fan bearing on a fan failed.  Example 3 Desired Performance: Close the sample valve following maintenance. Actual Performance: The mechanic failed to close the sample valve following maintenance.  Example 4 Desired Performance: The reactor feed pump should supply 18 to 22 gallons per minute of catalyst to the reactor. Actual Performance: The reactor feed pump supplied 27 gallons per minute of catalyst to the reactor.  Typical Recommendations Recommendations that address causal factors are typically Level 1 recommendations. They fix the specific failure  or error that occurred. Example 1 Situation: Operator did not take a sample prior to transferring material from a product tank to a storage tank. Level 1 Recommendation: Take a sample from the storage tank to verify that the product is acceptable.  Example 2 Situation: The outboard fan bearing on a fan failed. Level 1 Recommendation: Replace the bearing.  Example 3 Situation: The mechanic failed to close the sample valve following maintenance. Level 1 Recommendation: Close the sample valve.  Example 4 Situation: The reactor feed pump supplied 27 gallons per minute of catalyst to the reactor. Level 1 Recommendation: Adjust the reactor feed pump so it supplies 27 gallons per minute of catalyst to the  reactor.  Levels 2, 3, and 4 recommendations address the lower levels of the Root Cause Map™ (see Section 6 of the Root  Cause Analysis Handbook for details on recommendation levels). Copyright 2010 © ABSG Consulting Inc. Incorporates changes up to 070710 6 - Cause Cannot be Determined Definition: This node addresses issues that cannot be coded elsewhere on the map because of insufficient information. Typical issues that are coded under this node include:  No data exist  Data are not available to the facility  The facility doesn’t want to pay for the data"
+              },
+              {
+                "name": "Recommendation Implementation Issue",
+                "number": "114",
+                "definition": "Definition: Was a recommendation for a known deficiency not implemented (because of delays in funding, delays in project  design, normal length of implementation cycle, tracking deficiencies, etc.) before recurrence of the deficiency?  Did the actions fail to address the causes and consequences identified in the analysis? Was there a failure to  assign the recommendation to a specific individual? Did management fail to monitor the implementation of  recommendations?"
+              },
+              {
+                "name": "Risk Acceptance Issue",
+                "number": "115",
+                "definition": "Definition: Were the risk acceptance criteria used during the reactive analysis set inappropriately? Were the risk acceptance  criteria improperly applied? Were risks deemed acceptable that should have been reduced?"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Inspection/Audit/Measurement Issue",
+            "number": "116",
+            "definition": "Definition: Was there a failure to perform an inspection? Was there a failure to perform inspections at regular intervals? Do  inspections fail to find problems before they cause safety, reliability, or quality problems? Was there a failure to act  upon the results? Was there a failure to perform audits? Did an audit fail to find problems before they caused safety, reliability, or  quality problems? Was there a failure to perform audits at regular intervals? Was there a failure to act upon the  results? Was there a failure to appropriately identify system (hardware, software, and organizational) measurements and  metrics? Was there a failure to collect measurement and metric data? Was there a failure to analyze the data? Was  there a failure to act upon the results? Note 1:  Inspections performed by maintenance personnel as part of normal maintenance activities should be  addressed under the Equipment Reliability Program Issue (#28) node. Note 2:  Inspections performed by warehouse personnel as part of receipt inspection should be addressed under the  Acceptance Testing Implementation Issue (#84) node",
+            "rootcauses": [
+              {
+                "name": "Requirements Not Identified",
+                "number": "117",
+                "definition": "Definition: Was there a problem in developing the requirements of the quality assurance program? Was there a problem in developing a metrics program to assist in evaluating equipment and organizational  performance? "
+              },
+              {
+                "name": "Implementation Issue",
+                "number": "118",
+                "definition": "Definition: Was there an issue with the implementation of the audit/inspection process? Was there a failure to perform the  audits/inspections at the frequency specified? Was there a failure to perform the audits/inspections in accordance  with the specification? Were the inspection tools inappropriate? Were the inspection tools improperly calibrated? Was there a failure to monitor or collect data for equipment and organizational metrics?"
+              },
+              {
+                "name": "Recommendation Identification Issue",
+                "number": "119",
+                "definition": "Definition: Were recommendations unsuccessful in preventing recurrence of the issues? Should other recommendations have  been identified? Did recommendations fail to correct the causes of the problem? Were recommendations identified for adverse metric trends? "
+              },
+              {
+                "name": "Issue Tracking/Implementation Issue",
+                "number": "120",
+                "definition": "Definition: Was there a problem in tracking quality issues? Was there a problem in tracking the implementation of recommendations related to metrics? Did the organization  fail to assign the recommendations to a specific individual? "
+              },
+              {
+                "name": "Risk Acceptance Issue",
+                "number": "121",
+                "definition": "Definition: Were the risk acceptance criteria used during the audits and inspections set inappropriately? Were the risk acceptance  criteria used for the metrics program set inappropriately? Were the risk acceptance criteria improperly applied?  Were risks deemed acceptable that should have been reduced? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Procedure Issue",
+      "number": "122",
+      "definition": "Definition: This major root cause category addresses issues related to all aspects of procedures, including:  Failure to use the correct procedure  Failure to use the correct procedure correctly  Errors and omissions in the procedures  Did personnel fail to use a procedure for the task? Was the procedure incorrect or incomplete? Was no procedure  developed for the job, even though a procedure was required to perform the job? Note 1:  Procedures provide detailed step-by-step directions on how to accomplish a task. Guidance documents  that provide general guidance and principles should be addressed under the Company Standards, Policies and  Administrative Controls (SPAC) Issue or Standards, Policies and Administrative Controls (SPAC) Not Used  nodes.",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Correct Procedure Not Used",
+            "number": "123",
+            "definition": "Definition: Was there a procedure for the task? Was a procedure used to perform the job? Was a copy of the procedure available  to the worker? Was it difficult to obtain the procedure? Did the procedure system require that the procedure be  used as a task reference or was it just for training? Were personnel required to take copies of the procedures to the  field? Should the use of the procedure be required even though it was not in the past? Was the procedure written in  a language that was familiar to the worker? Was the use of the procedure discouraged?",
+            "rootcauses": [
+              {
+                "name": "No Procedure for Task/Operation",
+                "number": "124",
+                "definition": "Definition: Was there no procedure for the task?"
+              },
+              {
+                "name": "Procedure Difficult to Obtain",
+                "number": "125",
+                "definition": "Definition: Was the procedure difficult to access? Were no copies of the procedure available in the designated file, shelf, or rack?  Was the “master copy” of the procedure not available for reproduction? Were the copies of the procedures located  remotely from where the work is performed? Was procedure use inconvenient because of working conditions (e.g.,  tight quarters, weather, protective clothing)?"
+              },
+              {
+                "name": "Procedure Use Discouraged",
+                "number": "126",
+                "definition": "Definition: Was the procedure classified for “training” or “reference”? Based upon the significance or difficulty of the job,  should the procedure have been classified as a “use every time” or “must be in hand” procedure?"
+              },
+              {
+                "name": "Procedure Difficult to Use",
+                "number": "127",
+                "definition": "Definition: Considering the training and experience of the user, was the procedure too difficult to understand or follow? Did the  procedure fail to address the needs of the “less practiced” user? Note 1:  Dual coding under Correct Procedure Used Incorrectly (#131) may also be appropriate"
+              },
+              {
+                "name": "Language Issue",
+                "number": "128",
+                "definition": "Definition: Was there an issue with the languages used in the facility? Did the front-line workers use a different language than  the written procedures?  "
+              },
+              {
+                "name": "Procedure Difficult to Identify",
+                "number": "129",
+                "definition": "Definition: Is it difficult to identify the correct procedure to use? Do many procedures have similar names? Was there a failure  to clearly distinguish procedures for different units from one another? "
+              },
+              {
+                "name": "Wrong Revision Used",
+                "number": "130",
+                "definition": "Definition: Was an older version of the procedure used? Did the procedure user perform the action as the previous revision  specified rather than the current revision?  "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Correct Procedure Used Incorrectly",
+            "number": "131",
+            "definition": "Definition: Was an incident caused by an error made while following or trying to follow a procedure? Was the format laid out  in the wrong format? Was the procedure misleading or confusing? Was there more than one action per step? Were  the procedure graphics inappropriate? Were there language or wording issues that made the procedure difficult to  use? Was the procedure too detailed? Was the procedure not detailed enough? Note 1:  This node addresses the incorrect use of the appropriate procedure. Use of the wrong procedure is addressed  under the Correct Procedure Not Used (#123) node.",
+            "rootcauses": [
+              {
+                "name": "Format Inappropriate",
+                "number": "132",
+                "definition": "Definition: Did the layout of the procedure make it difficult to follow? Did the format differ from that which the user was  accustomed to using? Were the steps of the procedure illogically grouped? Is the procedure format inappropriate for the task? Is a flowchart used when a checklist is more appropriate? Is a  checklist used when a T-bar format is more appropriate? Are warnings or cautions presented in an inconsistent manner? Was the procedure user required to carry out actions different from those he was accustomed to doing? Did the  procedure fail to identify that the step for the action had been revised? Were data recorded incorrectly because of poor formatting of the procedure? Were revised steps difficult to identify? "
+              },
+              {
+                "name": "Confusing/Complex/Difficult to Use",
+                "number": "133",
+                "definition": "Definition: Were data recorded incorrectly because the procedure was confusing/complex or otherwise difficult to use? Were the instructions in the procedure unclear? Could they be interpreted in more than one way? Was the grammar  unclear/complex? Were the instructions in the procedure unclear? Could they be interpreted in more than one way? Was the language  or grammar unclear/complex? Were data recorded incorrectly because the procedure was ambiguous or confusing? "
+              },
+              {
+                "name": "More than One Action Per Step",
+                "number": "134",
+                "definition": "Definition: Did any steps in the procedure have more than one action or direction to perform? Did some steps in the procedure  state one action, which, in practice, actually required several steps to perform? Do warnings or cautions contain information that should be contained in procedure steps? Are important warnings  and cautions embedded in procedure steps? "
+              },
+              {
+                "name": "Inadequate Checklist",
+                "number": "135",
+                "definition": "Definition: If a checklist was necessary, was it confusing? Was insufficient room provided for the response? Did each instruction  (regardless of format) fail to clearly indicate what was required? Was a detailed checklist required for a task that  was not very important? Was an error made because each separate action in a step did not have a check-off space  provided (for procedures that are complex and critical enough to require check-offs)? Were incomplete or incorrect data recorded because numerous items were included in one step? "
+              },
+              {
+                "name": "Graphics/Drawing Issue",
+                "number": "136",
+                "definition": "Definition: Was an error made because graphics or drawings were of poor quality? Were the graphics or drawings unclear,  confusing, or misleading? Were graphics, including data sheets, illegible? Would a graphic (diagram, picture, chart,  etc.) have significantly reduced the likelihood of this error? "
+              },
+              {
+                "name": "Language/Wording Issue",
+                "number": "137",
+                "definition": "Definition: Did personnel have difficulty using the procedure because of the language used in the procedure? Did the front-line  workers speak a different language than the written procedures? "
+              },
+              {
+                "name": "Insufficient or Excessive References",
+                "number": "138",
+                "definition": "Definition: Did the procedure refer to an excessive number of additional procedures? Did the procedure contain numerous  steps of the type “Calculate limits per procedure XYZ”? Was the procedure difficult to follow because of excessive  branching to other procedures? Did the procedure contain numerous steps of the type “If X, then go to procedure  ABC. If Y, then go to procedure EFG”? Did the procedure contain numerous references to other parts of the  procedure? Did it contain steps of the type “If the material is acceptable, go to Step 13.3. If the material is unacceptable, go to  Step 12.4. If the test cannot be run, redo Step 4 and contact your supervisor”? "
+              },
+              {
+                "name": "Too Much/Too Little Detail",
+                "number": "139",
+                "definition": "Definition: Do the procedures provide too little detail to ensure proper performance of the task by the most inexperienced  operator? Do the procedures have too much detail, such as design details? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Appropriate Procedure Incorrect/Incomplete",
+            "number": "140",
+            "definition": "Definition: Was the procedure incorrect? Did the procedure fail to address a situation that occurred during performance of the  task? Is the procedure inconsistent with the installed equipment?",
+            "rootcauses": [
+              {
+                "name": "Wrong Action Sequence/Ordering ",
+                "number": "141",
+                "definition": "Definition: Were the instructions/steps in the procedure out of sequence? Were the steps out of order? "
+              },
+              {
+                "name": "Facts Wrong, Requirements Incorrect, or Content Not Updated",
+                "number": "142",
+                "definition": "Definition: Was specific information in the procedure incorrect? Did the procedure contain out-of-date requirements? Did  the procedure fail to reflect the current status of equipment? Were calculations performed incorrectly in the  procedure? Was a typographical error in the procedure responsible for the event? Was there a failure to incorporate customer requirements into the procedure? Note 1:  Errors in graphics are addressed under the Graphics/Drawing Issue (#136) node"
+              },
+              {
+                "name": "Inconsistent Procedural Requirements",
+                "number": "143",
+                "definition": "Definition: Did different procedures related to the same task contain different requirements? Were there conflicting or  inconsistent requirements stated in different steps of the same procedure? Were requirements stated in different  units (i.e., gallons versus liters, meters versus feet)? "
+              },
+              {
+                "name": "Missing Steps/Content/Situation Not Covered",
+                "number": "144",
+                "definition": "Definition: Were details of the procedure incomplete? Was insufficient detail presented? Did the procedure fail to address all  situations likely to occur during the completion of the procedure? Was a critical step missing? Note 1:  This node addresses specific issues that are not included in a procedure. If procedures in general do not  have a sufficient level of detail, consider coding under the Too Much/Too Little Detail (#139) node"
+              },
+              {
+                "name": "Overlap or Gaps Between Procedures",
+                "number": "145",
+                "definition": "Definition: Do multiple procedures cover the same task? Are there gaps between procedures that are used in sequence? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Human Factors Issue",
+      "number": "146",
+      "definition": "Definition: This major root cause category addresses issues related to the design of equipment, systems, and administrative  processes. This includes:  Tools and equipment  Workplace layout  Work environment  Physical workload  Mental workload  Error mitigation Was there a failure to consider the capabilities and limitations of humans in the design, development, production,  and control of systems? Is the layout of the workplace inadequate? Is the work environment excessively noisy, hot,  or cold? Does the task impose an excessive physical or mental workload? Is it difficult for personnel to detect and  correct errors?",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Tools/Equipment Issue",
+            "number": "147",
+            "definition": "Definition: Were the wrong or inappropriate tools supplied for the job? Were the tools in poor condition?",
+            "rootcauses": [
+              {
+                "name": "Appropriate Tools/Equipment Not Used",
+                "number": "148",
+                "definition": "Definition: Were the proper tools to do the job difficult to access? Were wrong or inappropriate tools used to perform the job?  Were improper tools supplied to do the job? Were the tools in poor condition? "
+              },
+              {
+                "name": "Tools/Equipment Not Functioning Properly",
+                "number": "149",
+                "definition": "Definition: Were the tools in poor condition? Was there a failure to properly calibrate the tools and instruments? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Workplace Layout Issue",
+            "number": "150",
+            "definition": "Definition: Did inadequate controls or displays contribute to the error? Was poor integration of controls and displays a factor?  Did differences in equipment between different processes or areas contribute to the problem? Did poor arrangement  or placement of equipment contribute to the incident? Was there a failure to appropriately and clearly label all  controls, displays, and other equipment?",
+            "rootcauses": [
+              {
+                "name": "Individual Control/Display/Alarm Issue",
+                "number": "151",
+                "definition": "Definition: Did inadequate equipment controls or control systems (e.g., push-buttons, rotary controls, J-handles, key-operated  controls, thumbwheels, switches, joy sticks) contribute to the occurrence? Did the control fail to provide an adequate  range of control for the function it performs? Was the control inadequately protected from accidental activation?  Did one switch control a number of parameters or have different functions under different conditions? Did inadequate displays or display systems (e.g., gauges, meters, light indicators, graphic recorders, counters, and  video display terminals) contribute to the occurrence? Did the display fail to provide all information about system  status and parameter values needed to meet task requirements? Did the configuration of the display make information  difficult to see or to interpret? Was it necessary for the user to convert information presented by the display prior to  using it? Did unnecessary or redundant information contribute to the error? Was there a failure to develop alarms for critical device failures? Are alarms difficult to hear? Are alarm tiles or  computer displays difficult to read? Are alarms poorly arranged or formatted to support situation assessment? Was  there a failure to prioritize alarms in terms of criticality to safety and immediacy of required crew response? Are  there inadequate controls for alarms, including acknowledgment and reset? For computer-displayed alarms, was  there a failure to present alarms in the order in which the initiating condition occurred? Is there alarm overload in  the workplace? Note 1:  Arrangement of controls is addressed by the Control/Display/Alarm Integration/Arrangement Issue  (#152) node. The location of controls is addressed by the Awkward/Inconvenient/Inaccessible Location of Control/Display/Alarm (#153) node"
+              },
+              {
+                "name": "Control/Display/Alarm Integration/Arrangement Issue",
+                "number": "152",
+                "definition": "Definition: Was there a failure to arrange related controls and displays close to each other? Was a display arranged so that it  was obscured during manipulation of the related control? Were control/display relationships unclear to the user?  Was the response of a display to control movements inconsistent, unpredictable, or incompatible with populational  stereotypes or with the user’s expectations? Was there difficulty with multiple displays being affected by a single  control? Was there a failure to develop a clear relationship between the controls and the displays? Was there a failure  to locate controls near the displays they affected? Is it difficult for the operator to read the display while adjusting  the control? Are control/display arrangements inconsistent with populational stereotypes? Did differences in controls, displays, or alarms between different processes or areas contribute to the event? Were similar controls indistinguishable from one another? "
+              },
+              {
+                "name": "Awkward/Inconvenient/Inaccessible Location of Control/Display/Alarm",
+                "number": "153",
+                "definition": "Definition: Were there problems related to the location of controls or displays? Were the controls or displays out of the normal  work area? Were the controls/displays difficult or awkward to access? Did the locations of controls make them  prone to inadvertent actuation? "
+              },
+              {
+                "name": "Awkward/Inconvenient/Inaccessible Equipment Location ",
+                "number": "154",
+                "definition": "Definition: Is equipment (tools, work surfaces, supplies) that personnel need to perform their jobs inconveniently located? Is  equipment difficult for workers to access when needed? "
+              },
+              {
+                "name": "Poor/Illegible Labeling of Control/Display/Alarm or Equipment",
+                "number": "155",
+                "definition": "Definition: Was there a failure to appropriately and clearly label all controls, displays, or other equipment items that had to  be located, identified, or manipulated by the user while performing a task? Did labeling fail to clearly identify  equipment? Did labeling incorrectly identify equipment? Were labels hard to read, incorrect, or misleading? Were  labels in a language that is unfamiliar to the user?"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Work Environment Issue",
+            "number": "156",
+            "definition": "Definition: Did excessive vibration or excessive noise contribute to the error? Was the problem caused by difficulties associated  with protective clothing? Were there other stressors present in the work area that may have contributed to the  problem (e.g., movement constriction, high jeopardy or risk)?",
+            "rootcauses": [
+              {
+                "name": "Housekeeping Issue",
+                "number": "157",
+                "definition": "Definition: Did poor housekeeping conditions contribute to the incident? Was the error caused by a cluttered work environment?  Was an unsafe situation created by a sloppy workplace? "
+              },
+              {
+                "name": "Ambient Conditions Issue",
+                "number": "158",
+                "definition": "Definition: Was the incident caused by excessive exposure of personnel to a hot or cold environment? Was poor ventilation  (i.e., poor air quality or inadequate air velocity) a contributor to the incident? Was the effect of rain, snow, etc., a  factor? Was the incident caused because illumination levels were not sufficient for task performance? Did the level of  illumination vary greatly over a given work station? Was the error caused by failure to provide supplemental lighting  for personnel performing specialized visual tasks in areas in which fixed illumination was not adequate? Was there  shadowing of labels, instructions, or other written information? Was there a problem with glare or reflection? If the  event occurred during an emergency situation, such as loss of power, was emergency lighting inadequate? Was the incident caused by diminished human performance caused by excessive noise? Were personnel unable  to hear auditory signals or alarms because of excessive background noise? Did auditory distraction, irritation, or  fatigue of personnel result from excessive noise?"
+              },
+              {
+                "name": "Protective Clothing/Equipment Issue",
+                "number": "159",
+                "definition": "Definition: Did protective clothing or equipment (e.g., plastic suit, gloves, respirator) contribute to the difficulty? Did protective  clothing or equipment significantly diminish any of the senses (i.e., sight, touch, smell, hearing, or taste) necessary  to perform the task? Were personnel required to wear protective clothing or equipment for an excessive length of  time? Were personnel required to dress in and out of protective clothing an excessive number of times? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Physical Workload Issue",
+            "number": "160",
+            "definition": "Definition: Were the physical demands of the task beyond the capabilities of the personnel? Did the tasks require an excessive  amount of strength or did the task cause repetitive stress injuries?  Was the worker rushed to get the job done? Was there pressure to get the job done to allow the system to be restarted?  Did he/she perceive that he/she was at risk? Note 1:  Dual coding under the Supervision Issue (#185) node may also be appropriate. Note 2:  Consider dual coding under the Awkward/Inconvenient/Inaccessible Location of Control/Display/Alarm  (#153) and/or Awkward/Inconvenient/Inaccessible Equipment Location (#154) nodes.",
+            "rootcauses": [
+              {
+                "name": " Sustained High Workload/Fatigue",
+                "number": "161",
+                "definition": "Definition: Were personnel fatigued (i.e., worn out) by extended periods of high physical workload? Was the person fatigued  due to chronic physical workload? "
+              },
+              {
+                "name": "High Transient Workload",
+                "number": "162",
+                "definition": "Definition: Were personnel fatigued (i.e., worn out) by a short-term high level of physical work? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Mental Workload Issue",
+            "number": "163",
+            "definition": "Definition: Was the error caused by a complex situation or system? Were system controls so complex that they contributed  to user error? Did the system impose unrealistic monitoring or mental processing requirements? Did a successful  outcome depend upon a novel decision?",
+            "rootcauses": [
+              {
+                "name": "Knowledge-based Behavior Issue",
+                "number": "164",
+                "definition": "Definition: Was the error caused by a complex situation or system? Could better system design eliminate the error? Do personnel  have to recall infrequently used information to adequately perform the task? Did the task require that personnel  commit extensive amounts of information to memory? Should information have been provided on the equipment  or in a procedure? Was the error due to the need for excessive mental processing by personnel? Were personnel required to work  through complicated logic sequences or other written instructions? Were personnel required to carry out mental  arithmetic? Did a successful outcome depend upon a novel decision? Were the system or equipment controls excessively complex? Could the system have been designed with simpler  controls so that the chance of error was reduced? "
+              },
+              {
+                "name": "Rule-based Behavior Issue",
+                "number": "165",
+                "definition": "Definition: Was the issue caused by blind application of a rule or procedure? Was the issue caused by the inappropriate  application of a rule or procedure? "
+              },
+              {
+                "name": "Skill-based Behavior Issue",
+                "number": "166",
+                "definition": "Definition: Was the issue caused by the automatic response of a worker to a situation? "
+              },
+              {
+                "name": "Unrealistic Monitoring Requirement",
+                "number": "167",
+                "definition": "Definition: Were personnel required to monitor multiple variables at once, causing overload or failure to notice important  information? Could the error be attributed to loss of alertness because of the excessive length of a monitoring  task? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Error Mitigation Issue",
+            "number": "168",
+            "definition": "Definition: Were personnel unable to detect errors (by way of alarms or instrument readings) during or after the occurrence?  Was the system designed such that personnel were unable to recover from errors before a failure occurred?",
+            "rootcauses": [
+              {
+                "name": "Errors Not Detectable",
+                "number": "169",
+                "definition": "Definition: Were personnel unable to detect errors (by way of alarms or instrument readings) during or after the occurrence?  Did a serious error go unnoticed because no means were provided to monitor system status? Should multiple or redundant sources of critical information have been provided? Is there an inadequate update rate  for sensed information (e.g., flow rates, tank levels)? Should methods or procedures have been provided to test and  verify information? Should alternate means to acquire and verify information have been provided? Are components  and devices needed to verify information not available in the area where the situation assessment is performed?  Note 1:  Consider dual coding with the Workplace Layout Issue (#150) node"
+              },
+              {
+                "name": "Errors Could Not Be Corrected/Mitigated",
+                "number": "170",
+                "definition": "Definition: Was the system designed such that personnel were unable to recover from errors before a failure occurred? Was there insufficient time to respond (i.e., take action) to address or correct the situation? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Training/Personnel Qualification Issue",
+      "number": "171",
+      "definition": "Definition: Was the system designed such that personnel were unable to recover from errors before a failure occurred? Was there insufficient time to respond (i.e., take action) to address or correct the situation?",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "No Training",
+            "number": "172",
+            "definition": "Definition: Was there a failure to develop training on the task? Was there a failure to conduct the training? Did the individual(s)  involved in the incident fail to receive training? Was there a failure to identify the training requirements? Was a  decision made to not train on the task?",
+            "rootcauses": [
+              {
+                "name": "Decision Not to Train",
+                "number": "173",
+                "definition": "Definition: Was the decision made to not provide specific training on a task? Were some employees not required to receive  training? Was experience inappropriately considered to be a substitute for training?"
+              },
+              {
+                "name": "Training Need Not Identified",
+                "number": "174",
+                "definition": "Definition: Was there a failure to identify training on the task as part of the employee’s training requirements? Was there a  failure to define the necessary training for the job? Did the organization fail to perform a job/task analysis? Did it incorrectly identify the knowledge and skills necessary  to complete the task? Did it fail to identify all the steps required to successfully complete the task? Was training on the issue overlooked?"
+              },
+              {
+                "name": "Training Requirements Not Completed",
+                "number": "175",
+                "definition": "Definition: Was there a failure to provide the required training? Did failure to complete all required training contribute to the  incident? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Training Implementation Issue",
+            "number": "176",
+            "definition": "Definition: Were job/task analyses inadequate? Were the program design and objectives incomplete? Did the training organization  have inadequate instructors or facilities? Is refresher training performed properly? Does testing inadequately measure  the trainee’s ability to perform the task? Does training fail to include normal and abnormal/emergency tasks?",
+            "rootcauses": [
+              {
+                "name": "Training Program Design/Development",
+                "number": "177",
+                "definition": "Definition: Did the training program fail to equip the trainees to perform the task? Did it contain improper amounts of classroom  and on-the-job instruction? Did the training objectives fail to satisfy the needs identified in the task analysis? Did the objectives fail to cover  all the requirements necessary to successfully complete the task? Were the objectives written at incorrect cognitive  levels? Did the lesson content fail to address all the training objectives? Did the lessons fail to contain all of the information  necessary to perform the job? Was the lesson material inconsistent with the current system configuration and  procedures? Note 1:  This node addresses the design and development of the training program, including:  Translating the job task analysis into training documents  Developing learning objectives  Developing lesson plans  Determining the appropriate settings (i.e., classroom, laboratory, simulator, on-the-job) for training Implementation of the training in these various settings is addressed by nodes #176-184"
+              },
+              {
+                "name": "Classroom Training Issue",
+                "number": "178",
+                "definition": "Definition: Was there a failure to conduct classroom training in accordance with the training program design? Were unskilled  personnel used to perform the instruction? Was the training inconsistent with desired practice? Did the training fail  to reflect the current practice? Was there insufficient classroom training? "
+              },
+              {
+                "name": "Laboratory/Practical Training Issue",
+                "number": "179",
+                "definition": "Definition: Was there a failure to conduct laboratory/practical training in accordance with the training program design? Were  unskilled personnel used to perform the instruction? Was the training inconsistent with desired practice? Did the  training fail to reflect the current practice? Was there insufficient laboratory/practical training? "
+              },
+              {
+                "name": "On-the-job Training Issue",
+                "number": "180",
+                "definition": "Definition: Did the on-the-job training (OJT) fail to provide opportunities to learn the skills necessary to perform the job? Was  OJT insufficient? Did OJT fail to cover unique and unusual situations or equipment to avoid surprising the operator  later on? Were OJT trainers qualified to perform the training? "
+              },
+              {
+                "name": "Self Study and Computer-based Training Issue",
+                "number": "181",
+                "definition": "Definition: Was there a failure to conduct self-study and computer-based training in accordance with the training program  design? Was the training inconsistent with desired practice? Did the training fail to reflect the current practice? Were  the training materials unavailable? Was there insufficient self-study/computer-based training? "
+              },
+              {
+                "name": "Continuing Training Issue",
+                "number": "182",
+                "definition": "Definition: Was there a failure to perform continuing training to keep employees up to date on performing nonroutine tasks?  Was the frequency of continuing training inadequate or inappropriate? Was there a failure to provide training when the work methods for a task were changed? Was there a failure to  provide training on changes to procedures for the task? Was there a failure to provide training on new equipment  used to perform the task? "
+              },
+              {
+                "name": "Training Resources Issue",
+                "number": "183",
+                "definition": "Definition: Was the training equipment inadequate? Was there a failure to use simulators or demonstration components? Was  there a failure to use equipment in training that was the same as that used on the job? Were the instructors and other  personnel providing the training inadequate? Do the instructor qualifications fail to require the instructor to be able  to perform the task? Was the instructor who performed the training unqualified on this task? "
+              },
+              {
+                "name": "Qualification Issue",
+                "number": "184",
+                "definition": "Definition: Do personnel filling positions that require a certification or qualification fail to have the current and valid certification  or qualification? Is the certification or qualification expired? Is it a forgery? Did the testing fail to cover all of the knowledge and skills necessary to do the job? Did the testing fail to adequately  reflect the trainee’s ability to perform the job? Was on-the-job demonstration not part of qualification or was the  demonstration not thorough enough? Has the worker’s certificate, endorsement, or license expired or is it otherwise invalid? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Supervision Issue",
+      "number": "185",
+      "definition": "Definition: This major root cause category addresses issues related to supervision of personnel, including job preparation and  supervision during the performance of the work. Did immediate supervision fail to provide adequate preparation, job plans, or walkthroughs for a job? Was there a  failure to identify potential problems identified before the work began? Were inappropriate personnel selected and  scheduled for the task? Did immediate supervision fail to provide adequate support, coverage, or oversight during  job performance? Did supervisors fail to correct improper performance? Did personnel fail to work together as a  coordinated team?",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Preparation Issue",
+            "number": "186",
+            "definition": "Definition: Did immediate supervision fail to provide adequate preparation, job plans, pre-job briefing, or walkthroughs for a  job? Was there a failure to identify potential interruptions or special circumstances before the work began? Were  inappropriate personnel selected and scheduled for the task? Was responsibility for the different portions of the job  task not clearly assigned?",
+            "rootcauses": [
+              {
+                "name": "Job Plan/Instructions to Workers Issue",
+                "number": "187",
+                "definition": "Definition: Did immediate supervision fail to provide proper preparation (e.g., instructions, job plan, pre-job briefing,  walkthrough) for the task performed? Did immediate supervision provide an incorrect, incomplete, or otherwise  inadequate job plan for performance of the work? Did immediate supervision provide incorrect, incomplete, or otherwise inadequate job instructions before the  beginning of work? Note 1:  This node addresses the overall directions (written and verbal) to workers. The Ineffective Walkthrough  (#188) node addresses showing personnel how to perform the task in the field"
+              },
+              {
+                "name": "Ineffective Walkthrough",
+                "number": "188",
+                "definition": "Definition: Did immediate supervision fail to perform an adequate walkthrough (show workers the location of equipment,  discuss operation of the equipment and the proper sequence of steps, etc.) with the workers before they started their  job? Note 1:  This node addresses showing personnel how to perform the task in the field. The Job Plan/Instructions to  Workers Issue (#187) node addresses the overall directions (written and verbal) provided to workers"
+              },
+              {
+                "name": "Job Scheduling Issue",
+                "number": "189",
+                "definition": "Definition: Was the work scheduling system inadequate? Was there a failure to use the work schedule for implementing work?  Was there a failure to consider the impact of safety and reliability on the work scheduled? Note 1:  This node addresses the scheduling of work activities only, not the scheduling of personnel to accomplish the  work. Problems with scheduling of personnel are addressed under the Personnel Selection/Assignment/Scheduling  Issue (#190) node"
+              },
+              {
+                "name": "Personnel Selection/Assignment/Scheduling Issue",
+                "number": "190",
+                "definition": "Definition: Did immediate supervision fail to select capable workers to perform the job? Did workers assigned to the task have  inadequate credentials? Were insufficient numbers of trained or inexperienced workers assigned to the task? Were too many concurrent tasks assigned to workers? Were duties not well distributed among personnel? Note 1:  This node addresses the assignment of personnel to work tasks only, not the scheduling of work activities.  Problems with scheduling of work activities are addressed under the Job Scheduling Issue (#189) node. Note 2:  This node addresses the assignment of existing or qualified workers to job tasks. For example, the selection  of a laborer from a preapproved pool of individuals would be covered by this node. It does NOT address the hiring  or preselection processes. Employee hiring is addressed by the Personnel Hiring Issue (#209) node"
+              },
+              {
+                "name": "Responsibility/Authority Issue",
+                "number": "191",
+                "definition": "Definition: Did the lack of definition of responsibility and authority contribute to the incident? Was responsibility for the  operation unclear? Was the incident the result of conflicting authority? Could responsibility or authority for  the operation be understood in more than one way? Was a lack of specificity in responsibility and authority a  contributing factor to the incident or its mitigation? Did confusion exist over who was responsible for the activity?  Did an activity exist for which no one took responsibility? Did the lack of documented responsibility and authority  contribute to the incident? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Supervision During Work Issue",
+            "number": "192",
+            "definition": "Definition: Did immediate supervision fail to provide adequate support, coverage, oversight, or supervision during job  performance? Was there a lack of coordination between workers? Were there overlaps or gaps in the work that was assigned to  different groups or team members? Note 1:  The investigator must judge what level of supervision was appropriate based on the importance of the job  in relation to safety and production. It is not possible or practical to provide continuous supervision on every job.",
+            "rootcauses": [
+              {
+                "name": "Improper Performance Not Corrected",
+                "number": "193",
+                "definition": "Definition: Do supervisors fail to correct improper performance when they observe it or know about it? Did they let improper  performance slip “just this once”? Are there insufficient methods for supervisors to detect improper performance? "
+              },
+              {
+                "name": "Teamwork/Coordination Issue",
+                "number": "194",
+                "definition": "Definition: Was there a lack of coordination between workers? Were there overlaps or gaps in the work that was assigned to  different groups or team members? Note 1:  This node addresses teamwork issues for the personnel assigned to perform the task. If the wrong personnel  were assigned to perform the task, code under the Personnel Selection/Assignment/Scheduling Issue (#190)  node"
+              },
+              {
+                "name": "Too Much/Too Little Supervision",
+                "number": "195",
+                "definition": "Definition: Did immediate supervision provide inadequate support, coverage, or oversight during performance of the job? Was  an inadequate level of supervision provided at the job site? Was contact with workers too infrequent? Did direct  supervision’s involvement in the task interfere with the supervisory overview role? Note 1:  The investigator must judge what level of supervision was appropriate based on the importance of the job  in relation to safety and production. It is not possible or practical to provide continuous supervision on every job"
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Verbal and Informal Written Communication Issue",
+      "number": "196",
+      "definition": "Definition: This major root cause category addresses issues related to verbal and informal written communications. It includes  communications using the following methods:  Face-to-face  Telephone  Radio  Short written messages  E-mails  Signs  Hand signals  It does not address more formal methods of communications like procedures, logs, and design specifications. Was the problem caused by a failure to communicate? Did a method or system exist for communicating between  the groups or individuals? Was an error caused by misunderstood communication between personnel? Was there  incorrect, incomplete, or otherwise inadequate communication between workers during a shift or between workers  during a shift change? Was there a problem communicating with contractors or customers?  Note 1:  Communications is defined as the act of exchanging information. This node addresses many informal modes  of communication (e.g., face-to-face, telephone, radio, short written messages, e-mails, signs, and hand signals). It  does not address the more formal methods of communication involving written procedures, logs, specifications, etc.  These more formal methods of communicating information are addressed under the Procedure Issue (#122) and  Documentation and Records Issue (#58) nodes",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "No Communication or Not Timely",
+            "number": "197",
+            "definition": "Definition: Was the problem caused by a failure to communicate? Did a method or system exist for communicating between the  groups or individuals? Did the communication take place too late? Did obstacles hinder or delay communication? Note 1:  Each individual involved in the occurrence should be questioned regarding messages he or she feels should  have been received or transmitted. Determine what means of communication were used (i.e., the techniques).  Persons on all sides of a communication link should be questioned regarding known or suspected problems.",
+            "rootcauses": [
+              {
+                "name": "Method Unavailable or Inadequate",
+                "number": "198",
+                "definition": "Definition: Was there a method or system for communicating the necessary message or information? Was the communication  system out of service or otherwise unavailable at the time of the incident? "
+              },
+              {
+                "name": "Communication Not Timely/Not Performed",
+                "number": "199",
+                "definition": "Definition: Did the communication take place too late? Did obstacles hinder or delay communication? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Communication Misunderstood/Incorrect",
+            "number": "200",
+            "definition": "Definition: Was an error caused by misunderstood communications between personnel? Was there an error in verbal  communication? Did someone misunderstand a hand signal? Was a sign misunderstood? Were oral instructions  given when written instructions should have been provided?",
+            "rootcauses": [
+              {
+                "name": "Standard Terminology Not Used",
+                "number": "201",
+                "definition": "Definition: Was nonstandard or unaccepted terminology used? Could the communication be interpreted more than one way?  Did one piece of equipment have two or more commonly used names? Could the terminology have applied to more  than one item? "
+              },
+              {
+                "name": "Language/Translation Issue",
+                "number": "202",
+                "definition": "Definition: Was there a miscommunication because of the languages used by the sender and receiver of the communication?  Was there a problem with the translation of a statement from one language to another? "
+              },
+              {
+                "name": "Verification/Repeat- back Not Used",
+                "number": "203",
+                "definition": "Definition: Was there a miscommunication because of the languages used by the sender and receiver of the communication?  Was there a problem with the translation of a statement from one language to another? "
+              },
+              {
+                "name": "Long Message",
+                "number": "204",
+                "definition": "Definition: Was a message or instruction misunderstood because it was too long? Should the message have been written instead  of spoken? Could the message have been shortened or broken up? "
+              },
+              {
+                "name": "Other Misunderstood Communications",
+                "number": "205",
+                "definition": "Definition: Did someone misunderstand a hand signal? Was a sign misunderstood? Was another method of communicating  misunderstood? "
+              },
+              {
+                "name": "Wrong Instructions",
+                "number": "206",
+                "definition": "Definition: Was the information contained in the message errant, inaccurate, or wrong? "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Personnel Performance Issue",
+      "number": "207",
+      "definition": "Definition: This major root cause category addresses issues that are specific to an individual. It includes two major sections:  Company Issue (#208) and Individual Issue (#213). The majority of the nodes on the map address organizational  management systems. However, the Individual Issue (#213-223) nodes specifically address issues related to  individuals. Were inappropriate personnel hired to perform the work? Were insufficient personnel available to perform the  task? Were personnel rewarded for undesirable behavior? Were personnel punished for desirable behavior? Did the worker’s physical or mental well-being, attitude, mental capacity, attention span, off-the-job sleeping  patterns, substance abuse, etc., adversely affect the performance of the task? Was the problem the result of the  individual not being capable of performing the task or not wanting to do his or her job? Was there a failure to  promptly detect an individual performance problem? Was there a delay in taking corrective action? Note 1:  The 10 asterisked nodes (#214-223) are included to provide the investigator with an understanding of the  types of problems that might be categorized as Personnel Performance Issue; Individual Issue (#213). However,  the investigator should not include these in the investigation report. Also, there should be management systems  in place to detect and correct most (if not all) individual personnel performance issues before a loss event occurs.  Therefore, the failure or absence of the management systems should be coded as well.",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Company Issue",
+            "number": "208",
+            "definition": "Definition: Were inappropriate personnel hired to perform the work? Were insufficient numbers of personnel available to  perform the task? Were personnel rewarded for undesirable behavior? Were personnel punished for desirable behavior? Should the individual personnel performance issues have been detected prior to the incident? Were workers rewarded  for improper performance? Note 1:  Consider dual coding under Supervision During Work Issue (#192).",
+            "rootcauses": [
+              {
+                "name": "Personnel Hiring Issue",
+                "number": "209",
+                "definition": "Definition: Was the employee screening program ineffective? Did it fail to correctly identify requirements for particular jobs?  Did it fail to screen employees against those requirements? Note 1:  This node addresses the hiring of personnel into new positions. This includes hiring from outside the  current organization or reassignment of personnel to new positions within the organization. Assignment of existing  or qualified workers to job tasks (i.e., selection of a laborer from a preapproved pool of individuals) is covered by  the Personnel Selection/Assignment/Scheduling Issue (#190) node"
+              },
+              {
+                "name": "Resource/Staffing Issue",
+                "number": "210",
+                "definition": "Definition: Were there insufficient personnel resources to perform the tasks that were scheduled? Does the organization have  an inappropriate mix of personnel to perform the work? "
+              },
+              {
+                "name": " Rewards/Incentives Issue",
+                "number": "211",
+                "definition": "Definition: Were workers rewarded for improper performance? Were incentives inconsistent with the goals of the company and  facility? Did the reward system encourage workers to take shortcuts or waste resources? "
+              },
+              {
+                "name": "Detection of Individual Performance Problem Issue",
+                "number": "212",
+                "definition": "Definition: Did personnel performance issues contribute to the incident? Should the individual performance issues have been  detected prior to the incident? Note 1:  Consider dual coding under Supervision During Work Issue (#192). "
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Individual Issue",
+            "number": "213",
+            "definition": "Definition: Did the worker’s physical or mental well-being, attitude, mental capacity, attention span, off-the-job sleeping  practices, substance abuse, etc., adversely affect the performance of the task? Was the problem the result of the  individual not being capable of performing the task or not wanting to do his or her job? Note 1:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 2:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 3:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 4:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report.",
+            "rootcauses": [
+              {
+                "name": "Sensory/Perceptual Abilities Issue*",
+                "number": "214",
+                "definition": "Definition: Was the problem a result of less than adequate vision (e.g., poor visual acuity, color blindness, tunnel vision)? Was  the problem a result of some limitation in hearing (e.g., hearing loss, tone deafness)? Was the problem a result of  some sensory limitation (e.g., poor sense of touch or smell)? Note 1:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 2:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 3:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 4:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report"
+              },
+              {
+                "name": "Mental Capabilities Issue*",
+                "number": "215",
+                "definition": "Definition: Was the problem caused by inadequate intellectual capacity? Does the person frequently make wrong decisions? In  general, does the person have difficulty processing information? Is the difficulty isolated to this one worker? Was the problem caused by lack of attention? Does the individual involved in this occurrence frequently “daydream”?  Is the person distracted easily? Is the person’s ability to maintain vigilance frequently below minimum standards? Is  the difficulty isolated to this one worker? Note 1:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 2:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 3:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 4:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report"
+              },
+              {
+                "name": "Physical Capabilities Issue*",
+                "number": "216",
+                "definition": "Definition: Can the problem be attributed to trouble with inadequate physical coordination or inadequate strength? Was the  problem a result of inadequate size or stature of the individual involved? Did other physical limitations (e.g.,  shaking, poor reaction time) contribute to the problem? Note 1:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 2:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 3:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 4:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report"
+              },
+              {
+                "name": "Personal Problem*",
+                "number": "217",
+                "definition": "Definition: Was the individual involved in the incident experiencing a significant personal problem that may have temporarily  affected his or her ability to perform the task? Examples include:  Close relative just died  Spouse undergoing cancer treatment  Going through divorce proceedings  Parent moving into nursing home  Note 1:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 2:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 3:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 4:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report"
+              },
+              {
+                "name": "Prescribed Drug Interaction Issue*",
+                "number": "218",
+                "definition": "Definition: Was the individual taking prescribed medications that affected his or her job performance? Note 1:  This node addresses inadvertent prescription drug interactions. Drug and alcohol abuses are addressed by  the Drug/Alcohol Abuse (#222) node. Note 2:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 3:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 4:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 5:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report"
+              },
+              {
+                "name": "Horseplay*",
+                "number": "219",
+                "definition": "Definition: Was the incident the result of horseplay or other nonwork-related activities? Note 1:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 2:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 3:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 4:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report"
+              },
+              {
+                "name": "Off-the-job Rest/Sleep(Fatigue)Issue*",
+                "number": "220",
+                "definition": "Definition: Was the worker involved in the incident asleep while on duty? Was the person too tired to perform the job? Was the  issue caused by rest and sleep practices outside of the workplace? Note 1:  This node addresses problems associated with an individual’s rest and sleep practices outside of the  workplace. Problems with workers who are forced to work unreasonable amounts of overtime should be coded  using the Supervision; Personnel Selection/Assignment/Scheduling Issue (#190) node segments of the map. Note 2:  Physical fatigue caused by high workloads is addressed under the Sustained High Workload/Fatigue  (#161) and High Transient Workload (#162) nodes. Note 3:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 4:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 5:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 6:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report"
+              },
+              {
+                "name": "Disregard for Company Procedures/Policies*",
+                "number": "221",
+                "definition": "Definition: Was the problem the result of a poor attitude on the part of an individual? Did the individual deliberately ignore the  rules, even though he or she understood the consequences?  Typical characteristics of personnel with a disregard for company policy include the following:  Engages in horseplay  Is not at the work location  Does not perform the expected work  Exhibits maliciousness  Exhibits insubordination  Exhibits the inability to work well or communicate with other people  Ignores safety rules  Note 1:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 2:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 3:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 4:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report"
+              },
+              {
+                "name": "Drug/Alcohol Abuse*",
+                "number": "222",
+                "definition": "Definition: Is the individual abusing drugs or alcohol? Typical symptoms include:  Chronic inattention  Acute inattention  Frequent daydreaming  Easily distracted  Poor vigilance  Frequent illness  Poor psychological health  Note 1:  The Personnel Performance Issue; Individual Issue (#213) node should only be used when the problem is  isolated to one individual. If other personnel have difficulty performing the same task under similar circumstances,  then other portions of the Root Cause Map™ should be used to code the issue. Note 2:  There should be management systems in place to detect and correct most (if not all) individual performance  issues BEFORE an incident occurs. Therefore, the failure or absence of the management systems should be coded  as well. Note 3:  Consider coding under the Personnel Hiring Issue (#209) node because there should be management  controls to ensure that employees possess the required job capabilities prior to being hired. Also consider coding  under the Supervision During Work Issue (#192) or Detection of Individual Performance Issue (#212) nodes  because supervision should detect this problem. Note 4:  Code as Personnel Performance Issue; Individual Issue (#213) only. The 10 nodes beneath Individual  Issue (#213) are included to provide the investigator with an understanding of the types of problems that might  be categorized as Personnel Performance Issue; Individual Issue (#213). However, the investigator should NOT  include these cause nodes in the investigation report"
+              },
+              {
+                "name": "Internal Sabotage or Criminal Activity*",
+                "number": "223",
+                "definition": "Issue that was caused by COTS software/cloud service that was purchased from a 3rd party supplier."
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Computer System Issue",
+      "number": "IT1",
+      "definition": "Definition:Issues related to Computer system failures. ",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Computer System Software Issue",
+            "number": "IT2",
+            "definition": "Definition: Issues related to failures of computer system software",
+            "rootcauses": [
+              {
+                "name": "3rd Party Software Defect",
+                "number": "IT4",
+                "definition": "Definition: Issue that was caused by COTS software/cloud service that was purchased from a 3rd party supplier."
+              },
+              {
+                "name": "Lilly Coding Issue",
+                "number": "IT3",
+                "definition": "Definition: Issue that was caused by software that was developed or software that was customized by Lilly (including Lilly employees, Lilly service providers or a software provider at the request of Lilly)."
+              },
+              {
+                "name": "Lilly System Configuration Issue (IT5)",
+                "number": "",
+                "definition": "Definition: Issues caused by the configuration of software for use at Lilly."
+              },
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Uncertain",
+      "number": "",
+      "definition": "",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+          {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "Not Applicable",
+      "number": "",
+      "definition": "",
+      "properties": {
+        "details": [
+          {
+            "NearRootCauses": "Uncertain",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          },
+		  {
+            "NearRootCauses": "Not Applicable",
+            "number": "",
+            "definition": "",
+            "rootcauses": [
+              {
+                "name": "Uncertain",
+                "number": ""
+              },
+              {
+                "name": "Not Applicable",
+                "number": ""
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
