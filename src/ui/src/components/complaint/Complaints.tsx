@@ -4,7 +4,7 @@ import PlusIcon from '../../assets/icons/plus.svg';
 import ComplaintsResult from '@components/complaint/ComplaintsResult';
 import ComplaintsFilter from '@components/complaint/ComplaintsFilter';
 import styles from './Complaints.module.scss';
-import Popup from '@components/Popup/Popup';
+import NarrativeManual from "@components/Popup/NarrativeManual";
 import FileUpload from '@components/FileUpload/FileUpload';
 import CommonBreadcrumbs from '@components/commonBreadCrumbs/CommonBreadcrumbs';
 import StatusTabs from './StatusTabs';
@@ -184,10 +184,6 @@ const Complaints = () => {
     }
   }, [done]);
 
-  const handleFileSelect = (file: File) => {
-    console.log('Selected file:', file);
-  };
-
   const handleFileUploadSuccess = async () => {
     setOpenFileUpload(false);
     await fetchData(); // Refresh on upload success
@@ -282,9 +278,9 @@ const Complaints = () => {
         </>
       )}
 
-      <Popup open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />
+      <NarrativeManual open={open} onClose={handleClose} onSubmit={handleCreateComplaint} setInputValue={setInputValue} inputValue={inputValue} />
       <FileUpload setOpenFileUpload={setOpenFileUpload} onSuccess={handleFileUploadSuccess} setProcessing={setShouldPoll}
-        open={openFileUpload} onClose={() => setOpenFileUpload(false)} onFileSelect={handleFileSelect} />
+        open={openFileUpload} onClose={() => setOpenFileUpload(false)}/>
       <Notification open={openNotification} onClose={handleCloseNotification} position="top" message={"Max retries reached"} type={"error"} />
     </Box>
   );

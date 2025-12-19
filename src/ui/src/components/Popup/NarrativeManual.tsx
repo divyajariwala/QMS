@@ -1,9 +1,9 @@
 import React, { ChangeEvent, MouseEvent } from 'react';
-import styles from './Popup.module.scss';
+import styles from "./NarrativeManual.module.scss";
 import { PopupProps } from 'src/types';
 import { MAX_LENGTH } from 'src/constants';
 
-const Popup: React.FC<PopupProps> = ({ open, onClose, onSubmit, inputValue, setInputValue }) => {
+const NarrativeManual: React.FC<PopupProps> = ({ open, onClose, onSubmit, inputValue, setInputValue }) => {
 
   if (!open) return null;
   const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -59,4 +59,4 @@ const Popup: React.FC<PopupProps> = ({ open, onClose, onSubmit, inputValue, setI
   );
 };
 
-export default Popup;
+export default NarrativeManual;

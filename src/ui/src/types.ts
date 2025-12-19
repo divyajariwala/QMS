@@ -360,7 +360,6 @@ export interface ConnectorProps {
 export interface FileUploadPopupProps {
   open: boolean;
   onClose: () => void;
-  onFileSelect: (file: File) => void;
   setProcessing: (val: boolean) => void;
   onSuccess: () => void;
   setOpenFileUpload: (val: boolean) => void;

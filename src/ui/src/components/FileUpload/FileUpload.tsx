@@ -1,33 +1,37 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from "react";
 import {
   Box,
   Dialog,
   DialogContent,
   DialogTitle,
   CircularProgress,
-} from '@mui/material';
-import CloudUploadIcon from '../../../src/assets/icons/upload.svg';
-import DownloadIcon from '../../../src/assets/icons/vector.svg';
-import CheckCircleIcon from '../../../src/assets/icons/uploadSuccess.svg';
-import { uploadComplaintFile } from 'src/services/api.service';
-import { FileUploadPopupProps, fileUploadStatus } from 'src/types';
-import styles from './FileUpload.module.scss';
+} from "@mui/material";
+import CloudUploadIcon from "../../../src/assets/icons/upload.svg";
+import DownloadIcon from "../../../src/assets/icons/vector.svg";
+import CheckCircleIcon from "../../../src/assets/icons/uploadSuccess.svg";
+import {
+  uploadComplaintFile,
+  uploadDeviationFile,
+} from "src/services/api.service";
+import { FileUploadPopupProps, fileUploadStatus } from "src/types";
+import { useLocation } from "react-router-dom";
+import styles from "./FileUpload.module.scss";
 
 const FileUpload: React.FC<FileUploadPopupProps> = ({
   open,
   onClose,
-  onFileSelect,
   setProcessing,
-  onSuccess
+  onSuccess,
 }) => {
   const [isDragActive, setIsDragActive] = useState(false);
-  const [status, setStatus] = useState<fileUploadStatus>('idle');
+  const [status, setStatus] = useState<fileUploadStatus>("idle");
   const [fileCount, setFileCount] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const location = useLocation();
 
   useEffect(() => {
     if (!open) {
-      setStatus('idle');
+      setStatus("idle");
       setFileCount(0);
       setIsDragActive(false);
       setErrorMsg(null);
@@ -44,32 +48,38 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   }, []);
 
   const handleFileLoaded = async (file: File) => {
-    setStatus('uploading');
+    setStatus("uploading");
     setErrorMsg(null);
 
     try {
-      const response = await uploadComplaintFile(file);
+      const path = location.pathname.toLowerCase();
+
+      let response;
+      if (path.includes("complaints")) {
+        response = await uploadComplaintFile(file);
+      } else if (path.includes("deviations")) {
+        response = await uploadDeviationFile(file);
+      }
+
       if (response && response.success) {
         // Sequentially update status with delays
-        await new Promise(res => setTimeout(res, 1000));
-        setStatus('importing');
-        await new Promise(res => setTimeout(res, 1500));
-        setStatus('extracting');
-        await new Promise(res => setTimeout(res, 2000));
-        setStatus('success');
-        await new Promise(res => setTimeout(res, 2500));
+        await new Promise((res) => setTimeout(res, 1000));
+        setStatus("importing");
+        await new Promise((res) => setTimeout(res, 1500));
+        setStatus("extracting");
+        await new Promise((res) => setTimeout(res, 2000));
+        setStatus("success");
+        await new Promise((res) => setTimeout(res, 2500));
         onSuccess?.();
-        onClose?.();   // Call onClose callback from parent
-        onFileSelect(file);
+        onClose?.(); // Call onClose callback from parent
         setProcessing(true);
       } else {
-        throw new Error(response?.message || 'Unknown error during upload');
+        throw new Error(response?.message || "Unknown error during upload");
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      setErrorMsg(errorMessage || 'File upload failed');
-      setStatus('error');
-      console.error('Upload error:', err);
+      setErrorMsg(errorMessage || "File upload failed");
+      setStatus("error");
     }
   };
 
@@ -95,6 +105,14 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   );
 
   const handleDownloadExample = () => {
+    const path = location.pathname.toLowerCase();
+
+    const columnHeader = path.includes("complaints")
+      ? "Narrative"
+      : path.includes("deviations")
+      ? "Investigation Summary"
+      : "Narrative"; // default fallback
+
     const html = `
     <html xmlns:o="urn:schemas-microsoft-com:office:office"
           xmlns:x="urn:schemas-microsoft-com:office:excel"
@@ -121,7 +139,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
     </head>
     <body>
       <table>
-        <tr><th>Serial No</th><th>Narrative</th></tr>
+        <tr><th>Serial No</th><th>${columnHeader}</th></tr>
         <tr><td></td><td></td></tr>
         <tr><td></td><td></td></tr>
         <tr><td></td><td></td></tr>
@@ -135,7 +153,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "sample-template.xls";  // Note the .xls extension, not .xlsx
+    a.download = "sample-template.xls"; // Note the .xls extension, not .xlsx
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -143,22 +161,24 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
   };
 
   const handleClickUploadArea = () => {
-    document.getElementById('file-input')?.click();
+    document.getElementById("file-input")?.click();
   };
 
   const handleKeyDownUploadArea = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      document.getElementById('file-input')?.click();
+      document.getElementById("file-input")?.click();
     }
   };
 
   const renderStatusContent = () => {
-    if (status === 'idle' || status === 'error') {
+    if (status === "idle" || status === "error") {
       return (
         <>
           <Box
-            className={`${styles.uploadArea} ${isDragActive ? styles.uploadAreaActive : ''}`}
+            className={`${styles.uploadArea} ${
+              isDragActive ? styles.uploadAreaActive : ""
+            }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -167,7 +187,11 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
             tabIndex={0}
             onKeyDown={handleKeyDownUploadArea}
           >
-            <img src={CloudUploadIcon} alt="Upload" className={styles.uploadIcon} />
+            <img
+              src={CloudUploadIcon}
+              alt="Upload"
+              className={styles.uploadIcon}
+            />
             <Box role="button" component="p" className={styles.helperText}>
               Click or drag file to this area to upload
             </Box>
@@ -178,7 +202,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
               id="file-input"
               className={styles.fileInputHidden}
               onChange={handleFileChange}
-              disabled={(status as fileUploadStatus) === 'uploading'}
+              disabled={(status as fileUploadStatus) === "uploading"}
             />
           </Box>
 
@@ -193,7 +217,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
           <button
             className={styles.downloadButton}
             onClick={handleDownloadExample}
-            disabled={(status as fileUploadStatus) === 'uploading'}
+            disabled={(status as fileUploadStatus) === "uploading"}
           >
             <img
               src={DownloadIcon}
@@ -203,8 +227,8 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
             Download Sample Template
           </button>
 
-          {status === 'error' && (
-            <Box sx={{ color: 'red', marginTop: 2 }}>
+          {status === "error" && (
+            <Box sx={{ color: "red", marginTop: 2 }}>
               Error uploading file: {errorMsg}
             </Box>
           )}
@@ -214,13 +238,11 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
 
     const statusBoxProps = { className: styles.statusBox };
 
-    if (status === 'importing' || status === 'uploading') {
+    if (status === "importing" || status === "uploading") {
       return (
         <Box {...statusBoxProps}>
           <CircularProgress className={styles.circularProgress} />
-          <Box className={styles.statusTitle}>
-            Importing file(s)
-          </Box>
+          <Box className={styles.statusTitle}>Importing file(s)</Box>
           <Box className={styles.statusSubtitle}>
             Please wait few seconds while we&apos;re extracting your data
           </Box>
@@ -228,13 +250,11 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
       );
     }
 
-    if (status === 'extracting') {
+    if (status === "extracting") {
       return (
         <Box {...statusBoxProps}>
           <CircularProgress className={styles.circularProgress} />
-          <Box className={styles.statusTitle}>
-            Extracting data
-          </Box>
+          <Box className={styles.statusTitle}>Extracting data</Box>
           <Box className={styles.statusSubtitle}>
             Please wait few seconds while we&apos;re extracting your data
           </Box>
@@ -242,13 +262,15 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
       );
     }
 
-    if (status === 'success') {
+    if (status === "success") {
       return (
         <Box {...statusBoxProps}>
-          <img src={CheckCircleIcon} alt="Success" className={styles.successIcon} />
-          <Box className={styles.statusTitle}>
-            Extraction successful
-          </Box>
+          <img
+            src={CheckCircleIcon}
+            alt="Success"
+            className={styles.successIcon}
+          />
+          <Box className={styles.statusTitle}>Extraction successful</Box>
           <Box className={styles.statusSubtitle}>
             Please wait while we redirect to the main page
           </Box>
@@ -259,7 +281,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
     return null;
   };
 
-  const dialogHeight = status === 'idle' || status === 'error' ? 448 : 334;
+  const dialogHeight = status === "idle" || status === "error" ? 448 : 334;
 
   return (
     <Dialog
@@ -270,9 +292,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
         sx: { height: dialogHeight },
       }}
     >
-      <DialogTitle className={styles.dialogTitle}>
-        File Upload
-      </DialogTitle>
+      <DialogTitle className={styles.dialogTitle}>File Upload</DialogTitle>
 
       <DialogContent className={styles.dialogContent}>
         {renderStatusContent()}

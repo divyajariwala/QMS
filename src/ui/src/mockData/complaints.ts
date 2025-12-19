@@ -93,35 +93,6 @@ export const complaintsData = [
   },
 ];
 
-export const deviationsData = [
-  {
-    "status": "in-review",
-    "rcaStatus": "ACTIVE",
-    "gradingStatus": "ACTIVE",
-    "progress": 0,
-    "Recieved Date": "Aug 04 2025",
-    "Due Date": "Oct 02 2025",
-    "Case Number": "DV-10001"
-  },
-  {
-    "Case Number": "DV-20001",
-    "Recieved Date": "Aug 04 2025",
-    "Due Date": "Oct 02 2025",
-    "status": "Grading-pending",
-    "rcaStatus": "COMPLETED",
-    "gradingStatus": "PENDING",
-    "progress": 50,
-  },
-  {
-    "status": "in-review",
-    "rcaStatus": "ACTIVE",
-    "gradingStatus": "ACTIVE",
-    "progress": 0,
-    "Recieved Date": "Aug 04 2025",
-    "Due Date": "Oct 02 2025",
-    "Case Number": "DV-30001"
-  }
-];
 
 export const complaintCategories = [
   {

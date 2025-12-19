@@ -1,8 +1,10 @@
 import { useState, useEffect, MouseEvent } from "react";
+import { useParams } from "react-router-dom";
 import { Paper, Stack, Box, Button, Typography } from "@mui/material";
 import styles from "./InvestigationSummary.module.scss";
 import PlusIcon from "../../assets/icons/plus.svg";
 import EmptyImg from "../../assets/images/emptyState.svg";
+import { saveInvestigationSummary } from "src/services/api.service";
 
 type Props = {
   summary: string;
@@ -14,6 +16,7 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
   const hasSummary = summary.trim().length > 0;
   const [draft, setDraft] = useState<string>(summary);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const { deviationId } = useParams<{ deviationId: string | undefined }>();
 
   useEffect(() => {
     if (!isEditing) {
@@ -23,7 +26,7 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
 
   const startEditing = (event?: MouseEvent<HTMLButtonElement>): void => {
     event?.preventDefault();
-    setDraft(summary); // initialize with current summary (can be empty)
+    setDraft(summary);
     setIsEditing(true);
   };
 
@@ -36,6 +39,11 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
     const next = draft.trim();
     setSummary(next);
     setIsEditing(false);
+    const payload = {
+      deviationId: deviationId,
+      summary: next,
+    };
+    const response = saveInvestigationSummary(payload)
   };
 
   useEffect(() => {

@@ -1,0 +1,75 @@
+export const deviationsData = [
+  {
+    status: "in-review",
+    rcaStatus: "ACTIVE",
+    gradingStatus: "ACTIVE",
+    progress: 0,
+    "Recieved Date": "Aug 04 2025",
+    "Due Date": "Oct 02 2025",
+    "Case Number": "DV-10001",
+  },
+  {
+    "Case Number": "DV-20001",
+    "Recieved Date": "Aug 04 2025",
+    "Due Date": "Oct 02 2025",
+    status: "Grading-pending",
+    rcaStatus: "COMPLETED",
+    gradingStatus: "PENDING",
+    progress: 50,
+  },
+  {
+    status: "in-review",
+    rcaStatus: "ACTIVE",
+    gradingStatus: "ACTIVE",
+    progress: 0,
+    "Recieved Date": "Aug 04 2025",
+    "Due Date": "Oct 02 2025",
+    "Case Number": "DV-30001",
+  },
+];
+
+export const getDeviationsList = {
+  caseStats: {
+    total_deviations: 928,
+    pending: 91,
+    processed: 90,
+    overdue: 747,
+    workflow_progress: 928,
+    rca_pending: 91,
+    rca_done: 90,
+    grading_pending: 747,
+    avg_cycle_time: 2,
+  },
+  caseStatus: {
+    pending: [
+      {
+        case_id: "CAS-00940",
+        rcaStatus: "ACTIVE",
+        gradingStatus: "ACTIVE",
+        due_date: "2025-12-11T12:04:51.302079",
+        received_date: "2025-12-11T12:04:51.302079",
+        status: "in-review",
+        progress: 0,
+      },
+      {
+        case_id: "CAS-00940",
+        rcaStatus: "COMPLETED",
+        gradingStatus: "PENDING",
+        due_date: "2025-12-11T12:04:51.302079",
+        received_date: "2025-12-11T12:04:51.302079",
+        status: "grading-pending",
+        progress: 50,
+      },
+    ],
+    processed: [],
+    overdue: [],
+  },
+  pagination: {
+    current_page: 1,
+    total_pages: 7,
+    total_items: 91,
+    items_per_page: 15,
+    has_next: true,
+    has_previous: false,
+  },
+};
