@@ -868,6 +868,81 @@ class TestUtilityFunctions:
         assert 'crl_list' not in body
         assert 'label_list' not in body
 
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_crl_list_does_not_accumulate_nas(self, mock_get_db):
+        """Test: crl_list contains only one NA and doesn't accumulate across invocations"""
+        mock_conn = Mock()
+        mock_context, mock_cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context
+        mock_get_db.return_value = mock_conn
+
+        # Store original CRL_DESCRIPTIONS length
+        original_crl_length = len(lambda_function.CRL_DESCRIPTIONS)
+
+        # Mock data for classified complaint
+        def setup_mock():
+            mock_cursor.fetchone.side_effect = [
+                {
+                    'complaint_id': 'CAS-999',
+                    'receipt_date': date(2023, 2, 1),
+                    'criticality': 'High',
+                    'report_type': 'Spontaneous',
+                    'narrative_summary': 'Test',
+                    'case_type': 'PC',
+                    'narrative': 'Test',
+                    'primary_reporter': 'John',
+                    'primary_reporter_address': '123',
+                    'patient_name': 'Jane',
+                    'physician': 'Dr. Smith',
+                    'drug': 'Drug',
+                    'lot_no': 'LOT',
+                    'dosage': '100mg',
+                    'expiration_date': date(2024, 1, 1),
+                    'part_number': 'PN',
+                    'status': 'Pending',
+                    'text_extracted': True,
+                    'created_at': datetime(2023, 2, 1, 10, 0, 0),
+                    'file_name': 'test.pdf',
+                    's3_url': 's3://bucket/test.pdf'
+                },
+                {
+                    'inference_id': 1,
+                    'complaint_id': 'CAS-999',
+                    'levels': {"1": 0.9},
+                    'subcategories': {"Test Category": 0.9},
+                    'crl_codes': {"CRL-001": 0.9},
+                    'units': 1,
+                    'final_level': '1',
+                    'priority': 1,
+                    'priority_reason': 'Test',
+                    'priority_summary': 'Test'
+                }
+            ]
+            mock_cursor.fetchall.return_value = [{'label': 'Test Category'}]
+
+        # First invocation
+        setup_mock()
+        event = {'queryStringParameters': {'complaint_id': 'CAS-999'}}
+        result1 = lambda_function.lambda_handler(event, {})
+        body1 = json.loads(result1['body'])
+        na_count_1 = body1['crl_list'].count('NA')
+
+        # Second invocation (simulating warm Lambda)
+        mock_context2, mock_cursor2 = create_mock_cursor()
+        mock_conn.cursor.return_value = mock_context2
+        mock_cursor = mock_cursor2
+        setup_mock()
+        result2 = lambda_function.lambda_handler(event, {})
+        body2 = json.loads(result2['body'])
+        na_count_2 = body2['crl_list'].count('NA')
+
+        # Verify NA count is always 1 and doesn't accumulate
+        assert na_count_1 == 1, f"First invocation should have exactly 1 NA, got {na_count_1}"
+        assert na_count_2 == 1, f"Second invocation should have exactly 1 NA, got {na_count_2}"
+        
+        # Verify module-level CRL_DESCRIPTIONS wasn't mutated
+        assert len(lambda_function.CRL_DESCRIPTIONS) == original_crl_length, "CRL_DESCRIPTIONS should not be mutated"
+
 
     @patch.object(lambda_function, 'get_db_connection')
     def test_get_single_processed_complaint(self, mock_get_db):
@@ -1139,4 +1214,4 @@ class TestGetAdverseEvents:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    pytest.main([__file__, "-v", "--tb=short"])

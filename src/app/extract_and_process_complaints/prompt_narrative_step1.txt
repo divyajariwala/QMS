@@ -5,7 +5,7 @@ IMPORTANT: If the text is NOT related to pharmaceutical/medical product complain
 EXTRACT:
 1. case_id: If mentioned (otherwise NA)
 2. receipt_date: If mentioned in YYYY-MM-DD format (otherwise NA)
-3. report_type: NA (not applicable for narratives)
+3. report_type: NA (not applicable for narratives. The value should always be NA even if the narrative text indicates any value for report type.)
 4. narrative: The complete text provided
 5. narrative_summary: Generate 50-150 word summary that captures:
    - Patient condition and adverse effects (if any)
