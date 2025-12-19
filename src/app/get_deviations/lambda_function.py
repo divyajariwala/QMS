@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     Supports three endpoints:
     - GET /getDeviation - Returns all complaints with stats
     - GET /getDeviation?deviation_status=Pending - Returns specific deviation details
-    - GET /getComplaints?matrix=true - Returns adverse events only and mixed cases
+    - GET /getDeviation?deviation_id=DV-XXX - Returns adverse events only and mixed cases
     """
     try:
         # Get database connection
@@ -39,7 +39,7 @@ def lambda_handler(event, context):
         # Get query parameters
         query_parameters = event.get('queryStringParameters', {})
         deviation_status = query_parameters.get('deviation_status') if query_parameters else None
-        matrix = query_parameters.get('matrix') if query_parameters else None
+        deviation_id = query_parameters.get('deviation_id') if query_parameters else None
         page = int(query_parameters.get('page', 1)) if query_parameters and query_parameters.get('page') else 1
         status_filter = query_parameters.get('status') if query_parameters else None
         search_query = query_parameters.get('search') if query_parameters else None
@@ -47,11 +47,11 @@ def lambda_handler(event, context):
         if deviation_status:
             # Handle single deviation request: /getDeviation?deviation_status=Pending
             return get_deviation_details_by_status(conn, deviation_status)
-        elif matrix == 'true':
-            # Handle adverse events request: /getComplaints?matrix=true
-            return get_all_deviation_case_matrix(conn)
+        elif deviation_id:
+            # Handle adverse events request: /getDeviation?deviation_id=DV-XXX
+            return get_case_by_deviationid(conn, deviation_id)
         else:
-            # Handle all complaints request: /getComplaints
+            # Handle all complaints request: getDeviation
             return get_all_deviation(conn, page, status_filter, search_query)
 
     except Exception as e:
@@ -133,6 +133,7 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         'deviation_description': c['description'],
                         'grading_approved': c.get('grading_approved', False),
                         'rca_approved': c.get('rca_approved', False),
+                        'status': c['deviation_status'].lower(),
                         'grading_completed': c.get('grading_completed', False),
                     } for c in search_results]
                 }
@@ -157,12 +158,12 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                 
                 # Get complaints for status grouping
                 if status_filter:
-                    complaints_for_grouping = paginated_complaints
+                    deviation_for_grouping = paginated_complaints
                 else:
                     cursor.execute("""
-                        SELECT complaint_id, criticality, report_type, receipt_date, case_type, status, text_extracted, created_at
-                        FROM complaints
-                        ORDER BY complaint_id DESC
+                        SELECT deviation_id, created_at, deviation_status, description, grading_approved, rca_approved, grading_completed
+                        FROM deviations
+                        ORDER BY deviation_id DESC
                     """)
                     deviation_for_grouping = cursor.fetchall()
                 
@@ -196,6 +197,7 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         'case_id': c['deviation_id'],
                         'receipt_date': c['created_at'].isoformat() if c['created_at'] else '',
                         'deviation_description': c['description'],
+                        'status': c['deviation_status'].lower(),
                         'grading_approved': c.get('grading_approved', False),
                         'rca_approved': c.get('rca_approved', False),
                         'grading_completed': c.get('grading_completed', False),
@@ -223,7 +225,7 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
         if conn:
             conn.close()
 
-def get_all_deviation_case_matrix(conn):
+def get_case_by_deviationid(conn, deviation_id):
     """
         Fetch count of deviations grouped by deviation_status.
         Include all statuses: Pending, Overdue, Processed
@@ -282,6 +284,7 @@ def _group_by_status(complaints):
                         'case_id': complaint['deviation_id'],
                         'receipt_date': complaint['created_at'].isoformat() if c['created_at'] else '',
                         'deviation_description': complaint['description'],
+                        'status': complaint['deviation_status'].lower(),
                         'grading_approved': complaint.get('grading_approved', False),
                         'rca_approved': complaint.get('rca_approved', False),
                         'grading_completed': complaint.get('grading_completed', False),
