@@ -1,1 +1,269 @@
-# Lambda function code here
+import json
+import os
+import psycopg
+from psycopg.rows import dict_row
+from secrets_util import get_secret
+
+# -------------------- ENV CONFIG --------------------
+ENV = os.environ.get('env', 'dev')
+DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
+DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
+DB_REGION = os.environ.get('db_region', 'us-east-1')
+
+
+# -------------------- LAMBDA HANDLER --------------------
+def lambda_handler(event, context):
+    """
+    GET /getDeviation
+    GET /getDeviation?status=Pending
+    GET /getDeviation?deviation_id=DV-XXX
+    """
+    conn = None
+    try:
+        conn = get_db_connection()
+
+        query_params = event.get('queryStringParameters') or {}
+        deviation_id = query_params.get('deviation_id')
+        status = query_params.get('status')
+        page = int(query_params.get('page', 1))
+        search = query_params.get('search')
+
+        if deviation_id:
+            return get_case_by_deviationid(conn, deviation_id)
+
+        if status:
+            return get_deviation_details_by_status(conn, status)
+
+        return get_all_deviation(conn, page, status, search)
+
+    except Exception as e:
+        print("Lambda error:", str(e))
+        return {
+            'statusCode': 500,
+            'headers': _get_cors_headers(),
+            'body': json.dumps({
+                'success': False,
+                'error': 'Internal server error',
+                'message': str(e)
+            })
+        }
+    finally:
+        if conn:
+            conn.close()
+
+
+# -------------------- GET ALL DEVIATIONS --------------------
+def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
+    try:
+        with conn.cursor(row_factory=dict_row) as cursor:
+
+            # Refresh stats
+            cursor.execute("SELECT update_deviations_and_stats()")
+            conn.commit()
+
+            cursor.execute("SELECT stat_name, stat_value FROM case_stats")
+            stats = {
+                r['stat_name'].lower().replace(' ', '_'): r['stat_value']
+                for r in cursor.fetchall()
+            }
+
+            limit = 15
+            offset = (page - 1) * limit
+
+            # ---------------- SEARCH ----------------
+            if search_query:
+                cursor.execute("""
+                    SELECT COUNT(*) AS total
+                    FROM deviations
+                    WHERE deviation_id ILIKE %s
+                    AND NOT (
+                        case_type NOT LIKE '%%,%%'
+                        AND case_type ILIKE '%%adverse%%'
+                    )
+                """, (f"%{search_query}%",))
+                total_count = cursor.fetchone()['total']
+
+                cursor.execute("""
+                    SELECT
+                        deviation_id,
+                        created_at,
+                        deviation_status,
+                        description,
+                        grading_approved,
+                        rca_approved,
+                        grading_completed
+                    FROM deviations
+                    WHERE deviation_id ILIKE %s
+                    AND NOT (
+                        case_type NOT LIKE '%%,%%'
+                        AND case_type ILIKE '%%adverse%%'
+                    )
+                    ORDER BY deviation_id DESC
+                    LIMIT %s OFFSET %s
+                """, (f"%{search_query}%", limit, offset))
+
+                rows = cursor.fetchall()
+
+            # ---------------- NORMAL LIST ----------------
+            else:
+                where = ""
+                params = []
+
+                if status_filter:
+                    where = "WHERE LOWER(deviation_status) = LOWER(%s)"
+                    params.append(status_filter)
+
+                cursor.execute(
+                    f"SELECT COUNT(*) AS total FROM deviations {where}",
+                    params
+                )
+                total_count = cursor.fetchone()['total']
+
+                cursor.execute(f"""
+                    SELECT
+                        deviation_id,
+                        created_at,
+                        deviation_status,
+                        description,
+                        grading_approved,
+                        rca_approved,
+                        grading_completed
+                    FROM deviations
+                    {where}
+                    ORDER BY deviation_id DESC
+                    LIMIT %s OFFSET %s
+                """, params + [limit, offset])
+
+                rows = cursor.fetchall()
+
+            total_pages = (total_count + limit - 1) // limit
+
+            response = {
+                'caseStats': {
+                    'total_deviations': stats.get('pending', 0) +
+                                        stats.get('processed', 0) +
+                                        stats.get('overdue', 0),
+                    'pending': stats.get('pending', 0),
+                    'processed': stats.get('processed', 0),
+                    'overdue': stats.get('overdue', 0),
+                    'avg_cycle_time': stats.get('avg_time', 0),
+                    'rca_pending': stats.get('rca_pending', 0),
+                    'rca_done': stats.get('rca_done', 0),
+                    'grading_pending': stats.get('grading_pending', 0),
+                },
+                'pagination': {
+                    'current_page': page,
+                    'total_pages': total_pages,
+                    'total_items': total_count,
+                    'items_per_page': limit,
+                    'has_next': page < total_pages,
+                    'has_previous': page > 1
+                },
+                'deviations': [
+                    {
+                        'case_id': r['deviation_id'],
+                        'receipt_date': r['created_at'].isoformat() if r['created_at'] else '',
+                        'deviation_description': r['description'],
+                        'status': r['deviation_status'].lower(),
+                        'grading_approved': r['grading_approved'],
+                        'rca_approved': r['rca_approved'],
+                        'grading_completed': r['grading_completed'],
+                    }
+                    for r in rows
+                ]
+            }
+
+            return {
+                'statusCode': 200,
+                'headers': _get_cors_headers(),
+                'body': json.dumps(response, default=str)
+            }
+
+    except Exception as e:
+        print("get_all_deviation error:", str(e))
+        raise
+
+
+# -------------------- GET BY DEVIATION ID --------------------
+def get_case_by_deviationid(conn, deviation_id):
+    with conn.cursor(row_factory=dict_row) as cursor:
+        cursor.execute("""
+            SELECT
+                deviation_id,
+                created_at,
+                deviation_status,
+                description,
+                grading_approved,
+                rca_approved,
+                grading_completed
+            FROM deviations
+            WHERE deviation_id = %s
+        """, (deviation_id,))
+
+        row = cursor.fetchone()
+        if not row:
+            return {
+                'statusCode': 404,
+                'headers': _get_cors_headers(),
+                'body': json.dumps({'error': 'Deviation not found'})
+            }
+
+        return {
+            'statusCode': 200,
+            'headers': _get_cors_headers(),
+            'body': json.dumps({
+                'case_id': row['deviation_id'],
+                'receipt_date': row['created_at'].isoformat() if row['created_at'] else '',
+                'deviation_description': row['description'],
+                'status': row['deviation_status'].lower(),
+                'grading_approved': row['grading_approved'],
+                'rca_approved': row['rca_approved'],
+                'grading_completed': row['grading_completed'],
+            }, default=str)
+        }
+
+
+# -------------------- GET BY STATUS --------------------
+def get_deviation_details_by_status(conn, status):
+    with conn.cursor(row_factory=dict_row) as cursor:
+        cursor.execute("""
+            SELECT
+                deviation_id,
+                created_at,
+                deviation_status,
+                description,
+                grading_approved,
+                rca_approved,
+                grading_completed
+            FROM deviations
+            WHERE LOWER(deviation_status) = LOWER(%s)
+            ORDER BY created_at DESC
+        """, (status,))
+
+        return {
+            'statusCode': 200,
+            'headers': _get_cors_headers(),
+            'body': json.dumps(cursor.fetchall(), default=str)
+        }
+
+
+# -------------------- DB CONNECTION --------------------
+def get_db_connection():
+    secret = get_secret(DB_SECRET_NAME, DB_REGION)
+    return psycopg.connect(
+        host=secret['host'],
+        port=secret['port'],
+        dbname=secret['dbname'],
+        user=secret['username'],
+        password=secret['password']
+    )
+
+
+# -------------------- CORS --------------------
+def _get_cors_headers():
+    return {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    }

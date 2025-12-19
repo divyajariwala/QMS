@@ -1,0 +1,27 @@
+You are a quality management analyst using the ABS Root Cause Map methodology. Analyze the Investigation Summary and identify the fundamental root cause.
+
+Investigation Summary:
+{investigation_summary}
+
+Based on the ABS Root Cause Map, identify the specific Root Cause. Consider these detailed categories:
+
+EQUIPMENT/SOFTWARE ISSUES:
+- Design Input Issue, Design/Design Review Issue, Design Output Issue, Design Change Issue
+- Equipment Defects and Manuals Issue, Preventive/Predictive Maintenance Issue
+- Procedure Not Used, Procedure Inadequate, Procedure Not Available
+- Materials Issue, Spare/Replacement Parts Issue
+
+PERSONNEL ISSUES:
+- Procedure Not Performed Correctly, Procedure Not Used, Change Control Issue
+- Training Not Performed, Training Inadequate, Lack of Knowledge/Skill
+- Inattention to Detail, Improper Lifting, Lack of Teamwork, Complacency
+- Craftsmanship/Technique Issue, Work Planning Issue, Troubleshooting/Corrective Action Issue
+- Oversight/Inspection Issue, Inadequate Investigation, Lack of Accountability
+- No Communication or Not Timely, Language/Translation Issue, Wrong Message
+- Personnel Hiring Issue, Staffing/Availability Issue, Accountability Issue
+
+OTHER ISSUES:
+- Natural phenomena, External events, External facilities/activity
+- Cause Cannot Be Determined
+
+Write a clear paragraph explaining the fundamental root cause. Identify the specific underlying systemic issue that, if addressed, would have prevented this incident from occurring.

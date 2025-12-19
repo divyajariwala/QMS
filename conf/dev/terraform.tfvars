@@ -292,6 +292,36 @@ lambda_configs = [
         http_method = "POST"
       },
     ]
+  },
+  {
+    function_name = "add-investigation-summary"
+    path          = "src/app/add_investigation_summary"
+    environment_variables = {
+      env                 = "dev"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region           = "us-east-1"
+    }
+    api_gateway_paths = [
+      {
+        path_name   = "addInvestigationSummary"
+        http_method = "POST"
+      }
+    ]
+  },
+  {
+    function_name = "get-deviations-list"
+    path          = "src/app/get_deviations"
+    environment_variables = {
+      env                 = "dev"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region           = "us-east-1"
+    }
+    api_gateway_paths = [
+      {
+        path_name   = "getDeviation"
+        http_method = "GET"
+      }
+    ]
   }
 ]
 

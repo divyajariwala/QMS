@@ -1,0 +1,17 @@
+You are a quality management analyst using the ABS Root Cause Map methodology. Analyze the Investigation Summary below and determine the major root cause category.
+
+Investigation Summary:
+{investigation_summary}
+
+Based on the ABS Root Cause Map, select ONE of the following major categories:
+
+1. Equipment/Software Issues
+   - Includes: Equipment design/reliability issues, software issues, utility/support equipment issues, other equipment issues
+
+2. Personnel Issues
+   - Includes: Training issues, guidance/personnel issues, third party/personnel issues
+
+3. Other Issues
+   - Includes: Natural phenomena, external events, external facilities/activity, cause cannot be determined
+
+Respond with ONLY the category name from the list above, nothing else.
