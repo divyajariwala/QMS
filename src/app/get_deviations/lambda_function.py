@@ -3,7 +3,6 @@ import json
 import os
 import psycopg
 from psycopg.rows import dict_row
-from datetime import datetime
 from secrets_util import get_secret
 
 # Environment variables
@@ -233,16 +232,20 @@ def get_case_by_deviationid(conn, deviation_id):
     try:
         with conn.cursor(row_factory=dict_row) as cursor:
             query = """
-            SELECT
+                SELECT
+                deviation_id,
+                created_at,
                 deviation_status,
-                COUNT(*) AS total_count
+                description,
+                rca_approved,
+                grading_approved
             FROM deviations
-            GROUP BY deviation_status
-            ORDER BY deviation_status;
+            WHERE deviation_id = %s;
             """
 
-            cursor.execute(query)
-            result = cursor.fetchall()
+            cursor.execute(query, (deviation_id,))
+            # Fetch one row
+            result = cursor.fetchone()
             print(result)
             return {
                         'statusCode': 200,
@@ -278,14 +281,13 @@ def _group_by_status(deviations):
     }
 
     for deviation in deviations:
-        case_status = deviation['status'].lower()
+        case_status = deviation['deviation_status'].lower()
 
         deviation_summary = {
                         'case_id': deviation['deviation_id'],
-                        'receipt_date': deviation['created_at'].isoformat() if c['created_at'] else '',
+                        'receipt_date': deviation['created_at'].isoformat() if deviation['created_at'] else '',
                         'deviation_description': deviation['description'],
                         'status': deviation['deviation_status'].lower(),
-                        'grading_approved': deviation.get('grading_approved', False),
                         'grading_approved': deviation.get('grading_approved', False),
                         'rca_approved': deviation.get('rca_approved', False),
                         'grading_completed': deviation.get('grading_completed', False),
