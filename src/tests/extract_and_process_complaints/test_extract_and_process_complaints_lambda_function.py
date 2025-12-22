@@ -610,8 +610,8 @@ class TestUpdateComplaintInDb:
             call_args = mock_cursor.execute.call_args[0]
             assert 'text_extracted = TRUE' in call_args[0]
             assert 'part_number = %s' in call_args[0]
-            # Should only have 1 commit since no move happens
-            mock_conn.commit.assert_called_once()
+            # Should have 2 commits: one for UPDATE, one for log_workflow
+            assert mock_conn.commit.call_count == 2
 
     @patch('lambda_function.move_to_adverse_events')
     @patch('lambda_function.get_connection_string')
@@ -638,8 +638,8 @@ class TestUpdateComplaintInDb:
             
             # Verify move was called after first commit
             mock_move.assert_called_once_with(mock_cursor, 'CAS-123')
-            # Verify two commits: one for update, one for move
-            assert mock_conn.commit.call_count == 2
+            # Verify three commits: one for update, one for move, one for log_workflow
+            assert mock_conn.commit.call_count == 3
 
     @patch('lambda_function.move_to_adverse_events')
     @patch('lambda_function.get_connection_string')
@@ -665,7 +665,8 @@ class TestUpdateComplaintInDb:
             lambda_function.update_complaint_in_db('CAS-123', extracted_data)
             
             mock_move.assert_not_called()
-            mock_conn.commit.assert_called_once()
+            # Should have 2 commits: one for UPDATE, one for log_workflow
+            assert mock_conn.commit.call_count == 2
 
     @patch('lambda_function.get_connection_string')
     def test_update_complaint_with_na_values(self, mock_get_connection):

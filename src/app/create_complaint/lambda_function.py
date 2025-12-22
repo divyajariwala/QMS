@@ -193,6 +193,7 @@ def create_complaint_in_db(narrative, event):
                     output_data={'complaint_id': complaint_id, 'status': 'Pending'},
                     start_time=start_time
                 )
+                conn.commit()
                 
                 return complaint_id
                 

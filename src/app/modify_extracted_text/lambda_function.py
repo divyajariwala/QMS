@@ -120,7 +120,7 @@ def update_complaint_in_db(case_id, body, event, user):
                     'drug': body['drug'],
                     'lot_no': body['lotNumber'],
                     'dosage': body['doseAmount'],
-                    'expiration_date': body['expirationDate'],
+                    'expiration_date': body['expirationDate'] if body['expirationDate'] else None,
                     'part_number': body['partNumber']
                 }
                 
@@ -153,6 +153,7 @@ def update_complaint_in_db(case_id, body, event, user):
                     input_data={'fields_count': len(fields_modified), 'modified_by': user},
                     output_data={'fields_modified': fields_modified},
                     start_time=start_time)
+                conn.commit()
                 
     except Exception as e:
         logger.error(f"Database error updating complaint: {str(e)}")
