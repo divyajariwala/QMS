@@ -89,7 +89,7 @@ def test_lambda_handler_get_all(mock_get_db, mock_db_connection):
     assert response['statusCode'] == 200
     body = json.loads(response['body'])
 
-    assert 'caseStats' in body
+    assert 'deviationStats' in body
     assert 'deviations' in body
     assert 'pagination' in body
     assert body['pagination']['total_items'] == 1
@@ -111,7 +111,7 @@ def test_lambda_handler_get_by_id(mock_get_db, mock_db_connection):
 
     assert response['statusCode'] == 200
     body = json.loads(response['body'])
-    assert body['case_id'] == 'DV-001'
+    assert body['deviation_id'] == 'DV-001'
 
 
 def test_get_all_deviation_with_search(mock_db_connection):
@@ -170,7 +170,7 @@ def test_get_case_by_deviationid_found(mock_db_connection):
 
     assert response['statusCode'] == 200
     body = json.loads(response['body'])
-    assert body['case_id'] == 'DV-001'
+    assert body['deviation_id'] == 'DV-001'
 
 
 def test_get_case_by_deviationid_not_found(mock_db_connection):
