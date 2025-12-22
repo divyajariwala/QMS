@@ -31,9 +31,6 @@ def lambda_handler(event, context):
         if deviation_id:
             return get_case_by_deviationid(conn, deviation_id)
 
-        if status:
-            return get_deviation_details_by_status(conn, status)
-
         return get_all_deviation(conn, page, status, search)
 
     except Exception as e:
@@ -72,18 +69,30 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
 
             # ---------------- SEARCH ----------------
             if search_query:
-                cursor.execute("""
+                where_clauses = ["deviation_id ILIKE %s"]
+                params = [f"%{search_query}%"]
+
+                if status_filter:
+                    where_clauses.append("LOWER(deviation_status) = LOWER(%s)")
+                    params.append(status_filter)
+
+                where = "WHERE " + " AND ".join(where_clauses)
+
+                # ---- COUNT ----
+                cursor.execute(
+                    f"""
                     SELECT COUNT(*) AS total
                     FROM deviations
-                    WHERE deviation_id ILIKE %s
-                    AND NOT (
-                        case_type NOT LIKE '%%,%%'
-                        AND case_type ILIKE '%%adverse%%'
-                    )
-                """, (f"%{search_query}%",))
+                    {where}
+                    """,
+                    params
+                )
                 total_count = cursor.fetchone()['total']
+                print("Total count:", total_count)
 
-                cursor.execute("""
+                # ---- DATA ----
+                cursor.execute(
+                    f"""
                     SELECT
                         deviation_id,
                         created_at,
@@ -91,17 +100,15 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         description,
                         grading_approved,
                         rca_approved,
-                        grading_completed
+                        grading_completed,
+                        rca_generated
                     FROM deviations
-                    WHERE deviation_id ILIKE %s
-                    AND NOT (
-                        case_type NOT LIKE '%%,%%'
-                        AND case_type ILIKE '%%adverse%%'
-                    )
+                    {where}
                     ORDER BY deviation_id DESC
                     LIMIT %s OFFSET %s
-                """, (f"%{search_query}%", limit, offset))
-
+                    """,
+                    params + [limit, offset]
+                )
                 rows = cursor.fetchall()
 
             # ---------------- NORMAL LIST ----------------
@@ -127,7 +134,8 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         description,
                         grading_approved,
                         rca_approved,
-                        grading_completed
+                        grading_completed,
+                        rca_generated
                     FROM deviations
                     {where}
                     ORDER BY deviation_id DESC
@@ -168,6 +176,7 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         'grading_approved': r['grading_approved'],
                         'rca_approved': r['rca_approved'],
                         'grading_completed': r['grading_completed'],
+                        'rca_generated': r['rca_generated']
                     }
                     for r in rows
                 ]
@@ -190,12 +199,7 @@ def get_case_by_deviationid(conn, deviation_id):
         cursor.execute("""
             SELECT
                 deviation_id,
-                created_at,
-                deviation_status,
-                description,
-                grading_approved,
-                rca_approved,
-                grading_completed
+                investigation_summary
             FROM deviations
             WHERE deviation_id = %s
         """, (deviation_id,))
@@ -213,39 +217,9 @@ def get_case_by_deviationid(conn, deviation_id):
             'headers': _get_cors_headers(),
             'body': json.dumps({
                 'case_id': row['deviation_id'],
-                'receipt_date': row['created_at'].isoformat() if row['created_at'] else '',
-                'deviation_description': row['description'],
-                'status': row['deviation_status'].lower(),
-                'grading_approved': row['grading_approved'],
-                'rca_approved': row['rca_approved'],
-                'grading_completed': row['grading_completed'],
+                'investigation_summary': row['investigation_summary']
             }, default=str)
         }
-
-
-# -------------------- GET BY STATUS --------------------
-def get_deviation_details_by_status(conn, status):
-    with conn.cursor(row_factory=dict_row) as cursor:
-        cursor.execute("""
-            SELECT
-                deviation_id,
-                created_at,
-                deviation_status,
-                description,
-                grading_approved,
-                rca_approved,
-                grading_completed
-            FROM deviations
-            WHERE LOWER(deviation_status) = LOWER(%s)
-            ORDER BY created_at DESC
-        """, (status,))
-
-        return {
-            'statusCode': 200,
-            'headers': _get_cors_headers(),
-            'body': json.dumps(cursor.fetchall(), default=str)
-        }
-
 
 # -------------------- DB CONNECTION --------------------
 def get_db_connection():
