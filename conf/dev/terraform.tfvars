@@ -294,16 +294,6 @@ lambda_configs = [
     ]
   },
   {
-    function_name = "get-rca-categories"
-    path          = "src/app/get_rca_categories"
-    api_gateway_paths = [
-      {
-        path_name   = "getRCACategory"
-        http_method = "GET"
-      },
-    ]
-  },
-  {
     function_name = "add-investigation-summary"
     path          = "src/app/add_investigation_summary"
     environment_variables = {
@@ -329,6 +319,19 @@ lambda_configs = [
     api_gateway_paths = [
       {
         path_name   = "getDeviation"
+        http_method = "GET"
+      }
+    ]
+  },
+  {
+    function_name = "get-rca-categories"
+    path          = "src/app/get_rca_categories"
+    environment_variables = {
+      env                 = "dev"
+    }
+    api_gateway_paths = [
+      {
+        path_name   = "getRCACategory"
         http_method = "GET"
       }
     ]
