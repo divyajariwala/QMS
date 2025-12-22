@@ -2,7 +2,7 @@ import json
 import os
 import psycopg
 from psycopg.rows import dict_row
-from secrets_util import get_secret
+from .secrets_util import get_secret
 
 # -------------------- ENV CONFIG --------------------
 ENV = os.environ.get('env', 'dev')
