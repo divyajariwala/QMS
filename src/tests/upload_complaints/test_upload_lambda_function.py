@@ -21,7 +21,7 @@ class TestLambdaHandler:
         'db_secret_base_name': 'aurora-postgres-master',
         'db_region': 'us-east-1'
     })
-    @patch('upload_complaints.lambda_function.get_secret')
+    @patch('upload_complaints.lambda_function.secrets_util.get_secret')
     @patch('boto3.client')
     @patch('upload_complaints.lambda_function.parse_multipart_manual')
     @patch('upload_complaints.lambda_function.create_file_record')
@@ -80,7 +80,7 @@ class TestLambdaHandler:
         'db_secret_base_name': 'aurora-postgres-master',
         'db_region': 'us-east-1'
     })
-    @patch('upload_complaints.lambda_function.get_secret')
+    @patch('upload_complaints.lambda_function.secrets_util.get_secret')
     @patch('boto3.client')
     @patch('upload_complaints.lambda_function.parse_multipart_manual')
     @patch('upload_complaints.lambda_function.create_file_record')
@@ -169,7 +169,7 @@ class TestLambdaHandler:
         'S3_BUCKET_NAME': 'test-bucket',
         'SQS_QUEUE_NAME': 'test-queue'
     })
-    @patch('upload_complaints.lambda_function.get_secret')
+    @patch('upload_complaints.lambda_function.secrets_util.get_secret')
     @patch('boto3.client')
     @patch('upload_complaints.lambda_function.parse_multipart_manual')
     @patch('upload_complaints.lambda_function.create_file_record')
