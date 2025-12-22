@@ -1,6 +1,9 @@
 import json
 from datetime import datetime
 import psycopg
+import logging
+
+logger = logging.getLogger(__name__)
 
 def log_workflow(conn, entity_id, step, input_data=None, output_data=None, start_time=None):
     """Log workflow step execution"""
@@ -17,9 +20,9 @@ def log_workflow(conn, entity_id, step, input_data=None, output_data=None, start
                 json.dumps(input_data) if input_data else None,
                 json.dumps(output_data) if output_data else None
             ))
-            conn.commit()
     except Exception as e:
-        print(f"Workflow logging error: {str(e)}")
+        logger.error(f"Workflow logging error: {str(e)}")
+        raise
 
 def log_audit(conn, entity_type, entity_id, changed_field, old_value, new_value, changed_by='system'):
     """Log audit trail for field changes"""
@@ -36,9 +39,9 @@ def log_audit(conn, entity_type, entity_id, changed_field, old_value, new_value,
                 str(new_value) if new_value is not None else None,
                 changed_by
             ))
-            conn.commit()
     except Exception as e:
-        print(f"Audit logging error: {str(e)}")
+        logger.error(f"Audit logging error: {str(e)}")
+        raise
 
 def get_user_from_event(event):
     """Extract user from event context"""

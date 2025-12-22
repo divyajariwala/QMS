@@ -366,6 +366,7 @@ def update_complaint_in_db(complaint_id, extracted_data, start_time=None):
                     input_data={'source': 'pdf' if 's3path' in result else 'narrative'},
                     output_data={'extracted_fields': extracted_fields, 'text_length': len(result.get('narrative', ''))},
                     start_time=start_time)
+                conn.commit()
                 
     except Exception as e:
         logger.error(f"Database error: {str(e)}")

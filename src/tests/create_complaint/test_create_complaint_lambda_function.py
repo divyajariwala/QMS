@@ -336,7 +336,8 @@ class TestDatabaseIntegration:
         call_args = mock_cursor.execute.call_args[0]
         assert 'text_extracted' in call_args[0]
         assert 'FALSE' in call_args[0]
-        mock_conn.commit.assert_called_once()
+        # Verify commit is called twice: once after INSERT, once after log_workflow
+        assert mock_conn.commit.call_count == 2
         
         # Verify workflow logging was called
         mock_log_workflow.assert_called_once()

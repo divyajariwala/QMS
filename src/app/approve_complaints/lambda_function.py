@@ -133,11 +133,17 @@ def lambda_handler(event, context):
                 cur.execute("UPDATE complaints SET status = %s WHERE complaint_id = %s", ('Processed', case_id))
                 
                 # Log audit trail for status change
-                log_audit(conn, 'Complaint', case_id, 'status', existing_complaint['status'], 'Processed', approved_by)
+                logger.info(f"Logging status change audit: {existing_complaint['status']} -> Processed")
+                try:
+                    log_audit(conn, 'Complaint', case_id, 'status', existing_complaint['status'], 'Processed', approved_by)
+                    logger.info("Status audit logged successfully")
+                except Exception as e:
+                    logger.error(f"Failed to log status audit: {e}")
                 
                 # Compare category details and log changes
                 modified_fields = []
                 if original_category_details:
+                    logger.info(f"Comparing {len(category_details)} categories")
                     for i, new_cat in enumerate(category_details):
                         old_cat = original_category_details[i] if i < len(original_category_details) else {}
                         cat_label = new_cat.get('label', f'category_{i}')
@@ -148,20 +154,35 @@ def lambda_handler(event, context):
                             if old_val != new_val:
                                 field_name = f'{cat_label}.{field}'
                                 modified_fields.append(field_name)
-                                log_audit(conn, 'CategoryDetail', case_id, field_name, old_val, new_val, approved_by)
+                                logger.info(f"Logging audit for {field_name}: {old_val} -> {new_val}")
+                                try:
+                                    log_audit(conn, 'CategoryDetail', case_id, field_name, old_val, new_val, approved_by)
+                                except Exception as e:
+                                    logger.error(f"Failed to log category audit: {e}")
+                    logger.info(f"Total modified fields: {len(modified_fields)}")
                 
                 # Log workflow step for approval
-                log_workflow(conn, case_id, 'COMPLAINT_APPROVED',
-                    input_data={'previous_status': existing_complaint['status']},
-                    output_data={'approved_by': approved_by}
-                )
+                logger.info("Logging COMPLAINT_APPROVED workflow")
+                try:
+                    log_workflow(conn, case_id, 'COMPLAINT_APPROVED',
+                        input_data={'previous_status': existing_complaint['status']},
+                        output_data={'approved_by': approved_by}
+                    )
+                    logger.info("COMPLAINT_APPROVED workflow logged successfully")
+                except Exception as e:
+                    logger.error(f"Failed to log COMPLAINT_APPROVED workflow: {e}")
                 
                 # Log workflow step if category details were modified
                 if modified_fields:
-                    log_workflow(conn, case_id, 'CATEGORY_DETAILS_MODIFIED',
-                        input_data={'modified_fields': modified_fields},
-                        output_data={'approved_by': approved_by}
-                    )
+                    logger.info(f"Logging CATEGORY_DETAILS_MODIFIED workflow with {len(modified_fields)} fields")
+                    try:
+                        log_workflow(conn, case_id, 'CATEGORY_DETAILS_MODIFIED',
+                            input_data={'modified_fields': modified_fields},
+                            output_data={'approved_by': approved_by}
+                        )
+                        logger.info("CATEGORY_DETAILS_MODIFIED workflow logged successfully")
+                    except Exception as e:
+                        logger.error(f"Failed to log CATEGORY_DETAILS_MODIFIED workflow: {e}")
                 
                 # Commit before updating stats to ensure status change persists
                 conn.commit()

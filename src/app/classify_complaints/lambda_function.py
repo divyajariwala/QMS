@@ -91,6 +91,7 @@ def lambda_handler(event, context):
                 input_data={'narrative_length': len(narrative), 'triggered_by': user},
                 output_data={'execution_arn': execution_arn},
                 start_time=start_time)
+            conn.commit()
 
         logger.info(f"✅ Successfully processed: {complaint_id}")
 
