@@ -415,5 +415,59 @@ export async function searchAdverseEvent(complaint_id: string, page: number): Pr
   return data;
 }
 
+/** --------------------------------------------------------------------------------------------------------------------------------- */
+/** --------------------------------------------------------------------------------------------------------------------------------- */
 
+/**
+ * Uploads a deviation file to the backend.
+ *
+ * @param file - The file to upload.
+ * @returns The response data from the upload endpoint. May be undefined if an error occurs.
+ */
+export const uploadDeviationFile = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`${API_BASE_URL}dev/uploadDeviations`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (res.ok) {
+      return await res.json();
+    }
+
+    console.log(
+      `uploadDeviationFile error: status ${res.status} ${res.statusText}`
+    );
+    return;
+  } catch (err) {
+    console.log("uploadDeviationFile error", err);
+    return;
+  }
+};
+
+/**
+ * Saves investigation summary to the backend.
+ *
+ * @param data - payload for investigation summary.
+ * @returns The response data from the post endpoint. May be undefined if an error occurs.
+ */
+export const saveInvestigationSummary = async (data) => {
+  const response = await fetch(`${API_BASE_URL}dev/addInvestigationSummary`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const responseData = await response.json();
+  return responseData;
+};
 

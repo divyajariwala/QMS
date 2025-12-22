@@ -98,7 +98,6 @@
 .approveSendButton {
   text-transform: none;
   background-color: #0060d7;
-
   font-weight: 600;
   font-size: 14px;
   line-height: 20px;
@@ -114,6 +113,7 @@
   padding: 0 12px;
   border-radius: 4px;
   transition: background-color 0.3s ease;
+  margin-left: auto !important;
 
   &:hover {
     background-color: #0050b5;

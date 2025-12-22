@@ -6,15 +6,16 @@ import ArrowRight from "../../assets/icons/arrowRight.svg";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import { usePollingClassify } from "@components/polling/PollingClassify";
 import styles from "./DeviationsResult.module.scss";
-import DeviationInterHeaderCard from "./DeviationsInterHeaderCard";
 import InvestigationSummary from "./InvestigationSummary";
+import RootCauseAnalysis from "./rca/RootCauseAnalysis";
+import DeviationHeaderCard from "./DeviationsHeaderCard";
 
-const DeviationsIntermediate: React.FC = () => {
+const DeviationDetails: React.FC = () => {
   const [open, setOpen] = useState(false);
-  // const [summary, setSummary] = useState(
-  //   "STM-QCS-0800, General Laboratory Practices, dictates that no duplicate testing shall be done without justification to invalidate the original results and that an analyst may not proceed to repeat an assay without supervisor approval. In this case, JS did not follow the procedure. JS was hired on 21OCT2024 and has trained on STM-QCS-0800"
-  // );
-  const [summary, setSummary] = useState<string>("");
+  const [summary, setSummary] = useState(
+    "STM-QCS-0800, General Laboratory Practices, dictates that no duplicate testing shall be done without justification to invalidate the original results and that an analyst may not proceed to repeat an assay without supervisor approval. In this case, JS did not follow the procedure. JS was hired on 21OCT2024 and has trained on STM-QCS-0800"
+  );
+  // const [summary, setSummary] = useState<string>("");
   const [openModifyDetails, setOpenModifyDetails] = useState(false);
   const [headerData, setHeaderData] = useState<any>(null); // holds editable header fields
   const [processingFile, setProcessingFile] = useState<boolean>(false);
@@ -29,16 +30,11 @@ const DeviationsIntermediate: React.FC = () => {
     { label: deviationId?.toString() ?? "" },
   ];
 
-  const generateRCA = () => {
-    navigate(`/approveDeviations/${deviationId}`);
-  }
-
   if (loading) return <p>Loading details...</p>;
-
   return (
     <Box className={styles.rootBox}>
       <CommonBreadcrumbs items={items} />
-      <DeviationInterHeaderCard
+      <DeviationHeaderCard
         deviationData={headerData}
         caseStatus={"pending"}
         // caseStatus={complaintDetails?.caseStatus}
@@ -52,26 +48,11 @@ const DeviationsIntermediate: React.FC = () => {
           <InvestigationSummary summary={summary} setSummary={setSummary} />
         </Grid>
         <Grid item xs={12} md={7.1}>
-          <div className={styles.cardBox}>
-            <div className={styles.cardTitle}>Root Cause Analysis</div>
-            <div className={styles.emptyCategory}>
-              <p className={styles.emptyCategoryText}>
-                No root cause analysis has been created. Click Generate to
-                create one.
-              </p>
-              <button
-                className={styles.classifyBtn}
-                disabled={summary.length === 0}
-                onClick={generateRCA}
-              >
-                Generate RCA <img src={ArrowRight} alt="" />
-              </button>
-            </div>
-          </div>
+          <RootCauseAnalysis />
         </Grid>
       </Grid>
     </Box>
   );
 };
 
-export default DeviationsIntermediate;
+export default DeviationDetails;

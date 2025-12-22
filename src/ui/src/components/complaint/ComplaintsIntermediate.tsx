@@ -18,7 +18,6 @@ import { formatDateMMM_D_YYYY } from 'src/utils';
 import { calculateOverdueDays } from 'src/helpers';
 import { fetchComplaintDetailById, postApproveComplaint, classifyComplaint, modifyExtractedDetails } from 'src/services/api.service';
 import Notification from '@components/Notification/Notification';
-import { MockComplaintDetailApiResponse } from 'src/mockData/mockData';
 import ModifyDetails from '../../components/modifyDetails/ModifyDetails';
 import ProcessingNotification from '@components/processingNotification/ProcessingNotification';
 import { usePollingClassify } from '@components/polling/PollingClassify';
