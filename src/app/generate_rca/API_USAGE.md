@@ -41,6 +41,7 @@ Generate a new Root Cause Analysis using AI.
     "issues": "The analyst generated duplicate results without proper authorization and failed to follow established laboratory protocols...",
     "issues_category": "Company Personnel Issue",
     "major_root_cause_category": "Personnel Issues",
+    "major_root_cause_category_validated": "Personnel Issues",
     "near_root_cause": "The analyst failed to follow the correct procedure for handling test samples and did not obtain supervisor approval before repeating the assay...",
     "near_root_cause_category": "Procedure Issue",
     "root_cause": "Inadequate training and enforcement of laboratory protocols, specifically STM-QCS-0800 General Laboratory Practices, which resulted in unauthorized duplicate testing...",
@@ -54,6 +55,7 @@ Generate a new Root Cause Analysis using AI.
 - `issues`: Generated issues text
 - `issues_category`: Auto-selected category for issues
 - `major_root_cause_category`: Generated major root cause category text
+- `major_root_cause_category_validated`: Auto-selected/validated major category from taxonomy
 - `near_root_cause`: Generated near root cause text
 - `near_root_cause_category`: Auto-selected category for near root cause
 - `root_cause`: Generated root cause text
@@ -141,6 +143,7 @@ curl -X POST https://api.example.com/generate-rca \
     "issues": "The investigation revealed that Analyst S. Juyal...",
     "issues_category": "Company Personnel Issue",
     "major_root_cause_category": "Personnel Issues",
+    "major_root_cause_category_validated": "Personnel Issues",
     "near_root_cause": "The analyst failed to follow...",
     "near_root_cause_category": "Procedure Issue",
     "root_cause": "Inadequate training and enforcement...",
