@@ -58,9 +58,9 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
             cursor.execute("SELECT update_deviations_and_stats()")
             conn.commit()
 
-            cursor.execute("SELECT stat_name, stat_value FROM case_stats")
+            cursor.execute("SELECT stat_name, stat_value FROM deviations_case_stats")
             stats = {
-                r['stat_name'].lower().replace(' ', '_'): r['stat_value']
+                r['stat_name'].lower().replace(' ', '_'): int(r['stat_value'])
                 for r in cursor.fetchall()
             }
 
@@ -220,6 +220,31 @@ def get_case_by_deviationid(conn, deviation_id):
                 'investigation_summary': row['investigation_summary']
             }, default=str)
         }
+
+
+# -------------------- GET BY STATUS --------------------
+def get_deviation_details_by_status(conn, status):
+    with conn.cursor(row_factory=dict_row) as cursor:
+        cursor.execute("""
+            SELECT
+                deviation_id,
+                created_at,
+                deviation_status,
+                description,
+                grading_approved,
+                rca_approved,
+                grading_completed
+            FROM deviations
+            WHERE LOWER(deviation_status) = LOWER(%s)
+            ORDER BY created_at DESC
+        """, (status,))
+
+        return {
+            'statusCode': 200,
+            'headers': _get_cors_headers(),
+            'body': json.dumps(cursor.fetchall(), default=str)
+        }
+
 
 # -------------------- DB CONNECTION --------------------
 def get_db_connection():
