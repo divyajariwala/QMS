@@ -169,7 +169,6 @@ cython_debug/
 .vscode/
 
 # Development and test files
-test_*.py
 test_*.json
 *.sql
 *_IMPROVEMENT.md
