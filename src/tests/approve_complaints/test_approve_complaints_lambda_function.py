@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch, MagicMock
 sys.modules['psycopg'] = Mock()
 sys.modules['psycopg.rows'] = Mock()
 sys.modules['secrets_util'] = Mock()
+sys.modules['audit_logger'] = Mock()
 
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'approve_complaints'))
@@ -44,8 +45,10 @@ class TestLambdaHandler:
 
     @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_approve_complaint_success(self):
-        """Test: Successful complaint approval with category details"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        """Test: Successful complaint approval with category details and workflow logging"""
+        with patch('lambda_function.psycopg.connect') as mock_connect, \
+             patch('lambda_function.log_workflow') as mock_log_workflow, \
+             patch('lambda_function.log_audit') as mock_log_audit:
             mock_cursor = MagicMock()
             mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00001', 'status': 'Pending'}
             
@@ -71,6 +74,10 @@ class TestLambdaHandler:
             body = json.loads(result['body'])
             assert body['success'] is True
             assert body['data']['category_details'] == category_details
+            
+            # Verify workflow and audit logging were called
+            mock_log_workflow.assert_called_once()
+            mock_log_audit.assert_called_once()
 
     def test_missing_case_id(self):
         """Test: Missing case_id in request"""

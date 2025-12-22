@@ -8,6 +8,13 @@ import psycopg
 
 from secrets_util import get_secret
 
+try:
+    from audit_logger import log_workflow, get_user_from_event
+except ImportError:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from audit_logger import log_workflow, get_user_from_event
+
 # Environment variables
 ENV = os.environ.get('env', 'dev')
 STEP_FUNCTION_BASE_NAME = os.environ.get('step_function_base_name', 'classify-complaints')
@@ -65,6 +72,7 @@ def lambda_handler(event, context):
         logger.info(f"Step Function ARN: {step_function_arn}")
 
         # 1. Get narrative from DB
+        start_time = datetime.utcnow()
         narrative = get_narrative_from_db(complaint_id)
 
         # 2. Start Step Function execution
@@ -74,6 +82,15 @@ def lambda_handler(event, context):
             complaint_id=complaint_id,
             narrative=narrative
         )
+        
+        # 3. Log workflow step
+        conninfo = get_connection_string()
+        with psycopg.connect(conninfo) as conn:
+            user = get_user_from_event(event)
+            log_workflow(conn, complaint_id, 'CLASSIFICATION_STARTED',
+                input_data={'narrative_length': len(narrative), 'triggered_by': user},
+                output_data={'execution_arn': execution_arn},
+                start_time=start_time)
 
         logger.info(f"✅ Successfully processed: {complaint_id}")
 

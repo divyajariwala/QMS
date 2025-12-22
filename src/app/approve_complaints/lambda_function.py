@@ -12,6 +12,13 @@ try:
 except ImportError:
     from .secrets_util import get_secret
 
+try:
+    from audit_logger import log_workflow, log_audit, get_user_from_event as get_user
+except ImportError:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from audit_logger import log_workflow, log_audit, get_user as get_user
+
 # Environment variables
 ENV = os.environ.get('env', 'dev')
 DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
@@ -88,8 +95,18 @@ def lambda_handler(event, context):
                 )
                 
                 # Update complaint status to Processed (after insert to avoid FK issues)
+                start_time = datetime.utcnow()
                 cur.execute("UPDATE complaints SET status = %s WHERE complaint_id = %s", ('Processed', case_id))
                 logger.info(f"Status updated for {case_id}")
+                
+                # Log audit trail for status change
+                log_audit(conn, 'Complaint', case_id, 'status', existing_complaint['status'], 'Processed', approved_by)
+                
+                # Log workflow step
+                log_workflow(conn, case_id, 'COMPLAINT_APPROVED',
+                    input_data={'previous_status': existing_complaint['status'], 'category_count': len(category_details)},
+                    output_data={'approved_by': approved_by, 'category_details': category_details},
+                    start_time=start_time)
                 
                 # Commit before updating stats to ensure status change persists
                 conn.commit()
