@@ -294,6 +294,16 @@ lambda_configs = [
     ]
   },
   {
+    function_name = "get-rca-categories"
+    path          = "src/app/get_rca_categories"
+    api_gateway_paths = [
+      {
+        path_name   = "getRCACategory"
+        http_method = "GET"
+      },
+    ]
+  },
+  {
     function_name = "add-investigation-summary"
     path          = "src/app/add_investigation_summary"
     environment_variables = {
