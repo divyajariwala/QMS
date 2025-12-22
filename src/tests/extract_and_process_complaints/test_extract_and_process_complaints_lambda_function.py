@@ -23,6 +23,7 @@ sys.modules['PIL.Image'] = Mock()
 mock_secrets_util = Mock()
 mock_secrets_util.get_secret = Mock()
 sys.modules['secrets_util'] = mock_secrets_util
+sys.modules['audit_logger'] = Mock()
 
 # Get the absolute path to the lambda_function.py file
 lambda_function_path = os.path.join(

@@ -15,6 +15,13 @@ try:
 except ImportError:
     from .secrets_util import get_secret
 
+try:
+    from audit_logger import log_workflow, get_user_from_event as get_user
+except ImportError:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from audit_logger import log_workflow, get_user as get_user
+
 # Environment variables
 ENV = os.environ.get('env', 'dev')
 S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'qms-dev-initial-files')
@@ -134,6 +141,7 @@ def lambda_handler(event, context):
         s3_key = f"uploads/{timestamp}/{file_id}_{safe_filename}"
 
         # Upload to S3
+        start_time = datetime.utcnow()
         s3_uri = f"s3://{S3_BUCKET_NAME}/{s3_key}"
         s3_client.put_object(
             Bucket=S3_BUCKET_NAME,
@@ -149,7 +157,16 @@ def lambda_handler(event, context):
         )
         
         # Create record in files table
-        create_file_record(file_id, filename, s3_uri, _get_user_from_event(event))
+        user = _get_user_from_event(event)
+        create_file_record(file_id, filename, s3_uri, user)
+        
+        # Log file upload
+        conninfo = get_connection_string()
+        with psycopg.connect(conninfo) as conn:
+            log_workflow(conn, file_id, 'FILE_UPLOADED', 
+                input_data={'filename': filename, 'size': len(file_content), 'type': file_extension, 'uploaded_by': user},
+                output_data={'s3_key': s3_key, 'file_id': file_id},
+                start_time=start_time)
 
         # Process files based on type
         file_extension = _get_file_extension(filename)

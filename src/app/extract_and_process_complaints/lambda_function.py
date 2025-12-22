@@ -26,6 +26,13 @@ try:
 except ImportError:
     from .secrets_util import get_secret
 
+try:
+    from audit_logger import log_workflow
+except ImportError:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from audit_logger import log_workflow
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -251,7 +258,7 @@ def process_with_bedrock(messages, spec_type='pdf', narrative_text='', step=1):
         logger.error(f"Bedrock error: {str(e)}")
         raise
 
-def update_complaint_in_db(complaint_id, extracted_data):
+def update_complaint_in_db(complaint_id, extracted_data, start_time=None):
     """Update complaint record in PostgreSQL database"""
     try:
         conninfo = get_connection_string()
@@ -353,6 +360,13 @@ def update_complaint_in_db(complaint_id, extracted_data):
                     conn.commit()
                     logger.info(f"Updated complaint {complaint_id} in database")
                 
+                # Log workflow step
+                extracted_fields = [k for k, v in result.items() if v and v != 'N/A']
+                log_workflow(conn, complaint_id, 'TEXT_EXTRACTED',
+                    input_data={'source': 'pdf' if 's3path' in result else 'narrative'},
+                    output_data={'extracted_fields': extracted_fields, 'text_length': len(result.get('narrative', ''))},
+                    start_time=start_time)
+                
     except Exception as e:
         logger.error(f"Database error: {str(e)}")
         raise
@@ -423,6 +437,7 @@ def lambda_handler(event, context):
 def process_single_complaint(message_data):
     """Process a single complaint from SQS message"""
     complaint_id = message_data.get('complaint_id', 'unknown')
+    start_time = datetime.utcnow()
     try:
         # Validate and determine input type
         input_type = validate_event(message_data)
@@ -523,7 +538,7 @@ def process_single_complaint(message_data):
                     extracted_data['case_type'] = []
         
         # Update database
-        update_complaint_in_db(complaint_id, extracted_data)
+        update_complaint_in_db(complaint_id, extracted_data, start_time)
         
         return {
             'success': True,
