@@ -120,7 +120,7 @@ def update_complaint_in_db(case_id, body, event, user):
                     'drug': body['drug'],
                     'lot_no': body['lotNumber'],
                     'dosage': body['doseAmount'],
-                    'expiration_date': body['expirationDate'],
+                    'expiration_date': body['expirationDate'] if body['expirationDate'] else None,
                     'part_number': body['partNumber']
                 }
                 

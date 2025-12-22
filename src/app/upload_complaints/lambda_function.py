@@ -16,11 +16,11 @@ except ImportError:
     from .secrets_util import get_secret
 
 try:
-    from audit_logger import log_workflow, get_user_from_event as get_user
+    from audit_logger import log_workflow
 except ImportError:
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-    from audit_logger import log_workflow, get_user as get_user
+    from audit_logger import log_workflow
 
 # Environment variables
 ENV = os.environ.get('env', 'dev')
@@ -124,6 +124,7 @@ def lambda_handler(event, context):
 
         filename = file_info['filename']
         file_content = file_info['content']
+        file_extension = _get_file_extension(filename) if filename else 'unknown'
 
         if not filename:
             return _response(400, "No filename provided")
@@ -159,21 +160,11 @@ def lambda_handler(event, context):
         # Create record in files table
         user = _get_user_from_event(event)
         create_file_record(file_id, filename, s3_uri, user)
-        
-        # Log file upload
-        conninfo = get_connection_string()
-        with psycopg.connect(conninfo) as conn:
-            log_workflow(conn, file_id, 'FILE_UPLOADED', 
-                input_data={'filename': filename, 'size': len(file_content), 'type': file_extension, 'uploaded_by': user},
-                output_data={'s3_key': s3_key, 'file_id': file_id},
-                start_time=start_time)
-
-        # Process files based on type
-        file_extension = _get_file_extension(filename)
+        print(f"File uploaded: {filename} ({file_extension})")
         
         if file_extension == 'pdf':
             # For PDFs: Create complaint record and send to SQS
-            complaint_id = create_complaint_in_db(file_id)
+            complaint_id = create_complaint_in_db(file_id, user=user)
             
             # Create SQS message for extract and process complaints lambda
             complaint_message = {
@@ -217,7 +208,7 @@ def lambda_handler(event, context):
         elif file_extension in ['csv', 'xlsx', 'xls']:
             try:
                 # Process CSV/Excel file
-                complaints_data = process_csv_excel_file(file_content, file_extension, file_id)
+                complaints_data = process_csv_excel_file(file_content, file_extension, file_id, user)
                 
                 if not complaints_data['success']:
                     return _response(400, complaints_data['message'])
@@ -259,8 +250,8 @@ def lambda_handler(event, context):
                 })
                 
             except Exception as e:
-                print(f"Error processing {file_extension} file: {str(e)}")
-                return _response(400, f"Error processing {file_extension} file: {str(e)}")
+                print(f"Error processing CSV/Excel file: {str(e)}")
+                return _response(400, f"Error processing CSV/Excel file: {str(e)}")
         
         else:
             # For other file types, just return success
@@ -272,9 +263,17 @@ def lambda_handler(event, context):
             })
 
     except Exception as e:
-        print(f"Error: {str(e)}")
         import traceback
-        print(f"Traceback: {traceback.format_exc()}")
+        import sys
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        tb_lines = traceback.format_exception(exc_type, exc_value, exc_tb)
+        print(f"Error: {str(e)}")
+        print(f"Full traceback:\n{''.join(tb_lines)}")
+        
+        # Get line number where error occurred
+        if exc_tb:
+            print(f"Error occurred at line: {exc_tb.tb_lineno}")
+        
         return _response(500, f"Internal server error: {str(e)}")
 
 
@@ -485,10 +484,11 @@ def create_file_record(file_id, filename, s3_url, upload_by):
         raise
 
 
-def create_complaint_in_db(file_id, narrative=None):
+def create_complaint_in_db(file_id, narrative=None, user='system'):
     """
     Create complaint record in database and return auto-generated complaint_id
     """
+    start_time = datetime.utcnow()
     try:
         conninfo = get_connection_string()
         
@@ -512,6 +512,12 @@ def create_complaint_in_db(file_id, narrative=None):
                 result = cur.fetchone()
                 complaint_id = result['complaint_id']
                 
+                # Log workflow step
+                log_workflow(conn, complaint_id, 'COMPLAINT_CREATED',
+                    input_data={'file_id': file_id, 'has_narrative': bool(narrative), 'created_by': user},
+                    output_data={'complaint_id': complaint_id, 'status': 'Pending'},
+                    start_time=start_time)
+                
                 conn.commit()
                 print(f"Created complaint in database with ID: {complaint_id}")
                 return complaint_id
@@ -524,7 +530,7 @@ def create_complaint_in_db(file_id, narrative=None):
 
 
 
-def process_csv_excel_file(file_content, file_extension, file_id):
+def process_csv_excel_file(file_content, file_extension, file_id, user='system'):
     """Process CSV/Excel file and extract complaints"""
     try:
         # Read file into pandas DataFrame
@@ -589,7 +595,7 @@ def process_csv_excel_file(file_content, file_extension, file_id):
                 continue
             
             # Create complaint record in database and get auto-generated ID
-            complaint_id = create_complaint_in_db(file_id, narrative)
+            complaint_id = create_complaint_in_db(file_id, narrative, user=user)
             
             # Create complaint message for SQS (compatible with extract and process lambda)
             complaint_message = {
