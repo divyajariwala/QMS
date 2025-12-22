@@ -164,6 +164,8 @@ jobs:
               if [ -f "${d}requirements.txt" ]; then
                 echo "==> Installing deps for $(basename "$d")"
                 python -m pip install -r "${d}requirements.txt" --no-index --find-links=wheelhouse -t "$d"
+                # Copy shared utilities
+                cp "${SRC}/audit_logger.py" "$d/" 2>/dev/null || true
                 # Trim extras; keep wheels lean
                 find "$d" -type d -name "__pycache__"    -prune -exec rm -rf {} +
                 find "$d" -type d -name "*.dist-info"    -prune -exec rm -rf {} + || true
