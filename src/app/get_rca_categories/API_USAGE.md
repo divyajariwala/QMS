@@ -15,7 +15,7 @@ The Get RCA Categories endpoint provides the complete RCA (Root Cause Analysis) 
 ### GET - Get RCA Categories
 Retrieve the complete RCA category taxonomy.
 
-**Endpoint:** `/rca-categories`  
+**Endpoint:** `/getRCACategories`  
 **Method:** `GET`  
 **Authentication:** As configured in API Gateway  
 **Parameters:** None required
@@ -217,19 +217,19 @@ Used for hierarchical dropdowns: **Major → Near → Root**
 ### Basic Request
 
 ```bash
-curl -X GET https://api.example.com/rca-categories
+curl -X GET https://api.example.com/getRCACategories
 ```
 
 ### With Pretty Print
 
 ```bash
-curl -X GET https://api.example.com/rca-categories | jq .
+curl -X GET https://api.example.com/getRCACategories | jq .
 ```
 
 ### Save to File
 
 ```bash
-curl -X GET https://api.example.com/rca-categories -o categories.json
+curl -X GET https://api.example.com/getRCACategories -o categories.json
 ```
 
 ---
@@ -241,7 +241,7 @@ curl -X GET https://api.example.com/rca-categories -o categories.json
 ```javascript
 const loadCategories = async () => {
   try {
-    const response = await fetch('/api/rca-categories');
+    const response = await fetch('/api/getRCACategories');
     const result = await response.json();
     
     if (result.success) {
@@ -284,7 +284,7 @@ const getCachedCategories = async () => {
   
   // Fetch fresh data
   console.log('Fetching fresh categories');
-  const response = await fetch('/api/rca-categories');
+  const response = await fetch('/api/getRCACategories');
   const result = await response.json();
   
   if (result.success) {
@@ -308,7 +308,7 @@ const categories = await getCachedCategories();
 
 ```javascript
 const loadCategories = async () => {
-  const response = await fetch('/api/rca-categories');
+  const response = await fetch('/api/getRCACategories');
   const result = await response.json();
   const categories = result.data;
   
@@ -351,7 +351,7 @@ function useRCACategories() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const response = await fetch('/api/rca-categories');
+        const response = await fetch('/api/getRCACategories');
         const result = await response.json();
         
         if (result.success) {
@@ -567,7 +567,7 @@ function RCADropdowns({ categories, rcaData, onChange }) {
 ```javascript
 const loadCategories = async () => {
   try {
-    const response = await fetch('/api/rca-categories');
+    const response = await fetch('/api/getRCACategories');
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -680,13 +680,13 @@ Add CloudFront distribution:
 
 ```bash
 # Basic test
-curl -X GET https://api.example.com/rca-categories
+curl -X GET https://api.example.com/getRCACategories
 
 # Test response time
-curl -w "\nTime: %{time_total}s\n" -X GET https://api.example.com/rca-categories
+curl -w "\nTime: %{time_total}s\n" -X GET https://api.example.com/getRCACategories
 
 # Test with invalid method
-curl -X POST https://api.example.com/rca-categories
+curl -X POST https://api.example.com/getRCACategories
 ```
 
 ### Test Event (Lambda Console)
@@ -713,12 +713,12 @@ curl -X POST https://api.example.com/rca-categories
 
 ```javascript
 // 1. Load categories (once, on page load)
-const categories = await fetch('/api/rca-categories')
+const categories = await fetch('/api/getRCACategories')
   .then(r => r.json())
   .then(r => r.data);
 
 // 2. Generate RCA
-const rca = await fetch('/api/generate-rca', {
+const rca = await fetch('/api/generateRCA', {
   method: 'POST',
   body: JSON.stringify({ investigation_summary, deviation_id })
 }).then(r => r.json()).then(r => r.data);
@@ -797,7 +797,7 @@ interface RootCause {
 ### Populate All Dropdowns
 
 ```javascript
-const categories = await fetch('/api/rca-categories').then(r => r.json());
+const categories = await fetch('/api/getRCACategories').then(r => r.json());
 
 // Issues dropdown
 const issuesOptions = categories.data.Factors.flatMap(

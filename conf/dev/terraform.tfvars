@@ -331,7 +331,7 @@ lambda_configs = [
     }
     api_gateway_paths = [
       {
-        path_name   = "getRCACategory"
+        path_name   = "getRCACategories"
         http_method = "GET"
       }
     ]

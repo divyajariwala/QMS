@@ -7,7 +7,7 @@ This Lambda function provides a GET endpoint that returns the complete RCA (Root
 ## Endpoint
 
 **Method:** `GET`  
-**Path:** `/rca-categories`  
+**Path:** `/getRCACategories`  
 **Authentication:** None (or as configured in API Gateway)
 
 ## Response Structure
@@ -123,13 +123,13 @@ This Lambda function provides a GET endpoint that returns the complete RCA (Root
 ### cURL
 
 ```bash
-curl -X GET https://api.example.com/rca-categories
+curl -X GET https://api.example.com/getRCACategories
 ```
 
 ### JavaScript/Fetch
 
 ```javascript
-const response = await fetch('https://api.example.com/rca-categories');
+const response = await fetch('https://api.example.com/getRCACategories');
 const data = await response.json();
 
 if (data.success) {
@@ -150,7 +150,7 @@ function useRCACategories() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/rca-categories')
+    fetch('/api/getRCACategories')
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -255,7 +255,7 @@ get_rca_categories/
 ### API Gateway Configuration
 
 **Method:** GET  
-**Path:** `/rca-categories`  
+**Path:** `/getRCACategories`  
 **CORS:** Enabled  
 **Authorization:** As needed
 
@@ -316,7 +316,7 @@ print(json.dumps(json.loads(result['body']), indent=2))
 
 ```bash
 # Test deployed endpoint
-curl -X GET https://api.example.com/rca-categories | jq .
+curl -X GET https://api.example.com/getRCACategories | jq .
 ```
 
 ## Monitoring
@@ -365,7 +365,7 @@ async function getCachedCategories() {
   }
   
   // Fetch fresh data
-  const response = await fetch('/api/rca-categories');
+  const response = await fetch('/api/getRCACategories');
   const result = await response.json();
   
   if (result.success) {

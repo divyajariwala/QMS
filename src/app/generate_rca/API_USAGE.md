@@ -13,7 +13,7 @@ The Generate RCA endpoint uses AI (AWS Bedrock Claude) to automatically generate
 ### POST - Generate RCA
 Generate a new Root Cause Analysis using AI.
 
-**Endpoint:** `/generate-rca`  
+**Endpoint:** `/generateRCA`  
 **Method:** `POST`  
 **Purpose:** AI-powered RCA generation only (no database operations)
 
@@ -100,10 +100,10 @@ Generate a new Root Cause Analysis using AI.
 This endpoint is part of a multi-step workflow:
 
 ```
-1. GET /rca-categories
+1. GET /getRCACategories
    └─> Load category options for dropdowns (one-time or cached)
 
-2. POST /generate-rca  ← THIS ENDPOINT
+2. POST /generateRCA  ← THIS ENDPOINT
    └─> Generate RCA text using AI
    └─> Returns generated text + auto-selected categories
 
@@ -125,7 +125,7 @@ This endpoint is part of a multi-step workflow:
 
 ### Generate New RCA
 ```bash
-curl -X POST https://api.example.com/generate-rca \
+curl -X POST https://api.example.com/generateRCA \
   -H "Content-Type: application/json" \
   -d '{
     "investigation_summary": "Analyst S. Juyal generated duplicate results for the osmolality assay (method STM-QCS-0010, version 17.0, Osmolality Determination), when testing the 12-month timepoint for the 5°C storage condition for stability protocol STAB720.CD01.DP. QC Sample Management provided the following samples for testing to be completed over the weekend: LIMS ID S-241021-00676, LIMS ID S-241127-00392 - designated for Appearance assay. SJ performed the osmolality assay using S-241127-00392; however, osmolality was in fact to be executed using the alternative sample, S-241127-00392. Upon identifying the error, the analyst proceeded to repeat the assay using the assigned LIMS sample, thereby producing duplicate results. STM-QCS-0800, General Laboratory Practices, dictates that no duplicate testing shall be done without justification to invalidate the original results and that an analyst may not proceed to repeat an assay without supervisor approval. In this case, JS did not follow the procedure.",
@@ -160,7 +160,7 @@ curl -X POST https://api.example.com/generate-rca \
 ```javascript
 const generateRCA = async (investigationSummary, deviationId = null) => {
   try {
-    const response = await fetch('/api/generate-rca', {
+    const response = await fetch('/api/generateRCA', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -202,14 +202,14 @@ generateRCA(investigationSummary, deviationId)
 ```javascript
 // 1. Load categories (once, on page load)
 const loadCategories = async () => {
-  const response = await fetch('/api/rca-categories');
+  const response = await fetch('/api/getRCACategories');
   const result = await response.json();
   return result.data;
 };
 
 // 2. Generate RCA
 const generateRCA = async (investigationSummary, deviationId) => {
-  const response = await fetch('/api/generate-rca', {
+  const response = await fetch('/api/generateRCA', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -285,7 +285,7 @@ function useGenerateRCA() {
     setError(null);
     
     try {
-      const response = await fetch('/api/generate-rca', {
+      const response = await fetch('/api/generateRCA', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -431,7 +431,7 @@ The endpoint makes 5 sequential AI calls to AWS Bedrock:
 
 ## Related Endpoints
 
-### GET /rca-categories
+### GET /getRCACategories
 Load category options for dropdowns.
 
 **Purpose:** Get all available RCA categories for UI dropdowns  
@@ -439,7 +439,7 @@ Load category options for dropdowns.
 
 **Example:**
 ```javascript
-const response = await fetch('/api/rca-categories');
+const response = await fetch('/api/getRCACategories');
 const categories = await response.json();
 // Use categories.data.Factors and categories.data.MajorRootCauseCategories
 ```
@@ -478,7 +478,7 @@ const response = await fetch('/api/submit-rca', {
 ⚠️ **This endpoint no longer:**
 - Saves to database (use `/submit-rca` instead)
 - Returns `rca_id` (get from `/submit-rca` response)
-- Returns `category_options` (use `/rca-categories` instead)
+- Returns `category_options` (use `/getRCACategories` instead)
 - Supports GET method (will be separate `/rca` endpoint)
 
 ⚠️ **Response structure changed:**
@@ -500,10 +500,10 @@ const response = await fetch('/api/generateRCA', {
 **New Code:**
 ```javascript
 // 1. Load categories separately
-const categories = await fetch('/api/rca-categories').then(r => r.json());
+const categories = await fetch('/api/getRCACategories').then(r => r.json());
 
 // 2. Generate RCA
-const rca = await fetch('/api/generate-rca', {
+const rca = await fetch('/api/generateRCA', {
   method: 'POST',
   body: JSON.stringify({ investigation_summary, deviation_id })
 }).then(r => r.json());
@@ -522,7 +522,7 @@ const saved = await fetch('/api/submit-rca', {
 
 ## Best Practices
 
-1. **Cache Categories:** Load `/rca-categories` once and cache in frontend
+1. **Cache Categories:** Load `/getRCACategories` once and cache in frontend
 2. **Show Loading State:** AI generation takes 10-20 seconds
 3. **Allow Editing:** Let users review and edit before saving
 4. **Validate Input:** Ensure investigation_summary is non-empty
