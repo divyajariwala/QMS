@@ -123,6 +123,11 @@ def generate_multiple_rcas(investigation_summary: str) -> list:
             logger.error("Response is not a list, wrapping in array")
             rcas = [rcas]
         
+        # Validate minimum 2 RCAs requirement
+        if len(rcas) < 2:
+            logger.warning(f"Only {len(rcas)} RCA(s) generated, minimum is 2. Falling back to sequential generation.")
+            return generate_rcas_sequential(investigation_summary)
+        
         logger.info(f"Successfully generated {len(rcas)} RCA(s)")
         return rcas
         
@@ -141,23 +146,51 @@ def generate_multiple_rcas(investigation_summary: str) -> list:
 
 def generate_rcas_sequential(investigation_summary: str) -> list:
     """
-    Fallback method: Generate RCA using sequential AI calls (old method)
-    Returns a list with a single RCA
+    Fallback method: Generate 2 RCAs using sequential AI calls (old method)
+    Returns a list with 2 RCAs from different perspectives
+    
+    RCA 1: Immediate/Direct Cause
+    RCA 2: Systemic/Organizational Cause
     """
     try:
-        logger.info("Using sequential generation (fallback)")
+        logger.info("Using sequential generation (fallback) - generating 2 RCAs")
         
-        issues_text = generate_issues(investigation_summary)
-        major_category_text = generate_major_root_cause_category(investigation_summary)
-        near_cause_text = generate_near_root_cause(investigation_summary)
-        root_cause_text = generate_root_cause(investigation_summary)
+        # Generate RCA 1: Immediate Cause
+        issues_text_1 = generate_issues(investigation_summary)
+        major_category_text_1 = generate_major_root_cause_category(investigation_summary)
+        near_cause_text_1 = generate_near_root_cause(investigation_summary)
+        root_cause_text_1 = generate_root_cause(investigation_summary)
         
-        return [{
-            'issues': issues_text,
-            'major_root_cause_category_validated': major_category_text,
-            'near_root_cause': near_cause_text,
-            'root_cause': root_cause_text
-        }]
+        rca_1 = {
+            'issues': issues_text_1,
+            'major_root_cause_category_validated': major_category_text_1,
+            'near_root_cause': near_cause_text_1,
+            'root_cause': root_cause_text_1
+        }
+        
+        # Generate RCA 2: Systemic Perspective
+        # Modify the investigation summary to ask for systemic/organizational perspective
+        systemic_prompt = f"""
+        Based on this investigation summary, identify the SYSTEMIC or ORGANIZATIONAL root cause 
+        (not the immediate cause, but the underlying system/process/organizational failure that allowed this to happen):
+        
+        {investigation_summary}
+        """
+        
+        issues_text_2 = generate_issues(systemic_prompt)
+        major_category_text_2 = generate_major_root_cause_category(systemic_prompt)
+        near_cause_text_2 = generate_near_root_cause(systemic_prompt)
+        root_cause_text_2 = generate_root_cause(systemic_prompt)
+        
+        rca_2 = {
+            'issues': issues_text_2,
+            'major_root_cause_category_validated': major_category_text_2,
+            'near_root_cause': near_cause_text_2,
+            'root_cause': root_cause_text_2
+        }
+        
+        logger.info("Successfully generated 2 RCAs (immediate + systemic)")
+        return [rca_1, rca_2]
         
     except Exception as e:
         logger.error(f"Error in sequential generation: {str(e)}")
@@ -328,7 +361,7 @@ def lambda_handler(event, context):
     Lambda handler for POST /generateRCA endpoint
     
     Generates RCA analysis using AI based on investigation summary.
-    Can generate multiple RCAs if multiple distinct root causes are identified.
+    ALWAYS generates a MINIMUM of 2 RCAs to ensure comprehensive analysis from multiple perspectives.
     
     Expected request body:
     {
@@ -336,10 +369,10 @@ def lambda_handler(event, context):
         "deviation_id": "DV-00001"  (optional, for reference)
     }
     
-    Response (single RCA):
+    Response (minimum 2 RCAs):
     {
         "success": true,
-        "message": "1 RCA(s) generated successfully",
+        "message": "2 RCA(s) generated successfully",
         "data": [
             {
                 "deviation_id": "DV-00001",
@@ -351,28 +384,10 @@ def lambda_handler(event, context):
                 "near_root_cause_category": "Design Input Issue",
                 "root_cause": "Generated root cause text...",
                 "root_cause_category": "Design Scope Issue"
-            }
-        ]
-    }
-    
-    Response (multiple RCAs):
-    {
-        "success": true,
-        "message": "3 RCA(s) generated successfully",
-        "data": [
-            {
-                "deviation_id": "DV-00001",
-                "issues": "First issue...",
-                ...
             },
             {
                 "deviation_id": "DV-00001",
-                "issues": "Second issue...",
-                ...
-            },
-            {
-                "deviation_id": "DV-00001",
-                "issues": "Third issue...",
+                "issues": "Second perspective issues...",
                 ...
             }
         ]
@@ -382,7 +397,7 @@ def lambda_handler(event, context):
     - major_root_cause_category: Auto-selected category name from taxonomy (e.g., "Personnel Issues")
     - major_root_cause_category_validated: Long AI-generated explanation text
     
-    Note: The response data is always an array, even if only one RCA is generated.
+    Note: The response data is always an array with a MINIMUM of 2 RCAs.
     """
     try:
         logger.info(f"Environment: {ENV}, Region: {AWS_REGION}, Model: {MODEL_ID}")

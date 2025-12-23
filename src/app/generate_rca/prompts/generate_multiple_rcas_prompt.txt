@@ -3,9 +3,14 @@ You are a quality management analyst using the ABS Root Cause Map methodology. A
 Investigation Summary:
 {investigation_summary}
 
-IMPORTANT: There may be MULTIPLE distinct root causes for this deviation. Each root cause should be analyzed separately as its own RCA.
+CRITICAL REQUIREMENT: You MUST generate a MINIMUM of 2 distinct RCAs. Even if the investigation summary appears to describe a single issue, you must analyze it from multiple perspectives to identify at least 2 distinct root causes.
 
-Your task is to identify ALL distinct root causes and generate a separate RCA for each one. For each RCA, provide:
+For example:
+- If there's a procedure violation, analyze both the immediate procedural failure AND the underlying systemic issue (training, supervision, etc.)
+- If there's an equipment issue, analyze both the equipment failure AND the maintenance/validation process failure
+- If there's a personnel issue, analyze both the individual action AND the organizational/cultural factors
+
+Your task is to identify AT LEAST 2 distinct root causes (preferably 2-4) and generate a separate RCA for each one. For each RCA, provide:
 
 1. **Issues**: Describe the specific causal factor (problem) for this RCA. What happened, when, where, and what was the immediate impact.
 
@@ -42,10 +47,9 @@ ABS ROOT CAUSE MAP REFERENCE:
 
 RESPONSE FORMAT:
 
-Return your response as a JSON array. Each element in the array represents one distinct RCA.
+Return your response as a JSON array with AT LEAST 2 elements. Each element represents one distinct RCA.
 
-If there is only ONE root cause, return an array with one element.
-If there are MULTIPLE root causes, return an array with multiple elements.
+You MUST return a minimum of 2 RCAs. If the investigation summary seems simple, dig deeper to find multiple contributing factors or analyze from different perspectives (immediate cause, systemic cause, organizational cause, etc.).
 
 ```json
 [
@@ -65,11 +69,18 @@ If there are MULTIPLE root causes, return an array with multiple elements.
 ```
 
 GUIDELINES:
-- Each RCA should address a DISTINCT root cause
-- Don't create multiple RCAs for the same underlying issue
+- You MUST generate at least 2 RCAs (minimum requirement)
+- Each RCA should address a DISTINCT root cause or perspective
+- Analyze from different levels: immediate cause, contributing factors, systemic issues, organizational factors
 - Each RCA should be complete and stand-alone
 - Use clear, professional language
 - Focus on systemic issues, not individual blame
 - Provide enough detail for corrective actions
+- If the issue seems simple, consider: What allowed this to happen? What systemic gaps exist? What organizational factors contributed?
 
-Return ONLY the JSON array, no additional text.
+EXAMPLES OF MULTIPLE PERSPECTIVES:
+1. Immediate Cause (what directly happened) + Systemic Cause (why the system allowed it)
+2. Technical Failure (equipment/process) + Human Factors (training/supervision)
+3. Procedural Gap (missing/inadequate procedure) + Organizational Culture (enforcement/accountability)
+
+Return ONLY the JSON array with at least 2 elements, no additional text.
