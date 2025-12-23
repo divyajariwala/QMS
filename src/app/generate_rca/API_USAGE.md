@@ -4,7 +4,7 @@
 
 The Generate RCA endpoint uses AI (AWS Bedrock Claude) to automatically generate Root Cause Analysis based on an investigation summary. This endpoint focuses exclusively on AI-powered generation and returns the generated text with auto-selected categories.
 
-**Important:** This endpoint does NOT save to database. Use the separate `/submit-rca` endpoint to save the generated RCA.
+**Important:** This endpoint does NOT save to database. Use the separate `/submitRCA` endpoint to save the generated RCA.
 
 ---
 
@@ -111,7 +111,7 @@ This endpoint is part of a multi-step workflow:
    └─> Can modify text
    └─> Can change categories using dropdowns
 
-4. POST /submit-rca
+4. POST /submitRCA
    └─> Save final RCA to database
    └─> Returns rca_id
 
@@ -224,7 +224,7 @@ const generateRCA = async (investigationSummary, deviationId) => {
 
 // 3. Save RCA (after user review/edit)
 const saveRCA = async (rcaData) => {
-  const response = await fetch('/api/submit-rca', {
+  const response = await fetch('/api/submitRCA', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -444,7 +444,7 @@ const categories = await response.json();
 // Use categories.data.Factors and categories.data.MajorRootCauseCategories
 ```
 
-### POST /submit-rca
+### POST /submitRCA
 Save generated RCA to database.
 
 **Purpose:** Persist RCA after user review/editing  
@@ -452,7 +452,7 @@ Save generated RCA to database.
 
 **Example:**
 ```javascript
-const response = await fetch('/api/submit-rca', {
+const response = await fetch('/api/submitRCA', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -476,8 +476,8 @@ const response = await fetch('/api/submit-rca', {
 ### Breaking Changes from Previous Version
 
 ⚠️ **This endpoint no longer:**
-- Saves to database (use `/submit-rca` instead)
-- Returns `rca_id` (get from `/submit-rca` response)
+- Saves to database (use `/submitRCA` instead)
+- Returns `rca_id` (get from `/submitRCA` response)
 - Returns `category_options` (use `/getRCACategories` instead)
 - Supports GET method (will be separate `/rca` endpoint)
 
@@ -511,7 +511,7 @@ const rca = await fetch('/api/generateRCA', {
 // 3. User reviews/edits
 
 // 4. Save to database
-const saved = await fetch('/api/submit-rca', {
+const saved = await fetch('/api/submitRCA', {
   method: 'POST',
   body: JSON.stringify({ ...editedRCA, created_by: user.email })
 }).then(r => r.json());
@@ -527,7 +527,7 @@ const saved = await fetch('/api/submit-rca', {
 3. **Allow Editing:** Let users review and edit before saving
 4. **Validate Input:** Ensure investigation_summary is non-empty
 5. **Handle Errors:** Show user-friendly error messages
-6. **Save Separately:** Call `/submit-rca` only after user confirms
+6. **Save Separately:** Call `/submitRCA` only after user confirms
 7. **Timeout Handling:** Set appropriate timeout (30+ seconds)
 
 ---

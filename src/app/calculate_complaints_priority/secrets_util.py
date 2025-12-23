@@ -32,7 +32,7 @@ def get_secret(secret_name: str, region_name: str, use_cache: bool = True) -> Di
     # Check cache first
     cache_key = f"{region_name}:{secret_name}"
     if use_cache and cache_key in _secrets_cache:
-        logger.debug(f"Returning cached secret for: {secret_name}")
+        logger.debug(f"Returning cached secret")
         return _secrets_cache[cache_key]
 
     try:
@@ -41,12 +41,12 @@ def get_secret(secret_name: str, region_name: str, use_cache: bool = True) -> Di
         client = session.client(service_name="secretsmanager", region_name=region_name)
 
         # Retrieve the secret value
-        logger.info(f"Retrieving secret from Secrets Manager: {secret_name}")
+        logger.info(f"Retrieving secret from Secrets Manager")
         get_secret_value_response = client.get_secret_value(SecretId=secret_name)
 
     except ClientError as e:
         error_code = e.response['Error']['Code']
-        logger.error(f"Error retrieving secret '{secret_name}': {error_code} - {str(e)}")
+        logger.error(f"Error retrieving secret '{error_code}': {str(e)}")
 
         # Provide more specific error messages
         if error_code == 'ResourceNotFoundException':
@@ -72,13 +72,13 @@ def get_secret(secret_name: str, region_name: str, use_cache: bool = True) -> Di
     try:
         secret_dict = json.loads(secret_string)
     except json.JSONDecodeError as e:
-        logger.error(f"Secret '{secret_name}' is not valid JSON: {str(e)}")
-        raise ValueError(f"Secret '{secret_name}' contains invalid JSON") from e
+        logger.error(f"Secret is not valid JSON: {str(e)}")
+        raise ValueError(f"Secret contains invalid JSON") from e
 
     # Cache the secret
     if use_cache:
         _secrets_cache[cache_key] = secret_dict
-        logger.debug(f"Cached secret for: {secret_name}")
+        logger.debug(f"Cached secret")
 
     return secret_dict
 
