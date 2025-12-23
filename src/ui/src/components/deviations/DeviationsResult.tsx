@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, LinearProgress, Button, Radio } from "@mui/material";
+import { Box, Button, Radio, Skeleton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -8,34 +8,27 @@ import Calendar from "../../assets/icons/calendar.svg";
 import styles from "./DeviationsResult.module.scss";
 import { getDueStatus } from "src/helpers";
 import { DeviationProps } from "src/types";
+import { formatDateMMM_D_YYYY } from "src/utils";
 
-const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
+const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
   const navigate = useNavigate();
   const headerStatusRaw = (deviation?.status ?? "").toString().trim();
   const headerStatusUpper = headerStatusRaw.toUpperCase();
-  const caseNumber = deviation?.["Case Number"];
-  const receivedDate = deviation?.["Recieved Date"];
-  const dueDate = deviation?.["Due Date"];
-  const progress = deviation?.progress ? deviation.progress : 0;
-  const rcaStatusUpper = (deviation?.rcaStatus ?? "")
-    .toString()
-    .trim()
-    .toUpperCase();
-  const gradingStatusUpper = (deviation?.gradingStatus ?? "")
-    .toString()
-    .trim()
-    .toUpperCase();
-  const isInReview = headerStatusUpper === "IN-REVIEW";
-  const gradingPendingHeader = /GRADING/.test(headerStatusUpper) && !isInReview;
-  const showGradingPendingView =
-    !isInReview &&
-    (gradingPendingHeader ||
-      gradingStatusUpper === "PENDING" ||
-      headerStatusUpper.includes("GRADING PENDING"));
-  const dueInfo = getDueStatus(dueDate);
-  const onStartRca = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/deviations/${caseNumber}`);
+  const { deviation_id, created_date, deviation_description } = deviation;
+  const progress = !deviation.rca_approved
+    ? 0
+    : !deviation.grading_approved
+    ? 50
+    : 100;
+
+  const rcaStatus = deviation?.rca_approved;
+  const gradingStatus = deviation?.grading_approved;
+  const dueInfo = getDueStatus(created_date);
+
+  const onStartRca = () => {
+    if (!loading) {
+      navigate(`/deviations/${deviation_id}`);
+    }
   };
   const onStartGrading = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -49,18 +42,28 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
             <span className={styles.idText}>{headerStatusUpper}</span>
           </div>
           <div className={styles.container}>
-            <span className={styles.caseNumberText}>{caseNumber}</span>
-
+            <span className={styles.caseNumberText}>{deviation_id}</span>
+            {loading && (
+              <span className={styles.processText}>
+                Deviation is being processed...
+              </span>
+            )}
             <div className={styles.dateGroup}>
               <img src={Calendar} className={styles.dateIcon} />
               <span className={styles.label}>Received Date: </span>
-              <span className={styles.date}>{receivedDate}</span>
+              <span className={styles.date}>
+                {formatDateMMM_D_YYYY(created_date)}
+              </span>
             </div>
           </div>
         </Box>
         <ComplaintsDueDateChip type={dueInfo.type} label={dueInfo.label} />
       </div>
-      <div className={styles.infoRow}>Deviation description</div>
+      {loading ? (
+        <Skeleton variant="rectangular" width={500} height={24} />
+      ) : (
+        <div className={styles.infoRow}>{deviation_description}</div>
+      )}
       <div className={styles.progressSection}>
         <div className={styles.progressHeader}>
           <span className={styles.progressLabel}>Overall Progress</span>
@@ -78,10 +81,10 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
       <div className={styles.stepsRow}>
         <div className={styles.stepColumn}>
           <div className={styles.stepHeader}>
-            <Radio size="small" checked={rcaStatusUpper === "COMPLETED"} />
+            <Radio size="small" checked={rcaStatus} />
             <span className={styles.stepLabel}>Root Cause Analysis</span>
           </div>
-          {showGradingPendingView && rcaStatusUpper === "COMPLETED" ? (
+          {rcaStatus ? (
             <div className={styles.completedPill}>
               <CheckCircleOutlineIcon
                 fontSize="small"
@@ -103,18 +106,30 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation }) => {
         </div>
         <div className={styles.stepColumn}>
           <div className={styles.stepHeader}>
-            <Radio size="small" checked={gradingStatusUpper === "COMPLETED"} />
+            <Radio size="small" checked={rcaStatus && gradingStatus} />
             <span className={styles.stepLabel}>Grading</span>
           </div>
-          {showGradingPendingView ? (
-            <Button
-              variant="outlined"
-              className={styles.startGradingButton}
-              startIcon={<PlayCircleOutlineIcon />}
-              onClick={onStartGrading}
-            >
-              Start Grading
-            </Button>
+          {rcaStatus ? (
+            <>
+              {gradingStatus ? (
+                <div className={styles.completedPill}>
+                  <CheckCircleOutlineIcon
+                    fontSize="small"
+                    className={styles.completedIcon}
+                  />
+                  <span>Completed</span>
+                </div>
+              ) : (
+                <Button
+                  variant="outlined"
+                  className={styles.startGradingButton}
+                  startIcon={<PlayCircleOutlineIcon />}
+                  onClick={onStartGrading}
+                >
+                  Start Grading
+                </Button>
+              )}
+            </>
           ) : (
             <div className={styles.waitingPill}>
               <span>Waiting for RCA</span>

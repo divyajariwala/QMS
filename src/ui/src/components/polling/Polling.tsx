@@ -1,21 +1,58 @@
-import { useEffect, useRef, useState } from 'react';
-import { getComplaintsApiResponse } from 'src/types';
-import { API_BASE_URL } from 'src/config';
+import { useEffect, useRef, useState } from "react";
+import { API_BASE_URL } from "src/config";
 
-export const usePolling = (shouldPoll: boolean, maxRetries = 10) => {
-  const [pollingData, setPollingData] = useState<getComplaintsApiResponse | null>(null);
+export interface PendingItem {
+  id: string;
+  text_extracted?: boolean;
+}
+
+export interface PollingConfig<TData = any> {
+  endpoint: string;
+  getPendingItems: (data: TData) => PendingItem[];
+  isDone?: (data: TData, pendingItems: PendingItem[]) => boolean;
+  headers?: Record<string, string>;
+  query?: Record<string, string | number | boolean>;
+  pollIntervalMs?: number;
+}
+
+const buildUrl = (
+  endpoint: string,
+  query?: Record<string, string | number | boolean>
+) => {
+  const isAbsolute = /^https?:\/\//i.test(endpoint);
+  const base = isAbsolute ? endpoint : `${API_BASE_URL}${endpoint}`;
+  if (!query || Object.keys(query).length === 0) return base;
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([k, v]) => params.append(k, String(v)));
+  return `${base}${base.includes("?") ? "&" : "?"}${params.toString()}`;
+};
+
+export const usePolling = (
+  shouldPoll: boolean,
+  config: PollingConfig<any> | null,
+  maxRetries = 10
+) => {
+  const [pollingData, setPollingData] = useState<any | null>(null);
   const [polling, setPolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [falseCount, setFalseCount] = useState<number | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const [idList, setIdList] = useState<string[]>([])
+  const [idList, setIdList] = useState<string[]>([]);
 
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const prevFalseCountRef = useRef<number | null>(null);
   const isCancelledRef = useRef(false);
 
+  const pollIntervalMs = config?.pollIntervalMs ?? 10000;
+
   useEffect(() => {
+    if (!config) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      setPolling(false);
+      return;
+    }
+
     if (!shouldPoll) {
       if (timerRef.current) clearTimeout(timerRef.current);
       setDone(false);
@@ -45,54 +82,75 @@ export const usePolling = (shouldPoll: boolean, maxRetries = 10) => {
       setError(null);
 
       try {
-        const res = await fetch(
-          `${API_BASE_URL}dev/getComplaints?status=pending&page=1`
-        );
+        const url = buildUrl(config.endpoint, config.query);
+        const res = await fetch(url, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(config.headers ?? {}),
+          },
+        });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-        const json: getComplaintsApiResponse = await res.json();
+        const json = await res.json();
         if (isCancelledRef.current) return;
 
-        const currentFalseCount = json?.caseStatus?.pending?.filter(e => e?.text_extracted === false).length ?? 0;
-        const caseIds = json?.caseStatus?.pending
-          ?.filter(e => e.text_extracted === false)
-          .map(e => e.case_id) ?? [];
-        setIdList(caseIds);
+        const pendingItems = config.getPendingItems(json) ?? [];
+        const ids = pendingItems.map((p) => p.id).filter(Boolean);
+
+        const currentFalseCount = pendingItems.length;
+        setIdList(ids);
         setFalseCount(currentFalseCount);
 
-        if (prevFalseCountRef.current === null || prevFalseCountRef.current !== currentFalseCount) {
+        const progressed =
+          prevFalseCountRef.current === null ||
+          prevFalseCountRef.current !== currentFalseCount;
+
+        if (progressed) {
           setPollingData(json);
           prevFalseCountRef.current = currentFalseCount;
-          setRetryCount(0); // reset retries on progress
+          setRetryCount(0); 
         } else {
-          setRetryCount(r => r + 1); // increment retry if no progress
+          setRetryCount((r) => r + 1); 
         }
 
-        if (currentFalseCount === 0) {
+        const isComplete =
+          typeof config.isDone === "function"
+            ? config.isDone(json, pendingItems)
+            : pendingItems.length === 0;
+
+        if (isComplete) {
           setDone(true);
           if (timerRef.current) clearTimeout(timerRef.current);
           return;
         }
       } catch (err) {
-        setError((err as Error).message || 'Unknown error');
-        setRetryCount(r => r + 1); // increment retry on error too
+        setError((err as Error).message || "Unknown error");
+        setRetryCount((r) => r + 1); 
       } finally {
         if (!isCancelledRef.current) setPolling(false);
       }
 
       if (!done && !isCancelledRef.current) {
-        timerRef.current = setTimeout(fetchData, 10000);
+        timerRef.current = setTimeout(fetchData, pollIntervalMs);
       }
     };
 
-    // Schedule the first fetch after 10 seconds instead of calling immediately
-    timerRef.current = setTimeout(fetchData, 10000);
+    timerRef.current = setTimeout(fetchData, pollIntervalMs);
 
     return () => {
       isCancelledRef.current = true;
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [shouldPoll, done, maxRetries, retryCount]);
+  }, [shouldPoll, done, maxRetries, retryCount, config, pollIntervalMs]);
 
-  return { pollingData, polling, error, done, falseCount, retryCount, idList, setIdList };
+  return {
+    pollingData,
+    polling,
+    error,
+    done,
+    falseCount,
+    retryCount,
+    idList,
+    setIdList,
+  };
 };

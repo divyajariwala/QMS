@@ -1,34 +1,59 @@
-import React, { createContext, ReactNode, useState } from "react";
-import { usePolling } from "./Polling"; // your hook
-import { getComplaintsApiResponse } from "src/types";
+import React, { createContext, ReactNode, useMemo, useState } from "react";
+import { usePolling, PollingConfig } from "./Polling";
+
+type ModuleKey =
+  | "complaints"
+  | "deviations"
+  | "adverseEvent"
+  | "createNarrative"
+  | "dashboard"
+  | "other";
 
 interface PollingContextType {
-  pollingData: getComplaintsApiResponse | null;
+  pollingData: any | null;
   polling: boolean;
   error: string | null;
   done: boolean;
   falseCount: number | null;
   retryCount: number;
-  setShouldPoll: (val: boolean) => void; // expose setter for controlling polling from outside
-  shouldPoll: boolean; // expose current polling on/off state
   idList: string[];
   setIdList: (val: string[]) => void;
+
+  setShouldPoll: (val: boolean) => void;
+  shouldPoll: boolean;
+
+  moduleKey: ModuleKey | null;
+  setModuleKey: (m: ModuleKey | null) => void;
+  pollingConfig: PollingConfig<any> | null;
+  setPollingConfig: (cfg: PollingConfig<any> | null) => void;
 }
 
 const PollingContext = createContext<PollingContextType | undefined>(undefined);
 
 export const PollingProvider = ({ children }: { children: ReactNode }) => {
-  // Manage the polling state here
   const [shouldPoll, setShouldPoll] = useState(false);
+  const [pollingConfig, setPollingConfig] = useState<PollingConfig<any> | null>(
+    null
+  );
+  const [moduleKey, setModuleKey] = useState<ModuleKey | null>(null);
 
-  // Pass the current polling state to your hook so it starts/stops accordingly
-  const pollingState = usePolling(shouldPoll);
+  const pollingState = usePolling(shouldPoll, pollingConfig);
 
-  // Pass setShouldPoll to allow consumers to toggle polling
+  const value = useMemo<PollingContextType>(
+    () => ({
+      ...pollingState,
+      setShouldPoll,
+      shouldPoll,
+      moduleKey,
+      setModuleKey,
+      pollingConfig,
+      setPollingConfig,
+    }),
+    [pollingState, shouldPoll, moduleKey, pollingConfig]
+  );
+
   return (
-    <PollingContext.Provider value={{ ...pollingState, setShouldPoll, shouldPoll }}>
-      {children}
-    </PollingContext.Provider>
+    <PollingContext.Provider value={value}>{children}</PollingContext.Provider>
   );
 };
 

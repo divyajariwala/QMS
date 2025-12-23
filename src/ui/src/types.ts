@@ -233,28 +233,6 @@ export interface ComplaintInterHeaderCardProps {
   processingFile: boolean;
 }
 
-export interface DeviationInterHeaderCardProps {
-  deviationData: {
-    status?: string | undefined;
-    caseId?: string | undefined;
-    overdueDays?: number | undefined;
-    primaryReporter?: Record<string, any> | undefined;
-    patientName?: string | undefined;
-    physicianName?: string | undefined;
-    drug?: string | undefined;
-    lotNumber?: string | undefined;
-    doseAmount?: string | undefined;
-    expirationDate?: string | undefined;
-    partNumber?: string | undefined;
-    receipt_date: string | undefined;
-  };
-  caseStatus: string | undefined;
-  setOpenModifyDetails: (val: boolean) => void;
-  createdAt: string | undefined;
-  processingFile: boolean;
-  deviationId: string | undefined;
-}
-
 export interface ComplaintsDueDateChipProps {
   type: "Overdue" | "Today" | "Tomorrow" | "Due" | "" | undefined;
   label: string | undefined;
@@ -304,7 +282,7 @@ export interface AdverseEventCardProps {
     case_type: string[];
     text_extracted: boolean;
     created_at: string;
-  }
+  };
 }
 
 export interface ComplaintProps {
@@ -331,15 +309,20 @@ export interface ButtonGroupProps {
 
 export interface DeviationProps {
   deviation: {
-    "Recieved Date": string;
-    "Processed Date": string;
-    "Due Date": string;
-    rcaStatus: string;
-    gradingStatus: string;
+    deviation_id: string;
+    created_date: string;
+    deviation_description: string;
     status: string;
-    progress: number;
-    "Case Number": string;
+    grading_approved: boolean;
+    rca_approved: boolean;
+    grading_completed: boolean;
+    rca_generated: boolean;
+    text_extracted: boolean;
   };
+  selected: string;
+  activeStatus: "pending" | "processed" | "overdue";
+  loading: boolean;
+  searching: boolean;
 }
 
 export type Status = "completed" | "active" | "inactive";
@@ -396,6 +379,18 @@ export interface CreateComplaintData {
   message_id: string;
 }
 
+export interface GenerateRCAData {
+  deviation_id: string;
+  issues: string;
+  issues_category: string;
+  major_root_cause_category: string;
+  major_root_cause_category_validated: string;
+  near_root_cause: string;
+  near_root_cause_category: string;
+  root_cause: string;
+  root_cause_category: string;
+}
+
 export interface CreateComplaintResponse {
   success: boolean;
   message: string;
@@ -403,8 +398,30 @@ export interface CreateComplaintResponse {
   timestamp: string;
 }
 
+export interface GenerateRCAResponse {
+  success: boolean;
+  message: string;
+  data: GenerateRCAData;
+  timestamp: string;
+}
+
+export interface DeviationSummaryResponse {
+  success: boolean;
+  message: string;
+}
+
 export type ComplaintRequest = {
   narrative: string;
+};
+
+export type DeviationSummary = {
+  deviationId: string | undefined;
+  summary: string;
+};
+
+export type DeviationGenerateRCA = {
+  deviationId: string | undefined;
+  investigation_summary: string;
 };
 
 export type Case = {
@@ -417,13 +434,25 @@ export type Case = {
   created_at: string;
 };
 
+export type Deviation = {
+  deviation_id: string;
+  created_date: string;
+  deviation_description: string;
+  status: string;
+  grading_approved: boolean;
+  rca_approved: boolean;
+  grading_completed: boolean;
+  rca_generated: boolean;
+  text_extracted: boolean;
+};
+
 export type CaseStatus = {
   pending: Case[];
   processed: Case[];
   overdue: Case[];
 };
 
-export type CaseStats = {
+export type CaseStatsComplaints = {
   total_complaints: number;
   pending: number;
   processed: number;
@@ -431,6 +460,19 @@ export type CaseStats = {
   avg_cycle_time: number;
   best_time: number;
   longest_time: number;
+};
+
+export type CaseStatsDeviations = {
+  total_deviations: number;
+  pending: number;
+  processed: number;
+  overdue: number;
+  avg_cycle_time: number;
+  rca_pending: number;
+  rca_done: number;
+  grading_pending: number;
+  grading_done: number;
+  workflow_progress: number;
 };
 
 export interface PaginationData {
@@ -443,7 +485,7 @@ export interface PaginationData {
 }
 
 export type getComplaintsApiResponse = {
-  caseStats: CaseStats;
+  caseStats: CaseStatsComplaints;
   caseStatus: CaseStatus;
   pagination: PaginationData;
 };
@@ -453,8 +495,14 @@ export type getAdverseEventsApiResponse = {
   adverse_events: Case[];
 };
 
+export type getDeviationsApiResponse = {
+  deviationStats: CaseStatsDeviations;
+  pagination: PaginationData;
+  deviations: Deviation[];
+};
+
 export type searchComplaintsApiResponse = {
-  caseStats: CaseStats;
+  caseStats: CaseStatsComplaints;
   caseStatus: CaseStatus;
   pagination: PaginationData;
   search_results: Case[];
@@ -509,6 +557,13 @@ export interface ComplaintDetail {
   text_extracted?: boolean;
 }
 
+export interface DeviationDetail {
+  deviation_id: string;
+  investigation_summary: string;
+  created_date: string;
+  status: string;
+}
+
 export type CaseStatusKey = "pending" | "processed" | "overdue";
 
 export interface complaintStatsProps {
@@ -521,6 +576,23 @@ export interface complaintStatsProps {
         avg_cycle_time: number;
         best_time: number;
         longest_time: number;
+      }
+    | undefined;
+}
+
+export interface deviationStatsProps {
+  deviationStats:
+    | {
+        total_deviations: number;
+        pending: number;
+        processed: number;
+        overdue: number;
+        avg_cycle_time: number;
+        rca_pending: number;
+        rca_done: number;
+        grading_pending: number;
+        grading_done: number;
+        workflow_progress: number;
       }
     | undefined;
 }
@@ -582,13 +654,13 @@ export type ApproveComplaintRequest = {
 };
 
 export interface PaginationObj {
-    current_page: number;
-    total_pages: number;
-    total_items: number;
-    items_per_page: number,
-    has_next: boolean,
-    has_previous: boolean,
-  };
+  current_page: number;
+  total_pages: number;
+  total_items: number;
+  items_per_page: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
 
 export interface AdverseEventFilterProps {
   complaintId: string;

@@ -3,6 +3,7 @@ import styles from "./StatusTabs.module.scss";
 
 type StatusTabItem = {
   label: string;
+  key: "pending" | "processed" | "overdue";
   count?: number;
 };
 
@@ -10,38 +11,43 @@ type Props = {
   pending?: number;
   processed?: number;
   overdue?: number;
-  activeIndex: number;
-  setActiveIndex: (val: number) => void;
+  active: "pending" | "processed" | "overdue";
+  setActive: (val: "pending" | "processed" | "overdue") => void;
+  setPageNumber: (val: number) => void;
 };
 
 const StatusTabs: React.FC<Props> = ({
   pending,
   processed,
   overdue,
-  activeIndex,
-  setActiveIndex,
+  active,
+  setActive,
+  setPageNumber,
 }) => {
   const statuses: StatusTabItem[] = [
-    { label: "Overdue", count: overdue },
-    { label: "Pending", count: pending },
-    { label: "Processed", count: processed },
+    { label: "Overdue", key: "overdue", count: overdue },
+    { label: "Pending", key: "pending", count: pending },
+    { label: "Processed", key: "processed", count: processed },
   ];
 
   return (
     <div className={styles.tabsContainer}>
       <div className={styles.tabs}>
-        {statuses.map(({ label, count }, index) => {
-          const isActive = index === activeIndex;
+        {statuses.map(({ label, count, key }) => {
+          const isActive = key === active;
           return (
             <div
               key={label}
               role="tab"
               tabIndex={isActive ? 0 : -1}
               className={`${styles.tab} ${isActive ? styles.active : ""}`}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => {
+                setActive(key);
+                setPageNumber(1);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
-                  setActiveIndex(index);
+                  setActive(key);
                 }
               }}
             >

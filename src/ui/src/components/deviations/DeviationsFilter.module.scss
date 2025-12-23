@@ -4,7 +4,7 @@
   --input-border: #e6e6f0;
   --focus-ring: rgba(99, 70, 234, 0.14);
   --accent-purple: #7b48ff;
-  --advanced-blue: #437EF7;
+  --advanced-blue: #437ef7;
   --advanced-blue-hover: #115293;
   --muted-text: #6f7682;
 }
@@ -95,7 +95,7 @@
   background: transparent;
   cursor: pointer;
   font-size: 14px;
-  color: #272D37;
+  color: #272d37;
   padding: 4px 28px;
   display: flex;
   align-items: center;
@@ -111,6 +111,7 @@
   font-size: 14px;
   line-height: 20px;
   letter-spacing: 0px;
+  justify-content: center;
 }
 
 .searchButtonInside:hover,
