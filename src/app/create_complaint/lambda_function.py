@@ -13,6 +13,13 @@ try:
 except ImportError:
     from .secrets_util import get_secret
 
+try:
+    from audit_logger import log_workflow, get_user_from_event
+except ImportError:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from audit_logger import log_workflow, get_user_from_event
+
 
 # Environment variables
 ENV = os.environ.get('env', 'dev')
@@ -70,7 +77,8 @@ def lambda_handler(event, context):
             return _response(400, "Narrative is required")
 
         # Create complaint in database and get auto-generated ID
-        complaint_id = create_complaint_in_db(narrative)
+        start_time = datetime.utcnow()
+        complaint_id = create_complaint_in_db(narrative, event)
         
         # Create SQS message for extract_and_process_complaints lambda
         complaint_message = {
@@ -153,12 +161,13 @@ def get_connection_string():
         raise
 
 
-def create_complaint_in_db(narrative):
+def create_complaint_in_db(narrative, event):
     """
     Create complaint record in database with narrative and return auto-generated complaint_id
     """
     try:
         conninfo = get_connection_string()
+        start_time = datetime.utcnow()
         
         with psycopg.connect(conninfo) as conn:
             with conn.cursor(row_factory=dict_row) as cur:
@@ -175,6 +184,17 @@ def create_complaint_in_db(narrative):
                 
                 conn.commit()
                 logger.info(f"Created complaint in database with ID: {complaint_id}")
+                
+                # Log workflow step
+                user = get_user_from_event(event)
+                log_workflow(
+                    conn, complaint_id, 'COMPLAINT_CREATED',
+                    input_data={'narrative_length': len(narrative), 'created_by': user},
+                    output_data={'complaint_id': complaint_id, 'status': 'Pending'},
+                    start_time=start_time
+                )
+                conn.commit()
+                
                 return complaint_id
                 
     except Exception as e:

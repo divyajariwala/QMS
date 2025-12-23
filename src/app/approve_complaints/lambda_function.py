@@ -12,6 +12,13 @@ try:
 except ImportError:
     from .secrets_util import get_secret
 
+try:
+    from audit_logger import log_workflow, log_audit, get_user_from_event as get_user
+except ImportError:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from audit_logger import log_workflow, log_audit, get_user as get_user
+
 # Environment variables
 ENV = os.environ.get('env', 'dev')
 DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
@@ -87,9 +94,95 @@ def lambda_handler(event, context):
                     (case_id, approved_at, approved_by, json.dumps(category_details))
                 )
                 
+                # Get original category details from inference_results (replicate get_complaints logic)
+                cur.execute(
+                    "SELECT * FROM inference_results WHERE complaint_id = %s ORDER BY created_at DESC LIMIT 1",
+                    (case_id,)
+                )
+                inference_result = cur.fetchone()
+                
+                original_category_details = []
+                if inference_result and isinstance(inference_result, dict):
+                    levels = inference_result.get('levels') if isinstance(inference_result.get('levels'), dict) else {}
+                    subcategories = inference_result.get('subcategories') if isinstance(inference_result.get('subcategories'), dict) else {}
+                    crl_codes = inference_result.get('crl_codes') if isinstance(inference_result.get('crl_codes'), dict) else {}
+                    units = inference_result.get('units', 0)
+                    priority = inference_result.get('priority', 0)
+                    priority_str = "Low" if priority == 0 else "High" if priority <= 2 else "Medium" if priority <= 4 else "Low"
+                    
+                    # Sort by confidence score (highest to lowest)
+                    sorted_levels = sorted(levels.items(), key=lambda x: x[1], reverse=True)
+                    sorted_subcats = sorted(subcategories.items(), key=lambda x: x[1], reverse=True)
+                    sorted_crls = sorted(crl_codes.items(), key=lambda x: x[1], reverse=True)
+                    
+                    # Build category details from sorted subcategories
+                    for idx, (subcat, conf) in enumerate(sorted_subcats):
+                        level = sorted_levels[idx][0] if idx < len(sorted_levels) else ''
+                        crl = sorted_crls[idx][0] if idx < len(sorted_crls) else ''
+                        
+                        original_category_details.append({
+                            "label": subcat,
+                            "level": level,
+                            "crl": "NA" if crl == "UNASSIGNED" else subcat,
+                            "priority": priority_str,
+                            "unit": units,
+                            "percentage": conf * 100
+                        })
+                
                 # Update complaint status to Processed (after insert to avoid FK issues)
                 cur.execute("UPDATE complaints SET status = %s WHERE complaint_id = %s", ('Processed', case_id))
-                logger.info(f"Status updated for {case_id}")
+                
+                # Log audit trail for status change
+                logger.info(f"Logging status change audit: {existing_complaint['status']} -> Processed")
+                try:
+                    log_audit(conn, 'Complaint', case_id, 'status', existing_complaint['status'], 'Processed', approved_by)
+                    logger.info("Status audit logged successfully")
+                except Exception as e:
+                    logger.error(f"Failed to log status audit: {e}")
+                
+                # Compare category details and log changes
+                modified_fields = []
+                if original_category_details:
+                    logger.info(f"Comparing {len(category_details)} categories")
+                    for i, new_cat in enumerate(category_details):
+                        old_cat = original_category_details[i] if i < len(original_category_details) else {}
+                        cat_label = new_cat.get('label', f'category_{i}')
+                        
+                        for field in ['label', 'percentage', 'level', 'crl', 'priority', 'unit']:
+                            old_val = old_cat.get(field)
+                            new_val = new_cat.get(field)
+                            if old_val != new_val:
+                                field_name = f'{cat_label}.{field}'
+                                modified_fields.append(field_name)
+                                logger.info(f"Logging audit for {field_name}: {old_val} -> {new_val}")
+                                try:
+                                    log_audit(conn, 'CategoryDetail', case_id, field_name, old_val, new_val, approved_by)
+                                except Exception as e:
+                                    logger.error(f"Failed to log category audit: {e}")
+                    logger.info(f"Total modified fields: {len(modified_fields)}")
+                
+                # Log workflow step for approval
+                logger.info("Logging COMPLAINT_APPROVED workflow")
+                try:
+                    log_workflow(conn, case_id, 'COMPLAINT_APPROVED',
+                        input_data={'previous_status': existing_complaint['status']},
+                        output_data={'approved_by': approved_by}
+                    )
+                    logger.info("COMPLAINT_APPROVED workflow logged successfully")
+                except Exception as e:
+                    logger.error(f"Failed to log COMPLAINT_APPROVED workflow: {e}")
+                
+                # Log workflow step if category details were modified
+                if modified_fields:
+                    logger.info(f"Logging CATEGORY_DETAILS_MODIFIED workflow with {len(modified_fields)} fields")
+                    try:
+                        log_workflow(conn, case_id, 'CATEGORY_DETAILS_MODIFIED',
+                            input_data={'modified_fields': modified_fields},
+                            output_data={'approved_by': approved_by}
+                        )
+                        logger.info("CATEGORY_DETAILS_MODIFIED workflow logged successfully")
+                    except Exception as e:
+                        logger.error(f"Failed to log CATEGORY_DETAILS_MODIFIED workflow: {e}")
                 
                 # Commit before updating stats to ensure status change persists
                 conn.commit()

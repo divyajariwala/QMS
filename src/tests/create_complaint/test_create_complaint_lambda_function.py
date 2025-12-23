@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 # Mock dependencies before importing
 sys.modules['psycopg'] = Mock()
 sys.modules['psycopg.rows'] = Mock()
+sys.modules['audit_logger'] = Mock()
 
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app'))
@@ -311,8 +312,9 @@ class TestDatabaseIntegration:
 
     @patch('create_complaint.lambda_function.get_connection_string')
     @patch('create_complaint.lambda_function.psycopg.connect')
-    def test_create_complaint_in_db_success(self, mock_connect, mock_get_connection):
-        """Test: Successful complaint creation in database with text_extracted set to false"""
+    @patch('create_complaint.lambda_function.log_workflow')
+    def test_create_complaint_in_db_success(self, mock_log_workflow, mock_connect, mock_get_connection):
+        """Test: Successful complaint creation in database with workflow logging"""
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         
         mock_cursor = MagicMock()
@@ -325,7 +327,8 @@ class TestDatabaseIntegration:
         mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
         mock_connect.return_value = mock_conn
 
-        result = lambda_function.create_complaint_in_db('Test narrative')
+        event = {'headers': {}}
+        result = lambda_function.create_complaint_in_db('Test narrative', event)
         
         assert result == 'CAS-00001'
         mock_cursor.execute.assert_called_once()
@@ -333,7 +336,11 @@ class TestDatabaseIntegration:
         call_args = mock_cursor.execute.call_args[0]
         assert 'text_extracted' in call_args[0]
         assert 'FALSE' in call_args[0]
-        mock_conn.commit.assert_called_once()
+        # Verify commit is called twice: once after INSERT, once after log_workflow
+        assert mock_conn.commit.call_count == 2
+        
+        # Verify workflow logging was called
+        mock_log_workflow.assert_called_once()
 
     @patch('create_complaint.lambda_function.get_connection_string')
     @patch('create_complaint.lambda_function.psycopg.connect')
