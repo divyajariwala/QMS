@@ -542,7 +542,6 @@ export const saveInvestigationSummary = async (
   }
 
   const data: DeviationSummaryResponse = await response.json();
-  console.log(data);
   return data;
 };
 
