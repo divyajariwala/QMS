@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch, MagicMock
 sys.modules['psycopg'] = Mock()
 sys.modules['psycopg.rows'] = Mock()
 sys.modules['secrets_util'] = Mock()
+sys.modules['audit_logger'] = Mock()
 
 # Add src directory to path for importing lambda_function
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'approve_complaints'))
@@ -44,10 +45,22 @@ class TestLambdaHandler:
 
     @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_approve_complaint_success(self):
-        """Test: Successful complaint approval with category details"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        """Test: Successful complaint approval with category details and workflow logging"""
+        with patch('lambda_function.psycopg.connect') as mock_connect, \
+             patch('lambda_function.log_workflow') as mock_log_workflow, \
+             patch('lambda_function.log_audit') as mock_log_audit:
             mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00001', 'status': 'Pending'}
+            # First fetchone for existing complaint, second for inference_results
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                {
+                    'levels': {'2': 0.9, '1': 0.1},
+                    'subcategories': {'Dose confirmation': 0.9, 'Other': 0.1},
+                    'crl_codes': {'CRL-000100': 0.9, 'UNASSIGNED': 0.1},
+                    'units': 5,
+                    'priority': 0
+                }
+            ]
             
             mock_conn = MagicMock()
             mock_conn.__enter__ = Mock(return_value=mock_conn)
@@ -71,6 +84,11 @@ class TestLambdaHandler:
             body = json.loads(result['body'])
             assert body['success'] is True
             assert body['data']['category_details'] == category_details
+            
+            # Verify workflow logging: COMPLAINT_APPROVED always called
+            assert mock_log_workflow.call_count >= 1
+            # Verify audit logging for status change + percentage change
+            assert mock_log_audit.call_count >= 2
 
     def test_missing_case_id(self):
         """Test: Missing case_id in request"""
@@ -108,7 +126,10 @@ class TestLambdaHandler:
         """Test: Successful overdue complaint approval"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00002', 'status': 'Overdue'}
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00002', 'status': 'Overdue'},
+                None  # No inference_results
+            ]
             
             mock_conn = MagicMock()
             mock_conn.__enter__ = Mock(return_value=mock_conn)
@@ -202,7 +223,10 @@ class TestLambdaHandler:
         """Test: Category details are stored as-is in processed_complaints"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00001', 'status': 'Pending'}
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                None  # No inference_results
+            ]
             
             mock_conn = MagicMock()
             mock_conn.__enter__ = Mock(return_value=mock_conn)
@@ -320,7 +344,10 @@ class TestEdgeCases:
         """Test: Case insensitive status check - PENDING should work"""
         with patch('lambda_function.psycopg.connect') as mock_connect:
             mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00001', 'status': 'Pending'}
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                None  # No inference_results
+            ]
             
             mock_conn = MagicMock()
             mock_conn.__enter__ = Mock(return_value=mock_conn)
@@ -342,6 +369,58 @@ class TestEdgeCases:
             assert result['statusCode'] == 200
             body = json.loads(result['body'])
             assert body['success'] is True
+
+    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
+    def test_category_audit_logging(self):
+        """Test: Audit logging for category detail changes and workflow step"""
+        with patch('lambda_function.psycopg.connect') as mock_connect, \
+             patch('lambda_function.log_audit') as mock_log_audit, \
+             patch('lambda_function.log_workflow') as mock_log_workflow:
+            mock_cursor = MagicMock()
+            # Mock inference_results with original values
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                {
+                    'levels': {'2': 0.9, '3': 0.1},
+                    'subcategories': {'Dose confirmation': 0.9},
+                    'crl_codes': {'CRL-000100': 0.9},
+                    'units': 5,
+                    'priority': 0
+                }
+            ]
+            
+            mock_conn = MagicMock()
+            mock_conn.__enter__ = Mock(return_value=mock_conn)
+            mock_conn.__exit__ = Mock(return_value=False)
+            mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+            mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+            mock_connect.return_value = mock_conn
+
+            # Modified category details
+            modified_categories = [
+                {'label': 'Dose confirmation', 'percentage': 95.0, 'level': '3', 'crl': 'CRL-000100', 'priority': 'High', 'unit': 5}
+            ]
+            event = {
+                'body': json.dumps({
+                    'case_id': 'CAS-00001',
+                    'caseStatus': 'pending',
+                    'categoryDetails': modified_categories
+                })
+            }
+
+            result = lambda_function.lambda_handler(event, {})
+
+            assert result['statusCode'] == 200
+            # Verify audit logging was called for changed fields
+            audit_calls = [call[0] for call in mock_log_audit.call_args_list]
+            # Should log changes for: status, percentage, level, priority
+            assert len(audit_calls) >= 4
+            
+            # Verify workflow logging: COMPLAINT_APPROVED + CATEGORY_DETAILS_MODIFIED
+            assert mock_log_workflow.call_count == 2
+            workflow_calls = [call[0][1] for call in mock_log_workflow.call_args_list]
+            assert 'COMPLAINT_APPROVED' in workflow_calls
+            assert 'CATEGORY_DETAILS_MODIFIED' in workflow_calls
 
 
 

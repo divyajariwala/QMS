@@ -11,6 +11,13 @@ try:
 except ImportError:
     from .secrets_util import get_secret
 
+try:
+    from audit_logger import log_workflow, log_audit, get_user_from_event
+except ImportError:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from audit_logger import log_workflow, log_audit, get_user_from_event
+
 # Environment variables
 ENV = os.environ.get('env', 'dev')
 DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
@@ -30,9 +37,10 @@ def lambda_handler(event, context):
         # Parse input
         body = json.loads(event['body']) if isinstance(event.get('body'), str) else event
         case_id = body['caseId']
+        user = get_user_from_event(event)
         
         # Update complaint in database
-        update_complaint_in_db(case_id, body)
+        update_complaint_in_db(case_id, body, event, user)
         
         return {
             'statusCode': 200,
@@ -76,12 +84,20 @@ def get_connection_string():
         logger.error(f"Error building connection string: {str(e)}")
         raise
 
-def update_complaint_in_db(case_id, body):
+def update_complaint_in_db(case_id, body, event, user):
     try:
         conninfo = get_connection_string()
+        start_time = datetime.utcnow()
         
         with psycopg.connect(conninfo) as conn:
             with conn.cursor(row_factory=dict_row) as cur:
+                # Get current values for audit
+                cur.execute("SELECT * FROM complaints WHERE complaint_id = %s", (case_id,))
+                old_data = cur.fetchone()
+                
+                if not old_data:
+                    raise Exception(f"Complaint {case_id} not found")
+                
                 update_query = """
                 UPDATE complaints 
                 SET primary_reporter = %s,
@@ -96,21 +112,48 @@ def update_complaint_in_db(case_id, body):
                 WHERE complaint_id = %s
                 """
                 
+                new_values = {
+                    'primary_reporter': body['primaryReporter']['name'],
+                    'primary_reporter_address': body['primaryReporter']['address'],
+                    'patient_name': body['patientName'],
+                    'physician': body['physicianName'],
+                    'drug': body['drug'],
+                    'lot_no': body['lotNumber'],
+                    'dosage': body['doseAmount'],
+                    'expiration_date': body['expirationDate'] if body['expirationDate'] else None,
+                    'part_number': body['partNumber']
+                }
+                
                 cur.execute(update_query, (
-                    body['primaryReporter']['name'],
-                    body['primaryReporter']['address'],
-                    body['patientName'],
-                    body['physicianName'],
-                    body['drug'],
-                    body['lotNumber'],
-                    body['doseAmount'],
-                    body['expirationDate'],
-                    body['partNumber'],
+                    new_values['primary_reporter'],
+                    new_values['primary_reporter_address'],
+                    new_values['patient_name'],
+                    new_values['physician'],
+                    new_values['drug'],
+                    new_values['lot_no'],
+                    new_values['dosage'],
+                    new_values['expiration_date'],
+                    new_values['part_number'],
                     case_id
                 ))
                 
                 conn.commit()
                 logger.info(f"Updated complaint with case_id: {case_id}")
+                
+                # Log audit trail for each changed field
+                fields_modified = []
+                for field, new_val in new_values.items():
+                    old_val = old_data.get(field)
+                    if str(old_val) != str(new_val):
+                        log_audit(conn, 'Complaint', case_id, field, old_val, new_val, user)
+                        fields_modified.append(field)
+                
+                # Log workflow step
+                log_workflow(conn, case_id, 'DETAILS_MODIFIED',
+                    input_data={'fields_count': len(fields_modified), 'modified_by': user},
+                    output_data={'fields_modified': fields_modified},
+                    start_time=start_time)
+                conn.commit()
                 
     except Exception as e:
         logger.error(f"Database error updating complaint: {str(e)}")

@@ -18,5 +18,5 @@ def get_secret(secret_name, region_name='us-east-1'):
         secret = get_secret_value_response['SecretString']
         return json.loads(secret)
     except Exception as e:
-        print(f"Error retrieving secret: {str(e)}")
-        raise e
+        print(f"Error retrieving secret '{secret_name}': {str(e)}")
+        raise
