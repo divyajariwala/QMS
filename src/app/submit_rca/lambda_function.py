@@ -18,7 +18,9 @@ DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 
 def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
     """
-    Save or update multiple RCA analyses in the database in a single transaction.
+    Save multiple RCA analyses in the database in a single transaction.
+    
+    Multiple RCAs can be saved for the same deviation_id.
     
     Args:
         rca_list: List of RCA dictionaries, each containing:
@@ -75,7 +77,7 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                     
                     logger.info(f"Processing RCA {idx + 1}/{len(rca_list)} for deviation: {deviation_id}")
                     
-                    # Use INSERT ... ON CONFLICT to handle both insert and update
+                    # Simple INSERT - allows multiple RCAs per deviation_id
                     cur.execute("""
                         INSERT INTO rca_analysis (
                             deviation_id,
@@ -93,17 +95,6 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                         ) VALUES (
                             %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                         )
-                        ON CONFLICT (deviation_id) 
-                        DO UPDATE SET
-                            issues = EXCLUDED.issues,
-                            issues_category = EXCLUDED.issues_category,
-                            major_root_cause_category = EXCLUDED.major_root_cause_category,
-                            major_root_cause_category_explanation = EXCLUDED.major_root_cause_category_explanation,
-                            near_root_cause = EXCLUDED.near_root_cause,
-                            near_root_cause_category = EXCLUDED.near_root_cause_category,
-                            root_cause = EXCLUDED.root_cause,
-                            root_cause_category = EXCLUDED.root_cause_category,
-                            updated_at = CURRENT_TIMESTAMP
                         RETURNING id, created_at, updated_at
                     """, (
                         deviation_id,
@@ -133,7 +124,7 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                     
                     logger.info(f"✅ Saved RCA {idx + 1}/{len(rca_list)}: ID={rca_id}, deviation={deviation_id}")
                 
-                # Commit all inserts/updates in a single transaction
+                # Commit all inserts in a single transaction
                 conn.commit()
                 
                 logger.info(f"✅ Successfully saved batch of {len(saved_rcas)} RCAs")
