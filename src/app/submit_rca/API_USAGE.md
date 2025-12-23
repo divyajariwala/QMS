@@ -4,11 +4,19 @@
 
 The Submit RCA endpoint saves or updates Root Cause Analysis data in the PostgreSQL database. This endpoint handles persistence of RCA analysis results after user review and editing.
 
-**Key Feature:** Supports both single RCA submission and batch submission of multiple RCAs in a single request.
+**Key Features:** 
+- Supports both single RCA submission and batch submission of multiple RCAs in a single request
+- Automatically updates the deviations table to mark RCA as generated and approved
 
-**Purpose:** Persist RCA data to database  
+**Purpose:** Persist RCA data to database and update deviation status  
 **Transaction Safety:** All RCAs in a batch are saved atomically (all succeed or all fail)  
 **Dependencies:** PostgreSQL Aurora, AWS Secrets Manager
+
+**Database Updates:**
+1. Inserts RCA(s) into `rca_analysis` table
+2. Updates `deviations` table:
+   - Sets `rca_generated = true`
+   - Sets `rca_approved_date = CURRENT_TIMESTAMP`
 
 ---
 
@@ -124,10 +132,20 @@ Save or update RCA analysis in the database.
     "deviation_id": "DV-00001",
     "created_at": "2025-12-23T10:30:00.000000+00:00",
     "updated_at": "2025-12-23T10:30:00.000000+00:00",
-    "created_by": "user@example.com"
+    "created_by": "user@example.com",
+    "deviations_updated": ["DV-00001"]
   },
   "timestamp": "2025-12-23T10:30:00.000000+00:00"
 }
+```
+
+**Response Fields:**
+- `rca_id`: ID of the saved RCA in rca_analysis table
+- `deviation_id`: Deviation identifier
+- `created_at`: Timestamp when RCA was created
+- `updated_at`: Timestamp when RCA was last updated
+- `created_by`: User who submitted the RCA
+- `deviations_updated`: Array of deviation IDs that were updated in deviations table
 ```
 
 ### Success Response - Batch (200)
@@ -158,10 +176,20 @@ Save or update RCA analysis in the database.
         "updated_at": "2025-12-23T10:30:02.000000+00:00"
       }
     ],
-    "created_by": "user@example.com"
+    "created_by": "user@example.com",
+    "deviations_updated": ["DV-00001"]
   },
   "timestamp": "2025-12-23T10:30:02.000000+00:00"
 }
+```
+
+**Response Fields:**
+- `saved_count`: Number of RCAs saved
+- `rcas`: Array of saved RCA objects with IDs and timestamps
+- `created_by`: User who submitted the RCAs
+- `deviations_updated`: Array of unique deviation IDs that were updated in deviations table
+
+**Note:** If multiple RCAs have the same `deviation_id`, that deviation is only updated once.
 ```
 
 ### Error Response - Empty Array (400)
@@ -618,28 +646,52 @@ const completeRCAWorkflow = async (investigationSummary, deviationId) => {
 
 ## Database Behavior
 
-### Upsert Logic
+### Tables Updated
 
-The endpoint uses `INSERT ... ON CONFLICT` to handle both new and existing records:
+**1. rca_analysis Table:**
+- Inserts new RCA record(s)
+- Allows multiple RCAs per deviation_id
+- Sets created_at and updated_at timestamps
+- Stores all RCA fields
 
-**New Record (deviation_id doesn't exist):**
-- Creates new row with all fields
-- Sets `created_at` and `updated_at` to current timestamp
-- Returns new `rca_id`
-
-**Existing Record (deviation_id exists):**
-- Updates all fields except `id` and `created_at`
-- Updates `updated_at` to current timestamp
-- Returns existing `rca_id`
-
-**Important:** If multiple RCAs in a batch have the same `deviation_id`, the last one in the array will overwrite the previous ones.
+**2. deviations Table:**
+- Updates existing deviation record
+- Sets `rca_generated = true`
+- Sets `rca_approved_date = CURRENT_TIMESTAMP`
+- Only updates once per unique deviation_id (even if multiple RCAs)
 
 ### Transaction Safety
 
-All RCAs in a batch are saved in a single database transaction:
-- ✅ All succeed together
+All database operations are performed in a single transaction:
+- ✅ All RCA inserts succeed together
+- ✅ All deviation updates succeed together
 - ✅ All fail together (rollback)
 - ✅ No partial saves
+
+### Example Database State
+
+**Before Submit:**
+```sql
+-- deviations table
+deviation_id | rca_generated | rca_approved_date
+DV-00001     | false         | NULL
+
+-- rca_analysis table
+(empty)
+```
+
+**After Submit (3 RCAs for DV-00001):**
+```sql
+-- deviations table
+deviation_id | rca_generated | rca_approved_date
+DV-00001     | true          | 2025-12-23 10:30:00
+
+-- rca_analysis table
+id  | deviation_id | issues                    | created_at
+123 | DV-00001     | Cleaning validation...    | 2025-12-23 10:30:00
+124 | DV-00001     | Tanks 41 and 55...        | 2025-12-23 10:30:01
+125 | DV-00001     | Inconsistent handling...  | 2025-12-23 10:30:02
+```
 
 ---
 
@@ -812,6 +864,8 @@ const submitRCAWithErrorHandling = async (rcaData) => {
 Processing single RCA
 Submitting single RCA for deviation: DV-00001
 ✅ Saved RCA 1/1: ID=123, deviation=DV-00001
+Updating deviations table for deviation: DV-00001
+✅ Updated deviation DV-00001: rca_generated=true, rca_approved_date=2025-12-23 10:30:00
 ✅ Single RCA submission completed successfully
 ```
 
@@ -822,6 +876,9 @@ Saving batch of 3 RCAs
 ✅ Saved RCA 1/3: ID=123, deviation=DV-00001
 ✅ Saved RCA 2/3: ID=124, deviation=DV-00001
 ✅ Saved RCA 3/3: ID=125, deviation=DV-00001
+Updating deviations table for deviation: DV-00001
+✅ Updated deviation DV-00001: rca_generated=true, rca_approved_date=2025-12-23 10:30:00
+✅ Successfully saved batch of 3 RCAs and updated 1 deviation(s)
 ✅ Batch RCA submission completed successfully: 3 RCAs saved
 ```
 

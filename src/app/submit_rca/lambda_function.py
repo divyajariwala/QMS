@@ -21,6 +21,7 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
     Save multiple RCA analyses in the database in a single transaction.
     
     Multiple RCAs can be saved for the same deviation_id.
+    Also updates the deviations table to mark RCA as generated.
     
     Args:
         rca_list: List of RCA dictionaries, each containing:
@@ -61,6 +62,7 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
         )
         
         saved_rcas = []
+        deviation_ids_updated = set()
         
         with psycopg.connect(conn_string) as conn:
             with conn.cursor() as cur:
@@ -77,7 +79,7 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                     
                     logger.info(f"Processing RCA {idx + 1}/{len(rca_list)} for deviation: {deviation_id}")
                     
-                    # Simple INSERT - allows multiple RCAs per deviation_id
+                    # Insert RCA into rca_analysis table
                     cur.execute("""
                         INSERT INTO rca_analysis (
                             deviation_id,
@@ -122,16 +124,40 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                         'updated_at': updated_at
                     })
                     
+                    # Track deviation_ids to update
+                    deviation_ids_updated.add(deviation_id)
+                    
                     logger.info(f"✅ Saved RCA {idx + 1}/{len(rca_list)}: ID={rca_id}, deviation={deviation_id}")
                 
-                # Commit all inserts in a single transaction
+                # Update deviations table for each unique deviation_id
+                for deviation_id in deviation_ids_updated:
+                    logger.info(f"Updating deviations table for deviation: {deviation_id}")
+                    
+                    cur.execute("""
+                        UPDATE deviations
+                        SET 
+                            rca_generated = true,
+                            rca_approved_date = CURRENT_TIMESTAMP
+                        WHERE deviation_id = %s
+                        RETURNING deviation_id, rca_generated, rca_approved_date
+                    """, (deviation_id,))
+                    
+                    deviation_result = cur.fetchone()
+                    
+                    if deviation_result:
+                        logger.info(f"✅ Updated deviation {deviation_result[0]}: rca_generated={deviation_result[1]}, rca_approved_date={deviation_result[2]}")
+                    else:
+                        logger.warning(f"⚠️ Deviation {deviation_id} not found in deviations table")
+                
+                # Commit all inserts and updates in a single transaction
                 conn.commit()
                 
-                logger.info(f"✅ Successfully saved batch of {len(saved_rcas)} RCAs")
+                logger.info(f"✅ Successfully saved batch of {len(saved_rcas)} RCAs and updated {len(deviation_ids_updated)} deviation(s)")
                 
                 return {
                     'saved_count': len(saved_rcas),
                     'rcas': saved_rcas,
+                    'deviations_updated': list(deviation_ids_updated),
                     'created_by': created_by
                 }
                 
@@ -190,7 +216,8 @@ def lambda_handler(event, context):
             "deviation_id": "DV-00001",
             "created_at": "2025-12-22T10:30:00",
             "updated_at": "2025-12-22T10:30:00",
-            "created_by": "user@example.com"
+            "created_by": "user@example.com",
+            "deviations_updated": ["DV-00001"]
         }
     }
     
@@ -209,9 +236,16 @@ def lambda_handler(event, context):
                 },
                 ...
             ],
-            "created_by": "user@example.com"
+            "created_by": "user@example.com",
+            "deviations_updated": ["DV-00001"]
         }
     }
+    
+    Database Updates:
+    1. Inserts RCA(s) into rca_analysis table
+    2. Updates deviations table:
+       - Sets rca_generated = true
+       - Sets rca_approved_date = CURRENT_TIMESTAMP
     """
     try:
         logger.info(f"Environment: {ENV}, Region: {AWS_REGION}")
@@ -338,6 +372,7 @@ def lambda_handler(event, context):
             # Extract single RCA result for backward compatibility
             single_result = result['rcas'][0]
             single_result['created_by'] = created_by
+            single_result['deviations_updated'] = result['deviations_updated']
             
             logger.info(f"✅ Single RCA submission completed successfully for {body['deviation_id']}")
             
