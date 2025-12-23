@@ -1,0 +1,75 @@
+You are a quality management analyst using the ABS Root Cause Map methodology. Analyze the Investigation Summary below and generate a comprehensive Root Cause Analysis.
+
+Investigation Summary:
+{investigation_summary}
+
+IMPORTANT: There may be MULTIPLE distinct root causes for this deviation. Each root cause should be analyzed separately as its own RCA.
+
+Your task is to identify ALL distinct root causes and generate a separate RCA for each one. For each RCA, provide:
+
+1. **Issues**: Describe the specific causal factor (problem) for this RCA. What happened, when, where, and what was the immediate impact.
+
+2. **Major Root Cause Category Explanation**: A detailed explanation of why this falls under a specific major category (Equipment/Software Issues, Personnel Issues, or Other Issues). Explain the reasoning and context.
+
+3. **Near Root Cause**: Explain the immediate contributing factor that led to this problem. This is one level deeper than the issue itself.
+
+4. **Root Cause**: Identify the fundamental, systemic issue that, if addressed, would have prevented this specific problem from occurring.
+
+---
+
+ABS ROOT CAUSE MAP REFERENCE:
+
+**Major Categories:**
+1. Equipment/Software Issues
+2. Personnel Issues  
+3. Other Issues
+
+**Near Root Cause Categories:**
+- Design Issue, Equipment Reliability Issue, Procedure/Instruction Issue, Materials/Parts Issue, Utility/Support Equipment Issue, Other Equipment Issue
+- Procedure Issue, Training/Guidance Issue, Human Factors Issue, Tech/Craftsman Issue, Supervision Issue, No Communication or Not Timely, Company Issue
+- Natural Phenomena, External Events, External Facilities/Activity, Cause Cannot Be Determined
+
+**Root Cause Categories:**
+- Design Input Issue, Design Output Issue, Equipment Defects Issue, Preventive Maintenance Issue
+- Procedure Not Used, Procedure Inadequate, Procedure Not Available
+- Training Not Performed, Training Inadequate, Lack of Knowledge/Skill
+- Inattention to Detail, Lack of Teamwork, Complacency
+- Oversight/Inspection Issue, Inadequate Investigation, Lack of Accountability
+- No Communication or Not Timely, Wrong Message
+- And many others...
+
+---
+
+RESPONSE FORMAT:
+
+Return your response as a JSON array. Each element in the array represents one distinct RCA.
+
+If there is only ONE root cause, return an array with one element.
+If there are MULTIPLE root causes, return an array with multiple elements.
+
+```json
+[
+  {
+    "issues": "Detailed description of the first causal factor...",
+    "major_root_cause_category_validated": "Detailed explanation of why this is [Major Category]...",
+    "near_root_cause": "Explanation of the near root cause for this issue...",
+    "root_cause": "Explanation of the fundamental root cause for this issue..."
+  },
+  {
+    "issues": "Detailed description of the second causal factor (if exists)...",
+    "major_root_cause_category_validated": "Detailed explanation of why this is [Major Category]...",
+    "near_root_cause": "Explanation of the near root cause for this issue...",
+    "root_cause": "Explanation of the fundamental root cause for this issue..."
+  }
+]
+```
+
+GUIDELINES:
+- Each RCA should address a DISTINCT root cause
+- Don't create multiple RCAs for the same underlying issue
+- Each RCA should be complete and stand-alone
+- Use clear, professional language
+- Focus on systemic issues, not individual blame
+- Provide enough detail for corrective actions
+
+Return ONLY the JSON array, no additional text.
