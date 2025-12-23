@@ -381,7 +381,7 @@ def move_to_adverse_events(cur, complaint_id):
             SELECT * FROM complaints WHERE complaint_id = %s
         """, (complaint_id,))
         
-        # Delete from complaints
+        # Delete from complaints (workflow_logs will cascade delete)
         cur.execute("DELETE FROM complaints WHERE complaint_id = %s", (complaint_id,))
         
         logger.info(f"Successfully moved complaint {complaint_id} to adverse_events table")
