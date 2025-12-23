@@ -748,6 +748,7 @@ All complaint workflow steps are logged to `workflow_logs` table:
 | 1. Create | create_complaint | COMPLAINT_CREATED | narrative_length, created_by, complaint_id, status |
 | 2. Upload | upload_complaints | FILE_UPLOADED | filename, size, type, uploaded_by, s3_key, file_id |
 | 3. Extract | extract_and_process_complaints | TEXT_EXTRACTED | source (pdf/narrative), extracted_fields, text_length |
+| 3a. Move to AE | extract_and_process_complaints | MOVED_TO_ADVERSE_EVENTS | reason, target_table |
 | 4. Classify | classify_complaints | CLASSIFICATION_STARTED | narrative_length, triggered_by, execution_arn |
 | 5. Modify | modify_extracted_text | DETAILS_MODIFIED | fields_count, modified_by, fields_modified list |
 | 6. Approve | approve_complaints | COMPLAINT_APPROVED | previous_status, category_count, approved_by, category_details |
@@ -788,12 +789,28 @@ WHERE entity_type = 'Complaint' AND entity_id = 'CAS-00001'
 ORDER BY timestamp;
 ```
 
+### Special Workflow Considerations
+
+#### Adverse Events Handling
+When a complaint is identified as a purely adverse event (case_type = ['Adverse Event'] only):
+1. Workflow step MOVED_TO_ADVERSE_EVENTS is logged before the move
+2. Complaint is moved from `complaints` table to `adverse_events` table
+3. Original workflow logs are cascade deleted (foreign key constraint)
+4. The MOVED_TO_ADVERSE_EVENTS log preserves the audit trail
+
+**Design Rationale:**
+- Adverse events require separate regulatory tracking
+- Move operation maintains data integrity
+- Pre-move logging ensures compliance traceability
+- Cascade delete prevents orphaned workflow records
+
 ### Compliance Benefits
 1. **Complete Traceability:** Every action tracked with who, what, when
 2. **Field-Level Auditing:** All modifications logged with old/new values
 3. **User Attribution:** Every change linked to user (from Cognito)
 4. **Immutable Records:** Audit logs cannot be modified
 5. **Regulatory Ready:** Meets FDA 21 CFR Part 11 requirements
+6. **Adverse Event Tracking:** Separate table with preserved audit trail
 
 ### Implementation Status
 - ✅ **Complaints:** Fully implemented (6 workflow steps, field-level audit)
