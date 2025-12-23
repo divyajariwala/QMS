@@ -375,6 +375,11 @@ def update_complaint_in_db(complaint_id, extracted_data, start_time=None):
 def move_to_adverse_events(cur, complaint_id):
     """Move complaint to adverse_events table and delete from complaints"""
     try:
+        # Log workflow step before moving
+        log_workflow(cur.connection, complaint_id, 'MOVED_TO_ADVERSE_EVENTS',
+            input_data={'reason': 'Purely adverse event detected'},
+            output_data={'target_table': 'adverse_events'})
+        
         # Insert into adverse_events
         cur.execute("""
             INSERT INTO adverse_events 

@@ -1153,12 +1153,22 @@ class TestEdgeCases:
 class TestMoveToAdverseEvents:
     """Tests for move_to_adverse_events function"""
 
-    def test_move_to_adverse_events_success(self):
-        """Test: Successfully move complaint to adverse_events table"""
+    @patch('lambda_function.log_workflow')
+    def test_move_to_adverse_events_success(self, mock_log_workflow):
+        """Test: Successfully move complaint to adverse_events table with workflow logging"""
         mock_cursor = MagicMock()
+        mock_conn = MagicMock()
+        mock_cursor.connection = mock_conn
         
         lambda_function.move_to_adverse_events(mock_cursor, 'CAS-123')
         
+        # Verify workflow logging was called
+        mock_log_workflow.assert_called_once_with(
+            mock_conn, 'CAS-123', 'MOVED_TO_ADVERSE_EVENTS',
+            input_data={'reason': 'Purely adverse event detected'},
+            output_data={'target_table': 'adverse_events'}
+        )
+        # Verify database operations
         assert mock_cursor.execute.call_count == 2
         insert_call = mock_cursor.execute.call_args_list[0][0]
         delete_call = mock_cursor.execute.call_args_list[1][0]
