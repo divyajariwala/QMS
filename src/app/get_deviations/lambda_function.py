@@ -1,5 +1,5 @@
 import json
-import os,sys
+import os
 import psycopg
 from psycopg.rows import dict_row
 from secrets_util import get_secret
