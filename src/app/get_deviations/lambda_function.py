@@ -1,8 +1,8 @@
 import json
-import os
+import os,sys
 import psycopg
 from psycopg.rows import dict_row
-from .secrets_util import get_secret
+from secrets_util import get_secret
 
 # =====================================================
 # ENV CONFIG
@@ -72,6 +72,9 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
 
             # Refresh deviation statistics
             cursor.execute("SELECT update_deviations_and_stats()")
+            conn.commit()
+            # Refresh avg cycle time
+            cursor.execute("SELECT approved_avg_cycle_time()")
             conn.commit()
 
             # Fetch deviation statistics
@@ -163,7 +166,8 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         grading_approved,
                         rca_approved,
                         grading_completed,
-                        rca_generated
+                        rca_generated,
+                        text_extracted
                     FROM deviations
                     {where}
                     ORDER BY deviation_id DESC
@@ -187,10 +191,12 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                     "pending": stats.get("pending", 0),
                     "processed": stats.get("processed", 0),
                     "overdue": stats.get("overdue", 0),
-                    "avg_cycle_time": stats.get("avg_time", 0),
+                    "avg_cycle_time": stats.get("avg_cycle_time", 0),
                     "rca_pending": stats.get("rca_pending", 0),
                     "rca_done": stats.get("rca_done", 0),
                     "grading_pending": stats.get("grading_pending", 0),
+                    "grading_done": stats.get("grading_done", 0),
+                    "workflow_progress": stats.get("workflow_progress", 0),
                 },
                 "pagination": {
                     "current_page": page,
@@ -214,6 +220,7 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         "rca_approved": r["rca_approved"],
                         "grading_completed": r["grading_completed"],
                         "rca_generated": r["rca_generated"],
+                        "text_extracted": r["text_extracted"],
                     }
                     for r in rows
                 ],

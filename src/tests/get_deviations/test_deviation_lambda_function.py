@@ -1,200 +1,244 @@
+# tests/get_deviations/test_deviation_lambda_function.py
+
 import pytest
-from datetime import datetime
 import json
-from unittest.mock import MagicMock, patch
-import sys
 import os
+import sys
+from unittest.mock import Mock, patch, MagicMock
+from datetime import datetime
 
-# --------------------------------------------------
-# Add project root to Python path
-# --------------------------------------------------
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+# ------------------------------------------------------------------
+# MOCK DEPENDENCIES BEFORE IMPORT
+# ------------------------------------------------------------------
+sys.modules["psycopg"] = Mock()
+sys.modules["psycopg.rows"] = Mock()
+sys.modules["secrets_util"] = Mock()
 
-from app.get_deviations.lambda_function import (
-    lambda_handler,
-    get_all_deviation,
-    get_case_by_deviationid
+# ------------------------------------------------------------------
+# IMPORT LAMBDA FUNCTION
+# ------------------------------------------------------------------
+BASE_PATH = os.path.dirname(__file__)
+LAMBDA_PATH = os.path.join(BASE_PATH, "..", "..", "app", "get_deviations")
+sys.path.insert(0, LAMBDA_PATH)
+
+import importlib.util
+
+spec = importlib.util.spec_from_file_location(
+    "lambda_function",
+    os.path.join(LAMBDA_PATH, "lambda_function.py"),
 )
-
-# --------------------------------------------------
-# MOCK DATA
-# --------------------------------------------------
-
-MOCK_STATS = [
-    {'stat_name': 'Pending', 'stat_value': 5},
-    {'stat_name': 'Processed', 'stat_value': 10},
-    {'stat_name': 'Overdue', 'stat_value': 2},
-    {'stat_name': 'Avg Time', 'stat_value': 48},
-    {'stat_name': 'RCA Pending', 'stat_value': 3},
-    {'stat_name': 'RCA Done', 'stat_value': 7},
-    {'stat_name': 'Grading Pending', 'stat_value': 4},
-]
-
-MOCK_DEVIATIONS = [
-    {
-        'deviation_id': 'DV-001',
-        'created_at': datetime.now(),
-        'deviation_status': 'Pending',
-        'description': 'Test deviation 1',
-        'grading_approved': True,
-        'rca_approved': False,
-        'grading_completed': True,
-        'rca_generated': True,
-    }
-]
+lambda_function = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(lambda_function)
 
 
-# --------------------------------------------------
-# FIXTURE – CORRECT CONTEXT MANAGER MOCK
-# --------------------------------------------------
-
-@pytest.fixture
-def mock_db_connection():
-    mock_conn = MagicMock()
-    mock_cursor = MagicMock()
-
-    # cursor() must act as context manager
-    mock_conn.cursor.return_value = mock_cursor
-    mock_cursor.__enter__.return_value = mock_cursor
-    mock_cursor.__exit__.return_value = None
-
-    mock_conn.commit = MagicMock()
-
-    return mock_conn, mock_cursor
+# ------------------------------------------------------------------
+# HELPER
+# ------------------------------------------------------------------
+def create_mock_cursor():
+    cursor = Mock()
+    ctx = MagicMock()
+    ctx.__enter__.return_value = cursor
+    ctx.__exit__.return_value = None
+    return ctx, cursor
 
 
-# --------------------------------------------------
-# TEST CASES
-# --------------------------------------------------
+# ==================================================================
+# LAMBDA HANDLER TESTS
+# ==================================================================
+class TestLambdaHandler:
 
-@patch("app.get_deviations.lambda_function.get_db_connection")
-def test_lambda_handler_get_all(mock_get_db, mock_db_connection):
-    mock_conn, mock_cursor = mock_db_connection
-    mock_get_db.return_value = mock_conn
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_all_deviations_success(self, mock_get_db):
+        mock_conn = Mock()
+        mock_conn.commit.return_value = None
+        mock_conn.close.return_value = None
 
-    mock_cursor.execute.return_value = None
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+        cursor.execute.return_value = None
 
-    # ORDER IS IMPORTANT
-    mock_cursor.fetchall.side_effect = [
-        MOCK_STATS,  # SELECT stat_name, stat_value FROM case_stats
-        MOCK_DEVIATIONS  # SELECT deviations
-    ]
+        cursor.fetchall.side_effect = [
+            [
+                {"stat_name": "Pending", "stat_value": 5},
+                {"stat_name": "Processed", "stat_value": 3},
+                {"stat_name": "Overdue", "stat_value": 2},
+                {"stat_name": "Avg Cycle Time", "stat_value": 5},
+            ],
+            [
+                {
+                    "deviation_id": "DV-001",
+                    "created_at": datetime(2023, 1, 1, 10, 0),
+                    "deviation_status": "Pending",
+                    "description": "Test deviation",
+                    "grading_approved": True,
+                    "rca_approved": False,
+                    "grading_completed": True,
+                    "rca_generated": True,
+                    "text_extracted": None,
+                }
+            ],
+        ]
+        cursor.fetchone.return_value = {"total": 10}
 
-    mock_cursor.fetchone.return_value = {'total': 1}
+        result = lambda_function.lambda_handler({}, {})
+        body = json.loads(result["body"])
 
-    event = {'queryStringParameters': None}
+        assert result["statusCode"] == 200
+        assert body["deviationStats"]["total_deviations"] == 10
+        assert len(body["deviations"]) == 1
 
-    response = lambda_handler(event, None)
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_deviations_with_status_filter(self, mock_get_db):
+        mock_conn = Mock()
+        mock_conn.commit.return_value = None
+        mock_conn.close.return_value = None
 
-    assert response['statusCode'] == 200
-    body = json.loads(response['body'])
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+        cursor.execute.return_value = None
 
-    assert 'deviationStats' in body
-    assert 'deviations' in body
-    assert 'pagination' in body
-    assert body['pagination']['total_items'] == 1
+        cursor.fetchall.side_effect = [
+            [
+                {"stat_name": "Pending", "stat_value": 5},
+                {"stat_name": "Processed", "stat_value": 3},
+                {"stat_name": "Overdue", "stat_value": 2},
+            ],
+            [
+                {
+                    "deviation_id": "DV-002",
+                    "created_at": datetime(2023, 2, 1, 10, 0),
+                    "deviation_status": "Pending",
+                    "description": "Pending deviation",
+                    "grading_approved": False,
+                    "rca_approved": False,
+                    "grading_completed": False,
+                    "rca_generated": False,
+                    "text_extracted": None,
+                }
+            ],
+        ]
+        cursor.fetchone.return_value = {"total": 1}
+
+        event = {"queryStringParameters": {"status": "pending"}}
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 200
+        assert body["deviations"][0]["status"] == "pending"
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_deviations_with_search(self, mock_get_db):
+        mock_conn = Mock()
+        mock_conn.commit.return_value = None
+        mock_conn.close.return_value = None
+
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+        cursor.execute.return_value = None
+
+        cursor.fetchall.side_effect = [
+            [
+                {"stat_name": "Pending", "stat_value": 5},
+                {"stat_name": "Processed", "stat_value": 3},
+                {"stat_name": "Overdue", "stat_value": 2},
+            ],
+            [
+                {
+                    "deviation_id": "DV-123",
+                    "created_at": datetime(2023, 3, 1, 10, 0),
+                    "deviation_status": "Pending",
+                    "description": "Search result",
+                    "grading_approved": True,
+                    "rca_approved": False,
+                    "grading_completed": True,
+                    "rca_generated": True,
+                    "text_extracted": None,
+                }
+            ],
+        ]
+        cursor.fetchone.return_value = {"total": 1}
+
+        event = {"queryStringParameters": {"search": "123"}}
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 200
+        assert body["deviations"][0]["deviation_id"] == "DV-123"
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_single_deviation_success(self, mock_get_db):
+        mock_conn = Mock()
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+
+        cursor.fetchone.return_value = {
+            "deviation_id": "DV-005",
+            "investigation_summary": "Root cause analysis",
+        }
+
+        event = {"queryStringParameters": {"deviation_id": "DV-005"}}
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 200
+        assert body["deviation_id"] == "DV-005"
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_single_deviation_not_found(self, mock_get_db):
+        mock_conn = Mock()
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+
+        cursor.fetchone.return_value = None
+
+        event = {"queryStringParameters": {"deviation_id": "DV-999"}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result["statusCode"] == 404
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_lambda_handler_exception(self, mock_get_db):
+        mock_get_db.side_effect = Exception("DB failure")
+
+        result = lambda_function.lambda_handler({}, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 500
+        assert body["error"] == "Internal server error"
 
 
-@patch("app.get_deviations.lambda_function.get_db_connection")
-def test_lambda_handler_get_by_id(mock_get_db, mock_db_connection):
-    mock_conn, mock_cursor = mock_db_connection
-    mock_get_db.return_value = mock_conn
+# ==================================================================
+# DB CONNECTION TEST
+# ==================================================================
+class TestDBConnection:
 
-    mock_cursor.fetchone.return_value = {
-        'deviation_id': 'DV-001',
-        'investigation_summary': 'Test summary',
-    }
+    @patch.object(lambda_function, "get_secret")  # ✅ FIX IS HERE
+    def test_get_db_connection_success(self, mock_get_secret):
+        mock_get_secret.return_value = {
+            "host": "localhost",
+            "port": 5432,
+            "dbname": "testdb",
+            "username": "testuser",
+            "password": "testpass",
+        }
 
-    event = {'queryStringParameters': {'deviation_id': 'DV-001'}}
+        with patch.object(lambda_function.psycopg, "connect") as mock_connect:
+            mock_conn = Mock()
+            mock_connect.return_value = mock_conn
 
-    response = lambda_handler(event, None)
+            conn = lambda_function.get_db_connection()
 
-    assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    assert body['deviation_id'] == 'DV-001'
-
-
-def test_get_all_deviation_with_search(mock_db_connection):
-    mock_conn, mock_cursor = mock_db_connection
-
-    mock_cursor.execute.return_value = None
-    mock_cursor.fetchall.side_effect = [
-        MOCK_STATS,
-        MOCK_DEVIATIONS
-    ]
-    mock_cursor.fetchone.return_value = {'total': 1}
-
-    response = get_all_deviation(
-        mock_conn,
-        page=1,
-        search_query='DV'
-    )
-
-    assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-
-    assert len(body['deviations']) == 1
-    assert body['pagination']['total_items'] == 1
-
-
-def test_get_all_deviation_with_status_filter(mock_db_connection):
-    mock_conn, mock_cursor = mock_db_connection
-
-    mock_cursor.execute.return_value = None
-    mock_cursor.fetchall.side_effect = [
-        MOCK_STATS,
-        MOCK_DEVIATIONS
-    ]
-    mock_cursor.fetchone.return_value = {'total': 1}
-
-    response = get_all_deviation(
-        mock_conn,
-        page=1,
-        status_filter='Pending'
-    )
-
-    assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    assert body['pagination']['total_items'] == 1
-
-
-def test_get_case_by_deviationid_found(mock_db_connection):
-    mock_conn, mock_cursor = mock_db_connection
-
-    mock_cursor.fetchone.return_value = {
-        'deviation_id': 'DV-001',
-        'investigation_summary': 'Test summary',
-    }
-
-    response = get_case_by_deviationid(mock_conn, 'DV-001')
-
-    assert response['statusCode'] == 200
-    body = json.loads(response['body'])
-    assert body['deviation_id'] == 'DV-001'
-
-
-def test_get_case_by_deviationid_not_found(mock_db_connection):
-    mock_conn, mock_cursor = mock_db_connection
-
-    mock_cursor.fetchone.return_value = None
-
-    response = get_case_by_deviationid(mock_conn, 'DV-999')
-
-    assert response['statusCode'] == 404
-    body = json.loads(response['body'])
-    assert 'error' in body
-
-
-@patch("app.get_deviations.lambda_function.get_db_connection")
-def test_lambda_handler_error(mock_get_db):
-    mock_get_db.side_effect = Exception("Test error")
-
-    event = {'queryStringParameters': None}
-
-    response = lambda_handler(event, None)
-
-    assert response['statusCode'] == 500
-    body = json.loads(response['body'])
-
-    assert body['success'] is False
-    assert 'error' in body
+            assert conn == mock_conn
+            mock_get_secret.assert_called_once()
+            mock_connect.assert_called_once_with(
+                host="localhost",
+                port=5432,
+                dbname="testdb",
+                user="testuser",
+                password="testpass",
+            )
