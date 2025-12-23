@@ -178,6 +178,8 @@ class TestLambdaHandler:
         cursor.fetchone.return_value = {
             "deviation_id": "DV-005",
             "investigation_summary": "Root cause analysis",
+            "created_at": datetime(2023, 2, 1, 10, 0),
+            "deviation_status": "pending",
         }
 
         event = {"queryStringParameters": {"deviation_id": "DV-005"}}
