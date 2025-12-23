@@ -21,7 +21,7 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
     Save multiple RCA analyses in the database in a single transaction.
     
     Multiple RCAs can be saved for the same deviation_id.
-    Also updates the deviations table to mark RCA as generated.
+    Also updates the deviations table to mark RCA as generated and approved.
     
     Args:
         rca_list: List of RCA dictionaries, each containing:
@@ -137,15 +137,16 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                         UPDATE deviations
                         SET 
                             rca_generated = true,
+                            rca_approved = true,
                             rca_approved_date = CURRENT_TIMESTAMP
                         WHERE deviation_id = %s
-                        RETURNING deviation_id, rca_generated, rca_approved_date
+                        RETURNING deviation_id, rca_generated, rca_approved, rca_approved_date
                     """, (deviation_id,))
                     
                     deviation_result = cur.fetchone()
                     
                     if deviation_result:
-                        logger.info(f"✅ Updated deviation {deviation_result[0]}: rca_generated={deviation_result[1]}, rca_approved_date={deviation_result[2]}")
+                        logger.info(f"✅ Updated deviation {deviation_result[0]}: rca_generated={deviation_result[1]}, rca_approved={deviation_result[2]}, rca_approved_date={deviation_result[3]}")
                     else:
                         logger.warning(f"⚠️ Deviation {deviation_id} not found in deviations table")
                 
@@ -245,6 +246,7 @@ def lambda_handler(event, context):
     1. Inserts RCA(s) into rca_analysis table
     2. Updates deviations table:
        - Sets rca_generated = true
+       - Sets rca_approved = true
        - Sets rca_approved_date = CURRENT_TIMESTAMP
     """
     try:

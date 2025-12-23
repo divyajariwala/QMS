@@ -16,6 +16,7 @@ The Submit RCA endpoint saves or updates Root Cause Analysis data in the Postgre
 1. Inserts RCA(s) into `rca_analysis` table
 2. Updates `deviations` table:
    - Sets `rca_generated = true`
+   - Sets `rca_approved = true`
    - Sets `rca_approved_date = CURRENT_TIMESTAMP`
 
 ---
@@ -657,6 +658,7 @@ const completeRCAWorkflow = async (investigationSummary, deviationId) => {
 **2. deviations Table:**
 - Updates existing deviation record
 - Sets `rca_generated = true`
+- Sets `rca_approved = true`
 - Sets `rca_approved_date = CURRENT_TIMESTAMP`
 - Only updates once per unique deviation_id (even if multiple RCAs)
 
@@ -673,8 +675,8 @@ All database operations are performed in a single transaction:
 **Before Submit:**
 ```sql
 -- deviations table
-deviation_id | rca_generated | rca_approved_date
-DV-00001     | false         | NULL
+deviation_id | rca_generated | rca_approved | rca_approved_date
+DV-00001     | false         | false        | NULL
 
 -- rca_analysis table
 (empty)
@@ -683,8 +685,8 @@ DV-00001     | false         | NULL
 **After Submit (3 RCAs for DV-00001):**
 ```sql
 -- deviations table
-deviation_id | rca_generated | rca_approved_date
-DV-00001     | true          | 2025-12-23 10:30:00
+deviation_id | rca_generated | rca_approved | rca_approved_date
+DV-00001     | true          | true         | 2025-12-23 10:30:00
 
 -- rca_analysis table
 id  | deviation_id | issues                    | created_at
@@ -865,7 +867,7 @@ Processing single RCA
 Submitting single RCA for deviation: DV-00001
 ✅ Saved RCA 1/1: ID=123, deviation=DV-00001
 Updating deviations table for deviation: DV-00001
-✅ Updated deviation DV-00001: rca_generated=true, rca_approved_date=2025-12-23 10:30:00
+✅ Updated deviation DV-00001: rca_generated=true, rca_approved=true, rca_approved_date=2025-12-23 10:30:00
 ✅ Single RCA submission completed successfully
 ```
 
@@ -877,7 +879,7 @@ Saving batch of 3 RCAs
 ✅ Saved RCA 2/3: ID=124, deviation=DV-00001
 ✅ Saved RCA 3/3: ID=125, deviation=DV-00001
 Updating deviations table for deviation: DV-00001
-✅ Updated deviation DV-00001: rca_generated=true, rca_approved_date=2025-12-23 10:30:00
+✅ Updated deviation DV-00001: rca_generated=true, rca_approved=true, rca_approved_date=2025-12-23 10:30:00
 ✅ Successfully saved batch of 3 RCAs and updated 1 deviation(s)
 ✅ Batch RCA submission completed successfully: 3 RCAs saved
 ```
