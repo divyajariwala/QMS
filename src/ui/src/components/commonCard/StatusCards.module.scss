@@ -33,11 +33,13 @@
   h3 {
     font-size: 14px;
     font-weight: 500;
-    color: #5F6D7E;
+    color: #5f6d7e;
     margin: 0;
     white-space: nowrap;
     line-height: 20px;
     letter-spacing: -0.1px;
+    max-width: 65px;
+    text-wrap: auto;
   }
 }
 
@@ -52,7 +54,7 @@
   font-size: 22px;
   line-height: 30px;
   letter-spacing: -1%;
-  color: #272D37;
+  color: #272d37;
 }
 
 .legendColumnComplaints {
@@ -112,15 +114,15 @@
 }
 
 .dotPending {
-  background-color: #0060D7;
+  background-color: #0060d7;
 }
 
 .dotProcessed {
-  background-color: #4EB523;
+  background-color: #4eb523;
 }
 
 .dotOverdue {
-  background-color: #E0301E;
+  background-color: #e0301e;
 }
 
 .dotWithText {
@@ -138,7 +140,7 @@
   overflow: hidden;
 }
 
-.dotWithText>span {
+.dotWithText > span {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -1,132 +1,118 @@
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-} from "@mui/material";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { Box } from "@mui/material";
 
-import { RcaRecord, RcaSection } from "./RCAMockdata"; 
+import { RcaRecord, RcaSection, DropdownData } from "./RCATypes";
 import styles from "./RootCauseAnalysis.module.scss";
 import EditSection from "./EditSection";
 
 interface RcaEditProps {
   rca: RcaRecord;
   onSave: (updated: RcaRecord) => void;
-  registerOnSave?: (fn: () => void) => void; 
+  registerOnSave?: (fn: () => void) => void;
+  dropdownData: DropdownData | null;
 }
 
-const RcaEdit: React.FC<RcaEditProps> = ({ rca, onSave, registerOnSave }) => {
-  const [draft, setDraft] = useState<RcaRecord>(() =>
-    JSON.parse(JSON.stringify(rca))
+const RcaEdit: React.FC<RcaEditProps> = ({
+  rca,
+  onSave,
+  registerOnSave,
+  dropdownData,
+}) => {
+  const [draft, setDraft] = useState(() => JSON.parse(JSON.stringify(rca)));
+
+  const issuesList = useMemo(
+    () =>
+      (dropdownData?.Factors ?? [])
+        .flatMap((f) => f.ProblemCategories?.map((pc) => pc.name) ?? [])
+        .filter(Boolean),
+    [dropdownData]
   );
 
-  const BASE_OPTIONS = {
-    issues: [
-      "Company personnel issue",
-      "Training issue",
-      "Process/manufacturing equipment issue",
-      "Supplier issue",
-    ] as const,
-    major: [
-      "Procedure Issue",
-      "Process/manufacturing equipment issue",
-      "Documentation issue",
-      "Design issue",
-    ] as const,
-    near: [
-      "Company personnel issue",
-      "Process/manufacturing equipment issue",
-      "Measurement / test method issue",
-      "Material issue",
-    ] as const,
-    root: [
-      "Procedure Issue",
-      "Documentation issue",
-      "Process/manufacturing equipment issue",
-      "Training issue",
-    ] as const,
-  };
+  const issueToFactor = useMemo(() => {
+    const map = new Map<string, string>();
+    (dropdownData?.Factors ?? []).forEach((f) => {
+      (f.ProblemCategories ?? []).forEach((pc) => {
+        if (pc?.name) map.set(pc.name, f.factor_name);
+      });
+    });
+    return map;
+  }, [dropdownData]);
 
-  const LINKED_OPTIONS: Record<
-    string,
-    Record<string, ReadonlyArray<string>>
-  > = {
-    major: {
-      "Company personnel issue": [
-        "Procedure Issue",
-        "Training issue",
-        "Documentation issue",
-      ],
-      "Training issue": ["Procedure Issue", "Documentation issue"],
-      "Process/manufacturing equipment issue": [
-        "Process/manufacturing equipment issue",
-        "Design issue",
-        "Procedure Issue",
-      ],
-      "Supplier issue": ["Documentation issue", "Procedure Issue"],
+  const isOtherIssueSelected = useMemo(() => {
+    const val = draft.sections.find((s) => s.key === "issues")?.value;
+    return val && issueToFactor.get(val) === "Other Issues";
+  }, [draft.sections, issueToFactor]);
+
+  const majorList = useMemo(
+    () =>
+      (dropdownData?.MajorRootCauseCategories ?? [])
+        .map((m) => m.description)
+        .filter(Boolean),
+    [dropdownData]
+  );
+
+  const nearListFor = useCallback(
+    (majorDesc: string) => {
+      const major = (dropdownData?.MajorRootCauseCategories ?? []).find(
+        (m) => m.description === majorDesc
+      );
+
+      const details = major?.properties?.details ?? [];
+      return details
+        .map((d) =>
+          "NearRootCauses" in d ? d.NearRootCauses : (d as any).name
+        )
+        .filter(Boolean) as string[];
     },
-    near: {
-      "Procedure Issue": [
-        "Company personnel issue",
-        "Measurement / test method issue",
-        "Documentation issue",
-      ],
-      "Process/manufacturing equipment issue": [
-        "Process/manufacturing equipment issue",
-        "Material issue",
-      ],
-      "Documentation issue": [
-        "Company personnel issue",
-        "Process/manufacturing equipment issue",
-      ],
-      "Design issue": [
-        "Process/manufacturing equipment issue",
-        "Material issue",
-      ],
-      "Training issue": ["Company personnel issue", "Documentation issue"],
+    [dropdownData]
+  );
+
+  const rootListFor = useCallback(
+    (majorDesc: string, nearName: string) => {
+      const major = (dropdownData?.MajorRootCauseCategories ?? []).find(
+        (m) => m.description === majorDesc
+      );
+
+      const details = major?.properties?.details ?? [];
+
+      const match = details.find((d) => {
+        const label =
+          "NearRootCauses" in d ? d.NearRootCauses : (d as any).name;
+        return label === nearName;
+      });
+
+      return (match?.rootcauses ?? [])
+        .map((rc) => rc.name)
+        .filter(Boolean) as string[];
     },
-    root: {
-      "Company personnel issue": ["Procedure Issue", "Training issue"],
-      "Measurement / test method issue": [
-        "Documentation issue",
-        "Procedure Issue",
-      ],
-      "Process/manufacturing equipment issue": [
-        "Process/manufacturing equipment issue",
-        "Procedure Issue",
-      ],
-      "Material issue": [
-        "Documentation issue",
-        "Process/manufacturing equipment issue",
-      ],
-      "Documentation issue": ["Procedure Issue", "Training issue"],
-    },
-  };
+    [dropdownData]
+  );
 
   type Key = RcaSection["key"];
-  const getPrevKey = (key: Key): Key | undefined =>
-    key === "issues"
-      ? undefined
-      : key === "major"
-      ? "issues"
-      : key === "near"
-      ? "major"
-      : "near";
-
-  const previousValue = (key: RcaSection["key"]): string | undefined => {
-    const prevKey = getPrevKey(key);
+  const previousValue = (key: Key): string | undefined => {
+    const prevKey =
+      key === "issues"
+        ? undefined
+        : key === "major"
+        ? "issues"
+        : key === "near"
+        ? "major"
+        : "near";
     return prevKey
       ? draft.sections.find((s) => s.key === prevKey)?.value
       : undefined;
   };
 
   const optionsFor = (key: Key): ReadonlyArray<string> => {
-    if (key === "issues") return BASE_OPTIONS.issues;
+    if (key === "issues") return issuesList;
     const prev = previousValue(key);
-    if (key === "major")
-      return (prev && LINKED_OPTIONS.major[prev]) || BASE_OPTIONS.major;
-    if (key === "near")
-      return (prev && LINKED_OPTIONS.near[prev]) || BASE_OPTIONS.near;
-    if (key === "root")
-      return (prev && LINKED_OPTIONS.root[prev]) || BASE_OPTIONS.root;
+    if (key === "major") return isOtherIssueSelected ? [] : majorList;
+    if (key === "near") return prev ? nearListFor(prev) : [];
+    if (key === "root") {
+      const nearPrev = previousValue("root");
+      const majorPrev = previousValue("near");
+      return nearPrev && majorPrev ? rootListFor(majorPrev, nearPrev) : [];
+    }
     return [];
   };
 
@@ -135,18 +121,19 @@ const RcaEdit: React.FC<RcaEditProps> = ({ rca, onSave, registerOnSave }) => {
     return s?.value;
   };
 
-  const setValue = (key: RcaSection["key"], value: string) => {
+  const setValue = (key: Key, value: string) => {
     setDraft((d) => {
       const next = {
         ...d,
         sections: d.sections.map((s) => {
           if (s.key !== key) return s;
           const wasValue = originalValue(key);
-          const explanation = wasValue !== value ? "" : s.explanation; 
+          const explanation = wasValue !== value ? "" : s.explanation;
           return { ...s, value, explanation };
         }),
       };
       if (key === "issues") {
+        const isOther = issueToFactor.get(value) === "Other Issues";
         next.sections = next.sections.map((s) =>
           s.key === "major" || s.key === "near" || s.key === "root"
             ? { ...s, value: "" }
@@ -171,17 +158,24 @@ const RcaEdit: React.FC<RcaEditProps> = ({ rca, onSave, registerOnSave }) => {
     registerOnSave?.(save);
   }, [registerOnSave, draft]);
 
+  const shouldRender = (key: Key) => {
+    if (key === "issues") return true;
+    return !isOtherIssueSelected;
+  };
+
   return (
     <Box className={styles.maxRcaHeight}>
-      {draft.sections.map((s) => (
-        <EditSection
-          key={s.key}
-          title={s.title}
-          value={s.value}
-          options={optionsFor(s.key)}
-          onChange={(val) => setValue(s.key, val)}
-        />
-      ))}
+      {draft.sections.map((s) =>
+        shouldRender(s.key) ? (
+          <EditSection
+            key={s.key}
+            title={s.title}
+            value={s.value}
+            options={optionsFor(s.key)}
+            onChange={(val) => setValue(s.key, val)}
+          />
+        ) : null
+      )}
     </Box>
   );
 };

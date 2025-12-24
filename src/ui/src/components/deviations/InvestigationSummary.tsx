@@ -13,7 +13,7 @@ type Props = {
 };
 
 const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
-  const hasSummary = summary.trim().length > 0;
+  const hasSummary = summary?.trim().length > 0;
   const [draft, setDraft] = useState<string>(summary);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const { deviationId } = useParams<{ deviationId: string | undefined }>();
@@ -35,7 +35,8 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
     setIsEditing(false);
   };
 
-  const saveEditing = (): void => {
+const saveEditing = async () => {
+  try {
     const next = draft.trim();
     setSummary(next);
     setIsEditing(false);
@@ -43,8 +44,11 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
       deviationId: deviationId,
       summary: next,
     };
-    const response = saveInvestigationSummary(payload)
-  };
+    await saveInvestigationSummary(payload);
+  } catch (err) {
+    console.error("Failed to save investigation summary:", err);
+  }
+};
 
   useEffect(() => {
     if (!isEditing) return;
@@ -96,7 +100,7 @@ const InvestigationSummary = ({ summary = "", setSummary }: Props) => {
               <Button
                 variant="contained"
                 onClick={saveEditing}
-                disabled={draft.trim().length === 0}
+                disabled={draft?.trim().length === 0}
                 className={styles.btnSubmit}
               >
                 Submit

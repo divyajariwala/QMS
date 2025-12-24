@@ -1,25 +1,73 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { Box, Paper, Stack } from "@mui/material";
 
-import { initialRcas, RcaRecord } from "./RCAMockdata"; // adjust path as needed
+import {
+  RootCauseAnalysisProps,
+  RcaRecord,
+  DropdownData,
+  RcaSection,
+  ApiRcaItem,
+} from "./RCATypes";
 import styles from "./RootCauseAnalysis.module.scss";
 import RcaTabs from "./RCATabs";
 import RcaHeader from "./RCAHeader";
 import RcaView from "./RCAView";
 import RcaEdit from "./RCAEdit";
 import Notification from "@components/Notification/Notification";
+import { fetchRcaCategories, submitRca } from "src/services/api.service";
+import { useParams } from "react-router-dom";
 
-const RootCauseAnalysis: React.FC = () => {
+export interface RootCauseAnalysisHandle {
+  submit: () => void;
+}
+
+const RootCauseAnalysis = forwardRef<
+  RootCauseAnalysisHandle,
+  RootCauseAnalysisProps
+>((props, ref) => {
+  const { rcaData, onSubmitSuccess } = props;
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<"success" | "error">("success");
   const [message, setMessage] = useState<string>("");
-  const [baselineRcas] = useState<RcaRecord[]>(initialRcas);
-  const [rcas, setRcas] = useState<RcaRecord[]>(initialRcas);
+  const [baselineRcas, setBaselineRcas] = useState<RcaRecord[]>([]);
+  const [rcas, setRcas] = useState<RcaRecord[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [preEditSnapshot, setPreEditSnapshot] = useState<RcaRecord | null>(
     null
   );
+  const [dropdownData, setDropdownData] = useState<DropdownData | null>(null);
+  const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] =
+    useState<boolean>(false);
+  const selectedRca = useMemo(() => rcas[selectedIndex], [rcas, selectedIndex]);
+  const { deviationId } = useParams<{ deviationId: string | "" }>();
+
+  const externalSaveFn = useRef<(() => void) | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    submit: submitRCA,
+  }));
+
+  useEffect(() => {
+    fetchRcaCat();
+  }, []);
+
+  const fetchRcaCat = async () => {
+    try {
+      const res = await fetchRcaCategories();
+      console.log(res);
+      setDropdownData(res.data);
+    } catch (err: any) {
+      console.error(err.message);
+    }
+  };
 
   const handleShowNotification = () => {
     setOpen(true);
@@ -34,15 +82,64 @@ const RootCauseAnalysis: React.FC = () => {
     setOpen(false);
   };
 
-  const selectedRca = useMemo(() => rcas[selectedIndex], [rcas, selectedIndex]);
-
-  const externalSaveFn = useRef<(() => void) | null>(null);
-
   const handleTabChange = (_: React.SyntheticEvent, newIndex: number) => {
     setSelectedIndex(newIndex);
     setIsEditing(false);
     setPreEditSnapshot(null);
   };
+
+  useEffect(() => {
+    if (Array.isArray(rcaData) && rcaData.length > 0) {
+      const mapped: RcaRecord[] = rcaData.map((item, idx) => {
+        const tabName = `RCA ${idx + 1}`;
+        return {
+          id: `rca-${idx + 1}`,
+          name: tabName,
+          sections: [
+            {
+              key: "issues",
+              title: "Issues",
+              value: item.issues_category ?? "",
+              explanation: item.issues ?? "",
+            },
+            {
+              key: "major",
+              title: "Major root cause category",
+              value: item.major_root_cause_category ?? "",
+              explanation: item.major_root_cause_category_validated ?? "",
+            },
+            {
+              key: "near",
+              title: "Near root cause",
+              value: item.near_root_cause_category ?? "",
+              explanation: item.near_root_cause ?? "",
+            },
+            {
+              key: "root",
+              title: "Root cause",
+              value: item.root_cause_category ?? "",
+              explanation: item.root_cause ?? "",
+            },
+          ],
+          meta: {
+            createdFrom: "seed",
+            createdAt: new Date().toISOString(),
+          },
+        };
+      });
+      setBaselineRcas(mapped);
+      setRcas(mapped);
+      setSelectedIndex(0);
+      setIsEditing(false);
+      setPreEditSnapshot(null);
+    } else {
+      setBaselineRcas([]);
+      setRcas([]);
+      setSelectedIndex(0);
+      setIsEditing(false);
+      setPreEditSnapshot(null);
+    }
+  }, [rcaData]);
 
   const handleAddRca = () => {
     const nextNum = rcas.length + 1;
@@ -102,20 +199,87 @@ const RootCauseAnalysis: React.FC = () => {
   };
 
   const handleSaveRca = (updated: RcaRecord) => {
-    const hasEmpty = updated.sections.some(
-      (sec) => !sec.value || sec.value.trim() === ""
-    );
-    if (hasEmpty) {
+    const issuesVal = updated.sections
+      .find((s) => s.key === "issues")
+      ?.value?.trim();
+    const isOther =
+      !!issuesVal &&
+      dropdownData?.Factors?.some(
+        (f) =>
+          f.factor_name === "Other Issues" &&
+          f.ProblemCategories?.some((pc) => pc.name === issuesVal)
+      );
+
+    const requireAll =
+      !isOther &&
+      updated.sections.some((sec) => !sec.value || sec.value.trim() === "");
+
+    if (!issuesVal || requireAll) {
       setType("error");
-      setMessage("All dropdowns must be selected");
+      setMessage(
+        isOther
+          ? "Select an Issue under Other Issues"
+          : "All dropdowns must be selected"
+      );
       handleShowNotification();
       return;
     }
+
     const next = [...rcas];
     next[selectedIndex] = updated;
     setRcas(next);
     setIsEditing(false);
     setPreEditSnapshot(null);
+  };
+
+  const buildApiItemFromRca = (rca: RcaRecord): ApiRcaItem => {
+    const issues = readSection(rca, "issues");
+    const major = readSection(rca, "major");
+    const near = readSection(rca, "near");
+    const root = readSection(rca, "root");
+
+    return {
+      deviation_id: deviationId,
+      issues: issues.explanation ?? "",
+      issues_category: issues.value ?? "",
+      major_root_cause_category: major.value ?? "",
+      major_root_cause_category_validated: major.explanation ?? "",
+      near_root_cause: near.explanation ?? "",
+      near_root_cause_category: near.value ?? "",
+      root_cause: root.explanation ?? "",
+      root_cause_category: root.value ?? "",
+    };
+  };
+
+  const buildPayload = (): ApiRcaItem | ApiRcaItem[] => {
+    if (rcas.length === 1) return buildApiItemFromRca(rcas[0]);
+    return rcas.map(buildApiItemFromRca);
+  };
+
+  const submitRCA = async () => {
+    try {
+      const payload = buildPayload();
+      await submitRca(payload);
+      setIsSubmittedSuccessfully(true);
+      onSubmitSuccess();
+      setType("success");
+      setMessage("RCA successfully submitted");
+      handleShowNotification();
+    } catch (err) {
+      setType("error");
+      setMessage("Submission failed: Try again");
+      handleShowNotification();
+      console.error("Failed to submit rca:", err);
+    }
+  };
+
+  const readSection = (rca: RcaRecord, key: RcaSection["key"]) => {
+    return (
+      rca.sections.find((s) => s.key === key) ?? {
+        value: "",
+        explanation: "",
+      }
+    );
   };
 
   const handleCancelEdit = () => {
@@ -128,7 +292,6 @@ const RootCauseAnalysis: React.FC = () => {
       setRcas(next);
       setSelectedIndex(0);
     } else if (preEditSnapshot) {
-      // Revert to pre-edited snapshot
       const next = [...rcas];
       next[selectedIndex] = preEditSnapshot;
       setRcas(next);
@@ -168,44 +331,50 @@ const RootCauseAnalysis: React.FC = () => {
         <Box className={styles.headerTitle}>Root Cause Analysis</Box>
       </Stack>
       <Box className={styles.subtitleBox}>Please review and modify.</Box>
+      {rcaData.length > 0 && (
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 2,
+            }}
+          >
+            <RcaTabs
+              rcas={rcas}
+              selectedIndex={selectedIndex}
+              onChange={handleTabChange}
+              onAdd={handleAddRca}
+              isSubmittedSuccessfully={isSubmittedSuccessfully}
+            />
+          </Box>
 
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-      >
-        <RcaTabs
-          rcas={rcas}
-          selectedIndex={selectedIndex}
-          onChange={handleTabChange}
-          onAdd={handleAddRca}
-        />
-      </Box>
+          <RcaHeader
+            currentTitle={selectedRca?.name ?? ""}
+            isEditing={isEditing}
+            onEdit={handleEditStart}
+            onDelete={handleDeleteSelected}
+            onCancelEdit={handleCancelEdit}
+            onSave={triggerExternalSave}
+            onReset={onResetAll}
+            showReset={selectedRca?.meta?.createdFrom !== "add"}
+            isSubmittedSuccessfully={isSubmittedSuccessfully}
+          />
 
-      <RcaHeader
-        currentTitle={selectedRca?.name ?? ""}
-        isEditing={isEditing}
-        onEdit={handleEditStart}
-        onDelete={handleDeleteSelected}
-        onCancelEdit={handleCancelEdit}
-        onSave={triggerExternalSave}
-        onReset={onResetAll}
-        showReset={selectedRca?.meta?.createdFrom !== "add"}
-      />
+          {!isEditing && selectedRca && <RcaView rca={selectedRca} />}
 
-      {!isEditing && selectedRca && <RcaView rca={selectedRca} />}
-
-      {isEditing && selectedRca && (
-        <RcaEdit
-          rca={selectedRca}
-          onSave={handleSaveRca}
-          registerOnSave={(fn) => {
-            externalSaveFn.current = fn;
-          }}
-        />
+          {isEditing && selectedRca && (
+            <RcaEdit
+              rca={selectedRca}
+              onSave={handleSaveRca}
+              registerOnSave={(fn) => {
+                externalSaveFn.current = fn;
+              }}
+              dropdownData={dropdownData}
+            />
+          )}
+        </>
       )}
       <Notification
         open={open}
@@ -216,6 +385,6 @@ const RootCauseAnalysis: React.FC = () => {
       />
     </Paper>
   );
-};
+});
 
 export default RootCauseAnalysis;

@@ -2,15 +2,29 @@ import {
   COMPLAINT_ID_NAME,
   COMPLAINT_SESSION_ID,
   COMPLAINT_USER_NAME,
-} from '../constants';
+} from "../constants";
 import {
-  ComplaintResult, SessionData, UIResultsParams, ComplaintRequest, CreateComplaintResponse, getComplaintsApiResponse,
-  ComplaintDetail, ApproveComplaintResponse, ApproveComplaintRequest, searchComplaintsApiResponse,
+  ComplaintResult,
+  SessionData,
+  UIResultsParams,
+  ComplaintRequest,
+  CreateComplaintResponse,
+  getComplaintsApiResponse,
+  ComplaintDetail,
+  ApproveComplaintResponse,
+  ApproveComplaintRequest,
+  searchComplaintsApiResponse,
   searchAdverseEventsApiResponse,
-  getAdverseEventsApiResponse
-} from '../types';
+  getAdverseEventsApiResponse,
+  getDeviationsApiResponse,
+  DeviationDetail,
+  DeviationSummary,
+  DeviationSummaryResponse,
+  DeviationGenerateRCA,
+  GenerateRCAResponse,
+} from "../types";
 
-import { API_BASE_URL } from 'src/config';
+import { API_BASE_URL } from "src/config";
 
 /**
  * Fetches the initial data from the backend.
@@ -226,10 +240,10 @@ import { API_BASE_URL } from 'src/config';
 export const uploadComplaintFile = async (file: File) => {
   try {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
     const res = await fetch(`${API_BASE_URL}dev/uploadComplaints`, {
-      method: 'POST',
+      method: "POST",
       body: formData,
     });
 
@@ -237,28 +251,26 @@ export const uploadComplaintFile = async (file: File) => {
       return await res.json();
     }
 
-    console.log(`uploadComplaintFile error: status ${res.status} ${res.statusText}`);
+    console.log(
+      `uploadComplaintFile error: status ${res.status} ${res.statusText}`
+    );
     return;
   } catch (err) {
-    console.log('uploadComplaintFile error', err);
+    console.log("uploadComplaintFile error", err);
     return;
   }
 };
 
-
 export const createComplaint = async (
   complaint: ComplaintRequest
 ): Promise<CreateComplaintResponse> => {
-  const response = await fetch(
-    `${API_BASE_URL}dev/createComplaint`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(complaint),
-    }
-  );
+  const response = await fetch(`${API_BASE_URL}dev/createComplaint`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(complaint),
+  });
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
@@ -268,7 +280,10 @@ export const createComplaint = async (
   return data;
 };
 
-export async function fetchComplaints(status: string, page: Number): Promise<getComplaintsApiResponse> {
+export async function fetchComplaints(
+  status: string,
+  page: number
+): Promise<getComplaintsApiResponse> {
   const response = await fetch(
     `${API_BASE_URL}dev/getComplaints?status=${status}&page=${page}`
   );
@@ -281,7 +296,9 @@ export async function fetchComplaints(status: string, page: Number): Promise<get
   return data;
 }
 
-export async function fetchAdverseEvent(page: Number): Promise<getAdverseEventsApiResponse> {
+export async function fetchAdverseEvent(
+  page: number
+): Promise<getAdverseEventsApiResponse> {
   const response = await fetch(
     `${API_BASE_URL}dev/getComplaints?adverse_events=true&page=${page}`
   );
@@ -294,9 +311,27 @@ export async function fetchAdverseEvent(page: Number): Promise<getAdverseEventsA
   return data;
 }
 
-export async function fetchComplaintDetailById(complaint_id: string | undefined): Promise<ComplaintDetail> {
+export async function fetchDeviations(
+  status: string,
+  page: number
+): Promise<getDeviationsApiResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}dev/getDeviation?status=${status}&page=${page}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: getDeviationsApiResponse = await response.json();
+  return data;
+}
+
+export async function fetchComplaintDetailById(
+  complaint_id: string | undefined
+): Promise<ComplaintDetail> {
   const url = new URL(`${API_BASE_URL}dev/getComplaints`);
-  if(complaint_id) url.searchParams.append("complaint_id", complaint_id);
+  if (complaint_id) url.searchParams.append("complaint_id", complaint_id);
 
   const response = await fetch(url.toString());
   if (!response.ok) {
@@ -307,6 +342,20 @@ export async function fetchComplaintDetailById(complaint_id: string | undefined)
   return data;
 }
 
+export async function fetchDeviationDetailById(
+  deviation_id: string | undefined
+): Promise<DeviationDetail> {
+  const url = new URL(`${API_BASE_URL}dev/getDeviation`);
+  if (deviation_id) url.searchParams.append("deviation_id", deviation_id);
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: DeviationDetail = await response.json();
+  return data;
+}
 
 export async function postApproveComplaint(
   data: ApproveComplaintRequest
@@ -327,15 +376,16 @@ export async function postApproveComplaint(
   return responseData;
 }
 
-
-export async function classifyComplaint<T = any>(complaintId: string): Promise<T> {
+export async function classifyComplaint<T = any>(
+  complaintId: string
+): Promise<T> {
   const url = `${API_BASE_URL}dev/classifyComplaints`;
   const payload = { complaint_id: complaintId };
 
   const response = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
   });
@@ -347,7 +397,6 @@ export async function classifyComplaint<T = any>(complaintId: string): Promise<T
   const data: T = await response.json();
   return data;
 }
-
 
 interface Reporter {
   name: string;
@@ -364,9 +413,9 @@ interface ModifyExtractedDetailsPayload {
   drug: string;
   lotNumber: string;
   doseAmount: string;
-  expirationDate: string;  // ISO string
+  expirationDate: string; // ISO string
   partNumber: string;
-  receipt_date: string;    // ISO string
+  receipt_date: string; // ISO string
 }
 
 export async function modifyExtractedDetails(
@@ -375,9 +424,9 @@ export async function modifyExtractedDetails(
   const url = `${API_BASE_URL}dev/modifyExtractedDetails`;
 
   const response = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       // Add auth headers if needed
     },
     body: JSON.stringify(payload),
@@ -391,8 +440,11 @@ export async function modifyExtractedDetails(
   return data;
 }
 
-export async function searchComplaint(complaint_id: string, page: number): Promise<searchComplaintsApiResponse> {
-  const url = `${API_BASE_URL}dev/getComplaints?search=${complaint_id}&page=${page}`
+export async function searchComplaint(
+  complaint_id: string,
+  page: number
+): Promise<searchComplaintsApiResponse> {
+  const url = `${API_BASE_URL}dev/getComplaints?search=${complaint_id}&page=${page}`;
 
   const response = await fetch(url.toString());
   if (!response.ok) {
@@ -403,8 +455,11 @@ export async function searchComplaint(complaint_id: string, page: number): Promi
   return data;
 }
 
-export async function searchAdverseEvent(complaint_id: string, page: number): Promise<searchAdverseEventsApiResponse> {
-  const url = `${API_BASE_URL}dev/getComplaints?adverse_events=true&search=${complaint_id}&page=${page}`
+export async function searchAdverseEvent(
+  complaint_id: string,
+  page: number
+): Promise<searchAdverseEventsApiResponse> {
+  const url = `${API_BASE_URL}dev/getComplaints?adverse_events=true&search=${complaint_id}&page=${page}`;
 
   const response = await fetch(url.toString());
   if (!response.ok) {
@@ -412,6 +467,22 @@ export async function searchAdverseEvent(complaint_id: string, page: number): Pr
   }
 
   const data: searchAdverseEventsApiResponse = await response.json();
+  return data;
+}
+
+export async function searchDeviation(
+  status: string,
+  deviation_id: string,
+  page: number
+): Promise<getDeviationsApiResponse> {
+  const url = `${API_BASE_URL}dev/getDeviation?status=${status}&page=${page}&search=${deviation_id}`;
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: getDeviationsApiResponse = await response.json();
   return data;
 }
 
@@ -454,20 +525,71 @@ export const uploadDeviationFile = async (file: File) => {
  * @param data - payload for investigation summary.
  * @returns The response data from the post endpoint. May be undefined if an error occurs.
  */
-export const saveInvestigationSummary = async (data) => {
+
+export const saveInvestigationSummary = async (
+  summary: DeviationSummary
+): Promise<DeviationSummaryResponse> => {
   const response = await fetch(`${API_BASE_URL}dev/addInvestigationSummary`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(summary),
   });
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  const responseData = await response.json();
-  return responseData;
+  const data: DeviationSummaryResponse = await response.json();
+  return data;
 };
 
+export const generateRCA = async (
+  deviation: DeviationGenerateRCA
+): Promise<GenerateRCAResponse> => {
+  const response = await fetch(`${API_BASE_URL}dev/generateRCA`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(deviation),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data: GenerateRCAResponse = await response.json();
+  return data;
+};
+
+export async function fetchRcaCategories(){
+  const response = await fetch(`${API_BASE_URL}dev/getRCACategories`);
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export const submitRca = async (
+  rcaPayload
+)=> {
+  const response = await fetch(`${API_BASE_URL}dev/submitRCA`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(rcaPayload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+};

@@ -1,12 +1,8 @@
 import React from "react";
-import {
-  Box,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import RCACategory from "../../../assets/icons/rcaCategory.svg";
 
-import { RcaRecord } from "./RCAMockdata"; 
+import { RcaRecord } from "./RCATypes";
 import styles from "./RootCauseAnalysis.module.scss";
 
 const RcaView: React.FC<{ rca: RcaRecord }> = ({ rca }) => (

@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Box,
-  IconButton,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, IconButton, Paper, Stack, Typography } from "@mui/material";
 import EditIcon from "../../../assets/icons/pencil.svg";
 import DeleteIcon from "../../../assets/icons/delete.svg";
 import CloseIcon from "../../../assets/icons/closeCross.svg";
@@ -23,6 +17,7 @@ interface RcaHeaderProps {
   onSave: () => void;
   onReset: () => void;
   showReset?: boolean;
+  isSubmittedSuccessfully?: boolean;
 }
 
 const RcaHeader: React.FC<RcaHeaderProps> = ({
@@ -34,6 +29,7 @@ const RcaHeader: React.FC<RcaHeaderProps> = ({
   onSave,
   onReset,
   showReset,
+  isSubmittedSuccessfully,
 }) => {
   return (
     <Paper elevation={0} className={styles.rcaHeaderBox}>
@@ -44,28 +40,32 @@ const RcaHeader: React.FC<RcaHeaderProps> = ({
 
         {!isEditing && (
           <Stack direction="row" spacing={1}>
-            <IconButton
-              aria-label="edit"
-              onClick={onEdit}
-              className={styles.actionButton}
-            >
-              <img src={EditIcon} alt="Edit Icon" />
-            </IconButton>
-            <IconButton
-              aria-label="delete"
-              onClick={onDelete}
-              className={styles.actionButton}
-            >
-              <img src={DeleteIcon} alt="Delete Icon" />
-            </IconButton>
-            {showReset && (
-              <IconButton
-                aria-label="restore"
-                onClick={onReset}
-                className={styles.actionButton}
-              >
-                <RestoreIcon />
-              </IconButton>
+            {!isSubmittedSuccessfully && (
+              <>
+                <IconButton
+                  aria-label="edit"
+                  onClick={onEdit}
+                  className={styles.actionButton}
+                >
+                  <img src={EditIcon} alt="Edit Icon" />
+                </IconButton>
+                <IconButton
+                  aria-label="delete"
+                  onClick={onDelete}
+                  className={styles.actionButton}
+                >
+                  <img src={DeleteIcon} alt="Delete Icon" />
+                </IconButton>
+                {showReset && (
+                  <IconButton
+                    aria-label="restore"
+                    onClick={onReset}
+                    className={styles.actionButton}
+                  >
+                    <RestoreIcon />
+                  </IconButton>
+                )}
+              </>
             )}
           </Stack>
         )}

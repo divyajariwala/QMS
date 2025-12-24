@@ -1,28 +1,47 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { Box, Grid } from "@mui/material";
-import ArrowRight from "../../assets/icons/arrowRight.svg";
-// import { ComplaintDetail } from 'src/types';
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
-import { usePollingClassify } from "@components/polling/PollingClassify";
 import styles from "./DeviationsResult.module.scss";
 import InvestigationSummary from "./InvestigationSummary";
-import RootCauseAnalysis from "./rca/RootCauseAnalysis";
+import RootCauseAnalysis, {
+  RootCauseAnalysisHandle,
+} from "./rca/RootCauseAnalysis";
 import DeviationHeaderCard from "./DeviationsHeaderCard";
+import {
+  fetchDeviationDetailById,
+  generateRCA,
+} from "src/services/api.service";
+import { DeviationDetail } from "src/types";
+import Notification from "@components/Notification/Notification";
 
 const DeviationDetails: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [summary, setSummary] = useState(
-    "STM-QCS-0800, General Laboratory Practices, dictates that no duplicate testing shall be done without justification to invalidate the original results and that an analyst may not proceed to repeat an assay without supervisor approval. In this case, JS did not follow the procedure. JS was hired on 21OCT2024 and has trained on STM-QCS-0800"
+    const [type, setType] = useState<"success" | "error">("success");
+    const [message, setMessage] = useState<string>("");
+  const [summary, setSummary] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [rcaData, setRcaData] = useState<any[]>([]);
+  const [deviationData, setDeviationData] = useState<DeviationDetail | null>(
+    null
   );
-  // const [summary, setSummary] = useState<string>("");
-  const [openModifyDetails, setOpenModifyDetails] = useState(false);
-  const [headerData, setHeaderData] = useState<any>(null); // holds editable header fields
-  const [processingFile, setProcessingFile] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isRcaSubmitted, setIsRcaSubmitted] = useState<boolean>(false);
   const { deviationId } = useParams<{ deviationId: string | undefined }>();
-  const navigate = useNavigate();
-  const { done } = usePollingClassify(processingFile, deviationId);
+
+  const rcaRef = useRef<RootCauseAnalysisHandle>(null);
+
+   const handleShowNotification = () => {
+      setOpen(true);
+    };
+    const handleCloseNotification = (
+      event?: React.SyntheticEvent | Event,
+      reason?: string
+    ) => {
+      if (reason === "clickaway") {
+        return;
+      }
+      setOpen(false);
+    };
 
   const items = [
     { label: "Home", to: "/" },
@@ -30,27 +49,62 @@ const DeviationDetails: React.FC = () => {
     { label: deviationId?.toString() ?? "" },
   ];
 
+  useEffect(() => {
+    async function init() {
+      setLoading(true);
+      try {
+        const data = await fetchDeviationDetailById(deviationId);
+        setSummary(data.investigation_summary);
+        setDeviationData(data);
+        const payload = {
+          deviationId,
+          investigation_summary: data.investigation_summary,
+        };
+        const rcaDetails = await generateRCA(payload);
+        setRcaData(Array.isArray(rcaDetails?.data) ? rcaDetails.data : []);
+      } catch (err: any) {
+         setType("error");
+         setMessage("Failed to generate RCA");
+         handleShowNotification();
+        console.log(err.message || "Failed to initialize deviation details.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (deviationId) init();
+  }, [deviationId]);
+
   if (loading) return <p>Loading details...</p>;
   return (
     <Box className={styles.rootBox}>
       <CommonBreadcrumbs items={items} />
-      <DeviationHeaderCard
-        deviationData={headerData}
-        caseStatus={"pending"}
-        // caseStatus={complaintDetails?.caseStatus}
-        createdAt={"2025-12-10T08:06:31.555512"}
-        // createdAt={complaintDetails?.created_at}
-        processingFile={processingFile}
-        deviationId={deviationId}
-      />
+      {deviationData && (
+        <DeviationHeaderCard
+          deviationData={deviationData}
+          onSubmit={() => rcaRef.current?.submit()}
+          isRcaSubmitted={isRcaSubmitted}
+        />
+      )}
       <Grid container spacing={3} className={styles.gridWithMarginTop} mt={1}>
         <Grid item xs={12} md={4.9}>
           <InvestigationSummary summary={summary} setSummary={setSummary} />
         </Grid>
         <Grid item xs={12} md={7.1}>
-          <RootCauseAnalysis />
+          <RootCauseAnalysis
+            ref={rcaRef}
+            rcaData={rcaData}
+            onSubmitSuccess={() => setIsRcaSubmitted(true)}
+          />
         </Grid>
       </Grid>
+      <Notification
+        open={open}
+        onClose={handleCloseNotification}
+        position="top"
+        type={type}
+        message={message}
+      />
     </Box>
   );
 };
