@@ -4,7 +4,7 @@
 
 The Generate RCA endpoint uses AI (AWS Bedrock Claude) to automatically generate Root Cause Analysis based on an investigation summary. This endpoint focuses exclusively on AI-powered generation and returns the generated text with auto-selected categories.
 
-**Important:** This endpoint does NOT save to database. Use the separate `/submit-rca` endpoint to save the generated RCA.
+**Important:** This endpoint does NOT save to database. Use the separate `/submitRCA` endpoint to save the generated RCA.
 
 ---
 
@@ -32,34 +32,89 @@ Generate a new Root Cause Analysis using AI.
 - `deviation_id` (string): Deviation identifier for reference (not saved by this endpoint)
 
 #### Response (Success - 200)
+
+**Important:** The response `data` field is ALWAYS an array, even if only one RCA is generated. This supports scenarios where multiple distinct root causes exist for a single deviation (e.g., RCA1, RCA2 tabs in UI).
+
+**Single RCA Response:**
 ```json
 {
   "success": true,
-  "message": "RCA generated successfully",
-  "data": {
-    "deviation_id": "DV-12345",
-    "issues": "The analyst generated duplicate results without proper authorization and failed to follow established laboratory protocols...",
-    "issues_category": "Company Personnel Issue",
-    "major_root_cause_category": "Personnel Issues",
-    "major_root_cause_category_validated": "Personnel Issues",
-    "near_root_cause": "The analyst failed to follow the correct procedure for handling test samples and did not obtain supervisor approval before repeating the assay...",
-    "near_root_cause_category": "Procedure Issue",
-    "root_cause": "Inadequate training and enforcement of laboratory protocols, specifically STM-QCS-0800 General Laboratory Practices, which resulted in unauthorized duplicate testing...",
-    "root_cause_category": "Procedure Not Followed"
-  },
+  "message": "1 RCA(s) generated successfully",
+  "data": [
+    {
+      "deviation_id": "DV-12345",
+      "issues": "The analyst generated duplicate results without proper authorization and failed to follow established laboratory protocols...",
+      "issues_category": "Company Personnel Issue",
+      "major_root_cause_category": "Personnel Issues",
+      "major_root_cause_category_validated": "Detailed explanation of why this falls under Personnel Issues category. The analyst's actions demonstrate a lack of adherence to established protocols...",
+      "near_root_cause": "The analyst failed to follow the correct procedure for handling test samples and did not obtain supervisor approval before repeating the assay...",
+      "near_root_cause_category": "Procedure Issue",
+      "root_cause": "Inadequate training and enforcement of laboratory protocols, specifically STM-QCS-0800 General Laboratory Practices, which resulted in unauthorized duplicate testing...",
+      "root_cause_category": "Procedure Not Followed"
+    }
+  ],
   "timestamp": "2025-12-22T16:00:00.000000+00:00"
 }
 ```
 
-**Response Fields:**
-- `issues`: Generated issues text
+**Multiple RCAs Response:**
+```json
+{
+  "success": true,
+  "message": "3 RCA(s) generated successfully",
+  "data": [
+    {
+      "deviation_id": "DV-00001",
+      "issues": "Cleaning validation for APS tanks was not completed before use.",
+      "issues_category": "Procedure issue",
+      "major_root_cause_category": "Equipment/Software Issues",
+      "major_root_cause_category_validated": "This issue stems from equipment management and validation procedures not being properly followed...",
+      "near_root_cause": "Lack of clear procedure to hold all tanks pending cleaning validation.",
+      "near_root_cause_category": "Procedure/Instruction Issue",
+      "root_cause": "Established cleaning validation procedures were not consistently followed.",
+      "root_cause_category": "Procedure Not Used"
+    },
+    {
+      "deviation_id": "DV-00001",
+      "issues": "Tanks 41 and 55 were used in production before validation approval.",
+      "issues_category": "Procedure issue",
+      "major_root_cause_category": "Equipment/Software Issues",
+      "major_root_cause_category_validated": "Equipment release procedures failed to prevent unauthorized use of unvalidated tanks...",
+      "near_root_cause": "Validation status was not properly communicated to operations.",
+      "near_root_cause_category": "Procedure/Instruction Issue",
+      "root_cause": "Failure to enforce tank HOLD status across all equipment.",
+      "root_cause_category": "Procedure Not Used"
+    },
+    {
+      "deviation_id": "DV-00001",
+      "issues": "Inconsistent handling of cleaning validation across multiple tanks.",
+      "issues_category": "Procedure issue",
+      "major_root_cause_category": "Equipment/Software Issues",
+      "major_root_cause_category_validated": "Systemic gaps in equipment validation tracking and control systems...",
+      "near_root_cause": "No standardized control for validation completion before reuse.",
+      "near_root_cause_category": "Procedure/Instruction Issue",
+      "root_cause": "Quality procedures existed but were not fully applied.",
+      "root_cause_category": "Procedure Not Used"
+    }
+  ],
+  "timestamp": "2025-12-22T16:00:00.000000+00:00"
+}
+```
+
+**Response Fields (per RCA in array):**
+- `issues`: Generated issues text describing the specific causal factor
 - `issues_category`: Auto-selected category for issues
-- `major_root_cause_category`: Generated major root cause category text
-- `major_root_cause_category_validated`: Auto-selected/validated major category from taxonomy
+- `major_root_cause_category`: Short category name (e.g., "Personnel Issues", "Equipment/Software Issues")
+- `major_root_cause_category_validated`: Long AI-generated explanation text about why this category applies
 - `near_root_cause`: Generated near root cause text
 - `near_root_cause_category`: Auto-selected category for near root cause
 - `root_cause`: Generated root cause text
 - `root_cause_category`: Auto-selected category for root cause
+
+**Field Structure Note:**
+- All `_category` fields contain short category names
+- `major_root_cause_category_validated` contains the long explanation text
+- Non-category fields contain detailed AI-generated descriptions
 
 #### Response (Error - 400)
 ```json
@@ -111,7 +166,7 @@ This endpoint is part of a multi-step workflow:
    └─> Can modify text
    └─> Can change categories using dropdowns
 
-4. POST /submit-rca
+4. POST /submitRCA
    └─> Save final RCA to database
    └─> Returns rca_id
 
@@ -137,18 +192,20 @@ curl -X POST https://api.example.com/generateRCA \
 ```bash
 {
   "success": true,
-  "message": "RCA generated successfully",
-  "data": {
-    "deviation_id": "DV-12345",
-    "issues": "The investigation revealed that Analyst S. Juyal...",
-    "issues_category": "Company Personnel Issue",
-    "major_root_cause_category": "Personnel Issues",
-    "major_root_cause_category_validated": "Personnel Issues",
-    "near_root_cause": "The analyst failed to follow...",
-    "near_root_cause_category": "Procedure Issue",
-    "root_cause": "Inadequate training and enforcement...",
-    "root_cause_category": "Procedure Not Followed"
-  }
+  "message": "1 RCA(s) generated successfully",
+  "data": [
+    {
+      "deviation_id": "DV-12345",
+      "issues": "The investigation revealed that Analyst S. Juyal...",
+      "issues_category": "Company Personnel Issue",
+      "major_root_cause_category": "Personnel Issues",
+      "major_root_cause_category_validated": "This issue is categorized under Personnel Issues because it involves an analyst's failure to follow established protocols...",
+      "near_root_cause": "The analyst failed to follow...",
+      "near_root_cause_category": "Procedure Issue",
+      "root_cause": "Inadequate training and enforcement...",
+      "root_cause_category": "Procedure Not Followed"
+    }
+  ]
 }
 ```
 
@@ -174,8 +231,8 @@ const generateRCA = async (investigationSummary, deviationId = null) => {
     const result = await response.json();
     
     if (result.success) {
-      console.log('RCA generated:', result.data);
-      return result.data;
+      console.log(`Generated ${result.data.length} RCA(s):`, result.data);
+      return result.data;  // Always an array
     } else {
       console.error('Error:', result.message);
       throw new Error(result.message);
@@ -191,9 +248,20 @@ const investigationSummary = "Analyst S. Juyal generated duplicate results...";
 const deviationId = "DV-12345";
 
 generateRCA(investigationSummary, deviationId)
-  .then(rca => {
-    console.log('Generated RCA:', rca);
-    // Display in UI for user review/editing
+  .then(rcas => {
+    console.log(`Generated ${rcas.length} RCA(s)`);
+    
+    // Handle single or multiple RCAs
+    if (rcas.length === 1) {
+      console.log('Single RCA:', rcas[0]);
+      // Display single RCA in UI
+    } else {
+      console.log('Multiple RCAs:', rcas);
+      // Display tabs: RCA1, RCA2, etc.
+      rcas.forEach((rca, index) => {
+        console.log(`RCA ${index + 1}:`, rca);
+      });
+    }
   })
   .catch(error => console.error('Error:', error));
 ```
@@ -207,7 +275,7 @@ const loadCategories = async () => {
   return result.data;
 };
 
-// 2. Generate RCA
+// 2. Generate RCA (returns array)
 const generateRCA = async (investigationSummary, deviationId) => {
   const response = await fetch('/api/generateRCA', {
     method: 'POST',
@@ -219,25 +287,15 @@ const generateRCA = async (investigationSummary, deviationId) => {
   });
   
   const result = await response.json();
-  return result.data;
+  return result.data;  // Always an array of RCAs
 };
 
-// 3. Save RCA (after user review/edit)
-const saveRCA = async (rcaData) => {
-  const response = await fetch('/api/submit-rca', {
+// 3. Save RCAs (accepts single RCA or array)
+const saveRCAs = async (rcaDataArray, createdBy = 'system') => {
+  const response = await fetch('/api/submitRCA', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      deviation_id: rcaData.deviation_id,
-      issues: rcaData.issues,
-      issues_category: rcaData.issues_category,
-      major_root_cause_category: rcaData.major_root_cause_category,
-      near_root_cause: rcaData.near_root_cause,
-      near_root_cause_category: rcaData.near_root_cause_category,
-      root_cause: rcaData.root_cause,
-      root_cause_category: rcaData.root_cause_category,
-      created_by: 'user@example.com'
-    })
+    body: JSON.stringify(rcaDataArray)  // Can be single object or array
   });
   
   const result = await response.json();
@@ -250,17 +308,25 @@ async function handleRCAGeneration() {
     // Load categories for dropdowns
     const categories = await loadCategories();
     
-    // Generate RCA
-    const generatedRCA = await generateRCA(
+    // Generate RCA(s) - returns array
+    const generatedRCAs = await generateRCA(
       investigationSummary,
       'DV-12345'
     );
     
-    // Display in UI for user to review/edit
-    displayRCAForm(generatedRCA, categories);
+    console.log(`Generated ${generatedRCAs.length} RCA(s)`);
     
-    // User reviews, edits, and clicks "Save"
-    // Then call saveRCA with edited data
+    // Display in UI for user to review/edit
+    if (generatedRCAs.length === 1) {
+      // Single RCA - show single form
+      displayRCAForm(generatedRCAs[0], categories);
+    } else {
+      // Multiple RCAs - show tabs (RCA1, RCA2, etc.)
+      displayRCATabs(generatedRCAs, categories);
+    }
+    
+    // User reviews, edits, and clicks "Save All"
+    // Then call saveRCAs with edited data array
     
   } catch (error) {
     console.error('Error in RCA workflow:', error);
@@ -278,7 +344,7 @@ import { useState } from 'react';
 function useGenerateRCA() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [rcaData, setRcaData] = useState(null);
+  const [rcaData, setRcaData] = useState([]);  // Array of RCAs
 
   const generateRCA = async (investigationSummary, deviationId) => {
     setLoading(true);
@@ -300,7 +366,7 @@ function useGenerateRCA() {
         throw new Error(result.message);
       }
       
-      setRcaData(result.data);
+      setRcaData(result.data);  // Always an array
       return result.data;
       
     } catch (err) {
@@ -318,11 +384,12 @@ function useGenerateRCA() {
 function RCAGenerator() {
   const { generateRCA, loading, error, rcaData } = useGenerateRCA();
   const [investigationSummary, setInvestigationSummary] = useState('');
+  const [activeTab, setActiveTab] = useState(0);
 
   const handleGenerate = async () => {
     try {
       await generateRCA(investigationSummary, 'DV-12345');
-      // RCA data is now in rcaData state
+      // RCA data is now in rcaData state (array)
     } catch (err) {
       console.error('Failed to generate RCA:', err);
     }
@@ -342,15 +409,45 @@ function RCAGenerator() {
       
       {error && <div className="error">{error}</div>}
       
-      {rcaData && (
+      {rcaData.length > 0 && (
         <div className="rca-result">
-          <h3>Generated RCA</h3>
-          <div>
-            <label>Issues:</label>
-            <p>{rcaData.issues}</p>
-            <span>Category: {rcaData.issues_category}</span>
+          <h3>Generated {rcaData.length} RCA(s)</h3>
+          
+          {/* Show tabs if multiple RCAs */}
+          {rcaData.length > 1 && (
+            <div className="rca-tabs">
+              {rcaData.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveTab(index)}
+                  className={activeTab === index ? 'active' : ''}
+                >
+                  RCA {index + 1}
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {/* Display active RCA */}
+          <div className="rca-content">
+            <div>
+              <label>Issues:</label>
+              <p>{rcaData[activeTab].issues}</p>
+              <span>Category: {rcaData[activeTab].issues_category}</span>
+            </div>
+            
+            <div>
+              <label>Major Root Cause Category:</label>
+              <p>{rcaData[activeTab].major_root_cause_category}</p>
+            </div>
+            
+            <div>
+              <label>Explanation:</label>
+              <p>{rcaData[activeTab].major_root_cause_category_validated}</p>
+            </div>
+            
+            {/* Display other sections */}
           </div>
-          {/* Display other sections */}
         </div>
       )}
     </div>
@@ -378,15 +475,32 @@ function RCAGenerator() {
 
 ## AI Generation Process
 
-The endpoint makes 5 sequential AI calls to AWS Bedrock:
+The endpoint uses an optimized approach to generate RCAs:
 
-1. **Generate Issues** - Analyzes investigation summary to identify issues
-2. **Generate Major Root Cause Category** - Determines high-level category
-3. **Generate Near Root Cause** - Identifies intermediate cause
-4. **Generate Root Cause** - Determines fundamental root cause
-5. **Categorize RCA** - Auto-selects specific categories from taxonomy
+### Primary Method: Single AI Call (Preferred)
+1. **Generate Multiple RCAs** - One AI call generates all RCAs as JSON array
+   - Identifies all distinct root causes
+   - Generates issues, major category explanation, near cause, and root cause for each
+   - Returns structured JSON array
 
-**Total Processing Time:** ~10-20 seconds (depending on AI response times)
+2. **Categorize Each RCA** - One AI call per RCA to assign taxonomy categories
+   - Auto-selects specific categories from ABS Root Cause Map
+   - Maps generated text to predefined category options
+
+**Total Processing Time:** ~5-15 seconds for single RCA, ~10-25 seconds for multiple RCAs
+
+### Fallback Method: Sequential Calls
+If JSON parsing fails, falls back to legacy method:
+1. Generate Issues
+2. Generate Major Root Cause Category
+3. Generate Near Root Cause
+4. Generate Root Cause
+5. Categorize RCA
+
+**Fallback Processing Time:** ~15-25 seconds
+
+### Multiple RCAs Support
+The AI can identify when multiple distinct root causes exist and generate separate RCAs for each. This supports the UI requirement for RCA1, RCA2 tabs when multiple root causes are present.
 
 ---
 
@@ -444,7 +558,7 @@ const categories = await response.json();
 // Use categories.data.Factors and categories.data.MajorRootCauseCategories
 ```
 
-### POST /submit-rca
+### POST /submitRCA
 Save generated RCA to database.
 
 **Purpose:** Persist RCA after user review/editing  
@@ -452,7 +566,7 @@ Save generated RCA to database.
 
 **Example:**
 ```javascript
-const response = await fetch('/api/submit-rca', {
+const response = await fetch('/api/submitRCA', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -476,8 +590,8 @@ const response = await fetch('/api/submit-rca', {
 ### Breaking Changes from Previous Version
 
 ⚠️ **This endpoint no longer:**
-- Saves to database (use `/submit-rca` instead)
-- Returns `rca_id` (get from `/submit-rca` response)
+- Saves to database (use `/submitRCA` instead)
+- Returns `rca_id` (get from `/submitRCA` response)
 - Returns `category_options` (use `/getRCACategories` instead)
 - Supports GET method (will be separate `/rca` endpoint)
 
@@ -495,6 +609,7 @@ const response = await fetch('/api/generateRCA', {
   body: JSON.stringify({ investigation_summary, deviation_id })
 });
 // Response included rca_id and category_options
+// Response data was a single object
 ```
 
 **New Code:**
@@ -502,33 +617,51 @@ const response = await fetch('/api/generateRCA', {
 // 1. Load categories separately
 const categories = await fetch('/api/getRCACategories').then(r => r.json());
 
-// 2. Generate RCA
-const rca = await fetch('/api/generateRCA', {
+// 2. Generate RCA(s) - returns array
+const result = await fetch('/api/generateRCA', {
   method: 'POST',
   body: JSON.stringify({ investigation_summary, deviation_id })
 }).then(r => r.json());
 
-// 3. User reviews/edits
+const rcas = result.data;  // ALWAYS an array
 
-// 4. Save to database
-const saved = await fetch('/api/submit-rca', {
+// 3. User reviews/edits (handle single or multiple RCAs)
+if (rcas.length === 1) {
+  // Show single form
+  displaySingleRCA(rcas[0]);
+} else {
+  // Show tabs: RCA1, RCA2, etc.
+  displayMultipleRCAs(rcas);
+}
+
+// 4. Save to database (can save array or single object)
+const saved = await fetch('/api/submitRCA', {
   method: 'POST',
-  body: JSON.stringify({ ...editedRCA, created_by: user.email })
+  body: JSON.stringify(rcas)  // Send array or single object
 }).then(r => r.json());
-// Response includes rca_id
+// Response includes rca_id(s)
 ```
+
+**Key Changes:**
+- Response `data` is now ALWAYS an array (even for single RCA)
+- Must handle `rcas.length` to determine if single or multiple
+- `submitRCA` accepts both single object and array for flexibility
+- `major_root_cause_category_validated` is now a long explanation text, not just category name
 
 ---
 
 ## Best Practices
 
 1. **Cache Categories:** Load `/getRCACategories` once and cache in frontend
-2. **Show Loading State:** AI generation takes 10-20 seconds
-3. **Allow Editing:** Let users review and edit before saving
-4. **Validate Input:** Ensure investigation_summary is non-empty
-5. **Handle Errors:** Show user-friendly error messages
-6. **Save Separately:** Call `/submit-rca` only after user confirms
-7. **Timeout Handling:** Set appropriate timeout (30+ seconds)
+2. **Show Loading State:** AI generation takes 5-25 seconds depending on complexity
+3. **Handle Array Response:** Response data is ALWAYS an array - check `rcas.length`
+4. **Support Multiple RCAs:** Show tabs (RCA1, RCA2) when `rcas.length > 1`
+5. **Allow Editing:** Let users review and edit each RCA before saving
+6. **Validate Input:** Ensure investigation_summary is non-empty
+7. **Handle Errors:** Show user-friendly error messages
+8. **Save Separately:** Call `/submitRCA` only after user confirms (accepts array or single object)
+9. **Timeout Handling:** Set appropriate timeout (30+ seconds)
+10. **Field Structure:** Remember `major_root_cause_category_validated` is long text, not just category name
 
 ---
 

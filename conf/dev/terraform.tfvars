@@ -335,6 +335,36 @@ lambda_configs = [
         http_method = "GET"
       }
     ]
+  },
+  {
+    function_name = "submit-rca"
+    path          = "src/app/submit_rca"
+    environment_variables = {
+      env                 = "dev"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region           = "us-east-1"
+    }
+    api_gateway_paths = [
+      {
+        path_name   = "submitRCA"
+        http_method = "POST"
+      }
+    ]
+  },
+  {
+    function_name = "update-rca"
+    path          = "src/app/update_rca"
+    environment_variables = {
+      env                 = "dev"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region           = "us-east-1"
+    }
+    api_gateway_paths = [
+      {
+        path_name   = "updateRCA"
+        http_method = "PUT"
+      }
+    ]
   }
 ]
 
