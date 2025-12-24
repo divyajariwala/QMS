@@ -563,3 +563,33 @@ export const generateRCA = async (
   const data: GenerateRCAResponse = await response.json();
   return data;
 };
+
+export async function fetchRcaCategories(){
+  const response = await fetch(`${API_BASE_URL}dev/getRCACategories`);
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export const submitRca = async (
+  rcaPayload
+)=> {
+  const response = await fetch(`${API_BASE_URL}dev/submitRCA`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(rcaPayload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+};

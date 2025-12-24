@@ -1,13 +1,8 @@
 import React from "react";
-import {
-  Button,
-  Stack,
-  Tab,
-  Tabs,
-} from "@mui/material";
+import { Button, Stack, Tab, Tabs } from "@mui/material";
 import PlusIcon from "../../../assets/icons/plus.svg";
 
-import { RcaRecord } from "./RCAMockdata";
+import { RcaRecord } from "./RCATypes";
 import styles from "./RootCauseAnalysis.module.scss";
 
 interface RcaTabsProps {
@@ -15,6 +10,7 @@ interface RcaTabsProps {
   selectedIndex: number;
   onChange: (_: React.SyntheticEvent, newIndex: number) => void;
   onAdd: () => void;
+  isSubmittedSuccessfully: boolean;
 }
 
 const RcaTabs: React.FC<RcaTabsProps> = ({
@@ -22,6 +18,7 @@ const RcaTabs: React.FC<RcaTabsProps> = ({
   selectedIndex,
   onChange,
   onAdd,
+  isSubmittedSuccessfully,
 }) => {
   return (
     <Stack
@@ -52,10 +49,12 @@ const RcaTabs: React.FC<RcaTabsProps> = ({
         ))}
       </Tabs>
       <Stack direction="row" spacing={1}>
-        <Button variant="text" onClick={onAdd} className={styles.addBtn}>
-          Add RCA
-          <img src={PlusIcon} alt="plus" />
-        </Button>
+        {!isSubmittedSuccessfully && (
+          <Button variant="text" onClick={onAdd} className={styles.addBtn}>
+            Add RCA
+            <img src={PlusIcon} alt="plus" />
+          </Button>
+        )}
       </Stack>
     </Stack>
   );

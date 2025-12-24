@@ -38,9 +38,11 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
     <div className={styles.complaintsCardContainer}>
       <div className={styles.headerRow}>
         <Box>
-          <div className={styles.container}>
-            <span className={styles.idText}>{headerStatusUpper}</span>
-          </div>
+          {headerStatusRaw === "pending" ? (
+            <Box className={styles.statusText}>IN REVIEW</Box>
+          ) : (
+            <Box className={styles.statusText}>{headerStatusUpper}</Box>
+          )}
           <div className={styles.container}>
             <span className={styles.caseNumberText}>{deviation_id}</span>
             {loading && (

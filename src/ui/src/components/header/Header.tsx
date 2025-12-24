@@ -64,17 +64,18 @@ const Header = () => {
   ];
 
   // Find the index of current tab by checking if location pathname starts with path
- const currentTab =
-  location.pathname === "/"
-    ? 0
-    : (location.pathname.startsWith("/complaints") ||
-      location.pathname.startsWith("/approveComplaints"))
-    ? 1
-    : location.pathname.startsWith("/deviations")
-    ? 2
-    : location.pathname.startsWith("/adverseEvent")
-    ? 3
-    : 0;
+  const currentTab =
+    location.pathname === "/"
+      ? 0
+      : location.pathname.startsWith("/complaints") ||
+        location.pathname.startsWith("/approveComplaints")
+      ? 1
+      : location.pathname.startsWith("/deviations") ||
+        location.pathname.startsWith("/approveDeviations")
+      ? 2
+      : location.pathname.startsWith("/adverseEvent")
+      ? 3
+      : 0;
 
   return (
     <header className="qms-header">
@@ -114,7 +115,10 @@ const Header = () => {
                   anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                   variant="dot"
                 >
-                  <Avatar alt={displayName || "User"} {...stringAvatar(displayName)} />
+                  <Avatar
+                    alt={displayName || "User"}
+                    {...stringAvatar(displayName)}
+                  />
                 </StyledBadge>
               </Tooltip>
             </div>
