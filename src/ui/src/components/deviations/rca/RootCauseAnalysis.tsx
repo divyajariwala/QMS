@@ -240,13 +240,13 @@ const RootCauseAnalysis = forwardRef<
 
     return {
       deviation_id: deviationId,
-      issues: issues.explanation ?? "",
+      issues: issues.explanation ?? issues.value ?? "",
       issues_category: issues.value ?? "",
       major_root_cause_category: major.value ?? "",
-      major_root_cause_category_validated: major.explanation ?? "",
-      near_root_cause: near.explanation ?? "",
+      major_root_cause_category_validated: major.explanation ?? major.value ?? "",
+      near_root_cause: near.explanation ?? near.value ?? "",
       near_root_cause_category: near.value ?? "",
-      root_cause: root.explanation ?? "",
+      root_cause: root.explanation ?? root.value ?? "",
       root_cause_category: root.value ?? "",
     };
   };
