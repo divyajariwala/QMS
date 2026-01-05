@@ -47,7 +47,7 @@ $radius-medium: 8px;
   border-radius: 16px !important;
   height: 100%;
   background-color: #fff;
-  max-height: 647px;
+  max-height: 500px;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -239,11 +239,16 @@ $radius-medium: 8px;
 
   .rcaSectionTitle {
     font-weight: 600;
+    font-size: 18px;
+    line-height: 24px;
   }
 }
 
 .rcaSubTitle {
   font-weight: 500;
+  font-size: 15px;
+  line-height: 22px;
+  text-transform: capitalize;
 }
 
 .rcaExplanation {
@@ -252,5 +257,8 @@ $radius-medium: 8px;
 
   .rcaExplanationTitle {
     margin-bottom: 6px;
+    font-weight: 500;
+    line-height: 20px;
+    font-size: 14px;
   }
 }

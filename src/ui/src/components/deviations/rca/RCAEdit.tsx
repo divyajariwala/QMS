@@ -123,12 +123,16 @@ const RcaEdit: React.FC<RcaEditProps> = ({
 
   const setValue = (key: Key, value: string) => {
     setDraft((d) => {
+      const wasValue = originalValue(key);
+      const valueChanged = wasValue !== value;
       const next = {
         ...d,
         sections: d.sections.map((s) => {
-          if (s.key !== key) return s;
-          const wasValue = originalValue(key);
-          const explanation = wasValue !== value ? "" : s.explanation;
+          if (s.key !== key) {
+            const explanation = valueChanged ? "" : s.explanation;
+            return { ...s, explanation };
+          }
+          const explanation = valueChanged ? "" : s.explanation;
           return { ...s, value, explanation };
         }),
       };

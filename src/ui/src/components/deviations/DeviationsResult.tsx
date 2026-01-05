@@ -59,7 +59,7 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
             </div>
           </div>
         </Box>
-        <ComplaintsDueDateChip type={dueInfo.type} label={dueInfo.label} />
+        {deviation.status !== "processed" && <ComplaintsDueDateChip type={dueInfo.type} label={dueInfo.label} />}
       </div>
       {loading ? (
         <Skeleton variant="rectangular" width={500} height={24} />

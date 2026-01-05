@@ -5,6 +5,7 @@ import DeleteIcon from "../../../assets/icons/delete.svg";
 import CloseIcon from "../../../assets/icons/closeCross.svg";
 import CheckIcon from "../../../assets/icons/greenTick.svg";
 import RestoreIcon from "@mui/icons-material/Restore";
+import { RcaRecord } from "./RCATypes";
 
 import styles from "./RootCauseAnalysis.module.scss";
 
@@ -18,6 +19,7 @@ interface RcaHeaderProps {
   onReset: () => void;
   showReset?: boolean;
   isSubmittedSuccessfully?: boolean;
+  rcas: RcaRecord[];
 }
 
 const RcaHeader: React.FC<RcaHeaderProps> = ({
@@ -30,6 +32,7 @@ const RcaHeader: React.FC<RcaHeaderProps> = ({
   onReset,
   showReset,
   isSubmittedSuccessfully,
+  rcas,
 }) => {
   return (
     <Paper elevation={0} className={styles.rcaHeaderBox}>
@@ -49,13 +52,13 @@ const RcaHeader: React.FC<RcaHeaderProps> = ({
                 >
                   <img src={EditIcon} alt="Edit Icon" />
                 </IconButton>
-                <IconButton
+                {!(rcas.length < 2) && <IconButton
                   aria-label="delete"
                   onClick={onDelete}
                   className={styles.actionButton}
                 >
                   <img src={DeleteIcon} alt="Delete Icon" />
-                </IconButton>
+                </IconButton>}
                 {showReset && (
                   <IconButton
                     aria-label="restore"
