@@ -233,7 +233,7 @@ export interface ComplaintInterHeaderCardProps {
   processingFile: boolean;
 }
 
-export interface ComplaintsDueDateChipProps {
+export interface ModuleDueDateChipProps {
   type: "Overdue" | "Today" | "Tomorrow" | "Due" | "" | undefined;
   label: string | undefined;
 }

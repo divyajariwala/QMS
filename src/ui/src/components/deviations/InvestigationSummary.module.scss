@@ -1,3 +1,5 @@
+@use "../../styles/variables" as *;
+
 .investigationSummary {
   padding: 16px;
   border-radius: 16px !important;
@@ -15,19 +17,9 @@
     margin-left: 16px;
     justify-content: space-between;
   }
-  .headerIcons,
-  .headerIcons:hover {
-    height: 40px;
-    background-color: #ffffff;
-    border: 1px solid #dae0e6;
-    padding: 0;
-    min-width: 40px;
-    border-radius: 5px;
-    box-shadow: none;
-  }
 
   .headerText {
-    font-weight: 400;
+    font-weight: $font-weight-light;
     font-size: 20px;
     line-height: 28px;
     color: #202123;
@@ -36,7 +28,7 @@
   }
 
   .subText {
-    font-weight: 400;
+    font-weight: $font-weight-light;
     font-size: 14px;
     line-height: 20px;
     color: #6d7175;
@@ -57,7 +49,7 @@
   }
 
   .title {
-    font-weight: 600;
+    font-weight: $font-weight-bold;
     font-size: 18px;
     line-height: 1;
     letter-spacing: 0.04em;
@@ -66,25 +58,11 @@
     font-family: inherit !important;
   }
 
-  .importBtn {
-    color: #202223;
-    width: 92px;
-    height: 36px;
-    border: 1px solid #babfc3;
-    border-radius: 4px;
-    text-transform: none;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 10px;
-    justify-content: space-between;
-  }
-
   .addBtn {
     font-family: inherit;
     text-transform: none;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: $font-weight-medium;
     color: #202223;
     padding: 10px;
     width: 128px;
@@ -94,23 +72,26 @@
     border-radius: 4px;
   }
 
-  .btnCancel {
-    width: 83px;
-    height: 36px;
+  .btn {
     font-family: inherit !important;
     padding: 8px 20px;
     border-radius: 10px;
-    border: 1px solid #dae0e6;
-    color: #272d37;
-    background-color: transparent;
     cursor: pointer;
-    transition: background-color 0.3s, border-color 0.3s;
     text-transform: none;
     display: inline-flex;
     justify-content: center;
     align-items: center;
     gap: 8px;
+    height: 36px;
+  }
 
+  .btnCancel {
+    @extend .btn;
+    width: 83px;
+    border: 1px solid #dae0e6;
+    color: #272d37;
+    background-color: transparent;
+    transition: background-color 0.3s, border-color 0.3s;
     &:hover {
       border-color: #bac3d2;
       background-color: rgba(218, 224, 230, 0.1);
@@ -118,22 +99,12 @@
   }
 
   .btnSubmit {
+    @extend .btn;
     width: 99px;
-    height: 36px;
-    font-family: inherit !important;
-    padding: 8px 20px;
-    border-radius: 10px;
-    background-color: #0089eb;
+    background-color: $link-blue;
     color: white;
     border: none;
-    cursor: pointer;
     transition: background-color 0.3s;
-    text-transform: none;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-
     &:hover {
       background-color: #0076cc;
     }
@@ -154,18 +125,18 @@
     border: 1px solid rgba(0, 0, 0, 0.23);
     border-radius: 4px;
     box-sizing: border-box;
-    font-weight: 400;
+    font-weight: $font-weight-light;
     outline-offset: -2px;
     margin-top: 16px;
 
     &:focus {
-      border-color: #0089eb;
-      outline: 2px solid #0089eb;
+      border-color: $link-blue;
+      outline: 2px solid $link-blue;
     }
   }
 
   .body {
-    font-weight: 400;
+    font-weight: $font-weight-light;
     font-style: normal;
     font-size: 15px;
     line-height: 22px;

@@ -4,7 +4,7 @@ import OverdueIcon from "../../assets/icons/overdue.svg";
 import DueTodayIcon from "../../assets/icons/dueToday.svg";
 import DueTomorrowIcon from "../../assets/icons/dueTomorrow.svg";
 import DueIcon from "../../assets/icons/due.svg";
-import { ComplaintsDueDateChipProps, DueDateChipProps } from "src/types";
+import { ModuleDueDateChipProps, DueDateChipProps } from "src/types";
 import styles from "./ComplaintsDueDateChip.module.scss";
 
 const DueDateChip = ({
@@ -32,7 +32,7 @@ const DueDateChip = ({
   </Stack>
 );
 
-const ComplaintsDueDateChip: React.FC<ComplaintsDueDateChipProps> = ({
+const ComplaintsDueDateChip: React.FC<ModuleDueDateChipProps> = ({
   type,
   label,
 }) => {

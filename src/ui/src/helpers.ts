@@ -1,8 +1,6 @@
-import { ComplaintsDueDateChipProps } from "./types";
+import { ModuleDueDateChipProps } from "./types";
 
-export const getDueStatus = (
-  dateStr: string
-): ComplaintsDueDateChipProps => {
+export const getDueStatus = (dateStr: string): ModuleDueDateChipProps => {
   const dueDate = new Date(dateStr);
   dueDate.setDate(dueDate.getDate() + 5);
   dueDate.setHours(0, 0, 0, 0);
@@ -14,16 +12,18 @@ export const getDueStatus = (
   if (diffDays < 0) {
     return {
       type: "Overdue",
-      label: `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? "" : "s"}`,
+      label: `Overdue by ${Math.abs(diffDays)} day${
+        Math.abs(diffDays) === 1 ? "" : "s"
+      }`,
     };
   } else if (diffDays === 0) {
     return { type: "Today", label: "Due Today" };
   } else if (diffDays === 1) {
     return { type: "Tomorrow", label: "Due Tomorrow" };
   } else {
-   return {
+    return {
       type: "Due",
-      label: `Due in ${diffDays} day${diffDays === 1 ? "" : "s"}`
+      label: `Due in ${diffDays} day${diffDays === 1 ? "" : "s"}`,
     };
   }
 };

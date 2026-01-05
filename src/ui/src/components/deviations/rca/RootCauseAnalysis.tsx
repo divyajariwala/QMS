@@ -242,17 +242,34 @@ const RootCauseAnalysis = forwardRef<
     const near = readSection(rca, "near");
     const root = readSection(rca, "root");
 
+    const issuesValue = issues.value?.trim() || "";
+
+    const excludedCategories = new Set([
+      "natural phenomena",
+      "external events",
+      "external sabotage and other criminal activity",
+      "cause cannot be determined",
+    ]);
+
+    const isExcluded = excludedCategories.has(issuesValue.toLowerCase());
+    const NA = "N/A";
+
     return {
       deviation_id: deviationId,
-      issues: issues.explanation || issues.value || "",
-      issues_category: issues.value || "",
-      major_root_cause_category: major.value || "",
-      major_root_cause_category_validated:
-        major.explanation || major.value || "",
-      near_root_cause: near.explanation || near.value || "",
-      near_root_cause_category: near.value || "",
-      root_cause: root.explanation || root.value || "",
-      root_cause_category: root.value || "",
+
+      issues: issues.explanation || issuesValue || "",
+      issues_category: issuesValue || "",
+
+      major_root_cause_category: isExcluded ? NA : major.value || "",
+      major_root_cause_category_validated: isExcluded
+        ? NA
+        : major.explanation || major.value || "",
+
+      near_root_cause: isExcluded ? NA : near.explanation || near.value || "",
+      near_root_cause_category: isExcluded ? NA : near.value || "",
+
+      root_cause: isExcluded ? NA : root.explanation || root.value || "",
+      root_cause_category: isExcluded ? NA : root.value || "",
     };
   };
 
