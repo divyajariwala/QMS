@@ -4,7 +4,7 @@ import OverdueIcon from "../../assets/icons/overdue.svg";
 import DueTodayIcon from "../../assets/icons/dueToday.svg";
 import DueTomorrowIcon from "../../assets/icons/dueTomorrow.svg";
 import DueIcon from "../../assets/icons/due.svg";
-import { DeviationsDueDateChipProps, DueDateChipProps } from "src/types";
+import { ModuleDueDateChipProps, DueDateChipProps } from "src/types";
 import styles from "./DeviationsDueDateChip.module.scss";
 
 const DueDateChip = ({
@@ -19,20 +19,12 @@ const DueDateChip = ({
     gap={0.5}
     className={`${styles.dueDateChip} ${className ?? ""}`}
   >
-    <img
-      src={iconSrc}
-      alt={iconAlt}
-      className={styles.dueDateChip__icon}
-    />
-    <Box
-      className={styles.dueDateChip__label}
-    >
-      {label}
-    </Box>
+    <img src={iconSrc} alt={iconAlt} className={styles.dueDateChip__icon} />
+    <Box className={styles.dueDateChip__label}>{label}</Box>
   </Stack>
 );
 
-const DeviationsDueDateChip: React.FC<DeviationsDueDateChipProps> = ({
+const DeviationsDueDateChip: React.FC<ModuleDueDateChipProps> = ({
   type,
   label,
 }) => {

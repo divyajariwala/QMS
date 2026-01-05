@@ -3,12 +3,12 @@ import { Box, Button, Radio, Skeleton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ComplaintsDueDateChip from "../../components/complaint/ComplaintsDueDateChip";
 import Calendar from "../../assets/icons/calendar.svg";
 import styles from "./DeviationsResult.module.scss";
 import { getDueStatus } from "src/helpers";
 import { DeviationProps } from "src/types";
 import { formatDateMMM_D_YYYY } from "src/utils";
+import DeviationsDueDateChip from "./DeviationsDueDateChip";
 
 const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
   const navigate = useNavigate();
@@ -59,7 +59,9 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
             </div>
           </div>
         </Box>
-        <ComplaintsDueDateChip type={dueInfo.type} label={dueInfo.label} />
+        {deviation.status !== "processed" && (
+          <DeviationsDueDateChip type={dueInfo.type} label={dueInfo.label} />
+        )}
       </div>
       {loading ? (
         <Skeleton variant="rectangular" width={500} height={24} />

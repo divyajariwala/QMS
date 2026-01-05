@@ -1,3 +1,6 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
 .dueChipBase {
   border-radius: 5px;
   gap: 2px;
@@ -8,46 +11,22 @@
 
 /* Modifier classes that add colors */
 .overdueChip {
-  @extend .dueChipBase;
-  color: #e2341d;
-  background-color: #fff2f0;
+  @include due-chip-variant(#e2341d, #fff2f0);
 }
 
 .dueTodayChip {
-  @extend .dueChipBase;
-  color: #ffffff;
-  background-color: #5390f8;
+  @include due-chip-variant(#ffffff, #5390f8);
 }
 
 .dueTomorrowChip {
-  @extend .dueChipBase;
-  color: #437ef7;
-  background-color: #f5faff;
+  @include due-chip-variant(#437ef7, #f5faff);
 }
 
 .dueChip {
-  @extend .dueChipBase;
-  color: #272d37;
-  background-color: #f7f7f8;
+  @include due-chip-variant(#272d37, #f7f7f8);
 }
 
 /* The base container for icon + label with gap */
 .dueDateChip {
-  display: flex; /* stack row + alignItems center */
-  align-items: center;
-  gap: 0.5rem; /* equivalent to gap={0.5} in MUI Stack */
-
-  /* Typography styles for label */
-  &__label {
-    font-weight: 500;
-    font-size: 13px;
-    line-height: 18px;
-    letter-spacing: -0.1px;
-  }
-
-  /* Icon size */
-  &__icon {
-    width: 12px;
-    height: 12px;
-  }
+  @include due-date-base;
 }

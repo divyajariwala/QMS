@@ -41,7 +41,12 @@ const RcaView: React.FC<{ rca: RcaRecord }> = ({ rca }) => (
                 >
                   Explanation
                 </Typography>
-                <Typography variant="body2">{s.explanation}</Typography>
+                <Typography
+                  variant="body2"
+                  className={styles.rcaExplanationTitle}
+                >
+                  {s.explanation}
+                </Typography>
               </Box>
             )}
           </Stack>

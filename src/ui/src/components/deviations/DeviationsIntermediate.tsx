@@ -12,7 +12,9 @@ import { DeviationDetail } from "src/types";
 const DeviationsIntermediate: React.FC = () => {
   const [summary, setSummary] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [deviationData, setDeviationData] = useState<DeviationDetail | null>(null)
+  const [deviationData, setDeviationData] = useState<DeviationDetail | null>(
+    null
+  );
   const { deviationId } = useParams<{ deviationId: string | undefined }>();
   const navigate = useNavigate();
 
@@ -30,7 +32,7 @@ const DeviationsIntermediate: React.FC = () => {
     setLoading(true);
     try {
       const data = await fetchDeviationDetailById(deviationId);
-      setSummary(data.investigation_summary)
+      setSummary(data.investigation_summary);
       setDeviationData(data);
     } catch (err: any) {
       console.log(err.message || "Failed to load complaint details.");
@@ -60,7 +62,7 @@ const DeviationsIntermediate: React.FC = () => {
             <div className={styles.cardTitle}>Root Cause Analysis</div>
             <div className={styles.emptyCategory}>
               <p className={styles.emptyCategoryText}>
-                No root cause analysis has been created. Click Generate to
+                No root cause analysis has been created. Click Generate RCA to
                 create one.
               </p>
               <button

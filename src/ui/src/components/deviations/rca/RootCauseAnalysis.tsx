@@ -98,7 +98,7 @@ const RootCauseAnalysis = forwardRef<
           sections: [
             {
               key: "issues",
-              title: "Issues",
+              title: "Causal factor",
               value: item.issues_category ?? "",
               explanation: item.issues ?? "",
             },
@@ -142,7 +142,11 @@ const RootCauseAnalysis = forwardRef<
   }, [rcaData]);
 
   const handleAddRca = () => {
-    const nextNum = rcas.length + 1;
+    const maxNum =
+      rcas.length > 0
+        ? Math.max(...rcas.map((rca) => parseInt(rca.name.split(" ")[1])))
+        : 0;
+    const nextNum = maxNum + 1;
     const newRca: RcaRecord = {
       id: `rca-${nextNum}`,
       name: `RCA ${nextNum}`,
@@ -238,16 +242,34 @@ const RootCauseAnalysis = forwardRef<
     const near = readSection(rca, "near");
     const root = readSection(rca, "root");
 
+    const issuesValue = issues.value?.trim() || "";
+
+    const excludedCategories = new Set([
+      "natural phenomena",
+      "external events",
+      "external sabotage and other criminal activity",
+      "cause cannot be determined",
+    ]);
+
+    const isExcluded = excludedCategories.has(issuesValue.toLowerCase());
+    const NA = "N/A";
+
     return {
       deviation_id: deviationId,
-      issues: issues.explanation ?? "",
-      issues_category: issues.value ?? "",
-      major_root_cause_category: major.value ?? "",
-      major_root_cause_category_validated: major.explanation ?? "",
-      near_root_cause: near.explanation ?? "",
-      near_root_cause_category: near.value ?? "",
-      root_cause: root.explanation ?? "",
-      root_cause_category: root.value ?? "",
+
+      issues: issues.explanation || issuesValue || "",
+      issues_category: issuesValue || "",
+
+      major_root_cause_category: isExcluded ? NA : major.value || "",
+      major_root_cause_category_validated: isExcluded
+        ? NA
+        : major.explanation || major.value || "",
+
+      near_root_cause: isExcluded ? NA : near.explanation || near.value || "",
+      near_root_cause_category: isExcluded ? NA : near.value || "",
+
+      root_cause: isExcluded ? NA : root.explanation || root.value || "",
+      root_cause_category: isExcluded ? NA : root.value || "",
     };
   };
 
@@ -299,21 +321,14 @@ const RootCauseAnalysis = forwardRef<
     setIsEditing(false);
     setPreEditSnapshot(null);
   };
-
   const onResetAll = () => {
-    const restored = JSON.parse(JSON.stringify(baselineRcas));
-
     const currentId = rcas[selectedIndex]?.id;
-    const keptIndex =
-      currentId != null ? restored.findIndex((r) => r.id === currentId) : -1;
-
-    const nextIndex =
-      keptIndex >= 0
-        ? keptIndex
-        : Math.min(selectedIndex, Math.max(restored.length - 1, 0));
-
-    setRcas(restored);
-    setSelectedIndex(nextIndex);
+    const baselineRca = baselineRcas.find((r) => r.id === currentId);
+    if (baselineRca) {
+      const next = [...rcas];
+      next[selectedIndex] = JSON.parse(JSON.stringify(baselineRca));
+      setRcas(next);
+    }
     setIsEditing(false);
     setPreEditSnapshot(null);
   };
@@ -360,6 +375,7 @@ const RootCauseAnalysis = forwardRef<
             onReset={onResetAll}
             showReset={selectedRca?.meta?.createdFrom !== "add"}
             isSubmittedSuccessfully={isSubmittedSuccessfully}
+            rcas={rcas}
           />
 
           {!isEditing && selectedRca && <RcaView rca={selectedRca} />}

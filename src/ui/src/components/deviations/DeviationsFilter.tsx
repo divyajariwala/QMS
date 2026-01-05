@@ -72,13 +72,6 @@ const DeviationsFilter = ({
               value={deviationId}
               onChange={handleInputChange}
             />
-            <button
-              type="submit"
-              className={styles.searchButtonInside}
-              aria-label="Search Button"
-            >
-              <span className={styles.searchButtonText}>Search</span>
-            </button>
           </form>
         </div>
       </div>
