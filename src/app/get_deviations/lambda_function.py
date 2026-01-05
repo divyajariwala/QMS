@@ -2,7 +2,7 @@ import json
 import os
 import psycopg
 from psycopg.rows import dict_row
-from .secrets_util import get_secret
+from secrets_util import get_secret
 
 # =====================================================
 # ENV CONFIG
@@ -41,10 +41,10 @@ def lambda_handler(event, context):
 
         # If deviation_id is provided → fetch single record
         if deviation_id:
-            return get_case_by_deviationid(conn, deviation_id)
+            return get_deviation_by_id(conn, deviation_id)
 
         # Otherwise → fetch paginated deviation list
-        return get_all_deviation(conn, page, status, search)
+        return get_all_deviations(conn, page, status, search)
 
     except Exception as e:
         print("Lambda error:", str(e))
@@ -66,12 +66,15 @@ def lambda_handler(event, context):
 # =====================================================
 # GET ALL DEVIATIONS (LIST + SEARCH + PAGINATION)
 # =====================================================
-def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
+def get_all_deviations(conn, page=1, status_filter=None, search_query=None):
     try:
         with conn.cursor(row_factory=dict_row) as cursor:
 
             # Refresh deviation statistics
             cursor.execute("SELECT update_deviations_and_stats()")
+            conn.commit()
+            # Refresh avg cycle time
+            cursor.execute("SELECT approved_avg_cycle_time()")
             conn.commit()
 
             # Fetch deviation statistics
@@ -124,7 +127,8 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         grading_approved,
                         rca_approved,
                         grading_completed,
-                        rca_generated
+                        rca_generated,
+                        text_extracted
                     FROM deviations
                     {where}
                     ORDER BY deviation_id DESC
@@ -163,7 +167,8 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         grading_approved,
                         rca_approved,
                         grading_completed,
-                        rca_generated
+                        rca_generated,
+                        text_extracted
                     FROM deviations
                     {where}
                     ORDER BY deviation_id DESC
@@ -175,7 +180,6 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
 
             # Calculate total pages
             total_pages = (total_count + limit - 1) // limit
-
             # Final API response
             response = {
                 "deviationStats": {
@@ -187,10 +191,12 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                     "pending": stats.get("pending", 0),
                     "processed": stats.get("processed", 0),
                     "overdue": stats.get("overdue", 0),
-                    "avg_cycle_time": stats.get("avg_time", 0),
+                    "avg_cycle_time": stats.get("avg_cycle_time", 0),
                     "rca_pending": stats.get("rca_pending", 0),
                     "rca_done": stats.get("rca_done", 0),
                     "grading_pending": stats.get("grading_pending", 0),
+                    "grading_done": stats.get("grading_done", 0),
+                    "workflow_progress": stats.get("workflow_progress", 0),
                 },
                 "pagination": {
                     "current_page": page,
@@ -214,6 +220,7 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
                         "rca_approved": r["rca_approved"],
                         "grading_completed": r["grading_completed"],
                         "rca_generated": r["rca_generated"],
+                        "text_extracted": r["text_extracted"],
                     }
                     for r in rows
                 ],
@@ -226,20 +233,22 @@ def get_all_deviation(conn, page=1, status_filter=None, search_query=None):
             }
 
     except Exception as e:
-        print("get_all_deviation error:", str(e))
+        print("get_all_deviations error:", str(e))
         raise
 
 
 # =====================================================
 # GET DEVIATION BY ID
 # =====================================================
-def get_case_by_deviationid(conn, deviation_id):
+def get_deviation_by_id(conn, deviation_id):
     with conn.cursor(row_factory=dict_row) as cursor:
         cursor.execute(
             """
             SELECT
                 deviation_id,
-                investigation_summary
+                investigation_summary,
+                created_at,
+                deviation_status
             FROM deviations
             WHERE deviation_id = %s
             """,
@@ -247,7 +256,6 @@ def get_case_by_deviationid(conn, deviation_id):
         )
 
         row = cursor.fetchone()
-
         if not row:
             return {
                 "statusCode": 404,
@@ -261,6 +269,12 @@ def get_case_by_deviationid(conn, deviation_id):
             "body": json.dumps({
                 "deviation_id": row["deviation_id"],
                 "investigation_summary": row["investigation_summary"],
+                "created_date": (
+                            row["created_at"].isoformat()
+                            if row["created_at"]
+                            else ""
+                        ),
+                "status": row["deviation_status"].lower()
             }, default=str),
         }
 
