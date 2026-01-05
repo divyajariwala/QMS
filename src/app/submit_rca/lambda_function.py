@@ -77,7 +77,10 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                     root_cause = rca.get('root_cause')
                     root_cause_category = rca.get('root_cause_category')
                     
-                    logger.info(f"Processing RCA {idx + 1}/{len(rca_list)} for deviation: {deviation_id}")
+                    # is_ai_generated flag (default to False if not provided)
+                    is_ai_generated = rca.get('is_ai_generated', False)
+                    
+                    logger.info(f"Processing RCA {idx + 1}/{len(rca_list)} for deviation: {deviation_id} (AI generated: {is_ai_generated})")
                     
                     # Insert RCA into rca_analysis table
                     cur.execute("""
@@ -91,11 +94,12 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                             near_root_cause_category,
                             root_cause,
                             root_cause_category,
+                            is_ai_generated,
                             created_by,
                             created_at,
                             updated_at
                         ) VALUES (
-                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                         )
                         RETURNING id, created_at, updated_at
                     """, (
@@ -108,6 +112,7 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                         near_cause_category,
                         root_cause,
                         root_cause_category,
+                        is_ai_generated,
                         created_by
                     ))
                     
@@ -185,6 +190,7 @@ def lambda_handler(event, context):
         "near_root_cause_category": "Design Input Issue",
         "root_cause": "Root cause text...",
         "root_cause_category": "Design Scope Issue",
+        "is_ai_generated": true,
         "created_by": "user@example.com"
     }
     
@@ -199,11 +205,13 @@ def lambda_handler(event, context):
             "near_root_cause": "Near root cause text...",
             "near_root_cause_category": "Procedure/Instruction Issue",
             "root_cause": "Root cause text...",
-            "root_cause_category": "Procedure Not Used"
+            "root_cause_category": "Procedure Not Used",
+            "is_ai_generated": true
         },
         {
             "deviation_id": "DV-00001",
             "issues": "Another issue...",
+            "is_ai_generated": false,
             ...
         }
     ]
