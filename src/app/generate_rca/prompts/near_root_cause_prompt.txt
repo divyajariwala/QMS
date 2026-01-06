@@ -1,6 +1,0 @@
-Analyze the following Investigation Summary and identify the near root cause.
-
-Investigation Summary:
-{investigation_summary}
-
-The near root cause should identify the immediate factor that contributed to the problem. Write a clear paragraph explaining what directly led to the issue. Focus on the proximate cause that can be addressed with corrective actions.

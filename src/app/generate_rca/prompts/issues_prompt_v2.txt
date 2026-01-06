@@ -14,3 +14,5 @@ Your task: Identify and describe each causal factor (problem) found in the inves
 Write a clear, comprehensive paragraph that describes all the causal factors (problems) identified. This will serve as the foundation for determining the root cause categories.
 
 Focus on WHAT happened (the problems/issues), not WHY it happened (that comes in later analysis steps).
+
+**CRITICAL: Your response must be 60-65 words maximum. Be concise and direct.**

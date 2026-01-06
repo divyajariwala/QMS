@@ -5,23 +5,69 @@ Investigation Summary:
 
 Based on the ABS Root Cause Map, identify the specific Root Cause. Consider these detailed categories:
 
-EQUIPMENT/SOFTWARE ISSUES:
-- Design Input Issue, Design/Design Review Issue, Design Output Issue, Design Change Issue
-- Equipment Defects and Manuals Issue, Preventive/Predictive Maintenance Issue
-- Procedure Not Used, Procedure Inadequate, Procedure Not Available
-- Materials Issue, Spare/Replacement Parts Issue
+**EQUIPMENT/SOFTWARE ISSUES:**
 
-PERSONNEL ISSUES:
-- Procedure Not Performed Correctly, Procedure Not Used, Change Control Issue
-- Training Not Performed, Training Inadequate, Lack of Knowledge/Skill
-- Inattention to Detail, Improper Lifting, Lack of Teamwork, Complacency
-- Craftsmanship/Technique Issue, Work Planning Issue, Troubleshooting/Corrective Action Issue
-- Oversight/Inspection Issue, Inadequate Investigation, Lack of Accountability
-- No Communication or Not Timely, Language/Translation Issue, Wrong Message
-- Personnel Hiring Issue, Staffing/Availability Issue, Accountability Issue
+Design Issue:
+- Design Input Issue, Design/Design Review Issue, Design Output Issue, Design Change Issue, Design Scope Issue, Verification Issue
 
-OTHER ISSUES:
-- Natural phenomena, External events, External facilities/activity
-- Cause Cannot Be Determined
+Equipment Reliability Issue:
+- Equipment Defects and Manuals Issue, Preventive/Predictive Maintenance Issue, Operational and Maintenance Procedures Issue, Corrective Maintenance Issue, Monitoring Issue
+
+Procedure/Instruction Issue:
+- Procedure Not Used, Procedure Inadequate, Procedure Not Available, Procedure Difficult to Use, Procedure Difficult to Locate
+
+Materials/Parts Issue:
+- Materials Issue, Spare/Replacement Parts Issue, Shelf Life/Storage Issue, Quality Issue
+
+Software Issue:
+- Software Design Issue, Software Installation/Configuration Issue, Software Update/Patch Issue, Software Documentation Issue
+
+Utility/Support Equipment Issue:
+- Utility Failure, Support Equipment Failure, Environmental Controls Issue
+
+Other Equipment Issue:
+- Other Equipment-related Issue
+
+**PERSONNEL ISSUES:**
+
+Procedure Issue:
+- Procedure Not Performed Correctly, Procedure Not Used, Procedure Not Followed, Change Control Issue, Procedure Inadequate, Procedure Not Available, Procedure Difficult to Use, Procedure Difficult to Locate
+
+Training/Guidance Issue:
+- Training Not Performed, Training Inadequate, Lack of Knowledge/Skill, Requalification Issue, On-the-Job Training Issue, Guidance Not Available, Guidance Inadequate
+
+Human Factors Issue:
+- Inattention to Detail, Improper Lifting, Lack of Teamwork, Complacency, Fatigue, Stress, Distraction, Time Pressure
+
+Tech/Craftsman Issue:
+- Craftsmanship/Technique Issue, Work Planning Issue, Troubleshooting/Corrective Action Issue, Labeling Issue, Housekeeping Issue
+
+Supervision Issue:
+- Oversight/Inspection Issue, Inadequate Investigation Issue, Lack of Accountability Issue, Lack of Enforcement Issue, Lack of Oversight Issue
+
+No Communication or Not Timely:
+- No Communication or Not Timely, Language/Translation Issue, Wrong Message, Communication Method Issue
+
+Company Issue:
+- Personnel Hiring Issue, Staffing/Availability Issue, Accountability Issue, Organizational Culture Issue, Resource Allocation Issue, Policy Issue
+
+Third Party/Personnel Issue:
+- Contractor/Vendor Issue, Supplier Issue, Customer Issue, Regulatory Issue
+
+**OTHER ISSUES:**
+
+Natural Phenomena:
+- Weather Event, Geological Event, Biological Event
+
+External Events:
+- Sabotage, Theft, Vandalism, Civil Unrest
+
+External Facilities/Activity:
+- Utility Provider Issue, Transportation Issue, Adjacent Facility Issue
+
+Cause Cannot Be Determined:
+- Insufficient Information, Evidence Destroyed/Unavailable, Inconclusive Investigation
 
 Write a clear paragraph explaining the fundamental root cause. Identify the specific underlying systemic issue that, if addressed, would have prevented this incident from occurring.
+
+**CRITICAL: Your response must be 60-65 words maximum. Be concise and direct.**
