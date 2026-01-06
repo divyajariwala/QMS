@@ -248,7 +248,11 @@ def get_deviation_by_id(conn, deviation_id):
                 deviation_id,
                 investigation_summary,
                 created_at,
-                deviation_status
+                deviation_status,
+                grading_approved,
+                rca_approved,
+                grading_completed,
+                rca_generated
             FROM deviations
             WHERE deviation_id = %s
             """,
@@ -274,7 +278,11 @@ def get_deviation_by_id(conn, deviation_id):
                             if row["created_at"]
                             else ""
                         ),
-                "status": row["deviation_status"].lower()
+                "status": row["deviation_status"].lower(),
+                "grading_approved": row["grading_approved"],
+                "rca_approved": row["rca_approved"],
+                "grading_completed": row["grading_completed"],
+                "rca_generated": row["rca_generated"],
             }, default=str),
         }
 
