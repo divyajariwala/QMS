@@ -42,6 +42,10 @@ variable "event_bridge_role_arn" {
   type = string
 }
 
+variable "sagemaker_role_arn" {
+  type = string
+}
+
 variable "openam_tenant_id" {
   type = string
 }
