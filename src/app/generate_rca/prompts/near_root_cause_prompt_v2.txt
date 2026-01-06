@@ -29,3 +29,5 @@ OTHER ISSUES:
 - Cause Cannot Be Determined
 
 Write a clear paragraph explaining the near root cause. Start by stating which category it falls under, then explain how this immediate factor contributed to the problem.
+
+**CRITICAL: Your response must be 60-65 words maximum. Be concise and direct.**

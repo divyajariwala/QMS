@@ -12,13 +12,13 @@ For example:
 
 Your task is to identify AT LEAST 2 distinct root causes (preferably 2-4) and generate a separate RCA for each one. For each RCA, provide:
 
-1. **Issues**: Describe the specific causal factor (problem) for this RCA. What happened, when, where, and what was the immediate impact.
+1. **Issues**: Describe the specific causal factor (problem) for this RCA. What happened, when, where, and what was the immediate impact. **LIMIT: 60-65 words maximum.**
 
-2. **Major Root Cause Category Explanation**: A detailed explanation of why this falls under a specific major category (Equipment/Software Issues, Personnel Issues, or Other Issues). Explain the reasoning and context.
+2. **Major Root Cause Category Explanation**: A detailed explanation of why this falls under a specific major category (Equipment/Software Issues, Personnel Issues, or Other Issues). Explain the reasoning and context. **LIMIT: 60-65 words maximum.**
 
-3. **Near Root Cause**: Explain the immediate contributing factor that led to this problem. This is one level deeper than the issue itself.
+3. **Near Root Cause**: Explain the immediate contributing factor that led to this problem. This is one level deeper than the issue itself. **LIMIT: 60-65 words maximum.**
 
-4. **Root Cause**: Identify the fundamental, systemic issue that, if addressed, would have prevented this specific problem from occurring.
+4. **Root Cause**: Identify the fundamental, systemic issue that, if addressed, would have prevented this specific problem from occurring. **LIMIT: 60-65 words maximum.**
 
 ---
 
@@ -54,28 +54,29 @@ You MUST return a minimum of 2 RCAs. If the investigation summary seems simple, 
 ```json
 [
   {
-    "issues": "Detailed description of the first causal factor...",
-    "major_root_cause_category_validated": "Detailed explanation of why this is [Major Category]...",
-    "near_root_cause": "Explanation of the near root cause for this issue...",
-    "root_cause": "Explanation of the fundamental root cause for this issue..."
+    "issues": "Concise description (60-65 words max)...",
+    "major_root_cause_category_validated": "Concise explanation (60-65 words max)...",
+    "near_root_cause": "Concise explanation (60-65 words max)...",
+    "root_cause": "Concise explanation (60-65 words max)..."
   },
   {
-    "issues": "Detailed description of the second causal factor (if exists)...",
-    "major_root_cause_category_validated": "Detailed explanation of why this is [Major Category]...",
-    "near_root_cause": "Explanation of the near root cause for this issue...",
-    "root_cause": "Explanation of the fundamental root cause for this issue..."
+    "issues": "Concise description (60-65 words max)...",
+    "major_root_cause_category_validated": "Concise explanation (60-65 words max)...",
+    "near_root_cause": "Concise explanation (60-65 words max)...",
+    "root_cause": "Concise explanation (60-65 words max)..."
   }
 ]
 ```
 
 GUIDELINES:
 - You MUST generate at least 2 RCAs (minimum requirement)
+- **CRITICAL: Each text field (issues, major_root_cause_category_validated, near_root_cause, root_cause) must be 60-65 words maximum**
 - Each RCA should address a DISTINCT root cause or perspective
 - Analyze from different levels: immediate cause, contributing factors, systemic issues, organizational factors
 - Each RCA should be complete and stand-alone
-- Use clear, professional language
+- Use clear, professional, concise language
 - Focus on systemic issues, not individual blame
-- Provide enough detail for corrective actions
+- Provide enough detail for corrective actions within the word limit
 - If the issue seems simple, consider: What allowed this to happen? What systemic gaps exist? What organizational factors contributed?
 
 EXAMPLES OF MULTIPLE PERSPECTIVES:

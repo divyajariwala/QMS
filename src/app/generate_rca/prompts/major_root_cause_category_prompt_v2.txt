@@ -14,4 +14,6 @@ Based on the ABS Root Cause Map, select ONE of the following major categories:
 3. Other Issues
    - Includes: Natural phenomena, external events, external facilities/activity, cause cannot be determined
 
-Respond with ONLY the category name from the list above, nothing else.
+Provide a detailed explanation of why this category applies, including context and reasoning.
+
+**CRITICAL: Your response must be 60-65 words maximum. Be concise and direct.**

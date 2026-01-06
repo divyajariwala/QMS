@@ -25,3 +25,5 @@ OTHER ISSUES:
 - Cause Cannot Be Determined
 
 Write a clear paragraph explaining the fundamental root cause. Identify the specific underlying systemic issue that, if addressed, would have prevented this incident from occurring.
+
+**CRITICAL: Your response must be 60-65 words maximum. Be concise and direct.**
