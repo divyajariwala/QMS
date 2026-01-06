@@ -30,26 +30,29 @@
   box-sizing: border-box;
 }
 
-.statusText {
+.statusBase {
   font-weight: $font-weight-bold;
   font-size: 12px;
   line-height: 24px;
   letter-spacing: -0.1px;
   text-transform: uppercase;
-  color: #3b3b3b;
   white-space: nowrap;
   margin: 0;
 }
 
+.statusText {
+  @extend .statusBase;
+  color: #3b3b3b;
+}
+
 .statusTextGreen {
-  font-weight: $font-weight-bold;
-  font-size: 12px;
-  line-height: 24px;
-  letter-spacing: -0.1px;
-  text-transform: uppercase;
+  @extend .statusBase;
   color: #4eb523;
-  white-space: nowrap;
-  margin: 0;
+}
+
+.statusGrad {
+  @extend .statusBase;
+  color: #4b20ab;
 }
 
 .caseIdText {
@@ -98,6 +101,25 @@
     font-size: 18px;
     color: #fff;
   }
+}
+
+.addBtn {
+  font-family: inherit;
+  text-transform: none;
+  font-size: 14px;
+  font-weight: $font-weight-medium;
+  color: #272d37;
+  padding: 10px;
+  width: 90px;
+  height: 36px;
+  justify-content: space-between;
+  border: 1px solid #dae0e6;
+  border-radius: 4px;
+  margin-left: auto !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  background-color: #fafafa;
 }
 
 $focus-ring: rgba(11, 105, 255, 0.14);

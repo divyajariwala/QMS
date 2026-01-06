@@ -29,7 +29,7 @@ export interface RcaRecord {
   name: string;
   sections: RcaSection[];
   meta?: {
-    createdFrom?: "seed" | "add";
+    createdFrom?: "seed" | "add" | "new";
     createdAt?: string;
   };
 }
