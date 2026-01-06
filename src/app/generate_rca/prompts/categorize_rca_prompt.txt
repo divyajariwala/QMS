@@ -1,6 +1,6 @@
-You are a quality management analyst using the ABS Root Cause Map methodology. Your task is to categorize the RCA analysis results into specific categories from the ABS taxonomy.
+You are a quality management analyst using the official ABS Root Cause Map™ methodology (Copyright 2010 © ABSG Consulting Inc.). Your task is to categorize the RCA analysis results into specific categories from the official ABS taxonomy.
 
-You will receive the generated RCA analysis and must assign the most appropriate category to each section following the official ABS Root Cause Map hierarchy.
+You will receive the generated RCA analysis and must assign the most appropriate category to each section following the official ABS Root Cause Map™ hierarchy.
 
 === GENERATED RCA ANALYSIS ===
 
@@ -19,7 +19,7 @@ Near Root Cause:
 Root Cause:
 {root_cause_text}
 
-=== ABS ROOT CAUSE MAP TAXONOMY ===
+=== OFFICIAL ABS ROOT CAUSE MAP™ TAXONOMY ===
 
 STEP 1: ISSUES CATEGORIES (Problem Categories - select ONE):
 
@@ -43,121 +43,59 @@ Other Issues:
 
 ---
 
-STEP 2: MAJOR ROOT CAUSE CATEGORIES (select ONE):
-- Equipment/Software Issues
-- Personnel Issues
-- Other Issues
-
----
-
-STEP 3: NEAR ROOT CAUSE CATEGORIES (select ONE based on Major Category):
-
-If Major Category = "Equipment/Software Issues":
+STEP 2: MAJOR ROOT CAUSE CATEGORIES (select ONE - examples, there are 14 total):
 - Design Issue
-- Equipment Reliability Issue
-- Procedure/Instruction Issue
-- Materials/Parts Issue
-- Software Issue
-- Utility/Support Equipment Issue
-- Other Equipment Issue
-
-If Major Category = "Personnel Issues":
+- Equipment Reliability Program Issue
+- Documentation and Records Issue
+- Material/Parts and Product Issue
+- Hazard/Defect Identification and Analysis Issue
 - Procedure Issue
-- Training/Guidance Issue
 - Human Factors Issue
-- Tech/Craftsman Issue
+- Training/Personnel Qualification Issue
 - Supervision Issue
-- No Communication or Not Timely
-- Company Issue
-- Third Party/Personnel Issue
-
-If Major Category = "Other Issues":
-- Natural Phenomena
-- External Events
-- External Facilities/Activity
-- Cause Cannot Be Determined
+- Communication Issue
+- Company Standards, Policies and Administrative Controls (SPAC) Issue
+- And others...
 
 ---
 
-STEP 4: ROOT CAUSE CATEGORIES (select ONE based on Near Root Cause):
+STEP 3: NEAR ROOT CAUSE CATEGORIES (select ONE based on Major Category - examples):
 
 For "Design Issue":
 - Design Input Issue
-- Design/Design Review Issue
 - Design Output Issue
-- Design Change Issue
-- Design Scope Issue
-- Verification Issue
+- Design Review/Verification Issue
 
-For "Equipment Reliability Issue":
-- Equipment Defects and Manuals Issue
-- Preventive/Predictive Maintenance Issue
-- Operational and Maintenance Procedures Issue
+For "Equipment Reliability Program Issue":
+- Equipment Reliability Program Design Issue
+- Periodic Maintenance Issue
+- Event-based Maintenance Issue
+- Condition-based Maintenance Issue
+- Fault-finding Maintenance and Inspection Issue
 - Corrective Maintenance Issue
-- Monitoring Issue
+- Routine Inspection and Servicing Issue
 
-For "Procedure/Instruction Issue" (Equipment):
+For "Procedure Issue":
 - Procedure Not Used
 - Procedure Inadequate
 - Procedure Not Available
 - Procedure Difficult to Use
 - Procedure Difficult to Locate
 
-For "Materials/Parts Issue":
-- Materials Issue
-- Spare/Replacement Parts Issue
-- Shelf Life/Storage Issue
-- Quality Issue
-
-For "Software Issue":
-- Software Design Issue
-- Software Installation/Configuration Issue
-- Software Update/Patch Issue
-- Software Documentation Issue
-
-For "Utility/Support Equipment Issue":
-- Utility Failure
-- Support Equipment Failure
-- Environmental Controls Issue
-
-For "Other Equipment Issue":
-- Other Equipment-related Issue
-
-For "Procedure Issue" (Personnel):
-- Procedure Not Performed Correctly
-- Procedure Not Used
-- Procedure Not Followed
-- Change Control Issue
-- Procedure Inadequate
-- Procedure Not Available
-- Procedure Difficult to Use
-- Procedure Difficult to Locate
-
-For "Training/Guidance Issue":
+For "Training/Personnel Qualification Issue":
 - Training Not Performed
 - Training Inadequate
 - Lack of Knowledge/Skill
 - Requalification Issue
 - On-the-Job Training Issue
-- Guidance Not Available
-- Guidance Inadequate
 
 For "Human Factors Issue":
-- Inattention to Detail
-- Improper Lifting
-- Lack of Teamwork
-- Complacency
-- Fatigue
-- Stress
-- Distraction
-- Time Pressure
-
-For "Tech/Craftsman Issue":
-- Craftsmanship/Technique Issue
-- Work Planning Issue
-- Troubleshooting/Corrective Action Issue
-- Labeling Issue
-- Housekeeping Issue
+- Tools and Equipment Issue
+- Workplace Layout Issue
+- Work Environment Issue
+- Physical Workload Issue
+- Mental Workload Issue
+- Error Mitigation Issue
 
 For "Supervision Issue":
 - Oversight/Inspection Issue
@@ -166,25 +104,11 @@ For "Supervision Issue":
 - Lack of Enforcement Issue
 - Lack of Oversight Issue
 
-For "No Communication or Not Timely":
+For "Communication Issue":
 - No Communication or Not Timely
 - Language/Translation Issue
 - Wrong Message
 - Communication Method Issue
-
-For "Company Issue":
-- Personnel Hiring Issue
-- Staffing/Availability Issue
-- Accountability Issue
-- Organizational Culture Issue
-- Resource Allocation Issue
-- Policy Issue
-
-For "Third Party/Personnel Issue":
-- Contractor/Vendor Issue
-- Supplier Issue
-- Customer Issue
-- Regulatory Issue
 
 For "Natural Phenomena":
 - Weather Event
@@ -197,21 +121,75 @@ For "External Events":
 - Vandalism
 - Civil Unrest
 
-For "External Facilities/Activity":
-- Utility Provider Issue
-- Transportation Issue
-- Adjacent Facility Issue
-
 For "Cause Cannot Be Determined":
 - Insufficient Information
 - Evidence Destroyed/Unavailable
 - Inconclusive Investigation
 
+(Note: There are 40+ Near Root Causes total in the official ABS map)
+
+---
+
+STEP 4: ROOT CAUSE CATEGORIES (select ONE based on Near Root Cause - examples):
+
+For "Design Input Issue":
+- Design Scope Issue
+- Design Input Data Issue
+
+For "Design Output Issue":
+- Design Output Incorrect
+- Design Output Unclear or Inconsistent
+
+For "Design Review/Verification Issue":
+- No Review/Verification
+- Review/Verification Issue
+
+For "Equipment Reliability Program Design Issue":
+- Critical Equipment Not Identified
+- No or Inappropriate Maintenance Selected
+- Risk Acceptance Issue
+
+For "Periodic Maintenance Issue":
+- Scope Issue
+- Frequency Specification Issue
+- Implementation Issue
+
+For "Procedure Not Used":
+- Procedure Not Performed Correctly
+- Procedure Not Used
+- Procedure Not Followed
+- Change Control Issue
+
+For "Training Not Performed":
+- Training Not Performed
+- Training Inadequate
+- Lack of Knowledge/Skill
+
+For "Human Factors - Tools and Equipment Issue":
+- Tools/Equipment Inadequate
+- Tools/Equipment Not Available
+- Tools/Equipment Difficult to Use
+
+For "Oversight/Inspection Issue":
+- Oversight Not Performed
+- Oversight Inadequate
+- Inspection Not Performed
+- Inspection Inadequate
+
+For "No Communication or Not Timely":
+- No Communication
+- Communication Not Timely
+- Communication Incomplete
+
+(Note: There are 159+ Root Causes total in the official ABS map)
+
+---
+
 === YOUR TASK ===
 
 Analyze the generated RCA text and select the MOST APPROPRIATE category for each section. Base your selection on:
 1. The actual content and meaning of the generated text
-2. The official ABS Root Cause Map taxonomy
+2. The official ABS Root Cause Map™ taxonomy (Copyright 2010 © ABSG Consulting Inc.)
 3. The hierarchical relationship between categories (Issues → Major → Near → Root)
 
 CRITICAL RULES:
@@ -220,12 +198,13 @@ CRITICAL RULES:
 - Root Cause must be valid for the selected Near Root Cause
 - Select the most specific and accurate category
 - Ensure consistency across all levels
+- Use official ABS category names exactly as shown
 
 Respond ONLY with valid JSON in this exact format:
 
 {{
   "issues_category": "Selected category from Issues Categories list",
-  "major_root_cause_category": "Selected from: Equipment/Software Issues, Personnel Issues, or Other Issues",
+  "major_root_cause_category": "Selected from Major Root Cause Categories",
   "near_root_cause_category": "Selected category from Near Root Cause list (must match Major Category)",
   "root_cause_category": "Selected category from Root Cause list (must match Near Root Cause)"
 }}

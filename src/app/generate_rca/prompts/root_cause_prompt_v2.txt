@@ -1,72 +1,164 @@
-You are a quality management analyst using the ABS Root Cause Map methodology. Analyze the Investigation Summary and identify the fundamental root cause.
+You are a quality management analyst using the official ABS Root Cause Map™ methodology (Copyright 2010 © ABSG Consulting Inc.). Analyze the Investigation Summary and identify the fundamental root cause.
 
 Investigation Summary:
 {investigation_summary}
 
-Based on the ABS Root Cause Map, identify the specific Root Cause. Consider these detailed categories:
+Based on the official ABS Root Cause Map™, identify the specific Root Cause (159+ total in official map, main examples below):
 
-**EQUIPMENT/SOFTWARE ISSUES:**
+**DESIGN ISSUE:**
+Design Input Issue (#19):
+- Design Scope Issue (#20) - Design scope inadequate
+- Design Input Data Issue (#21) - Problems with design input data, codes, standards, or requirements
 
-Design Issue:
-- Design Input Issue, Design/Design Review Issue, Design Output Issue, Design Change Issue, Design Scope Issue, Verification Issue
+Design Output Issue (#22):
+- Design Output Incorrect (#23) - Design specifications or drawings incorrect
+- Design Output Unclear or Inconsistent (#24) - Design documents inconsistent or unclear
 
-Equipment Reliability Issue:
-- Equipment Defects and Manuals Issue, Preventive/Predictive Maintenance Issue, Operational and Maintenance Procedures Issue, Corrective Maintenance Issue, Monitoring Issue
+Design Review/Verification Issue (#25):
+- No Review/Verification (#26) - Design review not performed
+- Review/Verification Issue (#27) - Design review inadequate or failed to detect problems
 
-Procedure/Instruction Issue:
-- Procedure Not Used, Procedure Inadequate, Procedure Not Available, Procedure Difficult to Use, Procedure Difficult to Locate
+**EQUIPMENT RELIABILITY PROGRAM ISSUE:**
+Equipment Reliability Program Design Issue (#29):
+- Critical Equipment Not Identified (#30) - Equipment not identified as critical
+- No or Inappropriate Maintenance Selected (#31) - Wrong maintenance type or no maintenance specified
+- Risk Acceptance Issue (#32) - Inappropriate risk acceptance criteria
 
-Materials/Parts Issue:
-- Materials Issue, Spare/Replacement Parts Issue, Shelf Life/Storage Issue, Quality Issue
+Periodic Maintenance Issue (#33):
+- Scope Issue (#34) - Maintenance scope too broad or narrow
+- Frequency Specification Issue (#35) - Maintenance frequency incorrect
+- Implementation Issue (#36) - Maintenance not performed correctly or on schedule
 
-Software Issue:
-- Software Design Issue, Software Installation/Configuration Issue, Software Update/Patch Issue, Software Documentation Issue
+Event-based Maintenance Issue (#37):
+- Scope Issue (#38) - Event-based maintenance scope inadequate
+- Event Specification Issue (#39) - Wrong triggering event specified
+- Monitoring Issue (#40) - Failed to monitor or notify when event occurred
+- Implementation Issue (#41) - Event-based maintenance not performed correctly
 
-Utility/Support Equipment Issue:
-- Utility Failure, Support Equipment Failure, Environmental Controls Issue
+Condition-based Maintenance Issue (#42):
+- Scope Issue (#43) - Condition monitoring scope inadequate
+- Detection Method Issue (#44) - Wrong parameters monitored
+- Monitoring Issue (#45) - Monitoring not performed or performed incorrectly
+- Data Interpretation Issue (#46) - Failed to interpret monitoring data correctly
 
-Other Equipment Issue:
-- Other Equipment-related Issue
+Corrective Maintenance Issue (#51):
+- Troubleshooting/Corrective Action Issue (#52) - Problem misdiagnosed
+- Repair Implementation Issue (#53) - Repair performed incorrectly
 
-**PERSONNEL ISSUES:**
+**PROCEDURE ISSUE:**
+Procedure Not Used (#123):
+- Procedure Not Performed Correctly - Procedure used but performed incorrectly
+- Procedure Not Used - Procedure available but not used
+- Procedure Not Followed - Procedure not followed as written
+- Change Control Issue (#129) - Changes not properly controlled
 
-Procedure Issue:
-- Procedure Not Performed Correctly, Procedure Not Used, Procedure Not Followed, Change Control Issue, Procedure Inadequate, Procedure Not Available, Procedure Difficult to Use, Procedure Difficult to Locate
+Procedure Inadequate (#124):
+- Procedure Incomplete - Procedure missing critical steps
+- Procedure Incorrect - Procedure contains errors
+- Procedure Unclear - Procedure difficult to understand
 
-Training/Guidance Issue:
-- Training Not Performed, Training Inadequate, Lack of Knowledge/Skill, Requalification Issue, On-the-Job Training Issue, Guidance Not Available, Guidance Inadequate
+Procedure Not Available (#125):
+- No Procedure Exists - Procedure never developed
+- Procedure Not Accessible - Procedure exists but not accessible
 
-Human Factors Issue:
-- Inattention to Detail, Improper Lifting, Lack of Teamwork, Complacency, Fatigue, Stress, Distraction, Time Pressure
+**TRAINING/PERSONNEL QUALIFICATION ISSUE:**
+Training Not Performed (#172):
+- Initial Training Not Performed - Required initial training not conducted
+- Refresher Training Not Performed - Required refresher training not conducted
 
-Tech/Craftsman Issue:
-- Craftsmanship/Technique Issue, Work Planning Issue, Troubleshooting/Corrective Action Issue, Labeling Issue, Housekeeping Issue
+Training Inadequate (#173):
+- Training Content Inadequate - Training content insufficient
+- Training Methods Inadequate - Training delivery methods ineffective
+- Training Frequency Inadequate - Training not frequent enough
 
-Supervision Issue:
-- Oversight/Inspection Issue, Inadequate Investigation Issue, Lack of Accountability Issue, Lack of Enforcement Issue, Lack of Oversight Issue
+Lack of Knowledge/Skill (#174):
+- Knowledge Gap - Personnel lack necessary knowledge
+- Skill Gap - Personnel lack necessary skills
+- Experience Gap - Personnel lack necessary experience
 
-No Communication or Not Timely:
-- No Communication or Not Timely, Language/Translation Issue, Wrong Message, Communication Method Issue
+Requalification Issue (#175):
+- Requalification Not Performed - Required requalification not conducted
+- Requalification Inadequate - Requalification process insufficient
 
-Company Issue:
-- Personnel Hiring Issue, Staffing/Availability Issue, Accountability Issue, Organizational Culture Issue, Resource Allocation Issue, Policy Issue
+On-the-Job Training Issue (#176):
+- OJT Not Performed - On-the-job training not provided
+- OJT Inadequate - On-the-job training insufficient
 
-Third Party/Personnel Issue:
-- Contractor/Vendor Issue, Supplier Issue, Customer Issue, Regulatory Issue
+**HUMAN FACTORS ISSUE:**
+Tools and Equipment Issue (#147):
+- Tools/Equipment Inadequate - Tools not suitable for task
+- Tools/Equipment Not Available - Required tools not available
+- Tools/Equipment Difficult to Use - Tools poorly designed for human use
 
-**OTHER ISSUES:**
+Workplace Layout Issue (#148):
+- Workspace Inadequate - Insufficient workspace
+- Layout Inefficient - Poor workspace layout
+- Access Difficult - Difficult access to equipment
 
-Natural Phenomena:
-- Weather Event, Geological Event, Biological Event
+Work Environment Issue (#149):
+- Excessive Noise - Noise levels too high
+- Temperature Extremes - Too hot or too cold
+- Poor Lighting - Inadequate lighting
+- Poor Ventilation - Inadequate ventilation
 
-External Events:
-- Sabotage, Theft, Vandalism, Civil Unrest
+Mental Workload Issue (#151):
+- Time Pressure (#154) - Insufficient time to complete task
+- Stress (#152) - Excessive stress levels
+- Distraction (#153) - Distractions present
+- Task Complexity - Task too complex
 
-External Facilities/Activity:
-- Utility Provider Issue, Transportation Issue, Adjacent Facility Issue
+Error Mitigation Issue (#152):
+- Errors Difficult to Detect - Hard to identify errors
+- Errors Difficult to Correct - Hard to fix errors once detected
 
-Cause Cannot Be Determined:
-- Insufficient Information, Evidence Destroyed/Unavailable, Inconclusive Investigation
+**SUPERVISION ISSUE:**
+Oversight/Inspection Issue (#186):
+- Oversight Not Performed - Required oversight not conducted
+- Oversight Inadequate - Oversight insufficient
+- Inspection Not Performed - Required inspection not conducted
+- Inspection Inadequate - Inspection insufficient
+
+Inadequate Investigation Issue (#187):
+- Investigation Not Performed - Investigation not conducted
+- Investigation Scope Inadequate - Investigation scope too narrow
+- Investigation Methods Inadequate - Investigation methods insufficient
+
+Lack of Accountability Issue (#188):
+- Accountability Not Established - Roles/responsibilities unclear
+- Accountability Not Enforced - Accountability not enforced
+
+Lack of Enforcement Issue (#189):
+- Rules Not Enforced - Rules/procedures not enforced
+- Consequences Not Applied - Consequences for violations not applied
+
+**COMMUNICATION ISSUE:**
+No Communication or Not Timely (#200):
+- No Communication - Required communication did not occur
+- Communication Not Timely - Communication delayed
+- Communication Incomplete - Communication missing critical information
+
+Language/Translation Issue (#201):
+- Language Barrier - Language differences caused misunderstanding
+- Translation Error - Translation incorrect or unclear
+
+Wrong Message (#202):
+- Incorrect Information - Wrong information communicated
+- Misleading Information - Information misleading
+
+Communication Method Issue (#203):
+- Method Inappropriate - Communication method not suitable
+- Method Not Available - Required communication method not available
+
+**NATURAL PHENOMENA / EXTERNAL EVENTS:**
+- Weather Event - Specific weather event (tornado, hurricane, flood, etc.)
+- Geological Event - Earthquake, mudslide, etc.
+- Sabotage - External malicious act
+- Theft - External theft or vandalism
+
+**CAUSE CANNOT BE DETERMINED:**
+- Insufficient Information - Not enough data available
+- Evidence Destroyed/Unavailable - Evidence lost, destroyed, or inaccessible
+- Inconclusive Investigation - Investigation unable to determine definitive cause
 
 Write a clear paragraph explaining the fundamental root cause. Identify the specific underlying systemic issue that, if addressed, would have prevented this incident from occurring.
 

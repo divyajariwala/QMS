@@ -1,34 +1,76 @@
-You are a quality management analyst using the ABS Root Cause Map methodology. Analyze the Investigation Summary and identify the near root cause.
+You are a quality management analyst using the official ABS Root Cause Map™ methodology (Copyright 2010 © ABSG Consulting Inc.). Analyze the Investigation Summary and identify the near root cause.
 
 Investigation Summary:
 {investigation_summary}
 
-Based on the ABS Root Cause Map, identify the Near Root Cause from one of these categories:
+Based on the official ABS Root Cause Map™, identify the Near Root Cause from one of these categories (40+ total, main examples below):
 
-**EQUIPMENT/SOFTWARE ISSUES:**
-- Design Issue - Problems from design phase decisions or outputs
-- Equipment Reliability Issue - Problems with equipment performance, maintenance, or monitoring
-- Procedure/Instruction Issue - Problems with equipment-related procedures or instructions
-- Materials/Parts Issue - Problems with materials, spare parts, or quality
-- Software Issue - Problems with software design, installation, or configuration
-- Utility/Support Equipment Issue - Problems with utilities or support systems
-- Other Equipment Issue - Other equipment-related issues
+**DESIGN ISSUE (#18):**
+- Design Input Issue (#19) - Problems with design inputs, scope, or data
+- Design Output Issue (#22) - Problems with design outputs, drawings, or specifications
+- Design Review/Verification Issue (#25) - Problems with design review or verification process
 
-**PERSONNEL ISSUES:**
-- Procedure Issue - Problems with following or using procedures
-- Training/Guidance Issue - Problems with training quality or knowledge transfer
-- Human Factors Issue - Problems related to human behavior and psychological factors
-- Tech/Craftsman Issue - Problems with technical execution or work practices
-- Supervision Issue - Problems with oversight, investigation, or accountability
-- No Communication or Not Timely - Problems with communication quality or timing
-- Company Issue - Problems with organizational systems or culture
-- Third Party/Personnel Issue - Problems involving external parties (contractors, vendors, suppliers)
+**EQUIPMENT RELIABILITY PROGRAM ISSUE (#28):**
+- Equipment Reliability Program Design Issue (#29) - Problems with maintenance program design
+- Periodic Maintenance Issue (#33) - Problems with scheduled/preventive maintenance
+- Event-based Maintenance Issue (#37) - Problems with maintenance triggered by events
+- Condition-based Maintenance Issue (#42) - Problems with predictive/condition monitoring
+- Fault-finding Maintenance and Inspection Issue (#47) - Problems detecting hidden failures
+- Corrective Maintenance Issue (#51) - Problems with repair activities
+- Routine Inspection and Servicing Issue (#54) - Problems with routine rounds/inspections
 
-**OTHER ISSUES:**
-- Natural Phenomena - Events caused by natural forces (weather, geological, biological)
-- External Events - Human-caused external events (sabotage, theft, vandalism)
-- External Facilities/Activity - Issues with external infrastructure or services
-- Cause Cannot Be Determined - Root cause could not be established
+**DOCUMENTATION AND RECORDS ISSUE (#58):**
+- Equipment Records and Manuals Issue (#59) - Problems with equipment documentation
+- Operational and Maintenance History Issue (#60) - Problems with maintenance records
+- Risk Assessment Records Issue (#61) - Problems with risk documentation
+
+**PROCEDURE ISSUE (#122):**
+- Procedure Not Used (#123) - Procedure available but not used
+- Procedure Inadequate (#124) - Procedure exists but is inadequate
+- Procedure Not Available (#125) - No procedure exists for the task
+
+**HUMAN FACTORS ISSUE (#146):**
+- Tools and Equipment Issue (#147) - Problems with tool/equipment design for human use
+- Workplace Layout Issue (#148) - Problems with workspace design
+- Work Environment Issue (#149) - Problems with noise, temperature, lighting, etc.
+- Physical Workload Issue (#150) - Excessive physical demands
+- Mental Workload Issue (#151) - Excessive mental/cognitive demands
+- Error Mitigation Issue (#152) - Difficulty detecting or correcting errors
+
+**TRAINING/PERSONNEL QUALIFICATION ISSUE (#171):**
+- Training Not Performed (#172) - Required training not conducted
+- Training Inadequate (#173) - Training exists but is inadequate
+- Lack of Knowledge/Skill (#174) - Personnel lack necessary knowledge/skills
+- Requalification Issue (#175) - Problems with requalification process
+- On-the-Job Training Issue (#176) - Problems with OJT program
+
+**SUPERVISION ISSUE (#185):**
+- Oversight/Inspection Issue (#186) - Problems with oversight or inspection activities
+- Inadequate Investigation Issue (#187) - Problems with investigation quality
+- Lack of Accountability Issue (#188) - Accountability not established or enforced
+- Lack of Enforcement Issue (#189) - Rules/procedures not enforced
+- Lack of Oversight Issue (#190) - Insufficient supervision
+
+**COMMUNICATION ISSUE (#199):**
+- No Communication or Not Timely (#200) - Communication absent or delayed
+- Language/Translation Issue (#201) - Problems with language barriers or translation
+- Wrong Message (#202) - Incorrect information communicated
+- Communication Method Issue (#203) - Problems with communication methods/channels
+
+**NATURAL PHENOMENA (#15):**
+- Weather Event - Tornadoes, hurricanes, floods, lightning
+- Geological Event - Earthquakes, mudslides
+- Biological Event - Disease outbreaks, pest infestations
+
+**EXTERNAL EVENTS (#16):**
+- Sabotage - Malicious external acts
+- Theft - External theft or vandalism
+- Civil Unrest - Riots, protests affecting operations
+
+**CAUSE CANNOT BE DETERMINED (#6):**
+- Insufficient Information - Not enough data to determine cause
+- Evidence Destroyed/Unavailable - Evidence lost or inaccessible
+- Inconclusive Investigation - Investigation unable to determine cause
 
 Write a clear paragraph explaining the near root cause. Start by stating which category it falls under, then explain how this immediate factor contributed to the problem.
 
