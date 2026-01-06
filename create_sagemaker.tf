@@ -3,7 +3,7 @@ locals {
     mounjaro_level = {
       name = "${var.short_name}-${var.environment}-mounjaro-level"
       image_uri = ""
-      s3_file_path = "${var.short_name}-${var.environment}-model-files/mounjaro-level-model.tar.gz"
+      s3_file_path = "s3://${var.short_name}-${var.environment}-model-files/mounjaro-level-model.tar.gz"
       instance_type = "ml.g4dn.xlarge"
       execution_role_arn = var.sagemaker_role_arn
       subnet_ids = [var.subnet1, var.subnet2]
@@ -12,7 +12,7 @@ locals {
     mounjaro_category = {
       name = "${var.short_name}-${var.environment}-mounjaro-category"
       image_uri = ""
-      s3_file_path = "${var.short_name}-${var.environment}-model-files/mounjaro-category-model.tar.gz"
+      s3_file_path = "s3://${var.short_name}-${var.environment}-model-files/mounjaro-category-model.tar.gz"
       instance_type = "ml.g4dn.xlarge"
       execution_role_arn = var.sagemaker_role_arn
       subnet_ids = [var.subnet1, var.subnet2]
