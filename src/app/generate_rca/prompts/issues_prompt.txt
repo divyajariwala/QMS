@@ -1,6 +1,0 @@
-You are a quality management analyst. Analyze the Investigation Summary below and identify all specific issues mentioned.
-
-Investigation Summary:
-{investigation_summary}
-
-Write a clear, concise paragraph describing all the issues found in the investigation. Focus on what went wrong and the specific problems identified. Write in plain text, no formatting or structure needed.

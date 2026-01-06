@@ -12,35 +12,61 @@ For example:
 
 Your task is to identify AT LEAST 2 distinct root causes (preferably 2-4) and generate a separate RCA for each one. For each RCA, provide:
 
-1. **Issues**: Describe the specific causal factor (problem) for this RCA. What happened, when, where, and what was the immediate impact.
+1. **Issues**: Describe the specific causal factor (problem) for this RCA. What happened, when, where, and what was the immediate impact. **LIMIT: 60-65 words maximum.**
 
-2. **Major Root Cause Category Explanation**: A detailed explanation of why this falls under a specific major category (Equipment/Software Issues, Personnel Issues, or Other Issues). Explain the reasoning and context.
+2. **Major Root Cause Category Explanation**: A detailed explanation of why this falls under a specific major category (Equipment/Software Issues, Personnel Issues, or Other Issues). Explain the reasoning and context. **LIMIT: 60-65 words maximum.**
 
-3. **Near Root Cause**: Explain the immediate contributing factor that led to this problem. This is one level deeper than the issue itself.
+3. **Near Root Cause**: Explain the immediate contributing factor that led to this problem. This is one level deeper than the issue itself. **LIMIT: 60-65 words maximum.**
 
-4. **Root Cause**: Identify the fundamental, systemic issue that, if addressed, would have prevented this specific problem from occurring.
+4. **Root Cause**: Identify the fundamental, systemic issue that, if addressed, would have prevented this specific problem from occurring. **LIMIT: 60-65 words maximum.**
 
 ---
 
-ABS ROOT CAUSE MAP REFERENCE:
+ABS ROOT CAUSE MAP REFERENCE (Official Taxonomy):
 
-**Major Categories:**
-1. Equipment/Software Issues
-2. Personnel Issues  
-3. Other Issues
+**HIERARCHY:** Problem Category → Major Category → Near Root Cause → Root Cause
 
-**Near Root Cause Categories:**
-- Design Issue, Equipment Reliability Issue, Procedure/Instruction Issue, Materials/Parts Issue, Utility/Support Equipment Issue, Other Equipment Issue
-- Procedure Issue, Training/Guidance Issue, Human Factors Issue, Tech/Craftsman Issue, Supervision Issue, No Communication or Not Timely, Company Issue
-- Natural Phenomena, External Events, External Facilities/Activity, Cause Cannot Be Determined
+**MAJOR CATEGORIES:**
+1. Equipment/Software Issues - Issues related to equipment design, reliability, materials, software, or support systems
+2. Personnel Issues - Issues related to human performance, training, procedures, supervision, or communication
+3. Other Issues - Issues caused by external factors or undetermined causes
 
-**Root Cause Categories:**
-- Design Input Issue, Design Output Issue, Equipment Defects Issue, Preventive Maintenance Issue
-- Procedure Not Used, Procedure Inadequate, Procedure Not Available
-- Training Not Performed, Training Inadequate, Lack of Knowledge/Skill
-- Inattention to Detail, Lack of Teamwork, Complacency
-- Oversight/Inspection Issue, Inadequate Investigation, Lack of Accountability
-- No Communication or Not Timely, Wrong Message
+**NEAR ROOT CAUSE CATEGORIES BY MAJOR CATEGORY:**
+
+Equipment/Software Issues:
+- Design Issue - Problems from design phase decisions or outputs
+- Equipment Reliability Issue - Problems with equipment performance, maintenance, or monitoring
+- Procedure/Instruction Issue - Problems with equipment-related procedures
+- Materials/Parts Issue - Problems with materials, spare parts, or quality
+- Software Issue - Problems with software design, installation, or configuration
+- Utility/Support Equipment Issue - Problems with utilities or support systems
+- Other Equipment Issue - Other equipment-related issues
+
+Personnel Issues:
+- Procedure Issue - Problems with following or using procedures
+- Training/Guidance Issue - Problems with training quality or knowledge transfer
+- Human Factors Issue - Problems related to human behavior and psychological factors
+- Tech/Craftsman Issue - Problems with technical execution or work practices
+- Supervision Issue - Problems with oversight, investigation, or accountability
+- No Communication or Not Timely - Problems with communication quality or timing
+- Company Issue - Problems with organizational systems or culture
+- Third Party/Personnel Issue - Problems involving external parties
+
+Other Issues:
+- Natural Phenomena - Events caused by natural forces
+- External Events - Human-caused external events
+- External Facilities/Activity - Issues with external infrastructure or services
+- Cause Cannot Be Determined - Root cause could not be established
+
+**EXAMPLE ROOT CAUSE CATEGORIES:**
+- Design: Design Input Issue, Design Output Issue, Design Change Issue, Verification Issue
+- Equipment Reliability: Equipment Defects Issue, Preventive/Predictive Maintenance Issue, Monitoring Issue
+- Procedure: Procedure Not Used, Procedure Inadequate, Procedure Not Available, Procedure Not Followed
+- Training: Training Not Performed, Training Inadequate, Lack of Knowledge/Skill
+- Human Factors: Inattention to Detail, Lack of Teamwork, Complacency, Fatigue, Stress
+- Supervision: Oversight/Inspection Issue, Inadequate Investigation, Lack of Accountability
+- Communication: No Communication or Not Timely, Language/Translation Issue, Wrong Message
+- Company: Personnel Hiring Issue, Staffing/Availability Issue, Organizational Culture Issue
 - And many others...
 
 ---
@@ -54,28 +80,29 @@ You MUST return a minimum of 2 RCAs. If the investigation summary seems simple, 
 ```json
 [
   {
-    "issues": "Detailed description of the first causal factor...",
-    "major_root_cause_category_validated": "Detailed explanation of why this is [Major Category]...",
-    "near_root_cause": "Explanation of the near root cause for this issue...",
-    "root_cause": "Explanation of the fundamental root cause for this issue..."
+    "issues": "Concise description (60-65 words max)...",
+    "major_root_cause_category_validated": "Concise explanation (60-65 words max)...",
+    "near_root_cause": "Concise explanation (60-65 words max)...",
+    "root_cause": "Concise explanation (60-65 words max)..."
   },
   {
-    "issues": "Detailed description of the second causal factor (if exists)...",
-    "major_root_cause_category_validated": "Detailed explanation of why this is [Major Category]...",
-    "near_root_cause": "Explanation of the near root cause for this issue...",
-    "root_cause": "Explanation of the fundamental root cause for this issue..."
+    "issues": "Concise description (60-65 words max)...",
+    "major_root_cause_category_validated": "Concise explanation (60-65 words max)...",
+    "near_root_cause": "Concise explanation (60-65 words max)...",
+    "root_cause": "Concise explanation (60-65 words max)..."
   }
 ]
 ```
 
 GUIDELINES:
 - You MUST generate at least 2 RCAs (minimum requirement)
+- **CRITICAL: Each text field (issues, major_root_cause_category_validated, near_root_cause, root_cause) must be 60-65 words maximum**
 - Each RCA should address a DISTINCT root cause or perspective
 - Analyze from different levels: immediate cause, contributing factors, systemic issues, organizational factors
 - Each RCA should be complete and stand-alone
-- Use clear, professional language
+- Use clear, professional, concise language
 - Focus on systemic issues, not individual blame
-- Provide enough detail for corrective actions
+- Provide enough detail for corrective actions within the word limit
 - If the issue seems simple, consider: What allowed this to happen? What systemic gaps exist? What organizational factors contributed?
 
 EXAMPLES OF MULTIPLE PERSPECTIVES:
