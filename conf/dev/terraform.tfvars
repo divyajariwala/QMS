@@ -17,6 +17,8 @@ static_website            = "ui"
 lambda_execution_role_arn = "arn:aws:iam::120569648189:role/qms-dev-lambda-role"
 step_function_role_arn    = "arn:aws:iam::120569648189:role/qms-dev-step-function-role"
 event_bridge_role_arn     = "arn:aws:iam::120569648189:role/qms-dev-events-role"
+sagemaker_role_arn = "arn:aws:iam::120569648189:role/qms-dev-sagemaker-execution-role"
+
 serverless_min_acu        = "2"
 serverless_max_acu        = "16"
 
