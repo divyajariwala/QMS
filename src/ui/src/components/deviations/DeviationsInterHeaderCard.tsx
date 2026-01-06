@@ -11,23 +11,27 @@ type DeviationData = {
   deviationData: {
     deviation_id: string;
     created_date: string;
-    status: string;
+    rca_approved: boolean;
+    grading_approved: boolean;
   };
 };
 
 const DeviationInterHeaderCard: React.FC<DeviationData> = ({
   deviationData,
 }) => {
-  const { deviation_id, created_date, status } = deviationData;
+  const { deviation_id, created_date, rca_approved, grading_approved } =
+    deviationData;
   return (
     <Paper className={styles.paper}>
       <Box className={styles.flexContainer}>
         <Box className={styles.leftSide}>
           <Stack spacing={0.5} className={styles.stackCustom}>
-            {status === "pending" ? (
-              <Box className={styles.statusText}>IN REVIEW</Box>
+            {grading_approved === true ? (
+              <Box className={styles.statusTextGreen}>GRADING COMPLETED</Box>
+            ) : rca_approved === true && grading_approved === false ? (
+              <Box className={styles.statusGrad}>GRADING PENDING</Box>
             ) : (
-              <Box className={styles.statusText}>{status?.toUpperCase()}</Box>
+              <Box className={styles.statusText}>IN REVIEW</Box>
             )}
             <Stack
               direction="row"

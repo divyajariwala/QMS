@@ -7,6 +7,7 @@ import styles from "./RootCauseAnalysis.module.scss";
 
 interface RcaTabsProps {
   rcas: RcaRecord[];
+  pendingRca?: RcaRecord | null;
   selectedIndex: number;
   onChange: (_: React.SyntheticEvent, newIndex: number) => void;
   onAdd: () => void;
@@ -15,6 +16,7 @@ interface RcaTabsProps {
 
 const RcaTabs: React.FC<RcaTabsProps> = ({
   rcas,
+  pendingRca,
   selectedIndex,
   onChange,
   onAdd,
@@ -47,10 +49,22 @@ const RcaTabs: React.FC<RcaTabsProps> = ({
             }}
           />
         ))}
+        {pendingRca && (
+          <Tab
+            key={pendingRca.id}
+            label={pendingRca.name}
+            className={styles.rcaTab}
+            sx={{
+              "&.Mui-selected": {
+                backgroundColor: "#DAE0E6",
+              },
+            }}
+          />
+        )}
       </Tabs>
       <Stack direction="row" spacing={1}>
         {!isSubmittedSuccessfully && (
-          <Button variant="text" onClick={onAdd} className={styles.addBtn}>
+          <Button variant="text" onClick={onAdd} className={styles.addBtn} disabled={rcas.length > 2}>
             Add RCA
             <img src={PlusIcon} alt="plus" />
           </Button>

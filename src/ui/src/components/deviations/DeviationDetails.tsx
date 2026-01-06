@@ -17,8 +17,8 @@ import Notification from "@components/Notification/Notification";
 
 const DeviationDetails: React.FC = () => {
   const [open, setOpen] = useState(false);
-    const [type, setType] = useState<"success" | "error">("success");
-    const [message, setMessage] = useState<string>("");
+  const [type, setType] = useState<"success" | "error">("success");
+  const [message, setMessage] = useState<string>("");
   const [summary, setSummary] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [rcaData, setRcaData] = useState<any[]>([]);
@@ -30,18 +30,18 @@ const DeviationDetails: React.FC = () => {
 
   const rcaRef = useRef<RootCauseAnalysisHandle>(null);
 
-   const handleShowNotification = () => {
-      setOpen(true);
-    };
-    const handleCloseNotification = (
-      event?: React.SyntheticEvent | Event,
-      reason?: string
-    ) => {
-      if (reason === "clickaway") {
-        return;
-      }
-      setOpen(false);
-    };
+  const handleShowNotification = () => {
+    setOpen(true);
+  };
+  const handleCloseNotification = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpen(false);
+  };
 
   const items = [
     { label: "Home", to: "/" },
@@ -63,9 +63,9 @@ const DeviationDetails: React.FC = () => {
         const rcaDetails = await generateRCA(payload);
         setRcaData(Array.isArray(rcaDetails?.data) ? rcaDetails.data : []);
       } catch (err: any) {
-         setType("error");
-         setMessage("Failed to generate RCA");
-         handleShowNotification();
+        setType("error");
+        setMessage("Failed to generate RCA");
+        handleShowNotification();
         console.log(err.message || "Failed to initialize deviation details.");
       } finally {
         setLoading(false);
@@ -74,6 +74,21 @@ const DeviationDetails: React.FC = () => {
 
     if (deviationId) init();
   }, [deviationId]);
+
+  useEffect(() => {
+    if (isRcaSubmitted) {
+      fetchDeviationDetailById(deviationId)
+        .then((data) => {
+          setDeviationData(data);
+        })
+        .catch((err) => {
+          console.error(
+            "Failed to refresh deviation details after RCA submission:",
+            err
+          );
+        });
+    }
+  }, [isRcaSubmitted, deviationId]);
 
   if (loading) return <p>Loading details...</p>;
   return (

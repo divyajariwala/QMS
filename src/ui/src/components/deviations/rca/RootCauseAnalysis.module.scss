@@ -98,6 +98,10 @@ $radius-medium: 8px;
   border: 1px solid #babfc3 !important;
   border-radius: 4px !important;
 }
+.addBtn:disabled {
+  cursor: not-allowed !important;
+  pointer-events: auto !important;
+}
 .actionButton {
   border: 1px solid #d1d9e6 !important;
   border-radius: 8px !important;
@@ -258,4 +262,20 @@ $radius-medium: 8px;
     line-height: 20px;
     font-size: 14px;
   }
+}
+
+.rcaExplanationBody {
+  word-break: break-word; /* Prevent long words from overflowing */
+  white-space: pre-wrap; /* Preserve newlines if present */
+}
+
+.rcaToggleContainer {
+  margin-top: 4px;
+}
+
+.rcaToggleBtn {
+  padding: 0 !important;
+  min-width: auto !important;
+  text-transform: none !important;
+  font-size: 0.875rem;
 }

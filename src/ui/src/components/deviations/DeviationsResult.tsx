@@ -12,8 +12,6 @@ import DeviationsDueDateChip from "./DeviationsDueDateChip";
 
 const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
   const navigate = useNavigate();
-  const headerStatusRaw = (deviation?.status ?? "").toString().trim();
-  const headerStatusUpper = headerStatusRaw.toUpperCase();
   const { deviation_id, created_date, deviation_description } = deviation;
   const progress = !deviation.rca_approved
     ? 0
@@ -38,10 +36,12 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
     <div className={styles.complaintsCardContainer}>
       <div className={styles.headerRow}>
         <Box>
-          {headerStatusRaw === "pending" ? (
-            <Box className={styles.statusText}>IN REVIEW</Box>
+          {gradingStatus === true ? (
+            <Box className={styles.statusTextGreen}>GRADING COMPLETED</Box>
+          ) : rcaStatus === true && gradingStatus === false ? (
+            <Box className={styles.statusGrad}>GRADING PENDING</Box>
           ) : (
-            <Box className={styles.statusText}>{headerStatusUpper}</Box>
+            <Box className={styles.statusText}>IN REVIEW</Box>
           )}
           <div className={styles.container}>
             <span className={styles.caseNumberText}>{deviation_id}</span>
