@@ -5,13 +5,16 @@ Investigation Summary:
 
 Based on the ABS Root Cause Map, select ONE of the following major categories:
 
-1. Equipment/Software Issues
-   - Includes: Equipment design/reliability issues, software issues, utility/support equipment issues, other equipment issues
+1. **Equipment/Software Issues**
+   - Issues related to equipment design, reliability, materials, software, or support systems
+   - Includes: Design issues, equipment reliability, procedures/instructions, materials/parts, software, utilities, support equipment
 
-2. Personnel Issues
-   - Includes: Training issues, guidance/personnel issues, third party/personnel issues
+2. **Personnel Issues**
+   - Issues related to human performance, training, procedures, supervision, or communication
+   - Includes: Procedure issues, training/guidance, human factors, technical/craftsman, supervision, communication, company/organizational, third-party personnel
 
-3. Other Issues
+3. **Other Issues**
+   - Issues caused by external factors or undetermined causes
    - Includes: Natural phenomena, external events, external facilities/activity, cause cannot be determined
 
 Provide a detailed explanation of why this category applies, including context and reasoning.

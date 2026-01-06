@@ -22,25 +22,51 @@ Your task is to identify AT LEAST 2 distinct root causes (preferably 2-4) and ge
 
 ---
 
-ABS ROOT CAUSE MAP REFERENCE:
+ABS ROOT CAUSE MAP REFERENCE (Official Taxonomy):
 
-**Major Categories:**
-1. Equipment/Software Issues
-2. Personnel Issues  
-3. Other Issues
+**HIERARCHY:** Problem Category → Major Category → Near Root Cause → Root Cause
 
-**Near Root Cause Categories:**
-- Design Issue, Equipment Reliability Issue, Procedure/Instruction Issue, Materials/Parts Issue, Utility/Support Equipment Issue, Other Equipment Issue
-- Procedure Issue, Training/Guidance Issue, Human Factors Issue, Tech/Craftsman Issue, Supervision Issue, No Communication or Not Timely, Company Issue
-- Natural Phenomena, External Events, External Facilities/Activity, Cause Cannot Be Determined
+**MAJOR CATEGORIES:**
+1. Equipment/Software Issues - Issues related to equipment design, reliability, materials, software, or support systems
+2. Personnel Issues - Issues related to human performance, training, procedures, supervision, or communication
+3. Other Issues - Issues caused by external factors or undetermined causes
 
-**Root Cause Categories:**
-- Design Input Issue, Design Output Issue, Equipment Defects Issue, Preventive Maintenance Issue
-- Procedure Not Used, Procedure Inadequate, Procedure Not Available
-- Training Not Performed, Training Inadequate, Lack of Knowledge/Skill
-- Inattention to Detail, Lack of Teamwork, Complacency
-- Oversight/Inspection Issue, Inadequate Investigation, Lack of Accountability
-- No Communication or Not Timely, Wrong Message
+**NEAR ROOT CAUSE CATEGORIES BY MAJOR CATEGORY:**
+
+Equipment/Software Issues:
+- Design Issue - Problems from design phase decisions or outputs
+- Equipment Reliability Issue - Problems with equipment performance, maintenance, or monitoring
+- Procedure/Instruction Issue - Problems with equipment-related procedures
+- Materials/Parts Issue - Problems with materials, spare parts, or quality
+- Software Issue - Problems with software design, installation, or configuration
+- Utility/Support Equipment Issue - Problems with utilities or support systems
+- Other Equipment Issue - Other equipment-related issues
+
+Personnel Issues:
+- Procedure Issue - Problems with following or using procedures
+- Training/Guidance Issue - Problems with training quality or knowledge transfer
+- Human Factors Issue - Problems related to human behavior and psychological factors
+- Tech/Craftsman Issue - Problems with technical execution or work practices
+- Supervision Issue - Problems with oversight, investigation, or accountability
+- No Communication or Not Timely - Problems with communication quality or timing
+- Company Issue - Problems with organizational systems or culture
+- Third Party/Personnel Issue - Problems involving external parties
+
+Other Issues:
+- Natural Phenomena - Events caused by natural forces
+- External Events - Human-caused external events
+- External Facilities/Activity - Issues with external infrastructure or services
+- Cause Cannot Be Determined - Root cause could not be established
+
+**EXAMPLE ROOT CAUSE CATEGORIES:**
+- Design: Design Input Issue, Design Output Issue, Design Change Issue, Verification Issue
+- Equipment Reliability: Equipment Defects Issue, Preventive/Predictive Maintenance Issue, Monitoring Issue
+- Procedure: Procedure Not Used, Procedure Inadequate, Procedure Not Available, Procedure Not Followed
+- Training: Training Not Performed, Training Inadequate, Lack of Knowledge/Skill
+- Human Factors: Inattention to Detail, Lack of Teamwork, Complacency, Fatigue, Stress
+- Supervision: Oversight/Inspection Issue, Inadequate Investigation, Lack of Accountability
+- Communication: No Communication or Not Timely, Language/Translation Issue, Wrong Message
+- Company: Personnel Hiring Issue, Staffing/Availability Issue, Organizational Culture Issue
 - And many others...
 
 ---
