@@ -38,6 +38,7 @@ const RootCauseAnalysis = forwardRef<
   const [message, setMessage] = useState<string>("");
   const [baselineRcas, setBaselineRcas] = useState<RcaRecord[]>([]);
   const [rcas, setRcas] = useState<RcaRecord[]>([]);
+  const [pendingRca, setPendingRca] = useState<RcaRecord | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [preEditSnapshot, setPreEditSnapshot] = useState<RcaRecord | null>(
@@ -46,7 +47,12 @@ const RootCauseAnalysis = forwardRef<
   const [dropdownData, setDropdownData] = useState<DropdownData | null>(null);
   const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] =
     useState<boolean>(false);
-  const selectedRca = useMemo(() => rcas[selectedIndex], [rcas, selectedIndex]);
+  const selectedRca = useMemo(() => {
+    if (selectedIndex < rcas.length) {
+      return rcas[selectedIndex];
+    }
+    return pendingRca;
+  }, [rcas, selectedIndex, pendingRca]);
   const { deviationId } = useParams<{ deviationId: string | "" }>();
 
   const externalSaveFn = useRef<(() => void) | null>(null);
@@ -83,6 +89,9 @@ const RootCauseAnalysis = forwardRef<
   };
 
   const handleTabChange = (_: React.SyntheticEvent, newIndex: number) => {
+    if (pendingRca) {
+      setPendingRca(null);
+    }
     setSelectedIndex(newIndex);
     setIsEditing(false);
     setPreEditSnapshot(null);
@@ -178,9 +187,8 @@ const RootCauseAnalysis = forwardRef<
       ],
       meta: { createdFrom: "add", createdAt: new Date().toISOString() },
     };
-    const next = [...rcas, newRca];
-    setRcas(next);
-    setSelectedIndex(next.length - 1);
+    setPendingRca(newRca);
+    setSelectedIndex(rcas.length); 
     setIsEditing(true);
     setPreEditSnapshot(newRca);
   };
@@ -229,9 +237,20 @@ const RootCauseAnalysis = forwardRef<
       return;
     }
 
-    const next = [...rcas];
-    next[selectedIndex] = updated;
-    setRcas(next);
+    if (updated.meta?.createdFrom === "add") {
+      updated.meta.createdFrom = "new";
+    }
+
+    if (pendingRca) {
+      const next = [...rcas, updated];
+      setRcas(next);
+      setPendingRca(null);
+      setSelectedIndex(next.length - 1); 
+    } else {
+      const next = [...rcas];
+      next[selectedIndex] = updated;
+      setRcas(next);
+    }
     setIsEditing(false);
     setPreEditSnapshot(null);
   };
@@ -305,18 +324,23 @@ const RootCauseAnalysis = forwardRef<
   };
 
   const handleCancelEdit = () => {
-    const current = rcas[selectedIndex];
-    const isNew = current?.meta?.createdFrom === "add";
-
-    if (isNew) {
-      const next = [...rcas];
-      next.splice(selectedIndex, 1);
-      setRcas(next);
+    if (pendingRca) {
+      setPendingRca(null);
       setSelectedIndex(0);
-    } else if (preEditSnapshot) {
-      const next = [...rcas];
-      next[selectedIndex] = preEditSnapshot;
-      setRcas(next);
+    } else {
+      const current = rcas[selectedIndex];
+      const isNew = current?.meta?.createdFrom === "add";
+
+      if (isNew) {
+        const next = [...rcas];
+        next.splice(selectedIndex, 1);
+        setRcas(next);
+        setSelectedIndex(0);
+      } else if (preEditSnapshot) {
+        const next = [...rcas];
+        next[selectedIndex] = preEditSnapshot;
+        setRcas(next);
+      }
     }
     setIsEditing(false);
     setPreEditSnapshot(null);
@@ -358,6 +382,7 @@ const RootCauseAnalysis = forwardRef<
           >
             <RcaTabs
               rcas={rcas}
+              pendingRca={pendingRca}
               selectedIndex={selectedIndex}
               onChange={handleTabChange}
               onAdd={handleAddRca}
@@ -373,7 +398,7 @@ const RootCauseAnalysis = forwardRef<
             onCancelEdit={handleCancelEdit}
             onSave={triggerExternalSave}
             onReset={onResetAll}
-            showReset={selectedRca?.meta?.createdFrom !== "add"}
+            showReset={selectedRca?.meta?.createdFrom !== "new"}
             isSubmittedSuccessfully={isSubmittedSuccessfully}
             rcas={rcas}
           />

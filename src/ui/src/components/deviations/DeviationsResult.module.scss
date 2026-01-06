@@ -31,14 +31,29 @@
   justify-content: space-between;
 }
 
-.statusText {
+.statusBase {
   font-weight: $font-weight-bold;
   font-size: 12px;
   line-height: 24px;
   letter-spacing: -0.1px;
   text-transform: uppercase;
-  color: #3b3b3b;
+  white-space: nowrap;
   margin: 0;
+}
+
+.statusText {
+  @extend .statusBase;
+  color: #3b3b3b;
+}
+
+.statusTextGreen {
+  @extend .statusBase;
+  color: #4eb523;
+}
+
+.statusGrad {
+  @extend .statusBase;
+  color: #4b20ab;
 }
 
 .cardBox {
@@ -116,7 +131,7 @@
 
 .caseNumberText {
   font-weight: $font-weight-bold;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 24px;
   letter-spacing: -0.1px;
   text-transform: uppercase;
@@ -130,6 +145,11 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  color: #5f6d7e;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.1px;
 }
 
 .container {
