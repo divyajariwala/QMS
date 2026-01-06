@@ -59,10 +59,6 @@ variable "openam_client_secret" {
   sensitive   = true
 }
 
-variable "sagemaker_endpoint_name" {
-  type = string
-}
-
 variable "subnet1" {
   type = string
 }
