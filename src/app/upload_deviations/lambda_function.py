@@ -35,6 +35,7 @@ _connection_string = None
 
 
 def lambda_handler(event, context):
+    start_time = datetime.utcnow()
     try:
         s3_client = boto3.client('s3')
         sqs_client = boto3.client('sqs')
@@ -117,7 +118,7 @@ def lambda_handler(event, context):
         create_deviation_file_record(file_id, filename, s3_uri, _get_user_from_event(event))
 
         # Create deviation record
-        deviation_id = create_deviation_in_db(file_id)
+        deviation_id = create_deviation_in_db(file_id, start_time)
 
         # Send to SQS for processing
         deviation_message = {
@@ -302,8 +303,8 @@ def create_deviation_file_record(file_id, filename, s3_url, upload_by):
         raise
 
 
-def create_deviation_in_db(file_id):
-    start_time = datetime.utcnow()
+def create_deviation_in_db(file_id, start_time):
+
     try:
         conninfo = get_connection_string()
 
@@ -318,7 +319,7 @@ def create_deviation_in_db(file_id):
 
                 result = cur.fetchone()
                 deviation_id = result['deviation_id']
-                # ✅ LOG WORKFLOW STEP
+                # LOG WORKFLOW STEP
                 log_deviation_workflow(
                     conn,
                     deviation_id,
