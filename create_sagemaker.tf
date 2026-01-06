@@ -2,7 +2,7 @@ locals {
   sagemaker_endpoints = {
     mounjaro_level = {
       name = "${var.short_name}-${var.environment}-mounjaro-level"
-      image_uri = ""
+      image_uri = "763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04"
       s3_file_path = "s3://${var.short_name}-${var.environment}-model-files/mounjaro-level-model.tar.gz"
       instance_type = "ml.g4dn.xlarge"
       execution_role_arn = var.sagemaker_role_arn
@@ -11,7 +11,7 @@ locals {
     }
     mounjaro_category = {
       name = "${var.short_name}-${var.environment}-mounjaro-category"
-      image_uri = ""
+      image_uri = "763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:2.1.0-transformers4.37.0-gpu-py310-cu118-ubuntu20.04"
       s3_file_path = "s3://${var.short_name}-${var.environment}-model-files/mounjaro-category-model.tar.gz"
       instance_type = "ml.g4dn.xlarge"
       execution_role_arn = var.sagemaker_role_arn
