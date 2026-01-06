@@ -19,12 +19,14 @@ type DeviationData = {
   };
   onSubmit?: () => void;
   isRcaSubmitted?: boolean;
+  hasRCA?: boolean;
 };
 
 const DeviationHeaderCard: React.FC<DeviationData> = ({
   deviationData,
   onSubmit,
   isRcaSubmitted,
+  hasRCA = false,
 }) => {
   const { deviation_id, created_date, rca_approved, grading_approved } =
     deviationData;
@@ -71,25 +73,27 @@ const DeviationHeaderCard: React.FC<DeviationData> = ({
                 type={created_date && getDueStatus(created_date).type}
                 label={created_date && getDueStatus(created_date).label}
               />
-              {!isRcaSubmitted ? (
-                <button
-                  type="button"
-                  className={styles.approveSendButton}
-                  onClick={onSubmit}
-                >
-                  <CheckIcon />
-                  Submit
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className={styles.addBtn}
-                  onClick={onBack}
-                >
-                  <img src={LeftArrow} alt={"left arrow"} />
-                  Back
-                </button>
-              )}
+
+              {hasRCA &&
+                (!isRcaSubmitted ? (
+                  <button
+                    type="button"
+                    className={styles.approveSendButton}
+                    onClick={onSubmit}
+                  >
+                    <CheckIcon />
+                    Submit
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.addBtn}
+                    onClick={onBack}
+                  >
+                    <img src={LeftArrow} alt={"left arrow"} />
+                    Back
+                  </button>
+                ))}
             </Stack>
           </Stack>
         </Box>

@@ -25,7 +25,7 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
 
   const onStartRca = () => {
     if (!loading) {
-      navigate(`/deviations/${deviation_id}`);
+      navigate(`/approveDeviations/${deviation_id}`);
     }
   };
   const onStartGrading = (e: React.MouseEvent) => {
