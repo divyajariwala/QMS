@@ -39,7 +39,9 @@ const RcaEdit: React.FC<RcaEditProps> = ({
   }, [dropdownData]);
 
   const isOtherIssueSelected = useMemo(() => {
-    const val = draft.sections.find((s) => s.key === "issues")?.value;
+    const val = draft.sections.find(
+      (s: RcaSection) => s.key === "issues"
+    )?.value;
     return val && issueToFactor.get(val) === "Other Issues";
   }, [draft.sections, issueToFactor]);
 
@@ -99,14 +101,22 @@ const RcaEdit: React.FC<RcaEditProps> = ({
         ? "major"
         : "near";
     return prevKey
-      ? draft.sections.find((s) => s.key === prevKey)?.value
+      ? draft.sections.find((s: RcaSection) => s.key === prevKey)?.value
       : undefined;
   };
 
   const optionsFor = (key: Key): ReadonlyArray<string> => {
-    if (key === "issues") return issuesList;
+    if (key === "issues")
+      return issuesList.filter(
+        (item: string | undefined): item is string => item !== undefined
+      );
     const prev = previousValue(key);
-    if (key === "major") return isOtherIssueSelected ? [] : majorList;
+    if (key === "major")
+      return isOtherIssueSelected
+        ? []
+        : majorList.filter(
+            (item: string | undefined): item is string => item !== undefined
+          );
     if (key === "near") return prev ? nearListFor(prev) : [];
     if (key === "root") {
       const nearPrev = previousValue("root");
@@ -122,12 +132,12 @@ const RcaEdit: React.FC<RcaEditProps> = ({
   };
 
   const setValue = (key: Key, value: string) => {
-    setDraft((d) => {
+    setDraft((d: RcaRecord) => {
       const wasValue = originalValue(key);
       const valueChanged = wasValue !== value;
       const next = {
         ...d,
-        sections: d.sections.map((s) => {
+        sections: d.sections.map((s: RcaSection) => {
           if (s.key !== key) {
             const explanation = valueChanged ? "" : s.explanation;
             return { ...s, explanation };
@@ -137,18 +147,17 @@ const RcaEdit: React.FC<RcaEditProps> = ({
         }),
       };
       if (key === "issues") {
-        const isOther = issueToFactor.get(value) === "Other Issues";
-        next.sections = next.sections.map((s) =>
+        next.sections = next.sections.map((s: RcaSection) =>
           s.key === "major" || s.key === "near" || s.key === "root"
             ? { ...s, value: "" }
             : s
         );
       } else if (key === "major") {
-        next.sections = next.sections.map((s) =>
+        next.sections = next.sections.map((s: RcaSection) =>
           s.key === "near" || s.key === "root" ? { ...s, value: "" } : s
         );
       } else if (key === "near") {
-        next.sections = next.sections.map((s) =>
+        next.sections = next.sections.map((s: RcaSection) =>
           s.key === "root" ? { ...s, value: "" } : s
         );
       }
@@ -169,14 +178,14 @@ const RcaEdit: React.FC<RcaEditProps> = ({
 
   return (
     <Box className={styles.maxRcaHeight}>
-      {draft.sections.map((s) =>
+      {draft.sections.map((s: RcaSection) =>
         shouldRender(s.key) ? (
           <EditSection
             key={s.key}
             title={s.title}
             value={s.value}
             options={optionsFor(s.key)}
-            onChange={(val) => setValue(s.key, val)}
+            onChange={(val: string) => setValue(s.key, val)}
           />
         ) : null
       )}

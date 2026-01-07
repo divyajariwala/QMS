@@ -188,7 +188,7 @@ const RootCauseAnalysis = forwardRef<
       meta: { createdFrom: "add", createdAt: new Date().toISOString() },
     };
     setPendingRca(newRca);
-    setSelectedIndex(rcas.length); 
+    setSelectedIndex(rcas.length);
     setIsEditing(true);
     setPreEditSnapshot(newRca);
   };
@@ -245,7 +245,7 @@ const RootCauseAnalysis = forwardRef<
       const next = [...rcas, updated];
       setRcas(next);
       setPendingRca(null);
-      setSelectedIndex(next.length - 1); 
+      setSelectedIndex(next.length - 1);
     } else {
       const next = [...rcas];
       next[selectedIndex] = updated;
@@ -302,7 +302,9 @@ const RootCauseAnalysis = forwardRef<
       const payload = buildPayload();
       await submitRca(payload);
       setIsSubmittedSuccessfully(true);
-      onSubmitSuccess();
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
       setType("success");
       setMessage("RCA successfully submitted");
       handleShowNotification();
