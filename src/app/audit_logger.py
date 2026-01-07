@@ -50,3 +50,22 @@ def get_user_from_event(event):
         return claims.get('email') or claims.get('cognito:username') or 'system'
     except:
         return 'system'
+
+def log_deviation_workflow(conn, entity_id, step, input_data=None, output_data=None, start_time=None):
+    """Log workflow step execution"""
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO deviation_workflow_logs (deviation_id, step, start_date, end_date, input, output)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                entity_id,
+                step,
+                start_time or datetime.utcnow(),
+                datetime.utcnow(),
+                json.dumps(input_data) if input_data else None,
+                json.dumps(output_data) if output_data else None
+            ))
+    except Exception as e:
+        logger.error(f"Workflow logging error: {str(e)}")
+        raise
