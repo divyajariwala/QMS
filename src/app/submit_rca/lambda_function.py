@@ -26,8 +26,8 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
     Args:
         rca_list: List of RCA dictionaries, each containing:
             - deviation_id: The deviation ID
-            - issues: Issues text
-            - issues_category: Issues dropdown category
+            - problem_category: Problem category dropdown selection
+            - problem_category_validated: Problem category explanation text
             - major_root_cause_category: Major root cause category text
             - major_root_cause_category_validated: Validated major category
             - near_root_cause: Near root cause text
@@ -69,8 +69,8 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                 # Process each RCA in the batch
                 for idx, rca in enumerate(rca_list):
                     deviation_id = rca.get('deviation_id')
-                    issues = rca.get('issues')
-                    issues_category = rca.get('issues_category')
+                    problem_category = rca.get('problem_category')
+                    problem_category_validated = rca.get('problem_category_validated')
                     major_category = rca.get('major_root_cause_category_validated') or rca.get('major_root_cause_category')
                     near_cause = rca.get('near_root_cause')
                     near_cause_category = rca.get('near_root_cause_category')
@@ -86,8 +86,8 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                     cur.execute("""
                         INSERT INTO rca_analysis (
                             deviation_id,
-                            issues,
-                            issues_category,
+                            problem_category,
+                            problem_category_validated,
                             major_root_cause_category,
                             major_root_cause_category_explanation,
                             near_root_cause,
@@ -104,8 +104,8 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                         RETURNING id, created_at, updated_at
                     """, (
                         deviation_id,
-                        issues,
-                        issues_category,
+                        problem_category,
+                        problem_category_validated,
                         major_category,
                         major_category,  # Using same value for explanation
                         near_cause,
@@ -182,14 +182,14 @@ def lambda_handler(event, context):
     Expected request body (single RCA):
     {
         "deviation_id": "DV-00001",
-        "issues": "Issues text...",
-        "issues_category": "Process/Manufacturing Equipment Issue",
-        "major_root_cause_category": "Design Issue",
-        "major_root_cause_category_validated": "Design Issue",
-        "near_root_cause": "Near root cause text...",
-        "near_root_cause_category": "Design Input Issue",
-        "root_cause": "Root cause text...",
-        "root_cause_category": "Design Scope Issue",
+        "problem_category": "Company Personnel Issue",
+        "problem_category_validated": "Problem category text (60-65 words)...",
+        "major_root_cause_category": "Personnel Issues",
+        "major_root_cause_category_validated": "Major category text (60-65 words)...",
+        "near_root_cause": "Near root cause text (60-65 words)...",
+        "near_root_cause_category": "Training/Personnel Qualification Issue",
+        "root_cause": "Root cause text (60-65 words)...",
+        "root_cause_category": "Training Not Performed",
         "is_ai_generated": true,
         "created_by": "user@example.com"
     }
@@ -198,19 +198,20 @@ def lambda_handler(event, context):
     [
         {
             "deviation_id": "DV-00001",
-            "issues": "Issues text...",
-            "issues_category": "Procedure issue",
-            "major_root_cause_category": "Equipment/Software Issues",
-            "major_root_cause_category_validated": "Equipment/Software Issues",
+            "problem_category": "Company Personnel Issue",
+            "problem_category_validated": "Problem category text...",
+            "major_root_cause_category": "Personnel Issues",
+            "major_root_cause_category_validated": "Major category text...",
             "near_root_cause": "Near root cause text...",
-            "near_root_cause_category": "Procedure/Instruction Issue",
+            "near_root_cause_category": "Training/Personnel Qualification Issue",
             "root_cause": "Root cause text...",
-            "root_cause_category": "Procedure Not Used",
+            "root_cause_category": "Training Not Performed",
             "is_ai_generated": true
         },
         {
             "deviation_id": "DV-00001",
-            "issues": "Another issue...",
+            "problem_category": "Process/Manufacturing Equipment Issue",
+            "problem_category_validated": "Another problem category...",
             "is_ai_generated": false,
             ...
         }
@@ -256,6 +257,17 @@ def lambda_handler(event, context):
        - Sets rca_generated = true
        - Sets rca_approved = true
        - Sets rca_approved_date = CURRENT_TIMESTAMP
+    
+    Field Descriptions:
+    - problem_category: Selected category from official ABS map (e.g., "Company Personnel Issue")
+    - problem_category_validated: AI-generated or user-entered explanation text (60-65 words for AI)
+    - major_root_cause_category: Selected major category (e.g., "Personnel Issues")
+    - major_root_cause_category_validated: AI-generated or user-entered explanation text (60-65 words for AI)
+    - near_root_cause: AI-generated or user-entered explanation text (60-65 words for AI)
+    - near_root_cause_category: Selected near root cause category
+    - root_cause: AI-generated or user-entered explanation text (60-65 words for AI)
+    - root_cause_category: Selected root cause category
+    - is_ai_generated: Boolean flag (true if generated by AI, false if manual/edited)
     """
     try:
         logger.info(f"Environment: {ENV}, Region: {AWS_REGION}")
@@ -285,8 +297,7 @@ def lambda_handler(event, context):
             # Validate each RCA in the batch
             required_fields = [
                 'deviation_id',
-                'issues',
-                'issues_category',
+                'problem_category',
                 'major_root_cause_category',
                 'near_root_cause',
                 'near_root_cause_category',
@@ -307,8 +318,8 @@ def lambda_handler(event, context):
                     )
                 
                 # Validate field types
-                if not isinstance(rca.get('issues'), str) or not rca['issues'].strip():
-                    return response(400, f"Item at index {idx}: issues must be a non-empty string")
+                if not isinstance(rca.get('problem_category'), str) or not rca['problem_category'].strip():
+                    return response(400, f"Item at index {idx}: problem_category must be a non-empty string")
                 
                 if not isinstance(rca.get('major_root_cause_category'), str) or not rca['major_root_cause_category'].strip():
                     return response(400, f"Item at index {idx}: major_root_cause_category must be a non-empty string")
@@ -339,8 +350,7 @@ def lambda_handler(event, context):
             # Validate required fields
             required_fields = [
                 'deviation_id',
-                'issues',
-                'issues_category',
+                'problem_category',
                 'major_root_cause_category',
                 'near_root_cause',
                 'near_root_cause_category',
@@ -357,8 +367,8 @@ def lambda_handler(event, context):
                 )
             
             # Validate field types
-            if not isinstance(body.get('issues'), str) or not body['issues'].strip():
-                return response(400, "issues must be a non-empty string")
+            if not isinstance(body.get('problem_category'), str) or not body['problem_category'].strip():
+                return response(400, "problem_category must be a non-empty string")
             
             if not isinstance(body.get('major_root_cause_category'), str) or not body['major_root_cause_category'].strip():
                 return response(400, "major_root_cause_category must be a non-empty string")

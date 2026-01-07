@@ -8,12 +8,20 @@ import base64
 import logging
 import os
 from psycopg.rows import dict_row
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 
 try:
     from secrets_util import get_secret
 except ImportError:
     from .secrets_util import get_secret
+
+try:
+    from audit_logger import log_deviation_workflow
+except ImportError:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from audit_logger import log_deviation_workflow
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -148,7 +156,7 @@ def process_with_bedrock(messages):
         logger.error(f"Bedrock error: {str(e)}")
         raise
 
-def update_deviation_in_db(deviation_id, extracted_data):
+def update_deviation_in_db(deviation_id, extracted_data, start_time=None):
     try:
         conninfo = get_connection_string()
         with psycopg.connect(conninfo) as conn:
@@ -178,6 +186,21 @@ def update_deviation_in_db(deviation_id, extracted_data):
                     extracted_data.get('effectiveness_check_plan'),
                     deviation_id
                 ))
+                # WORKFLOW LOG: extraction completed
+                extracted_fields = [k for k, v in extracted_data.items() if v and v != 'N/A']
+                log_deviation_workflow(
+                    conn,
+                    deviation_id,
+                    step='TEXT_EXTRACTED',
+                    input_data={
+                        'source': 'pdf' if 's3path' in extracted_data else 'narrative'
+                    },
+                    output_data={
+                        "extracted_fields": extracted_fields,
+                        "description_length": len(extracted_data.get('description', '') or '')
+                    },
+                    start_time=start_time
+                )
                 
                 conn.commit()
                 logger.info(f"Updated deviation {deviation_id} in database")
@@ -187,6 +210,7 @@ def update_deviation_in_db(deviation_id, extracted_data):
 
 def process_single_deviation(message_data):
     deviation_id = message_data.get('deviation_id', 'unknown')
+    start_time = datetime.utcnow()
     try:
         logger.info(f"Processing deviation {deviation_id}")
         
@@ -213,7 +237,7 @@ def process_single_deviation(message_data):
             messages = construct_prompt(base64_images)
             extracted_data = process_with_bedrock(messages)
         
-        update_deviation_in_db(deviation_id, extracted_data)
+        update_deviation_in_db(deviation_id, extracted_data, start_time)
         
         return {
             'success': True,
