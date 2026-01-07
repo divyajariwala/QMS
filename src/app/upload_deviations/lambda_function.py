@@ -13,6 +13,13 @@ try:
 except ImportError:
     from .secrets_util import get_secret
 
+try:
+    from audit_logger import log_deviation_workflow
+except ImportError:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from audit_logger import log_deviation_workflow
+
 # Environment variables
 ENV = os.environ.get('env', 'dev')
 S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'qms-dev-initial-files')
@@ -28,6 +35,7 @@ _connection_string = None
 
 
 def lambda_handler(event, context):
+    start_time = datetime.utcnow()
     try:
         s3_client = boto3.client('s3')
         sqs_client = boto3.client('sqs')
@@ -110,7 +118,7 @@ def lambda_handler(event, context):
         create_deviation_file_record(file_id, filename, s3_uri, _get_user_from_event(event))
 
         # Create deviation record
-        deviation_id = create_deviation_in_db(file_id)
+        deviation_id = create_deviation_in_db(file_id, start_time)
 
         # Send to SQS for processing
         deviation_message = {
@@ -295,7 +303,8 @@ def create_deviation_file_record(file_id, filename, s3_url, upload_by):
         raise
 
 
-def create_deviation_in_db(file_id):
+def create_deviation_in_db(file_id, start_time):
+
     try:
         conninfo = get_connection_string()
 
@@ -310,6 +319,20 @@ def create_deviation_in_db(file_id):
 
                 result = cur.fetchone()
                 deviation_id = result['deviation_id']
+                # LOG WORKFLOW STEP
+                log_deviation_workflow(
+                    conn,
+                    deviation_id,
+                    step="DEVIATION_CREATED",
+                    input_data={
+                        "file_id": file_id
+                    },
+                    output_data={
+                        "deviation_id": deviation_id,
+                        "status": "Pending"
+                    },
+                    start_time=start_time
+                )
 
                 conn.commit()
                 print(f"Created deviation in database with ID: {deviation_id}")

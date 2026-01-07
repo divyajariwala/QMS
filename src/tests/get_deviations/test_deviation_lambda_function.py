@@ -180,6 +180,11 @@ class TestLambdaHandler:
             "investigation_summary": "Root cause analysis",
             "created_at": datetime(2023, 2, 1, 10, 0),
             "deviation_status": "pending",
+            "grading_approved": True,
+            "rca_approved": True,
+            "grading_completed": False,
+            "rca_generated":True,
+
         }
 
         event = {"queryStringParameters": {"deviation_id": "DV-005"}}
