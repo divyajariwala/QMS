@@ -114,7 +114,7 @@ def generate_multiple_rcas(investigation_summary: str) -> list:
 
     Returns:
         List of RCA dictionaries, each containing:
-        - issues
+        - problem_category_validated
         - major_root_cause_category_validated
         - near_root_cause
         - root_cause
@@ -183,13 +183,13 @@ def generate_rcas_sequential(investigation_summary: str) -> list:
         logger.info("Using sequential generation (fallback) - generating 2 RCAs")
 
         # Generate RCA 1: Immediate Cause
-        issues_text_1 = generate_issues(investigation_summary)
+        problem_category_text_1 = generate_problem_category(investigation_summary)
         major_category_text_1 = generate_major_root_cause_category(investigation_summary)
         near_cause_text_1 = generate_near_root_cause(investigation_summary)
         root_cause_text_1 = generate_root_cause(investigation_summary)
 
         rca_1 = {
-            'issues': issues_text_1,
+            'problem_category_validated': problem_category_text_1,
             'major_root_cause_category_validated': major_category_text_1,
             'near_root_cause': near_cause_text_1,
             'root_cause': root_cause_text_1
@@ -203,14 +203,14 @@ def generate_rcas_sequential(investigation_summary: str) -> list:
         
         {investigation_summary}
         """
-
-        issues_text_2 = generate_issues(systemic_prompt)
+        
+        problem_category_text_2 = generate_problem_category(systemic_prompt)
         major_category_text_2 = generate_major_root_cause_category(systemic_prompt)
         near_cause_text_2 = generate_near_root_cause(systemic_prompt)
         root_cause_text_2 = generate_root_cause(systemic_prompt)
 
         rca_2 = {
-            'issues': issues_text_2,
+            'problem_category_validated': problem_category_text_2,
             'major_root_cause_category_validated': major_category_text_2,
             'near_root_cause': near_cause_text_2,
             'root_cause': root_cause_text_2
@@ -223,23 +223,24 @@ def generate_rcas_sequential(investigation_summary: str) -> list:
         logger.error(f"Error in sequential generation: {str(e)}")
         raise
 
-def generate_issues(investigation_summary: str) -> str:
-    """
-    Generates the Issues section of the RCA
 
+def generate_problem_category(investigation_summary: str) -> str:
+    """
+    Generates the Problem Category section of the RCA
+    
     Returns:
-        Plain text description of issues
+        Plain text description of problem category (causal factors)
     """
     try:
-        prompt_template = load_prompt('issues_prompt_v2.txt')
+        prompt_template = load_prompt('problem_category_prompt_v2.txt')
         prompt = prompt_template.format(investigation_summary=investigation_summary)
 
         result = call_bedrock(prompt)
-        logger.info("Successfully generated Issues section")
+        logger.info("Successfully generated Problem Category section")
         return result
 
     except Exception as e:
-        logger.error(f"Error generating Issues: {str(e)}")
+        logger.error(f"Error generating Problem Category: {str(e)}")
         raise
 
 
@@ -303,14 +304,14 @@ def generate_root_cause(investigation_summary: str) -> str:
         raise
 
 
-def categorize_rca(investigation_summary: str, issues_text: str, major_category_text: str,
+def categorize_rca(investigation_summary: str, problem_category_text: str, major_category_text: str,
                    near_cause_text: str, root_cause_text: str) -> dict:
     """
     Categorizes the RCA analysis into specific ABS taxonomy categories
 
     Args:
         investigation_summary: Original investigation summary
-        issues_text: Generated issues text
+        problem_category_text: Generated problem category text
         major_category_text: Generated major category text
         near_cause_text: Generated near cause text
         root_cause_text: Generated root cause text
@@ -322,7 +323,7 @@ def categorize_rca(investigation_summary: str, issues_text: str, major_category_
         prompt_template = load_prompt('categorize_rca_prompt.txt')
         prompt = prompt_template.format(
             investigation_summary=investigation_summary,
-            issues_text=issues_text,
+            problem_category_text=problem_category_text,
             major_category_text=major_category_text,
             near_cause_text=near_cause_text,
             root_cause_text=root_cause_text
@@ -359,7 +360,7 @@ def categorize_rca(investigation_summary: str, issues_text: str, major_category_
         logger.error(f"Response text: {response_text if 'response_text' in locals() else 'N/A'}")
         # Return default categories if parsing fails
         return {
-            "issues_category": "Other",
+            "problem_category": "Other",
             "major_root_cause_category": major_category_text,
             "near_root_cause_category": "Other",
             "root_cause_category": "Other"
@@ -368,7 +369,7 @@ def categorize_rca(investigation_summary: str, issues_text: str, major_category_
         logger.error(f"Error categorizing RCA: {str(e)}")
         # Return default categories if categorization fails
         return {
-            "issues_category": "Other",
+            "problem_category": "Other",
             "major_root_cause_category": major_category_text,
             "near_root_cause_category": "Other",
             "root_cause_category": "Other"
@@ -395,34 +396,40 @@ def lambda_handler(event, context):
         "data": [
             {
                 "deviation_id": "DV-00001",
-                "issues": "Generated issues text...",
-                "issues_category": "Process/Manufacturing Equipment Issue",
+                "problem_category": "Company Personnel Issue",
+                "problem_category_validated": "Generated problem category text (60-65 words)...",
                 "major_root_cause_category": "Personnel Issues",
-                "major_root_cause_category_validated": "Long explanation text about the major root cause category...",
-                "near_root_cause": "Generated near root cause text...",
-                "near_root_cause_category": "Design Input Issue",
-                "root_cause": "Generated root cause text...",
-                "root_cause_category": "Design Scope Issue",
+                "major_root_cause_category_validated": "Long explanation text about the major root cause category (60-65 words)...",
+                "near_root_cause": "Generated near root cause text (60-65 words)...",
+                "near_root_cause_category": "Training/Personnel Qualification Issue",
+                "root_cause": "Generated root cause text (60-65 words)...",
+                "root_cause_category": "Training Not Performed",
                 "is_ai_generated": true
             },
             {
                 "deviation_id": "DV-00001",
-                "issues": "Second perspective issues...",
-                "issues_category": "Company Personnel Issue",
-                "major_root_cause_category": "Personnel Issues",
-                "major_root_cause_category_validated": "Systemic explanation from different perspective...",
-                "near_root_cause": "Second perspective near cause...",
-                "near_root_cause_category": "Training/Guidance Issue",
-                "root_cause": "Second perspective root cause...",
-                "root_cause_category": "Training Not Performed",
+                "problem_category": "Process/Manufacturing Equipment Issue",
+                "problem_category_validated": "Second perspective problem category (60-65 words)...",
+                "major_root_cause_category": "Equipment/Software Issues",
+                "major_root_cause_category_validated": "Systemic explanation from different perspective (60-65 words)...",
+                "near_root_cause": "Second perspective near cause (60-65 words)...",
+                "near_root_cause_category": "Equipment Reliability Program Issue",
+                "root_cause": "Second perspective root cause (60-65 words)...",
+                "root_cause_category": "Preventive/Predictive Maintenance Issue",
                 "is_ai_generated": true
             }
         ]
     }
 
     Field Descriptions:
+    - problem_category: Auto-selected category name from official ABS map (e.g., "Company Personnel Issue")
+    - problem_category_validated: AI-generated explanation text (60-65 words)
     - major_root_cause_category: Auto-selected category name from taxonomy (e.g., "Personnel Issues")
-    - major_root_cause_category_validated: Long AI-generated explanation text
+    - major_root_cause_category_validated: AI-generated explanation text (60-65 words)
+    - near_root_cause: AI-generated explanation text (60-65 words)
+    - near_root_cause_category: Auto-selected category name (e.g., "Training/Personnel Qualification Issue")
+    - root_cause: AI-generated explanation text (60-65 words)
+    - root_cause_category: Auto-selected category name (e.g., "Training Not Performed")
     - is_ai_generated: Boolean flag indicating this RCA was generated by AI (always true for this endpoint)
 
     Note: The response data is always an array with a MINIMUM of 2 RCAs.
@@ -494,8 +501,8 @@ def lambda_handler(event, context):
 
             # Structure result with generated text and auto-selected categories
             rca_result = {
-                'problem_category': categories.get('issues_category', 'Other'),
-                'problem_category_validated': rca['issues'],
+                'problem_category': categories.get('problem_category', 'Other'),
+                'problem_category_validated': rca['problem_category_validated'],
                 'major_root_cause_category': categories.get('major_root_cause_category', 'Other'),
                 'major_root_cause_category_validated': rca['major_root_cause_category_validated'],
                 'near_root_cause_category': categories.get('near_root_cause_category', 'Other'),

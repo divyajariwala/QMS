@@ -7,8 +7,8 @@ You will receive the generated RCA analysis and must assign the most appropriate
 Investigation Summary:
 {investigation_summary}
 
-Issues (Problem Category):
-{issues_text}
+Problem Category (Validated):
+{problem_category_text}
 
 Major Root Cause Category:
 {major_category_text}
@@ -21,7 +21,7 @@ Root Cause:
 
 === OFFICIAL ABS ROOT CAUSE MAP™ TAXONOMY ===
 
-STEP 1: ISSUES CATEGORIES (Problem Categories - select ONE):
+STEP 1: PROBLEM CATEGORIES (select ONE from official ABS map):
 
 Equipment/Software Issues:
 - Process/Manufacturing Equipment Issue
@@ -190,10 +190,10 @@ For "No Communication or Not Timely":
 Analyze the generated RCA text and select the MOST APPROPRIATE category for each section. Base your selection on:
 1. The actual content and meaning of the generated text
 2. The official ABS Root Cause Map™ taxonomy (Copyright 2010 © ABSG Consulting Inc.)
-3. The hierarchical relationship between categories (Issues → Major → Near → Root)
+3. The hierarchical relationship between categories (Problem Category → Major → Near → Root)
 
 CRITICAL RULES:
-- Follow the hierarchy: Issues Category must align with Major Category
+- Follow the hierarchy: Problem Category must align with Major Category
 - Near Root Cause must be valid for the selected Major Category
 - Root Cause must be valid for the selected Near Root Cause
 - Select the most specific and accurate category
@@ -203,7 +203,7 @@ CRITICAL RULES:
 Respond ONLY with valid JSON in this exact format:
 
 {{
-  "issues_category": "Selected category from Issues Categories list",
+  "problem_category": "Selected category from Problem Categories list",
   "major_root_cause_category": "Selected from Major Root Cause Categories",
   "near_root_cause_category": "Selected category from Near Root Cause list (must match Major Category)",
   "root_cause_category": "Selected category from Root Cause list (must match Near Root Cause)"
