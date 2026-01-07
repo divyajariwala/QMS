@@ -1,0 +1,49 @@
+@use "../../../styles/variables" as *;
+
+.summaryRoot {
+  padding: 16px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.backBtn {
+  text-transform: none;
+}
+
+.title {
+  font-weight: $font-weight-bold;
+}
+
+.contentBox {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--mui-palette-divider, #e0e0e0);
+}
+
+.section {
+  margin-bottom: 16px;
+}
+
+.sectionLabel {
+  font-weight: $font-weight-bold !important;
+  margin-bottom: 6px !important;
+  font-size: 16px !important;
+}
+
+.sectionText {
+  font-size: 16px !important;
+  font-weight: $font-weight-medium !important;
+  line-height: 28px !important;
+}
+
+.footerRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}

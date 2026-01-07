@@ -10,6 +10,11 @@ export interface SuggestionData {
   score: number;
 }
 
+export interface ExecutiveSummaryItem {
+  label: string;
+  content: string;
+}
+
 /** Simulates fetching sections & their initial content */
 export async function fetchSectionsMock(): Promise<SectionData[]> {
   await delay(400);
@@ -37,7 +42,6 @@ export async function fetchSectionsMock(): Promise<SectionData[]> {
 }
 
 /** Simulates calling an API to get improvement suggestions based on current text */
-
 export async function fetchImprovementSuggestionsMock(
   currentValues: Record<string, string>
 ): Promise<SuggestionData[]> {
@@ -57,17 +61,17 @@ export async function fetchImprovementSuggestionsMock(
     mk(
       "description",
       "The description provides sufficient context but could read more smoothly with concise phrasing and consistent verb tenses. Simplifying long sentences will improve flow and comprehension. Strengthening transitions between ideas will make the section more cohesive. On 01Nov2023 during periodic review of KIN-OVR-42071 'Biotech Process Cleaning HP ALM System Operation' it was noted by QA representative that Non routine Analytical Results verification do not have QA oversight as per procedure. On 01Nov2023 during periodic review of KIN-OVR-42071 'Biotech Process Cleaning HP ALM System Operation' it was noted by QA representative that Non routine Analytical Results verification do not have QA oversight as per procedure. On 01Nov2023 during periodic review of KIN-OVR-42071 'Biotech Process Cleaning HP ALM System Operation' it was noted by QA representative that Non routine Analytical Results verification do not have QA oversight as per procedure.",
-      4 // → shows thumbs down
+      4
     ),
     mk(
       "steps",
       "This section effectively outlines the actions taken, demonstrating strong procedural awareness. To refine it, simplify lengthy sentences and ensure verbs remain consistent in tense throughout. This will help maintain clarity and strengthen the professional tone.",
-      7 // → shows thumbs up
+      7
     ),
     mk(
       "summary",
       "Your investigation summary is detailed and connects the findings logically to the deviation. However, it could benefit from reducing repetition of earlier content and improving transitions between key points. Enhancing grammatical consistency will make it more polished and easy to follow.",
-      9 // → shows thumbs up
+      9
     ),
   ];
 }
@@ -75,29 +79,33 @@ export async function fetchImprovementSuggestionsMock(
 /** Simulates generating an executive summary */
 export async function fetchExecutiveSummaryMock(
   values: Record<string, string>
-): Promise<string> {
+): Promise<ExecutiveSummaryItem[]> {
   await delay(500);
 
   // A simple synthesized summary from provided values
-  const desc = values["description"]?.slice(0, 280) ?? "";
-  const steps = values["steps"]?.slice(0, 280) ?? "";
-  const sum = values["summary"]?.slice(0, 280) ?? "";
+  const desc = values["description"]?? "";
+  const steps = values["steps"] ?? "";
+  const sum = values["summary"] ?? "";
 
   return [
-    "Executive Summary",
-    "",
-    "Overview:",
-    desc || "No description provided.",
-    "",
-    "Immediate Actions:",
-    steps || "No immediate steps documented.",
-    "",
-    "Investigation Summary:",
-    sum || "No investigation summary provided.",
-    "",
-    "Conclusion:",
-    "Controls and approval steps require alignment to ensure consistent QA oversight and analytical review process integrity.",
-  ].join("\n");
+    {
+      label: "Overview",
+      content: desc || "No description provided.",
+    },
+    {
+      label: "Immediate Actions",
+      content: steps || "No immediate steps documented.",
+    },
+    {
+      label: "Investigation Summary",
+      content: sum || "No investigation summary provided.",
+    },
+    {
+      label: "Conclusion",
+      content:
+        "Controls and approval steps require alignment to ensure consistent QA oversight and analytical review process integrity.",
+    },
+  ];
 }
 
 function delay(ms: number) {

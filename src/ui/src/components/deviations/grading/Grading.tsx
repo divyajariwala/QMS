@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Box,
-  Button,
   CircularProgress,
   Grid,
   Paper,
@@ -9,10 +8,6 @@ import {
   Typography,
   Snackbar,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Divider,
 } from "@mui/material";
 
@@ -29,7 +24,10 @@ import {
   fetchExecutiveSummaryMock,
   SectionData,
   SuggestionData,
+  ExecutiveSummaryItem,
 } from "./mockdata";
+
+import ExecutiveSummary from "./ExecutiveSummary";
 
 type Mode = "compose" | "grading";
 
@@ -52,13 +50,9 @@ const Grading: React.FC = () => {
     severity: "info",
   });
 
-  const [summaryDialog, setSummaryDialog] = useState<{
-    open: boolean;
-    text: string;
-  }>({
-    open: false,
-    text: "",
-  });
+  // Dedicated Summary View State
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [summaryItems, setSummaryItems] = useState<ExecutiveSummaryItem[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -66,7 +60,6 @@ const Grading: React.FC = () => {
       try {
         const data = await fetchSectionsMock();
         setSections(data);
-        // Initialize values from API content
         const initVals: Record<string, string> = {};
         data.forEach((s) => (initVals[s.id] = s.content ?? ""));
         setValues(initVals);
@@ -115,8 +108,9 @@ const Grading: React.FC = () => {
 
   const handleGenerateSummary = async () => {
     try {
-      const summary = await fetchExecutiveSummaryMock(values);
-      setSummaryDialog({ open: true, text: summary });
+      const items = await fetchExecutiveSummaryMock(values);
+      setSummaryItems(items);
+      setSummaryOpen(true);
     } catch {
       setSnack({
         open: true,
@@ -125,6 +119,27 @@ const Grading: React.FC = () => {
       });
     }
   };
+
+  const handleBackFromSummary = () => {
+    setSummaryOpen(false);
+  };
+
+  if (summaryOpen) {
+    return (
+      <ExecutiveSummary
+        items={summaryItems}
+        onBack={handleBackFromSummary}
+        onPrimaryAction={() => {
+          setSnack({
+            open: true,
+            message: "Summary sent successfully.",
+            severity: "success",
+          });
+        }}
+        primaryActionLabel="Save and Send"
+      />
+    );
+  }
 
   return (
     <Paper variant="outlined" className={styles.rootPaper}>
@@ -150,6 +165,7 @@ const Grading: React.FC = () => {
                 type="button"
                 className={styles.regenerateBtn}
                 onClick={regenerateSuggestions}
+                disabled={loadingSuggestions}
               >
                 Regenerate
                 <img src={RegenerateIcon} alt={"regenerate"} />
@@ -300,26 +316,6 @@ const Grading: React.FC = () => {
           {snack.message}
         </Alert>
       </Snackbar>
-
-      {/* Executive Summary Dialog */}
-      <Dialog
-        open={summaryDialog.open}
-        onClose={() => setSummaryDialog({ open: false, text: "" })}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle>Executive Summary</DialogTitle>
-        <DialogContent dividers>
-          <Typography variant="body1" whiteSpace="pre-line">
-            {summaryDialog.text}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSummaryDialog({ open: false, text: "" })}>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Paper>
   );
 };

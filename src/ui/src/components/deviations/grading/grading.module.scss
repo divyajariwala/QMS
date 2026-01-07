@@ -3,7 +3,7 @@
 .rootPaper {
   margin-top: 32px;
   border-radius: 16px !important;
-  background: #fff;
+  background: $color-white;
   width: 100%;
 }
 
@@ -15,7 +15,7 @@
 }
 
 .title {
-  font-weight: 500 !important;
+  font-weight: $font-weight-medium !important;
   font-size: 15px !important;
   color: #474747;
 }
@@ -57,7 +57,7 @@
 }
 
 .sectionLabel {
-  font-weight: 600 !important;
+  font-weight: $font-weight-bold !important;
   font-size: 14px !important;
   line-height: 20px !important;
   color: #272d37;
@@ -68,69 +68,56 @@
   margin-top: 20px;
 }
 
-.gradingBtn {
+.baseButton {
   font-family: inherit;
   text-transform: none;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: $font-weight-bold;
+  line-height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gradingBtn {
+  @extend .baseButton;
   color: #272d37;
   padding: 10px;
   width: 137px;
   height: 36px;
-  justify-content: space-between;
   border: 1px solid #dae0e6;
-  border-radius: 4px;
   margin-left: auto !important;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  background-color: #ffffff;
-  line-height: 20px;
+  background-color: $color-white;
 }
 .regenerateBtn {
-  font-family: inherit;
-  text-transform: none;
-  font-size: 14px;
-  font-weight: 600;
+  @extend .baseButton;
   color: #272d37;
   padding: 10px;
   width: 125px;
   height: 36px;
-  justify-content: space-between;
   border: 1px solid #dae0e6;
-  border-radius: 4px;
   margin-left: auto !important;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  background-color: #ffffff;
-  line-height: 20px;
+  background-color: $color-white;
 }
 .classifyBtn {
-  background: #437ef7;
-  color: #fff;
+  @extend .baseButton;
+  background: $advanced-blue;
+  color: $color-white;
   padding: 10px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  box-shadow: 0px 1px 2px 0px #1018280a;
   width: 247px;
   height: 36px;
   gap: 8px;
   border: none;
-  font-weight: $font-weight-bold;
-  font-size: 14px;
-  line-height: 20px;
   letter-spacing: 0px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   filter: brightness(0.95);
 }
 .thumbsUp {
-  color: #437ef7;
+  color: $advanced-blue;
 }
 .thumbsDown {
-  color: #E2341D;
+  color: #e2341d;
 }
 .textField {
   width: 100%;
@@ -170,7 +157,7 @@
 }
 
 .suggestionText {
-  color: #1f2937; /* gray-800 */
+  color: #1f2937;
   line-height: 1.5;
 }
 
