@@ -5,6 +5,26 @@ Investigation Summary:
 
 According to the official ABS Root Cause Map™, the Problem Category represents the initial causal factors that led to the deviation. This is the starting point for root cause analysis.
 
+Problem Categories are organized by Factors in the official ABS map:
+
+**Equipment/Software Issues:**
+- Process/Manufacturing Equipment Issue (#7)
+- Software Issue (#8)
+- Material/Product Issue (#9)
+- Utility/Support Equipment Issue (#10)
+- Other Equipment Issue (#11)
+
+**Personnel Issues:**
+- Company Personnel Issue (#12)
+- Contract Personnel Issue (#13)
+- Third-Party Personnel Issue (#14)
+
+**Other Issues:**
+- Natural Phenomena (#15)
+- External Events (#16)
+- External Sabotage and Other Criminal Activity (#17)
+- Cause Cannot be Determined (#6)
+
 Your task: Identify and describe each causal factor (problem) found in the investigation summary. For each causal factor, explain:
 - What specific problem or issue occurred
 - When and where it happened
