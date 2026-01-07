@@ -51,13 +51,13 @@ STEP 2: MAJOR ROOT CAUSE CATEGORIES (select ONE):
 - Hazard/Defect Identification and Analysis Issue (#94)
 - Procedure Issue (#122)
 - Human Factors Issue (#146)
-- Training/Personnel Qualification Issue (#164)
-- Supervision Issue (#176)
-- Communication Issue (#186)
-- Company Standards, Policies and Administrative Controls (SPAC) Issue (#196)
-- Personnel Performance Issue (#206)
-- Organizational Culture Issue (#226)
-- Management System Issue (#236)
+- Training/Personnel Qualification Issue (#171)
+- Supervision Issue (#185)
+- Verbal and Informal Written Communication Issue (#196)
+- Personnel Performance Issue (#207)
+- Company Standards, Policies and Administrative Controls (SPAC) Issue (#224)
+- Organizational Culture Issue (#234)
+- Management System Issue (#244)
 
 ---
 
@@ -91,31 +91,25 @@ For "Procedure Issue" (#122):
 - Correct Procedure Used Incorrectly (#131)
 - Appropriate Procedure Incorrect/Incomplete (#140)
 
-For "Training/Personnel Qualification Issue" (#164):
-- Training Not Performed (#165)
-- Training Inadequate (#169)
-- Lack of Knowledge/Skill (#173)
-- Requalification Issue (#174)
-- On-the-Job Training Issue (#175)
+For "Training/Personnel Qualification Issue" (#171):
+- No Training (#172)
+- Training Implementation Issue (#176)
 
 For "Human Factors Issue" (#146):
-- Tools and Equipment Issue (#147)
-- Workplace Layout Issue (#151)
-- Work Environment Issue (#155)
-- Physical Workload Issue (#159)
-- Mental Workload Issue (#161)
-- Error Mitigation Issue (#163)
+- Tools/Equipment Issue (#147)
+- Workplace Layout Issue (#150)
+- Work Environment Issue (#156)
+- Physical Workload Issue (#160)
+- Mental Workload Issue (#163)
+- Error Mitigation Issue (#168)
 
-For "Supervision Issue" (#176):
-- Oversight/Inspection Issue (#177)
-- Inadequate Investigation Issue (#181)
-- Lack of Accountability Issue (#182)
-- Lack of Enforcement Issue (#183)
-- Lack of Oversight Issue (#184)
+For "Supervision Issue" (#185):
+- Preparation Issue (#186)
+- Supervision During Work Issue (#192)
 
-For "Communication Issue" (#186):
-- Verbal and Informal Written Communication Issue (#187)
-- Formal Written Communication Issue (#191)
+For "Communication Issue" (#196):
+- No Communication or Not Timely (#197)
+- Communication Misunderstood/Incorrect (#200)
 
 ---
 
@@ -196,35 +190,74 @@ For "Appropriate Procedure Incorrect/Incomplete" (#140):
 - Missing Steps/Content/Situation Not Covered (#144)
 - Overlap or Gaps Between Procedures (#145)
 
-For "Training Not Performed" (#165):
-- Initial Training Not Performed (#166)
-- Refresher Training Not Performed (#167)
-- Training Not Performed for Change (#168)
+For "No Training" (#172):
+- Decision Not to Train (#173)
+- Training Need Not Identified (#174)
+- Training Requirements Not Completed (#175)
 
-For "Training Inadequate" (#169):
-- Training Content Inadequate (#170)
-- Training Method Inadequate (#171)
-- Training Evaluation Inadequate (#172)
+For "Training Implementation Issue" (#176):
+- Training Program Design/Development (#177)
+- Classroom Training Issue (#178)
+- Laboratory/Practical Training Issue (#179)
+- On-the-job Training Issue (#180)
+- Self Study and Computer-based Training Issue (#181)
+- Continuing Training Issue (#182)
+- Training Resources Issue (#183)
+- Qualification Issue (#184)
 
-For "Tools and Equipment Issue" (#147):
-- Tools/Equipment Inadequate (#148)
-- Tools/Equipment Not Available (#149)
-- Tools/Equipment Difficult to Use (#150)
+For "Tools/Equipment Issue" (#147):
+- Appropriate Tools/Equipment Not Used (#148)
+- Tools/Equipment Not Functioning Properly (#149)
 
-For "Oversight/Inspection Issue" (#177):
-- Oversight Not Performed (#178)
-- Oversight Inadequate (#179)
-- Inspection Not Performed (#180)
+For "Workplace Layout Issue" (#150):
+- Individual Control/Display/Alarm Issue (#151)
+- Control/Display/Alarm Integration/Arrangement Issue (#152)
+- Awkward/Inconvenient/Inaccessible Location of Control/Display/Alarm (#153)
+- Awkward/Inconvenient/Inaccessible Equipment Location (#154)
+- Poor/Illegible Labeling of Control/Display/Alarm or Equipment (#155)
 
-For "Verbal and Informal Written Communication Issue" (#187):
-- No Communication or Not Timely (#188)
-- Language/Translation Issue (#189)
-- Wrong Message (#190)
+For "Work Environment Issue" (#156):
+- Housekeeping Issue (#157)
+- Ambient Conditions Issue (#158)
+- Protective Clothing/Equipment Issue (#159)
 
-For "Formal Written Communication Issue" (#191):
-- Communication Method Issue (#192)
-- Communication Content Issue (#193)
-- Communication Timing Issue (#194)
+For "Physical Workload Issue" (#160):
+- Sustained High Workload/Fatigue (#161)
+- High Transient Workload (#162)
+
+For "Mental Workload Issue" (#163):
+- Knowledge-based Behavior Issue (#164)
+- Rule-based Behavior Issue (#165)
+- Skill-based Behavior Issue (#166)
+- Unrealistic Monitoring Requirement (#167)
+
+For "Error Mitigation Issue" (#168):
+- Errors Not Detectable (#169)
+- Errors Could Not Be Corrected/Mitigated (#170)
+
+For "Preparation Issue" (#186):
+- Job Plan/Instructions to Workers Issue (#187)
+- Ineffective Walkthrough (#188)
+- Job Scheduling Issue (#189)
+- Personnel Selection/Assignment/Scheduling Issue (#190)
+- Responsibility/Authority Issue (#191)
+
+For "Supervision During Work Issue" (#192):
+- Improper Performance Not Corrected (#193)
+- Teamwork/Coordination Issue (#194)
+- Too Much/Too Little Supervision (#195)
+
+For "No Communication or Not Timely" (#197):
+- Method Unavailable or Inadequate (#198)
+- Communication Not Timely/Not Performed (#199)
+
+For "Communication Misunderstood/Incorrect" (#200):
+- Standard Terminology Not Used (#201)
+- Language/Translation Issue (#202)
+- Verification/Repeat-back Not Used (#203)
+- Long Message (#204)
+- Other Misunderstood Communications (#205)
+- Wrong Instructions (#206)
 
 ---
 
@@ -258,6 +291,19 @@ If Near Root Cause = "Correct Procedure Not Used" (#123), then Root Cause MUST b
   - "Language Issue" (#128)
   - "Procedure Difficult to Identify" (#129)
   - "Wrong Revision Used" (#130)
+
+ANOTHER EXAMPLE:
+If Major Category = "Documentation and Records Issue" (#58), then Near Root Cause MUST be one of:
+  - "Equipment Records and Manuals Issue" (#59)
+  - "Operational and Maintenance History Issue" (#63)
+  - "Risk Assessment Records Issue" (#67)
+  - "Personnel Records Issue" (#71)
+  - "Other Documents and Records Issue" (#75)
+
+If Near Root Cause = "Operational and Maintenance History Issue" (#63), then Root Cause MUST be one of:
+  - "Documentation Content Inaccurate or Incomplete" (#64)
+  - "Documents Not Available or Missing" (#65)
+  - "Out-of-date Documents Used" (#66)
 
 Respond ONLY with valid JSON in this exact format:
 
