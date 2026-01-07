@@ -470,7 +470,7 @@ def lambda_handler(event, context):
 
         log_deviation_workflow(
             conn=conn,
-            deviation_id=deviation_id,
+            entity_id=deviation_id,
             step="RCA_GENERATED",
             input_data={
                 "summary_length": len(investigation_summary),
@@ -493,7 +493,7 @@ def lambda_handler(event, context):
 
             categories = categorize_rca(
                 investigation_summary=investigation_summary,
-                issues_text=rca['issues'],
+                problem_category_text=rca['problem_category_validated'],
                 major_category_text=rca['major_root_cause_category_validated'],
                 near_cause_text=rca['near_root_cause'],
                 root_cause_text=rca['root_cause']
