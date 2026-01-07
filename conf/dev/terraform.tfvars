@@ -9,7 +9,6 @@ subnet2                 = "subnet-0948aa53dddc1752a"
 subnet3                 = "subnet-0142513425585a3ec"
 subnet4                 = "subnet-07cf57f40e705dc5b"
 security_group_id       = "sg-073837aa58ac9dc40"
-sagemaker_endpoint_name = "internal-pwc-mounjaro-12-categorization-model-v1"
 s3_buckets_list = [
   "initial-files",
 ]
@@ -17,6 +16,8 @@ static_website            = "ui"
 lambda_execution_role_arn = "arn:aws:iam::120569648189:role/qms-dev-lambda-role"
 step_function_role_arn    = "arn:aws:iam::120569648189:role/qms-dev-step-function-role"
 event_bridge_role_arn     = "arn:aws:iam::120569648189:role/qms-dev-events-role"
+sagemaker_role_arn = "arn:aws:iam::120569648189:role/qms-dev-sagemaker-execution-role"
+
 serverless_min_acu        = "2"
 serverless_max_acu        = "16"
 
@@ -139,7 +140,7 @@ lambda_configs = [
     environment_variables = {
       env                 = "dev"
       aws_region          = "us-east-1"
-      level_endpoint = "roberta-level-model-v1"
+      level_endpoint = "qms-dev-mounjaro-level"
     }
   },
   {
@@ -148,7 +149,7 @@ lambda_configs = [
     environment_variables = {
       env                 = "dev"
       aws_region          = "us-east-1"
-      subcategory_endpoint = "roberta-mounjaro-category-12-model-v1"
+      subcategory_endpoint = "qms-dev-mounjaro-category"
     }
   },
   {

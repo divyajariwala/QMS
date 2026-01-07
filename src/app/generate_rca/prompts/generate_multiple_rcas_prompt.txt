@@ -12,36 +12,73 @@ For example:
 
 Your task is to identify AT LEAST 2 distinct root causes (preferably 2-4) and generate a separate RCA for each one. For each RCA, provide:
 
-1. **Issues**: Describe the specific causal factor (problem) for this RCA. What happened, when, where, and what was the immediate impact.
+1. **Issues**: Describe the specific causal factor (problem) for this RCA. What happened, when, where, and what was the immediate impact. **LIMIT: 60-65 words maximum.**
 
-2. **Major Root Cause Category Explanation**: A detailed explanation of why this falls under a specific major category (Equipment/Software Issues, Personnel Issues, or Other Issues). Explain the reasoning and context.
+2. **Major Root Cause Category Explanation**: A detailed explanation of why this falls under a specific major category (Equipment/Software Issues, Personnel Issues, or Other Issues). Explain the reasoning and context. **LIMIT: 60-65 words maximum.**
 
-3. **Near Root Cause**: Explain the immediate contributing factor that led to this problem. This is one level deeper than the issue itself.
+3. **Near Root Cause**: Explain the immediate contributing factor that led to this problem. This is one level deeper than the issue itself. **LIMIT: 60-65 words maximum.**
 
-4. **Root Cause**: Identify the fundamental, systemic issue that, if addressed, would have prevented this specific problem from occurring.
+4. **Root Cause**: Identify the fundamental, systemic issue that, if addressed, would have prevented this specific problem from occurring. **LIMIT: 60-65 words maximum.**
 
 ---
 
-ABS ROOT CAUSE MAP REFERENCE:
+ABS ROOT CAUSE MAP™ REFERENCE (Official ABSG Consulting Taxonomy):
+Copyright 2010 © ABSG Consulting Inc.
 
-**Major Categories:**
-1. Equipment/Software Issues
-2. Personnel Issues  
-3. Other Issues
+**HIERARCHY:** Problem Category → Major Category → Near Root Cause → Root Cause
 
-**Near Root Cause Categories:**
-- Design Issue, Equipment Reliability Issue, Procedure/Instruction Issue, Materials/Parts Issue, Utility/Support Equipment Issue, Other Equipment Issue
-- Procedure Issue, Training/Guidance Issue, Human Factors Issue, Tech/Craftsman Issue, Supervision Issue, No Communication or Not Timely, Company Issue
-- Natural Phenomena, External Events, External Facilities/Activity, Cause Cannot Be Determined
+**PROBLEM CATEGORIES (Issues Categories):**
 
-**Root Cause Categories:**
-- Design Input Issue, Design Output Issue, Equipment Defects Issue, Preventive Maintenance Issue
-- Procedure Not Used, Procedure Inadequate, Procedure Not Available
-- Training Not Performed, Training Inadequate, Lack of Knowledge/Skill
-- Inattention to Detail, Lack of Teamwork, Complacency
-- Oversight/Inspection Issue, Inadequate Investigation, Lack of Accountability
-- No Communication or Not Timely, Wrong Message
-- And many others...
+Equipment/Software Issues:
+- Process/Manufacturing Equipment Issue (#7)
+- Software Issue (#8)
+- Material/Product Issue (#9)
+- Utility/Support Equipment Issue (#10)
+- Other Equipment Issue (#11)
+
+Personnel Issues:
+- Company Personnel Issue (#12)
+- Contract Personnel Issue (#13)
+- Third-Party Personnel Issue (#14)
+
+Other Issues:
+- Natural Phenomena (#15)
+- External Events (#16)
+- External Sabotage and Other Criminal Activity (#17)
+- Cause Cannot be Determined (#6)
+
+**MAJOR ROOT CAUSE CATEGORIES (Examples):**
+- Design Issue (#18)
+- Equipment Reliability Program Issue (#28)
+- Documentation and Records Issue (#58)
+- Material/Parts and Product Issue (#79)
+- Hazard/Defect Identification and Analysis Issue (#94)
+- Procedure Issue (#122)
+- Human Factors Issue (#146)
+- Training/Personnel Qualification Issue (#171)
+- Supervision Issue (#185)
+- Communication Issue (#199)
+- Company Standards, Policies and Administrative Controls (SPAC) Issue (#211)
+
+**NEAR ROOT CAUSE EXAMPLES:**
+- Design Input Issue (#19), Design Output Issue (#22), Design Review/Verification Issue (#25)
+- Equipment Reliability Program Design Issue (#29), Periodic Maintenance Issue (#33), Event-based Maintenance Issue (#37)
+- Procedure Not Used (#123), Procedure Inadequate (#124), Procedure Not Available (#125)
+- Training Not Performed (#172), Training Inadequate (#173), Lack of Knowledge/Skill (#174)
+- Inattention to Detail (#147), Lack of Teamwork (#149), Complacency (#150), Fatigue (#151)
+- Oversight/Inspection Issue (#186), Inadequate Investigation Issue (#187), Lack of Accountability Issue (#188)
+- No Communication or Not Timely (#200), Language/Translation Issue (#201), Wrong Message (#202)
+
+**ROOT CAUSE EXAMPLES:**
+- Design Scope Issue (#20), Design Input Data Issue (#21), Design Output Incorrect (#23)
+- Critical Equipment Not Identified (#30), No or Inappropriate Maintenance Selected (#31)
+- Procedure Not Performed Correctly (#126), Change Control Issue (#129)
+- On-the-Job Training Issue (#176), Requalification Issue (#175)
+- Time Pressure (#154), Stress (#152), Distraction (#153)
+- Lack of Enforcement Issue (#189), Lack of Oversight Issue (#190)
+- Communication Method Issue (#203)
+
+Note: This is the official ABS Root Cause Map™ with 200+ categories. Use the most specific and accurate category based on the investigation summary.
 
 ---
 
@@ -54,28 +91,29 @@ You MUST return a minimum of 2 RCAs. If the investigation summary seems simple, 
 ```json
 [
   {
-    "issues": "Detailed description of the first causal factor...",
-    "major_root_cause_category_validated": "Detailed explanation of why this is [Major Category]...",
-    "near_root_cause": "Explanation of the near root cause for this issue...",
-    "root_cause": "Explanation of the fundamental root cause for this issue..."
+    "issues": "Concise description (60-65 words max)...",
+    "major_root_cause_category_validated": "Concise explanation (60-65 words max)...",
+    "near_root_cause": "Concise explanation (60-65 words max)...",
+    "root_cause": "Concise explanation (60-65 words max)..."
   },
   {
-    "issues": "Detailed description of the second causal factor (if exists)...",
-    "major_root_cause_category_validated": "Detailed explanation of why this is [Major Category]...",
-    "near_root_cause": "Explanation of the near root cause for this issue...",
-    "root_cause": "Explanation of the fundamental root cause for this issue..."
+    "issues": "Concise description (60-65 words max)...",
+    "major_root_cause_category_validated": "Concise explanation (60-65 words max)...",
+    "near_root_cause": "Concise explanation (60-65 words max)...",
+    "root_cause": "Concise explanation (60-65 words max)..."
   }
 ]
 ```
 
 GUIDELINES:
 - You MUST generate at least 2 RCAs (minimum requirement)
+- **CRITICAL: Each text field (issues, major_root_cause_category_validated, near_root_cause, root_cause) must be 60-65 words maximum**
 - Each RCA should address a DISTINCT root cause or perspective
 - Analyze from different levels: immediate cause, contributing factors, systemic issues, organizational factors
 - Each RCA should be complete and stand-alone
-- Use clear, professional language
+- Use clear, professional, concise language
 - Focus on systemic issues, not individual blame
-- Provide enough detail for corrective actions
+- Provide enough detail for corrective actions within the word limit
 - If the issue seems simple, consider: What allowed this to happen? What systemic gaps exist? What organizational factors contributed?
 
 EXAMPLES OF MULTIPLE PERSPECTIVES:
