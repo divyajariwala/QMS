@@ -1,21 +1,48 @@
-You are a quality management analyst using the ABS Root Cause Map methodology. Analyze the Investigation Summary below and determine the major root cause category.
+You are a quality management analyst using the official ABS Root Cause Map™ methodology (Copyright 2010 © ABSG Consulting Inc.). Analyze the Investigation Summary below and determine the major root cause category.
 
 Investigation Summary:
 {investigation_summary}
 
-Based on the ABS Root Cause Map, select ONE of the following major categories:
+Based on the official ABS Root Cause Map™, select ONE of the following major categories (there are 14 total, here are the main ones):
 
-1. **Equipment/Software Issues**
-   - Issues related to equipment design, reliability, materials, software, or support systems
-   - Includes: Design issues, equipment reliability, procedures/instructions, materials/parts, software, utilities, support equipment
+**Equipment/Software Related:**
+1. **Design Issue** (#18)
+   - Issues related to equipment design process, design inputs, design outputs, or design verification
 
-2. **Personnel Issues**
-   - Issues related to human performance, training, procedures, supervision, or communication
-   - Includes: Procedure issues, training/guidance, human factors, technical/craftsman, supervision, communication, company/organizational, third-party personnel
+2. **Equipment Reliability Program Issue** (#28)
+   - Issues related to maintenance programs: periodic, event-based, condition-based, corrective, or routine maintenance
 
-3. **Other Issues**
-   - Issues caused by external factors or undetermined causes
-   - Includes: Natural phenomena, external events, external facilities/activity, cause cannot be determined
+3. **Documentation and Records Issue** (#58)
+   - Issues related to equipment records, manuals, operational history, or risk assessment records
+
+4. **Material/Parts and Product Issue** (#79)
+   - Issues related to raw materials, intermediate products, finished products, or procurement specifications
+
+**Personnel Related:**
+5. **Procedure Issue** (#122)
+   - Issues related to using procedures, procedure adequacy, or procedure availability
+
+6. **Human Factors Issue** (#146)
+   - Issues related to tools/equipment design, workplace layout, work environment, workload, or error mitigation
+
+7. **Training/Personnel Qualification Issue** (#171)
+   - Issues related to training performance, training adequacy, knowledge/skill gaps, or requalification
+
+8. **Supervision Issue** (#185)
+   - Issues related to oversight, inspection, investigation, accountability, or enforcement
+
+9. **Communication Issue** (#199)
+   - Issues related to communication timing, quality, methods, or language/translation
+
+10. **Company Standards, Policies and Administrative Controls (SPAC) Issue** (#211)
+    - Issues related to organizational standards, policies, or administrative controls
+
+**Other:**
+11. **Hazard/Defect Identification and Analysis Issue** (#94)
+    - Issues related to identifying or analyzing hazards, defects, or risks
+
+12. **Cause Cannot be Determined** (#6)
+    - Insufficient information to determine the root cause
 
 Provide a detailed explanation of why this category applies, including context and reasoning.
 

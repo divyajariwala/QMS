@@ -22,52 +22,63 @@ Your task is to identify AT LEAST 2 distinct root causes (preferably 2-4) and ge
 
 ---
 
-ABS ROOT CAUSE MAP REFERENCE (Official Taxonomy):
+ABS ROOT CAUSE MAP™ REFERENCE (Official ABSG Consulting Taxonomy):
+Copyright 2010 © ABSG Consulting Inc.
 
 **HIERARCHY:** Problem Category → Major Category → Near Root Cause → Root Cause
 
-**MAJOR CATEGORIES:**
-1. Equipment/Software Issues - Issues related to equipment design, reliability, materials, software, or support systems
-2. Personnel Issues - Issues related to human performance, training, procedures, supervision, or communication
-3. Other Issues - Issues caused by external factors or undetermined causes
-
-**NEAR ROOT CAUSE CATEGORIES BY MAJOR CATEGORY:**
+**PROBLEM CATEGORIES (Issues Categories):**
 
 Equipment/Software Issues:
-- Design Issue - Problems from design phase decisions or outputs
-- Equipment Reliability Issue - Problems with equipment performance, maintenance, or monitoring
-- Procedure/Instruction Issue - Problems with equipment-related procedures
-- Materials/Parts Issue - Problems with materials, spare parts, or quality
-- Software Issue - Problems with software design, installation, or configuration
-- Utility/Support Equipment Issue - Problems with utilities or support systems
-- Other Equipment Issue - Other equipment-related issues
+- Process/Manufacturing Equipment Issue (#7)
+- Software Issue (#8)
+- Material/Product Issue (#9)
+- Utility/Support Equipment Issue (#10)
+- Other Equipment Issue (#11)
 
 Personnel Issues:
-- Procedure Issue - Problems with following or using procedures
-- Training/Guidance Issue - Problems with training quality or knowledge transfer
-- Human Factors Issue - Problems related to human behavior and psychological factors
-- Tech/Craftsman Issue - Problems with technical execution or work practices
-- Supervision Issue - Problems with oversight, investigation, or accountability
-- No Communication or Not Timely - Problems with communication quality or timing
-- Company Issue - Problems with organizational systems or culture
-- Third Party/Personnel Issue - Problems involving external parties
+- Company Personnel Issue (#12)
+- Contract Personnel Issue (#13)
+- Third-Party Personnel Issue (#14)
 
 Other Issues:
-- Natural Phenomena - Events caused by natural forces
-- External Events - Human-caused external events
-- External Facilities/Activity - Issues with external infrastructure or services
-- Cause Cannot Be Determined - Root cause could not be established
+- Natural Phenomena (#15)
+- External Events (#16)
+- External Sabotage and Other Criminal Activity (#17)
+- Cause Cannot be Determined (#6)
 
-**EXAMPLE ROOT CAUSE CATEGORIES:**
-- Design: Design Input Issue, Design Output Issue, Design Change Issue, Verification Issue
-- Equipment Reliability: Equipment Defects Issue, Preventive/Predictive Maintenance Issue, Monitoring Issue
-- Procedure: Procedure Not Used, Procedure Inadequate, Procedure Not Available, Procedure Not Followed
-- Training: Training Not Performed, Training Inadequate, Lack of Knowledge/Skill
-- Human Factors: Inattention to Detail, Lack of Teamwork, Complacency, Fatigue, Stress
-- Supervision: Oversight/Inspection Issue, Inadequate Investigation, Lack of Accountability
-- Communication: No Communication or Not Timely, Language/Translation Issue, Wrong Message
-- Company: Personnel Hiring Issue, Staffing/Availability Issue, Organizational Culture Issue
-- And many others...
+**MAJOR ROOT CAUSE CATEGORIES (Examples):**
+- Design Issue (#18)
+- Equipment Reliability Program Issue (#28)
+- Documentation and Records Issue (#58)
+- Material/Parts and Product Issue (#79)
+- Hazard/Defect Identification and Analysis Issue (#94)
+- Procedure Issue (#122)
+- Human Factors Issue (#146)
+- Training/Personnel Qualification Issue (#171)
+- Supervision Issue (#185)
+- Communication Issue (#199)
+- Company Standards, Policies and Administrative Controls (SPAC) Issue (#211)
+
+**NEAR ROOT CAUSE EXAMPLES:**
+- Design Input Issue (#19), Design Output Issue (#22), Design Review/Verification Issue (#25)
+- Equipment Reliability Program Design Issue (#29), Periodic Maintenance Issue (#33), Event-based Maintenance Issue (#37)
+- Procedure Not Used (#123), Procedure Inadequate (#124), Procedure Not Available (#125)
+- Training Not Performed (#172), Training Inadequate (#173), Lack of Knowledge/Skill (#174)
+- Inattention to Detail (#147), Lack of Teamwork (#149), Complacency (#150), Fatigue (#151)
+- Oversight/Inspection Issue (#186), Inadequate Investigation Issue (#187), Lack of Accountability Issue (#188)
+- No Communication or Not Timely (#200), Language/Translation Issue (#201), Wrong Message (#202)
+
+**ROOT CAUSE EXAMPLES:**
+- Design Scope Issue (#20), Design Input Data Issue (#21), Design Output Incorrect (#23)
+- Critical Equipment Not Identified (#30), No or Inappropriate Maintenance Selected (#31)
+- Procedure Not Performed Correctly (#126), Change Control Issue (#129)
+- On-the-Job Training Issue (#176), Requalification Issue (#175)
+- Time Pressure (#154), Stress (#152), Distraction (#153)
+- Lack of Enforcement Issue (#189), Lack of Oversight Issue (#190)
+- Communication Method Issue (#203)
+
+Note: This is the official ABS Root Cause Map™ with 200+ categories. Use the most specific and accurate category based on the investigation summary.
 
 ---
 
