@@ -517,3 +517,6 @@ def lambda_handler(event, context):
     except Exception as e:
         logger.error(f"❌ Unexpected error: {str(e)}")
         return response(500, "Internal server error", {"details": str(e)})
+    finally:
+        if conn:
+            conn.close()
