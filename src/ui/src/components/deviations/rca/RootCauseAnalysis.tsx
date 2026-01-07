@@ -108,8 +108,8 @@ const RootCauseAnalysis = forwardRef<
             {
               key: "issues",
               title: "Causal factor",
-              value: item.issues_category ?? "",
-              explanation: item.issues ?? "",
+              value: item.problem_category ?? "",
+              explanation: item.problem_category_validated ?? "",
             },
             {
               key: "major",
@@ -188,7 +188,7 @@ const RootCauseAnalysis = forwardRef<
       meta: { createdFrom: "add", createdAt: new Date().toISOString() },
     };
     setPendingRca(newRca);
-    setSelectedIndex(rcas.length); 
+    setSelectedIndex(rcas.length);
     setIsEditing(true);
     setPreEditSnapshot(newRca);
   };
@@ -245,7 +245,7 @@ const RootCauseAnalysis = forwardRef<
       const next = [...rcas, updated];
       setRcas(next);
       setPendingRca(null);
-      setSelectedIndex(next.length - 1); 
+      setSelectedIndex(next.length - 1);
     } else {
       const next = [...rcas];
       next[selectedIndex] = updated;
@@ -276,8 +276,8 @@ const RootCauseAnalysis = forwardRef<
     return {
       deviation_id: deviationId,
 
-      issues: issues.explanation || issuesValue || "",
-      issues_category: issuesValue || "",
+      problem_category_validated: issues.explanation || issuesValue || "",
+      problem_category: issuesValue || "",
 
       major_root_cause_category: isExcluded ? NA : major.value || "",
       major_root_cause_category_validated: isExcluded
@@ -302,7 +302,9 @@ const RootCauseAnalysis = forwardRef<
       const payload = buildPayload();
       await submitRca(payload);
       setIsSubmittedSuccessfully(true);
-      onSubmitSuccess();
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
       setType("success");
       setMessage("RCA successfully submitted");
       handleShowNotification();

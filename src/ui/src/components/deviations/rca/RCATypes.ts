@@ -2,8 +2,8 @@ export type SectionKey = "issues" | "major" | "near" | "root";
 
 export interface ApiRcaItem {
   deviation_id: string | undefined;
-  issues: string;
-  issues_category: string;
+  problem_category: string;
+  problem_category_validated: string;
   major_root_cause_category: string;
   major_root_cause_category_validated: string;
   near_root_cause: string;

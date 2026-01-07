@@ -44,7 +44,7 @@ const RcaTabs: React.FC<RcaTabsProps> = ({
             className={styles.rcaTab}
             sx={{
               "&.Mui-selected": {
-                backgroundColor: "#DAE0E6",
+                backgroundColor: "#F7F7F8",
               },
             }}
           />
@@ -56,7 +56,7 @@ const RcaTabs: React.FC<RcaTabsProps> = ({
             className={styles.rcaTab}
             sx={{
               "&.Mui-selected": {
-                backgroundColor: "#DAE0E6",
+                backgroundColor: "#F7F7F8",
               },
             }}
           />
@@ -64,7 +64,12 @@ const RcaTabs: React.FC<RcaTabsProps> = ({
       </Tabs>
       <Stack direction="row" spacing={1}>
         {!isSubmittedSuccessfully && (
-          <Button variant="text" onClick={onAdd} className={styles.addBtn} disabled={rcas.length > 2}>
+          <Button
+            variant="text"
+            onClick={onAdd}
+            className={styles.addBtn}
+            disabled={rcas.length > 2}
+          >
             Add RCA
             <img src={PlusIcon} alt="plus" />
           </Button>

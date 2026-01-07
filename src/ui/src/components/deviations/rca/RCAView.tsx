@@ -5,7 +5,7 @@ import RCACategory from "../../../assets/icons/rcaCategory.svg";
 import { RcaRecord } from "./RCATypes";
 import styles from "./RootCauseAnalysis.module.scss";
 
-const CHAR_LIMIT = 100;
+const CHAR_LIMIT = 200;
 
 const RcaView: React.FC<{ rca: RcaRecord }> = ({ rca }) => {
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});

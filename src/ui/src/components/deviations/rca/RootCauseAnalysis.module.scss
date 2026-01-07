@@ -3,15 +3,7 @@
    Variables
    ────────────────────────────────────────────────────────────────────────────*/
 $blue-500: #2196f3;
-$blue-700: #1976d2;
-$blue-50: #e3f2fd;
-
-$text-muted: #607d8b;
-$border-color: #cfd8dc;
 $section-bg: #f9fbff;
-
-$radius-large: 12px;
-$radius-medium: 8px;
 * {
   font-family: "Lato", "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
     "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif !important;
@@ -75,7 +67,7 @@ $radius-medium: 8px;
   line-height: 1;
   letter-spacing: 0.04em;
   vertical-align: bottom;
-  color: #000000;
+  color: $color-black;
 }
 
 .subtitleBox {
@@ -83,7 +75,7 @@ $radius-medium: 8px;
   font-size: 14px;
   line-height: 24px;
   letter-spacing: -0.1px;
-  color: #5f6d7e;
+  color: $color-black;
   margin-bottom: 16px;
 }
 .addBtn {
@@ -120,7 +112,7 @@ $radius-medium: 8px;
 .rcaTabs {
   min-height: 36px !important;
   display: inline-flex !important;
-  border: 1px solid #e5e8eb !important;
+  border: 1px solid #dae0e6 !important;
   border-radius: 8px !important;
   overflow: hidden !important;
 }
@@ -209,6 +201,9 @@ $radius-medium: 8px;
 
 .rcaHeaderTitle {
   font-weight: $font-weight-bold !important;
+  line-height: 20px !important;
+  font-size: 16px !important;
+  color: #5f6d7e;
 }
 
 .rcaSection {
@@ -237,19 +232,20 @@ $radius-medium: 8px;
 
 .rcaSectionHeader {
   margin-bottom: 8px;
-
-  .rcaSectionTitle {
-    font-weight: $font-weight-bold;
-    font-size: 18px;
-    line-height: 24px;
-  }
+}
+.rcaSectionTitle {
+  font-weight: $font-weight-bold !important;
+  font-size: 18px !important;
+  line-height: 24px !important;
+  color: #383b46;
 }
 
 .rcaSubTitle {
-  font-weight: $font-weight-medium;
-  font-size: 15px;
-  line-height: 22px;
+  font-weight: $font-weight-medium !important;
+  font-size: 15px !important;
+  line-height: 22px !important;
   text-transform: capitalize;
+  color: $color-black;
 }
 
 .rcaExplanation {
@@ -277,5 +273,4 @@ $radius-medium: 8px;
   padding: 0 !important;
   min-width: auto !important;
   text-transform: none !important;
-  font-size: 0.875rem;
 }
