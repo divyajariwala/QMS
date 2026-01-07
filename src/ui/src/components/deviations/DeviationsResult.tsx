@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { Box, Button, Radio, Skeleton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
@@ -13,6 +13,8 @@ import DeviationsDueDateChip from "./DeviationsDueDateChip";
 const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
   const navigate = useNavigate();
   const { deviation_id, created_date, deviation_description } = deviation;
+  const [descExpanded, setDescExpanded] = useState(false);
+  const CHAR_LIMIT = 200;
   const progress = !deviation.rca_approved
     ? 0
     : !deviation.grading_approved
@@ -31,6 +33,26 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
   const onStartGrading = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
+
+  const truncateAtWord = (text: string, limit: number) => {
+    if (!text) return "";
+    if (text.length <= limit) return text;
+    const cut = text.slice(0, limit);
+    const lastSpace = cut.lastIndexOf(" ");
+    const safeCut = lastSpace > 0 ? cut.slice(0, lastSpace) : cut;
+    return `${safeCut}…`;
+  };
+
+  const descNeedsToggle = useMemo(
+    () => (deviation_description ?? "").length > CHAR_LIMIT,
+    [deviation_description]
+  );
+
+  const descDisplayText = useMemo(() => {
+    if (!deviation_description) return "";
+    if (descExpanded || !descNeedsToggle) return deviation_description;
+    return truncateAtWord(deviation_description, CHAR_LIMIT);
+  }, [deviation_description, descExpanded, descNeedsToggle]);
 
   return (
     <div className={styles.complaintsCardContainer}>
@@ -66,14 +88,27 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
       {loading ? (
         <Skeleton variant="rectangular" width={500} height={24} />
       ) : (
-        <div className={styles.infoRow}>{deviation_description}</div>
+        <div className={styles.infoRow}>
+          <span>
+            {descDisplayText}
+            {descNeedsToggle && (
+              <Button
+                className={styles.seeMoreBtn}
+                onClick={() => setDescExpanded((v) => !v)}
+              >
+                {descExpanded ? " See Less" : " See More"}
+              </Button>
+            )}
+          </span>
+        </div>
       )}
+
       <div className={styles.progressSection}>
         <div className={styles.progressHeader}>
           <span className={styles.progressLabel}>Overall Progress</span>
-          <span className={styles.progressPercent}>{`${Math.round(
-            progress
-          )}%`}</span>
+          <span className={styles.progressPercent}>
+            {`${Math.round(progress)}%`}
+          </span>
         </div>
         <div className={styles.progressBarBackground}>
           <div
