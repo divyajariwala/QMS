@@ -23,165 +23,254 @@ Root Cause:
 
 STEP 1: PROBLEM CATEGORIES (select ONE from official ABS map):
 
+**CRITICAL: Problem Categories are the TOP LEVEL of the hierarchy. They describe the general type of issue (Equipment, Personnel, or Other). Do NOT confuse these with Major Root Cause Categories!**
+
 Equipment/Software Issues:
-- Process/Manufacturing Equipment Issue
-- Software Issue
-- Material/Product Issue
-- Utility/Support Equipment Issue
-- Other Equipment Issue
+- Process/Manufacturing Equipment Issue (#7)
+- Software Issue (#8)
+- Material/Product Issue (#9)
+- Utility/Support Equipment Issue (#10)
+- Other Equipment Issue (#11)
 
 Personnel Issues:
-- Company Personnel Issue
-- Contract Personnel Issue
-- Third-Party Personnel Issue
+- Company Personnel Issue (#12)
+- Contract Personnel Issue (#13)
+- Third-Party Personnel Issue (#14)
 
 Other Issues:
-- Natural Phenomena
-- External Events
-- External Sabotage and Other Criminal Activity
-- Cause Cannot be Determined
+- Natural Phenomena (#15)
+- External Events (#16)
+- External Sabotage and Other Criminal Activity (#17)
+- Cause Cannot be Determined (#6)
+
+**IMPORTANT EXAMPLES:**
+- If the issue involves documentation/records → Problem Category is likely "Process/Manufacturing Equipment Issue" or "Company Personnel Issue" (NOT "Documentation and Records Issue" - that's a Major Category!)
+- If the issue involves procedures → Problem Category is likely "Company Personnel Issue" (NOT "Procedure Issue" - that's a Major Category!)
+- If the issue involves training → Problem Category is "Company Personnel Issue" (NOT "Training Issue" - that's a Major Category!)
+
+**COMMON MISTAKES TO AVOID:**
+❌ WRONG: "Documentation and Records Issue" as Problem Category (this is a Major Category!)
+❌ WRONG: "Procedure Issue" as Problem Category (this is a Major Category!)
+❌ WRONG: "Training Issue" as Problem Category (this is a Major Category!)
+✅ CORRECT: "Company Personnel Issue" or "Process/Manufacturing Equipment Issue" as Problem Category
 
 ---
 
-STEP 2: MAJOR ROOT CAUSE CATEGORIES (select ONE - examples, there are 14 total):
-- Design Issue
-- Equipment Reliability Program Issue
-- Documentation and Records Issue
-- Material/Parts and Product Issue
-- Hazard/Defect Identification and Analysis Issue
-- Procedure Issue
-- Human Factors Issue
-- Training/Personnel Qualification Issue
-- Supervision Issue
-- Communication Issue
-- Company Standards, Policies and Administrative Controls (SPAC) Issue
-- And others...
+STEP 2: MAJOR ROOT CAUSE CATEGORIES (select ONE):
+- Design Issue (#18)
+- Equipment Reliability Program Issue (#28)
+- Documentation and Records Issue (#58)
+- Material/Parts and Product Issue (#79)
+- Hazard/Defect Identification and Analysis Issue (#94)
+- Procedure Issue (#122)
+- Human Factors Issue (#146)
+- Training/Personnel Qualification Issue (#171)
+- Supervision Issue (#185)
+- Verbal and Informal Written Communication Issue (#196)
+- Personnel Performance Issue (#207)
+- Company Standards, Policies and Administrative Controls (SPAC) Issue (#224)
+- Organizational Culture Issue (#234)
+- Management System Issue (#244)
 
 ---
 
-STEP 3: NEAR ROOT CAUSE CATEGORIES (select ONE based on Major Category - examples):
+STEP 3: NEAR ROOT CAUSE CATEGORIES (select ONE based on Major Category):
 
-For "Design Issue":
-- Design Input Issue
-- Design Output Issue
-- Design Review/Verification Issue
+CRITICAL: You MUST select a Near Root Cause that belongs to the Major Root Cause Category you selected in Step 2.
 
-For "Equipment Reliability Program Issue":
-- Equipment Reliability Program Design Issue
-- Periodic Maintenance Issue
-- Event-based Maintenance Issue
-- Condition-based Maintenance Issue
-- Fault-finding Maintenance and Inspection Issue
-- Corrective Maintenance Issue
-- Routine Inspection and Servicing Issue
+For "Design Issue" (#18):
+- Design Input Issue (#19)
+- Design Output Issue (#22)
+- Design Review/Verification Issue (#25)
 
-For "Procedure Issue":
-- Procedure Not Used
-- Procedure Inadequate
-- Procedure Not Available
-- Procedure Difficult to Use
-- Procedure Difficult to Locate
+For "Equipment Reliability Program Issue" (#28):
+- Equipment Reliability Program Design Issue (#29)
+- Periodic Maintenance Issue (#33)
+- Event-based Maintenance Issue (#37)
+- Condition-based Maintenance Issue (#42)
+- Fault-finding Maintenance and Inspection Issue (#47)
+- Corrective Maintenance Issue (#51)
+- Routine Inspection and Servicing Issue (#54)
 
-For "Training/Personnel Qualification Issue":
-- Training Not Performed
-- Training Inadequate
-- Lack of Knowledge/Skill
-- Requalification Issue
-- On-the-Job Training Issue
+For "Documentation and Records Issue" (#58):
+- Equipment Records and Manuals Issue (#59)
+- Operational and Maintenance History Issue (#63)
+- Risk Assessment Records Issue (#67)
+- Personnel Records Issue (#71)
+- Other Documents and Records Issue (#75)
 
-For "Human Factors Issue":
-- Tools and Equipment Issue
-- Workplace Layout Issue
-- Work Environment Issue
-- Physical Workload Issue
-- Mental Workload Issue
-- Error Mitigation Issue
+For "Procedure Issue" (#122):
+- Correct Procedure Not Used (#123)
+- Correct Procedure Used Incorrectly (#131)
+- Appropriate Procedure Incorrect/Incomplete (#140)
 
-For "Supervision Issue":
-- Oversight/Inspection Issue
-- Inadequate Investigation Issue
-- Lack of Accountability Issue
-- Lack of Enforcement Issue
-- Lack of Oversight Issue
+For "Training/Personnel Qualification Issue" (#171):
+- No Training (#172)
+- Training Implementation Issue (#176)
 
-For "Communication Issue":
-- No Communication or Not Timely
-- Language/Translation Issue
-- Wrong Message
-- Communication Method Issue
+For "Human Factors Issue" (#146):
+- Tools/Equipment Issue (#147)
+- Workplace Layout Issue (#150)
+- Work Environment Issue (#156)
+- Physical Workload Issue (#160)
+- Mental Workload Issue (#163)
+- Error Mitigation Issue (#168)
 
-For "Natural Phenomena":
-- Weather Event
-- Geological Event
-- Biological Event
+For "Supervision Issue" (#185):
+- Preparation Issue (#186)
+- Supervision During Work Issue (#192)
 
-For "External Events":
-- Sabotage
-- Theft
-- Vandalism
-- Civil Unrest
-
-For "Cause Cannot Be Determined":
-- Insufficient Information
-- Evidence Destroyed/Unavailable
-- Inconclusive Investigation
-
-(Note: There are 40+ Near Root Causes total in the official ABS map)
+For "Communication Issue" (#196):
+- No Communication or Not Timely (#197)
+- Communication Misunderstood/Incorrect (#200)
 
 ---
 
-STEP 4: ROOT CAUSE CATEGORIES (select ONE based on Near Root Cause - examples):
+STEP 4: ROOT CAUSE CATEGORIES (select ONE based on Near Root Cause):
 
-For "Design Input Issue":
-- Design Scope Issue
-- Design Input Data Issue
+CRITICAL: You MUST select a Root Cause that belongs to the Near Root Cause you selected in Step 3.
 
-For "Design Output Issue":
-- Design Output Incorrect
-- Design Output Unclear or Inconsistent
+For "Design Input Issue" (#19):
+- Design Scope Issue (#20)
+- Design Input Data Issue (#21)
 
-For "Design Review/Verification Issue":
-- No Review/Verification
-- Review/Verification Issue
+For "Design Output Issue" (#22):
+- Design Output Incorrect (#23)
+- Design Output Unclear or Inconsistent (#24)
 
-For "Equipment Reliability Program Design Issue":
-- Critical Equipment Not Identified
-- No or Inappropriate Maintenance Selected
-- Risk Acceptance Issue
+For "Design Review/Verification Issue" (#25):
+- No Review/Verification (#26)
+- Review/Verification Issue (#27)
 
-For "Periodic Maintenance Issue":
-- Scope Issue
-- Frequency Specification Issue
-- Implementation Issue
+For "Equipment Reliability Program Design Issue" (#29):
+- Critical Equipment Not Identified (#30)
+- No or Inappropriate Maintenance Selected (#31)
+- Risk Acceptance Issue (#32)
 
-For "Procedure Not Used":
-- Procedure Not Performed Correctly
-- Procedure Not Used
-- Procedure Not Followed
-- Change Control Issue
+For "Periodic Maintenance Issue" (#33):
+- Scope Issue (#34)
+- Frequency Specification Issue (#35)
+- Implementation Issue (#36)
 
-For "Training Not Performed":
-- Training Not Performed
-- Training Inadequate
-- Lack of Knowledge/Skill
+For "Equipment Records and Manuals Issue" (#59):
+- Documentation Content Inaccurate or Incomplete (#60)
+- Documents Not Available or Missing (#61)
+- Out-of-date Documents Used (#62)
 
-For "Human Factors - Tools and Equipment Issue":
-- Tools/Equipment Inadequate
-- Tools/Equipment Not Available
-- Tools/Equipment Difficult to Use
+For "Operational and Maintenance History Issue" (#63):
+- Documentation Content Inaccurate or Incomplete (#64)
+- Documents Not Available or Missing (#65)
+- Out-of-date Documents Used (#66)
 
-For "Oversight/Inspection Issue":
-- Oversight Not Performed
-- Oversight Inadequate
-- Inspection Not Performed
-- Inspection Inadequate
+For "Risk Assessment Records Issue" (#67):
+- Documentation Content Inaccurate or Incomplete (#68)
+- Documents Not Available or Missing (#69)
+- Out-of-date Documents Used (#70)
 
-For "No Communication or Not Timely":
-- No Communication
-- Communication Not Timely
-- Communication Incomplete
+For "Personnel Records Issue" (#71):
+- Documentation Content Inaccurate or Incomplete (#72)
+- Documents Not Available or Missing (#73)
+- Out-of-date Documents Used (#74)
 
-(Note: There are 159+ Root Causes total in the official ABS map)
+For "Other Documents and Records Issue" (#75):
+- Documentation Content Inaccurate or Incomplete (#76)
+- Documents Not Available or Missing (#77)
+- Out-of-date Documents Used (#78)
+
+For "Correct Procedure Not Used" (#123):
+- No Procedure for Task/Operation (#124)
+- Procedure Difficult to Obtain (#125)
+- Procedure Use Discouraged (#126)
+- Procedure Difficult to Use (#127)
+- Language Issue (#128)
+- Procedure Difficult to Identify (#129)
+- Wrong Revision Used (#130)
+
+For "Correct Procedure Used Incorrectly" (#131):
+- Format Inappropriate (#132)
+- Confusing/Complex/Difficult to Use (#133)
+- More than One Action Per Step (#134)
+- Inadequate Checklist (#135)
+- Graphics/Drawing Issue (#136)
+- Language/Wording Issue (#137)
+- Insufficient or Excessive References (#138)
+- Too Much/Too Little Detail (#139)
+
+For "Appropriate Procedure Incorrect/Incomplete" (#140):
+- Wrong Action Sequence/Ordering (#141)
+- Facts Wrong, Requirements Incorrect, or Content Not Updated (#142)
+- Inconsistent Procedural Requirements (#143)
+- Missing Steps/Content/Situation Not Covered (#144)
+- Overlap or Gaps Between Procedures (#145)
+
+For "No Training" (#172):
+- Decision Not to Train (#173)
+- Training Need Not Identified (#174)
+- Training Requirements Not Completed (#175)
+
+For "Training Implementation Issue" (#176):
+- Training Program Design/Development (#177)
+- Classroom Training Issue (#178)
+- Laboratory/Practical Training Issue (#179)
+- On-the-job Training Issue (#180)
+- Self Study and Computer-based Training Issue (#181)
+- Continuing Training Issue (#182)
+- Training Resources Issue (#183)
+- Qualification Issue (#184)
+
+For "Tools/Equipment Issue" (#147):
+- Appropriate Tools/Equipment Not Used (#148)
+- Tools/Equipment Not Functioning Properly (#149)
+
+For "Workplace Layout Issue" (#150):
+- Individual Control/Display/Alarm Issue (#151)
+- Control/Display/Alarm Integration/Arrangement Issue (#152)
+- Awkward/Inconvenient/Inaccessible Location of Control/Display/Alarm (#153)
+- Awkward/Inconvenient/Inaccessible Equipment Location (#154)
+- Poor/Illegible Labeling of Control/Display/Alarm or Equipment (#155)
+
+For "Work Environment Issue" (#156):
+- Housekeeping Issue (#157)
+- Ambient Conditions Issue (#158)
+- Protective Clothing/Equipment Issue (#159)
+
+For "Physical Workload Issue" (#160):
+- Sustained High Workload/Fatigue (#161)
+- High Transient Workload (#162)
+
+For "Mental Workload Issue" (#163):
+- Knowledge-based Behavior Issue (#164)
+- Rule-based Behavior Issue (#165)
+- Skill-based Behavior Issue (#166)
+- Unrealistic Monitoring Requirement (#167)
+
+For "Error Mitigation Issue" (#168):
+- Errors Not Detectable (#169)
+- Errors Could Not Be Corrected/Mitigated (#170)
+
+For "Preparation Issue" (#186):
+- Job Plan/Instructions to Workers Issue (#187)
+- Ineffective Walkthrough (#188)
+- Job Scheduling Issue (#189)
+- Personnel Selection/Assignment/Scheduling Issue (#190)
+- Responsibility/Authority Issue (#191)
+
+For "Supervision During Work Issue" (#192):
+- Improper Performance Not Corrected (#193)
+- Teamwork/Coordination Issue (#194)
+- Too Much/Too Little Supervision (#195)
+
+For "No Communication or Not Timely" (#197):
+- Method Unavailable or Inadequate (#198)
+- Communication Not Timely/Not Performed (#199)
+
+For "Communication Misunderstood/Incorrect" (#200):
+- Standard Terminology Not Used (#201)
+- Language/Translation Issue (#202)
+- Verification/Repeat-back Not Used (#203)
+- Long Message (#204)
+- Other Misunderstood Communications (#205)
+- Wrong Instructions (#206)
 
 ---
 
@@ -194,11 +283,68 @@ Analyze the generated RCA text and select the MOST APPROPRIATE category for each
 
 CRITICAL RULES:
 - Follow the hierarchy: Problem Category must align with Major Category
-- Near Root Cause must be valid for the selected Major Category
-- Root Cause must be valid for the selected Near Root Cause
+- **Problem Category MUST be one of the 12 categories listed in STEP 1 (NOT a Major Category!)**
+- **Common error: Using "Documentation and Records Issue" as Problem Category - this is WRONG! Use "Process/Manufacturing Equipment Issue" or "Company Personnel Issue" instead**
+- Near Root Cause MUST be a valid child of the selected Major Category (check the list above!)
+- Root Cause MUST be a valid child of the selected Near Root Cause (check the list above!)
 - Select the most specific and accurate category
 - Ensure consistency across all levels
-- Use official ABS category names exactly as shown
+- Use official ABS category names exactly as shown (including numbers)
+- DO NOT invent category names - only use categories from the lists above
+
+**VALIDATION CHECK:**
+Before returning your answer, verify:
+1. Is the Problem Category one of these 12? (#6, #7, #8, #9, #10, #11, #12, #13, #14, #15, #16, #17)
+2. Is the Major Category one of the 14 listed in STEP 2?
+3. Does the Near Root Cause belong to the Major Category?
+4. Does the Root Cause belong to the Near Root Cause?
+
+EXAMPLE OF CORRECT HIERARCHY:
+
+**Example 1: Procedure Issue**
+If Major Category = "Procedure Issue" (#122), then:
+- Problem Category MUST be "Company Personnel Issue" (#12) - NOT "Procedure Issue"!
+- Near Root Cause MUST be one of:
+  - "Correct Procedure Not Used" (#123)
+  - "Correct Procedure Used Incorrectly" (#131)
+  - "Appropriate Procedure Incorrect/Incomplete" (#140)
+- Root Cause MUST be a child of the selected Near Root Cause
+
+**Example 2: Documentation Issue**
+If Major Category = "Documentation and Records Issue" (#58), then:
+- Problem Category MUST be "Process/Manufacturing Equipment Issue" (#7) or "Company Personnel Issue" (#12) - NOT "Documentation and Records Issue"!
+- Near Root Cause MUST be one of:
+  - "Equipment Records and Manuals Issue" (#59)
+  - "Operational and Maintenance History Issue" (#63)
+  - "Risk Assessment Records Issue" (#67)
+  - "Personnel Records Issue" (#71)
+  - "Other Documents and Records Issue" (#75)
+- Root Cause MUST be a child of the selected Near Root Cause
+
+**Example 3: Training Issue**
+If Major Category = "Training/Personnel Qualification Issue" (#171), then:
+- Problem Category MUST be "Company Personnel Issue" (#12) - NOT "Training Issue"!
+- Near Root Cause MUST be one of:
+  - "No Training" (#172)
+  - "Training Implementation Issue" (#176)
+- Root Cause MUST be a child of the selected Near Root Cause
+
+ANOTHER EXAMPLE:
+If Major Category = "Documentation and Records Issue" (#58), then:
+- Problem Category = "Process/Manufacturing Equipment Issue" (#7) or "Company Personnel Issue" (#12)
+- Near Root Cause MUST be one of:
+  - "Equipment Records and Manuals Issue" (#59)
+  - "Operational and Maintenance History Issue" (#63)
+  - "Risk Assessment Records Issue" (#67)
+  - "Personnel Records Issue" (#71)
+  - "Other Documents and Records Issue" (#75)
+
+If Near Root Cause = "Operational and Maintenance History Issue" (#63), then Root Cause MUST be one of:
+  - "Documentation Content Inaccurate or Incomplete" (#64)
+  - "Documents Not Available or Missing" (#65)
+  - "Out-of-date Documents Used" (#66)
+
+**REMEMBER: Problem Category is the TOP LEVEL (Equipment/Personnel/Other), NOT the Major Category!**
 
 Respond ONLY with valid JSON in this exact format:
 
@@ -209,4 +355,8 @@ Respond ONLY with valid JSON in this exact format:
   "root_cause_category": "Selected category from Root Cause list (must match Near Root Cause)"
 }}
 
-Return ONLY the JSON object, no additional text.
+CRITICAL: Return category names WITHOUT the numbers. For example:
+- CORRECT: "Documentation and Records Issue"
+- INCORRECT: "Documentation and Records Issue (#58)"
+
+Return ONLY the JSON object with category names (no numbers), no additional text.

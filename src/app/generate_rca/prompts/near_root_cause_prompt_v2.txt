@@ -72,6 +72,18 @@ Based on the official ABS Root Cause Map™, identify the Near Root Cause from o
 - Evidence Destroyed/Unavailable - Evidence lost or inaccessible
 - Inconclusive Investigation - Investigation unable to determine cause
 
-Write a clear paragraph explaining the near root cause. Start by stating which category it falls under, then explain how this immediate factor contributed to the problem.
+Write a clear paragraph explaining the near root cause and how this immediate factor contributed to the problem.
 
-**CRITICAL: Your response must be 60-65 words maximum. Be concise and direct.**
+**CRITICAL FORMATTING RULES:**
+1. Your response must be 60-65 words maximum. Be concise and direct.
+2. DO NOT use markdown formatting (no **, no #, no bold, no italics)
+3. DO NOT include category numbers like (#122), (#124), (#59)
+4. DO NOT say "falls under the X category" - just explain the contributing factor directly
+5. Write in plain text only
+
+**EXAMPLES:**
+✅ CORRECT: "The procedure for logging the TO manipulation was inadequate, as it did not specify the requirement to log the activity under both a 1MIR and 2MIR code, each with task-related monitoring. This led to the missed samples and lack of proper documentation."
+
+❌ INCORRECT: "The near root cause falls under the **PROCEDURE ISSUE (#122)** category. The procedure for logging..."
+
+Return ONLY the plain text explanation (60-65 words), no category names or numbers.

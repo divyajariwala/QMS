@@ -35,4 +35,16 @@ Write a clear, comprehensive paragraph that describes all the causal factors (pr
 
 Focus on WHAT happened (the problems/issues), not WHY it happened (that comes in later analysis steps).
 
-**CRITICAL: Your response must be 60-65 words maximum. Be concise and direct.**
+**CRITICAL FORMATTING RULES:**
+1. Your response must be 60-65 words maximum. Be concise and direct.
+2. DO NOT use markdown formatting (no **, no #, no bold, no italics)
+3. DO NOT include category numbers like (#7), (#12), (#58)
+4. DO NOT reference category names - just describe the problems directly
+5. Write in plain text only
+
+**EXAMPLES:**
+✅ CORRECT: "The investigation identified three causal factors: failure to properly log the TO manipulation under a 1MIR code, resulting in no associated task-related monitoring; lack of monitoring for the 2MIR manipulation; and missed samples due to maintenance activities requiring equipment tear-out."
+
+❌ INCORRECT: "The causal factors fall under the **Process/Manufacturing Equipment Issue** (#7) and **Company Personnel Issue** (#12) categories..."
+
+Return ONLY the plain text description (60-65 words), no additional formatting or category references.

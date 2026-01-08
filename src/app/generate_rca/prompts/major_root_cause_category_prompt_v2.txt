@@ -46,4 +46,16 @@ Based on the official ABS Root Cause Map™, select ONE of the following major c
 
 Provide a detailed explanation of why this category applies, including context and reasoning.
 
-**CRITICAL: Your response must be 60-65 words maximum. Be concise and direct.**
+**CRITICAL FORMATTING RULES:**
+1. Your response must be 60-65 words maximum. Be concise and direct.
+2. DO NOT use markdown formatting (no **, no #, no bold, no italics)
+3. DO NOT include category numbers like (#58), (#122), (#171)
+4. DO NOT say "The major root cause category is X" - just explain the issue directly
+5. Write in plain text only
+
+**EXAMPLES:**
+✅ CORRECT: "The investigation summary indicates that the TO manipulation was not properly documented, and there was no associated task-related monitoring recorded, despite the requirement to do so. This points to a failure in maintaining accurate equipment records and following documented procedures."
+
+❌ INCORRECT: "The major root cause category is **Documentation and Records Issue** (#58). The investigation summary indicates..."
+
+Return ONLY the plain text explanation (60-65 words), no category names or numbers.

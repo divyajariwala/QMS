@@ -160,6 +160,18 @@ Communication Method Issue (#203):
 - Evidence Destroyed/Unavailable - Evidence lost, destroyed, or inaccessible
 - Inconclusive Investigation - Investigation unable to determine definitive cause
 
-Write a clear paragraph explaining the fundamental root cause. Identify the specific underlying systemic issue that, if addressed, would have prevented this incident from occurring.
+Write a clear paragraph explaining the fundamental root cause - the specific underlying systemic issue that, if addressed, would have prevented this incident from occurring.
 
-**CRITICAL: Your response must be 60-65 words maximum. Be concise and direct.**
+**CRITICAL FORMATTING RULES:**
+1. Your response must be 60-65 words maximum. Be concise and direct.
+2. DO NOT use markdown formatting (no **, no #, no bold, no italics)
+3. DO NOT include category numbers like (#124), (#30), (#154)
+4. DO NOT say "The fundamental root cause is X" or "is a Y issue" - just explain the systemic problem directly
+5. Write in plain text only
+
+**EXAMPLES:**
+✅ CORRECT: "The procedure for logging the TO manipulation was incomplete, as it did not specify the requirement to log it under both 1MIR and 2MIR codes with associated task-related monitoring. This systemic gap in the procedure led to the missed samples, which could have been prevented by a more comprehensive and clear procedure."
+
+❌ INCORRECT: "The fundamental root cause is a **Procedure Inadequate** issue (#124). The procedure for logging..."
+
+Return ONLY the plain text explanation (60-65 words), no category names or numbers.
