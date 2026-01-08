@@ -51,6 +51,7 @@ const Grading: React.FC = () => {
   // Dedicated Summary View State
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [summaryItems, setSummaryItems] = useState<ExecutiveSummaryItem[]>([]);
+  type ExecSummaryPayload = { label: string; content: string }[];
 
   useEffect(() => {
     (async () => {
@@ -118,18 +119,21 @@ const Grading: React.FC = () => {
     setSummaryOpen(false);
   };
 
+  const handleExecutiveSummaryPrimaryAction = (payload: ExecSummaryPayload) => {
+    console.log("Executive Summary (HTML):", JSON.stringify(payload, null, 2));
+    setSnack({
+      open: true,
+      message: "Summary sent successfully.",
+      severity: "success",
+    });
+  };
+
   if (summaryOpen) {
     return (
       <ExecutiveSummary
         items={summaryItems}
         onBack={handleBackFromSummary}
-        onPrimaryAction={() => {
-          setSnack({
-            open: true,
-            message: "Summary sent successfully.",
-            severity: "success",
-          });
-        }}
+        onPrimaryAction={handleExecutiveSummaryPrimaryAction}
       />
     );
   }
