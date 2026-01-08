@@ -167,11 +167,6 @@ export async function fetchExecutiveSummaryMock(
       label: "Effectiveness Check",
       content: eff || "No effectiveness check plan provided.",
     },
-    {
-      label: "Conclusion",
-      content:
-        "Controls and approval steps require alignment to ensure consistent QA oversight and analytical review process integrity. CAPA actions should be tracked to closure, with defined effectiveness criteria.",
-    },
   ];
 }
 
