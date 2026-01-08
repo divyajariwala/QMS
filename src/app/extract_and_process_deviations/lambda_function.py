@@ -246,6 +246,26 @@ def process_single_deviation(message_data):
         }
     except Exception as e:
         logger.error(f"Processing error for deviation {deviation_id}: {str(e)}")
+        # WORKFLOW LOG: extraction failed
+        try:
+            conninfo = get_connection_string()
+            with psycopg.connect(conninfo) as conn:
+                log_deviation_workflow(
+                    conn,
+                    deviation_id,
+                    step='TEXT_EXTRACTION_FAILED',
+                    input_data={
+                        's3path': message_data.get('s3path')
+                    },
+                    output_data={
+                        'error': str(e),
+                        'error_type': type(e).__name__
+                    },
+                    start_time=start_time
+                )
+                conn.commit()
+        except Exception as log_err:
+            logger.error(f"Failed to log extraction failure: {str(log_err)}")
         raise
 
 def lambda_handler(event, context):

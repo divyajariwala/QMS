@@ -466,38 +466,62 @@ def lambda_handler(event, context):
         start_time = datetime.now(timezone.utc)
         # Generate multiple RCAs in a single AI call
         logger.info("Generating multiple RCAs")
-        rcas_list = generate_multiple_rcas(investigation_summary)
+        try:
+            rcas_list = generate_multiple_rcas(investigation_summary)
 
-        log_deviation_workflow(
-            conn=conn,
-            entity_id=deviation_id,
-            step="RCA_GENERATED",
-            input_data={
-                "summary_length": len(investigation_summary),
-                "model": MODEL_ID
-            },
-            output_data={
-                "rca_count": len(rcas_list),
-                "is_ai_generated": True
-            },
-            start_time=start_time,
-        )
+            log_deviation_workflow(
+                conn=conn,
+                entity_id=deviation_id,
+                step="RCA_GENERATED",
+                input_data={
+                    "summary_length": len(investigation_summary),
+                    "model": MODEL_ID
+                },
+                output_data={
+                    "rca_count": len(rcas_list),
+                    "is_ai_generated": True
+                },
+                start_time=start_time,
+            )
+        except Exception as e:
+            logger.error(f"RCA_GENERATION_FAILED: {str(e)}")
+            log_deviation_workflow(
+                conn=conn,
+                entity_id=deviation_id,
+                step="RCA_GENERATION_FAILED",
+                input_data={
+                    "summary_length": len(investigation_summary),
+                    "model": MODEL_ID
+                },
+                output_data={
+                    "error": str(e),
+                    "error_type": type(e).__name__
+                },
+                start_time=start_time,
+            )
 
         conn.commit()
         # Categorize each RCA
         logger.info(f"Categorizing {len(rcas_list)} RCA(s)")
         result_rcas = []
-
+        failed_indices = []
+        categorization_failed = False
         for idx, rca in enumerate(rcas_list):
             logger.info(f"Categorizing RCA {idx + 1}/{len(rcas_list)}")
-
-            categories = categorize_rca(
-                investigation_summary=investigation_summary,
-                problem_category_text=rca['problem_category_validated'],
-                major_category_text=rca['major_root_cause_category_validated'],
-                near_cause_text=rca['near_root_cause'],
-                root_cause_text=rca['root_cause']
-            )
+            try:
+                categories = categorize_rca(
+                    investigation_summary=investigation_summary,
+                    problem_category_text=rca['problem_category_validated'],
+                    major_category_text=rca['major_root_cause_category_validated'],
+                    near_cause_text=rca['near_root_cause'],
+                    root_cause_text=rca['root_cause']
+                )
+            except Exception as e:
+                categorization_failed = True
+                failed_indices.append(idx)
+                logger.error(
+                    f"RCA_CATEGORIZATION_FAILED deviation_id={deviation_id}, index={idx}, error={str(e)}"
+                )
 
             # Structure result with generated text and auto-selected categories
             rca_result = {
@@ -517,7 +541,30 @@ def lambda_handler(event, context):
                 rca_result['deviation_id'] = deviation_id
 
             result_rcas.append(rca_result)
+        # ================= WORKFLOW STATUS =================
+        if categorization_failed:
+            log_deviation_workflow(
+                conn,
+                deviation_id,
+                "RCA_CATEGORIZATION_FAILED",
+                {"total_rcas": len(result_rcas)},
+                {
+                    "failed_indices": failed_indices,
+                    "fallback_used": True
+                },
+                start_time
+            )
+        else:
+            log_deviation_workflow(
+                conn,
+                deviation_id,
+                "RCA_CATEGORIZATION_COMPLETED",
+                {"total_rcas": len(result_rcas)},
+                {"categorized": True},
+                start_time
+            )
 
+        conn.commit()
         logger.info(f"✅ RCA generation completed successfully: {len(result_rcas)} RCA(s) generated")
         return response(200, f"{len(result_rcas)} RCA(s) generated successfully", result_rcas)
 
