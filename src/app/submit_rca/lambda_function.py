@@ -10,12 +10,12 @@ from datetime import datetime, timezone
 # WORKFLOW LOGGER IMPORT
 # =====================================================
 try:
-    from audit_logger import log_deviation_workflow
+    from audit_logger import log_deviation_workflow, log_deviation_audit
 except ImportError:
     import sys
 
     sys.path.append(os.path.dirname(__file__))
-    from audit_logger import log_deviation_workflow
+    from audit_logger import log_deviation_workflow, log_deviation_audit
 
 # Logging configuration
 logger = logging.getLogger()
@@ -27,6 +27,49 @@ AWS_REGION = os.environ.get('aws_region', 'us-east-1')
 DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-master')
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 
+
+def save_rca_audit_log(conn, rca, deviation_id):
+    """
+    Save RCA-related audit logs for a deviation.
+
+    This function extracts relevant RCA fields and logs an audit entry
+    based on whether the RCA was newly added or edited.
+    """
+
+    # RCA fields that should be audited
+    keys_to_extract = [
+        'problem_category',
+        'major_root_cause_category',
+        'root_cause_category',
+        'near_root_cause_category'
+    ]
+
+    # Extract only the fields we want to audit (ignore missing keys safely)
+    new_fields = {
+        key: rca.get(key)
+        for key in keys_to_extract
+        if key in rca
+    }
+
+    # If RCA was newly added, log ADDED audit
+    if rca.get("isAdded"):
+        log_deviation_audit(
+            conn=conn,
+            entity_type="RCA",
+            deviation_id=deviation_id,
+            new_fields=new_fields,
+            audit_type="ADDED"
+        )
+
+    # If RCA was edited, log EDITED audit
+    if rca.get("isEdited"):
+        log_deviation_audit(
+            conn=conn,
+            entity_type="RCA",
+            deviation_id=deviation_id,
+            new_fields=new_fields,
+            audit_type="EDITED"
+        )
 
 def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
     """
@@ -149,7 +192,7 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                         'created_at': created_at,
                         'updated_at': updated_at
                     })
-
+                    save_rca_audit_log(conn, rca, deviation_id)
                     # Track deviation_ids to update
                     deviation_ids_updated.add(deviation_id)
 
