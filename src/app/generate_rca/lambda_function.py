@@ -449,7 +449,7 @@ def lambda_handler(event, context):
         # Parse event body
         body = parse_event_body(event)
         investigation_summary = body.get('investigation_summary')
-        deviation_id = body.get('deviation_id')
+        deviation_id = body.get('deviationId')
 
         # Validate required fields
         if not investigation_summary:
