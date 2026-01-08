@@ -230,6 +230,7 @@ jobs:
           VITE_CALLBACK_URL="${{ secrets.VITE_CALLBACK_URL }}" \
           VITE_AUTHORITY_URL="${{ secrets.VITE_AUTHORITY_URL }}" \
           VITE_CLIENT_ID="${{ secrets.VITE_CLIENT_ID }}" \
+          VITE_TINYMCE_CDN="${{ secrets.VITE_TINYMCE_CDN }}" \
           npm run build:dev
           ls -la dist || true
 
