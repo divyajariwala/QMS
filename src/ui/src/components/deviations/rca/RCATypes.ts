@@ -10,6 +10,8 @@ export interface ApiRcaItem {
   near_root_cause_category: string;
   root_cause: string;
   root_cause_category: string;
+  isAdded: boolean;
+  isEdited: boolean;
 }
 
 export interface RootCauseAnalysisProps {
@@ -31,6 +33,7 @@ export interface RcaRecord {
   meta?: {
     createdFrom?: "seed" | "add" | "new";
     createdAt?: string;
+    isEdited?: boolean;
   };
 }
 type Factor = { factor_name: string; ProblemCategories: { name?: string }[] };

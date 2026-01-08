@@ -1,0 +1,93 @@
+@use "../../../styles/variables" as *;
+
+.summaryRoot {
+  margin-top: 32px;
+  border-radius: 16px !important;
+  background: $color-white;
+  width: 100%;
+}
+
+.headerRow {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.backIcon {
+  margin-left: 8px !important;
+  cursor: pointer;
+}
+
+.title {
+  font-weight: $font-weight-bold !important;
+  margin-left: 24px !important;
+  display: flex;
+  font-size: 16px !important;
+  line-height: 24px !important;
+  align-items: center;
+  img {
+    margin-right: 12px;
+  }
+}
+
+.headerDivider {
+  border-color: #eeeff1 !important;
+}
+
+.contentBox {
+  background-color: #fff;
+  padding: 16px;
+}
+
+.section {
+  margin-bottom: 16px;
+}
+
+.sectionLabel {
+  font-weight: $font-weight-bold !important;
+  margin-bottom: 6px !important;
+  font-size: 16px !important;
+}
+
+.sectionText {
+  font-size: 16px !important;
+  font-weight: $font-weight-medium !important;
+  line-height: 28px !important;
+  letter-spacing: -0.2px;
+}
+
+.footerRow {
+  display: flex;
+  justify-content: end;
+  height: 54px;
+  align-items: center;
+  padding: 0 16px;
+}
+.textIcon {
+  height: 16px;
+  width: 18px;
+}
+.baseButton {
+  font-family: inherit;
+  text-transform: none;
+  font-size: 14px;
+  font-weight: $font-weight-bold;
+  line-height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.classifyBtn {
+  @extend .baseButton;
+  background: $advanced-blue;
+  color: $color-white;
+  padding: 10px 16px;
+  height: 36px;
+  gap: 8px;
+  border: none;
+  letter-spacing: 0px;
+  filter: brightness(0.95);
+}

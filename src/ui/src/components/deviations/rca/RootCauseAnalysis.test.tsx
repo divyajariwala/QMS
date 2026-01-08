@@ -56,6 +56,8 @@ describe("RootCauseAnalysis", () => {
       near_root_cause_category: "Near Category 1",
       root_cause: "Root 1",
       root_cause_category: "Root Category 1",
+      isEdited: false,
+      isAdded: false
     },
   ];
 
