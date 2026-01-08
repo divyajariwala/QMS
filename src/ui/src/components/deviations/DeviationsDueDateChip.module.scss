@@ -19,11 +19,11 @@
 }
 
 .dueTomorrowChip {
-  @include due-chip-variant(#437ef7, #f5faff);
+  @include due-chip-variant($advanced-blue, #f5faff);
 }
 
 .dueChip {
- @include due-chip-variant(#437ef7, #f5faff);
+ @include due-chip-variant($advanced-blue, #f5faff);
 }
 
 /* The base container for icon + label with gap */

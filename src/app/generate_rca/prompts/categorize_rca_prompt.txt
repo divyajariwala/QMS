@@ -23,6 +23,8 @@ Root Cause:
 
 STEP 1: PROBLEM CATEGORIES (select ONE from official ABS map):
 
+**CRITICAL: Problem Categories are the TOP LEVEL of the hierarchy. They describe the general type of issue (Equipment, Personnel, or Other). Do NOT confuse these with Major Root Cause Categories!**
+
 Equipment/Software Issues:
 - Process/Manufacturing Equipment Issue (#7)
 - Software Issue (#8)
@@ -40,6 +42,17 @@ Other Issues:
 - External Events (#16)
 - External Sabotage and Other Criminal Activity (#17)
 - Cause Cannot be Determined (#6)
+
+**IMPORTANT EXAMPLES:**
+- If the issue involves documentation/records → Problem Category is likely "Process/Manufacturing Equipment Issue" or "Company Personnel Issue" (NOT "Documentation and Records Issue" - that's a Major Category!)
+- If the issue involves procedures → Problem Category is likely "Company Personnel Issue" (NOT "Procedure Issue" - that's a Major Category!)
+- If the issue involves training → Problem Category is "Company Personnel Issue" (NOT "Training Issue" - that's a Major Category!)
+
+**COMMON MISTAKES TO AVOID:**
+❌ WRONG: "Documentation and Records Issue" as Problem Category (this is a Major Category!)
+❌ WRONG: "Procedure Issue" as Problem Category (this is a Major Category!)
+❌ WRONG: "Training Issue" as Problem Category (this is a Major Category!)
+✅ CORRECT: "Company Personnel Issue" or "Process/Manufacturing Equipment Issue" as Problem Category
 
 ---
 
@@ -270,6 +283,8 @@ Analyze the generated RCA text and select the MOST APPROPRIATE category for each
 
 CRITICAL RULES:
 - Follow the hierarchy: Problem Category must align with Major Category
+- **Problem Category MUST be one of the 12 categories listed in STEP 1 (NOT a Major Category!)**
+- **Common error: Using "Documentation and Records Issue" as Problem Category - this is WRONG! Use "Process/Manufacturing Equipment Issue" or "Company Personnel Issue" instead**
 - Near Root Cause MUST be a valid child of the selected Major Category (check the list above!)
 - Root Cause MUST be a valid child of the selected Near Root Cause (check the list above!)
 - Select the most specific and accurate category
@@ -277,23 +292,47 @@ CRITICAL RULES:
 - Use official ABS category names exactly as shown (including numbers)
 - DO NOT invent category names - only use categories from the lists above
 
+**VALIDATION CHECK:**
+Before returning your answer, verify:
+1. Is the Problem Category one of these 12? (#6, #7, #8, #9, #10, #11, #12, #13, #14, #15, #16, #17)
+2. Is the Major Category one of the 14 listed in STEP 2?
+3. Does the Near Root Cause belong to the Major Category?
+4. Does the Root Cause belong to the Near Root Cause?
+
 EXAMPLE OF CORRECT HIERARCHY:
-If Major Category = "Procedure Issue" (#122), then Near Root Cause MUST be one of:
+
+**Example 1: Procedure Issue**
+If Major Category = "Procedure Issue" (#122), then:
+- Problem Category MUST be "Company Personnel Issue" (#12) - NOT "Procedure Issue"!
+- Near Root Cause MUST be one of:
   - "Correct Procedure Not Used" (#123)
   - "Correct Procedure Used Incorrectly" (#131)
   - "Appropriate Procedure Incorrect/Incomplete" (#140)
+- Root Cause MUST be a child of the selected Near Root Cause
 
-If Near Root Cause = "Correct Procedure Not Used" (#123), then Root Cause MUST be one of:
-  - "No Procedure for Task/Operation" (#124)
-  - "Procedure Difficult to Obtain" (#125)
-  - "Procedure Use Discouraged" (#126)
-  - "Procedure Difficult to Use" (#127)
-  - "Language Issue" (#128)
-  - "Procedure Difficult to Identify" (#129)
-  - "Wrong Revision Used" (#130)
+**Example 2: Documentation Issue**
+If Major Category = "Documentation and Records Issue" (#58), then:
+- Problem Category MUST be "Process/Manufacturing Equipment Issue" (#7) or "Company Personnel Issue" (#12) - NOT "Documentation and Records Issue"!
+- Near Root Cause MUST be one of:
+  - "Equipment Records and Manuals Issue" (#59)
+  - "Operational and Maintenance History Issue" (#63)
+  - "Risk Assessment Records Issue" (#67)
+  - "Personnel Records Issue" (#71)
+  - "Other Documents and Records Issue" (#75)
+- Root Cause MUST be a child of the selected Near Root Cause
+
+**Example 3: Training Issue**
+If Major Category = "Training/Personnel Qualification Issue" (#171), then:
+- Problem Category MUST be "Company Personnel Issue" (#12) - NOT "Training Issue"!
+- Near Root Cause MUST be one of:
+  - "No Training" (#172)
+  - "Training Implementation Issue" (#176)
+- Root Cause MUST be a child of the selected Near Root Cause
 
 ANOTHER EXAMPLE:
-If Major Category = "Documentation and Records Issue" (#58), then Near Root Cause MUST be one of:
+If Major Category = "Documentation and Records Issue" (#58), then:
+- Problem Category = "Process/Manufacturing Equipment Issue" (#7) or "Company Personnel Issue" (#12)
+- Near Root Cause MUST be one of:
   - "Equipment Records and Manuals Issue" (#59)
   - "Operational and Maintenance History Issue" (#63)
   - "Risk Assessment Records Issue" (#67)
@@ -304,6 +343,8 @@ If Near Root Cause = "Operational and Maintenance History Issue" (#63), then Roo
   - "Documentation Content Inaccurate or Incomplete" (#64)
   - "Documents Not Available or Missing" (#65)
   - "Out-of-date Documents Used" (#66)
+
+**REMEMBER: Problem Category is the TOP LEVEL (Equipment/Personnel/Other), NOT the Major Category!**
 
 Respond ONLY with valid JSON in this exact format:
 

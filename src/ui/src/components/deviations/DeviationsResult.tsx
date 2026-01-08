@@ -27,11 +27,13 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
 
   const onStartRca = () => {
     if (!loading) {
-      navigate(`/approveDeviations/${deviation_id}`);
+      navigate(`/approveRca/${deviation_id}`);
     }
   };
-  const onStartGrading = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const onStartGrading = () => {
+    if (!loading) {
+      navigate(`/approveGrading/${deviation_id}`);
+    }
   };
 
   const truncateAtWord = (text: string, limit: number) => {

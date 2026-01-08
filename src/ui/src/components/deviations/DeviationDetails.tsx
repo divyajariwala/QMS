@@ -148,7 +148,7 @@ const DeviationDetails: React.FC = () => {
                   onClick={handleGenerateRCA}
                   aria-busy={isGeneratingRCA}
                 >
-                  {isGeneratingRCA ? "Generating..." : "Generate RCA"}{" "}
+                  {isGeneratingRCA ? "Generating ..." : "Generate RCA"}{" "}
                   <img src={ArrowRight} alt="" />
                 </button>
               </div>

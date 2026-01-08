@@ -29,6 +29,7 @@ import { useAuth } from "react-oidc-context";
 import SessionCleaner from "./auth/SessionCleaner";
 import AdverseEventDetails from "@components/adverseEvent/AdverseEventDetails";
 import DeviationDetails from "@components/deviations/DeviationDetails";
+import GradingDetails from "@components/deviations/GradingDetails";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -105,10 +106,18 @@ const App = () => {
                     }
                   />
                   <Route
-                    path="/approveDeviations/:deviationId"
+                    path="/approveRca/:deviationId"
                     element={
                       <ProtectedRoute>
                         <DeviationDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/approveGrading/:deviationId"
+                    element={
+                      <ProtectedRoute>
+                        <GradingDetails />
                       </ProtectedRoute>
                     }
                   />
