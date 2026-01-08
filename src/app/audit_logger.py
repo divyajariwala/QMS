@@ -69,3 +69,44 @@ def log_deviation_workflow(conn, entity_id, step, input_data=None, output_data=N
     except Exception as e:
         logger.error(f"Workflow logging error: {str(e)}")
         raise
+
+
+def log_deviation_audit(conn, entity_type, deviation_id, new_fields, audit_type):
+    """
+    Log audit trail for deviation RCA / Grading updates
+
+    """
+
+    if entity_type not in ("RCA", "Grading"):
+        raise ValueError("entity_type must be 'RCA' or 'Grading'")
+
+    if not isinstance(new_fields, dict):
+        raise ValueError("new_fields must be a dictionary")
+
+    audit_timestamp = datetime.utcnow()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO deviation_field_audit (
+                    entity_type,
+                    deviation_id,
+                    new_fields,
+                    timestamp,
+                    audit_type
+                )
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (
+                    entity_type,
+                    deviation_id,
+                    json.dumps(new_fields),
+                    audit_timestamp,
+                    audit_type
+                )
+            )
+    except Exception as e:
+        logger.error(f"Deviation audit logging error: {str(e)}")
+        raise
+
