@@ -34,10 +34,8 @@ type Mode = "compose" | "grading";
 const Grading: React.FC = () => {
   const [mode, setMode] = useState<Mode>("compose");
   const [sections, setSections] = useState<SectionData[]>([]);
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [suggestions, setSuggestions] = useState<
-    Record<string, SuggestionData | null>
-  >({});
+  const [values, setValues] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<SuggestionData[]>([]);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [snack, setSnack] = useState<{
@@ -60,9 +58,7 @@ const Grading: React.FC = () => {
       try {
         const data = await fetchSectionsMock();
         setSections(data);
-        const initVals: Record<string, string> = {};
-        data.forEach((s) => (initVals[s.id] = s.content ?? ""));
-        setValues(initVals);
+        setValues(data.map((s) => s.content ?? ""));
       } catch (err) {
         setSnack({
           open: true,
@@ -87,9 +83,7 @@ const Grading: React.FC = () => {
     setLoadingSuggestions(true);
     try {
       const suggs = await fetchImprovementSuggestionsMock(values);
-      const map: Record<string, SuggestionData | null> = {};
-      suggs.forEach((s) => (map[s.sectionId] = s));
-      setSuggestions(map);
+      setSuggestions(suggs);
       setSnack({
         open: true,
         message: "Improvement suggestions updated",
@@ -192,12 +186,12 @@ const Grading: React.FC = () => {
           </Box>
         ) : (
           <Box>
-            {sections.map((section) => {
-              const val = values[section.id] ?? "";
+            {sections.map((section, idx) => {
+              const val = values[idx] ?? "";
               if (isCompose) {
                 return (
                   <Paper
-                    key={section.id}
+                    key={`section-${idx}`}
                     variant="outlined"
                     className={styles.sectionPaper}
                   >
@@ -214,15 +208,15 @@ const Grading: React.FC = () => {
                 );
               }
 
-              const suggestion = suggestions[section.id];
+              const suggestion = suggestions[idx];
               const score = suggestion?.score;
               const hasScore = typeof score === "number";
-              const isPositive = hasScore && score >= 6;
-              const isNegative = hasScore && score <= 5;
+              const isPositive = hasScore && (score as number) >= 6;
+              const isNegative = hasScore && (score as number) <= 5;
 
               return (
                 <Grid
-                  key={section.id}
+                  key={`section-${idx}`}
                   container
                   spacing={2}
                   className={styles.sectionRow}
