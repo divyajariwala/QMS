@@ -30,9 +30,10 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
 
   const editorInit = useMemo(
     () => ({
-      height: 260, 
+      height: 200,
       menubar: false,
-      statusbar: true,
+      statusbar: false,
+      branding: false,
       plugins: [
         "advlist",
         "autolink",
@@ -105,6 +106,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
 
               <Editor
                 init={editorInit}
+                tinymceScriptSrc={import.meta.env.VITE_TINYMCE_CDN}
                 id={`exec-summary-editor-${idx}`}
                 initialValue={item.content}
                 onEditorChange={(newValue: string) =>
