@@ -71,7 +71,11 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                     deviation_id = rca.get('deviation_id')
                     problem_category = rca.get('problem_category')
                     problem_category_validated = rca.get('problem_category_validated')
-                    major_category = rca.get('major_root_cause_category_validated') or rca.get('major_root_cause_category')
+                    
+                    # Separate short name from long explanation
+                    major_category = rca.get('major_root_cause_category')  # Short name (e.g., "Documentation and Records Issue")
+                    major_category_explanation = rca.get('major_root_cause_category_validated')  # Long explanation text
+                    
                     near_cause = rca.get('near_root_cause')
                     near_cause_category = rca.get('near_root_cause_category')
                     root_cause = rca.get('root_cause')
@@ -106,8 +110,8 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                         deviation_id,
                         problem_category,
                         problem_category_validated,
-                        major_category,
-                        major_category,  # Using same value for explanation
+                        major_category,  # Short name for category
+                        major_category_explanation,  # Long text for explanation
                         near_cause,
                         near_cause_category,
                         root_cause,

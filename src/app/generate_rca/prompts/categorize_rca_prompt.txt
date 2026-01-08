@@ -314,4 +314,8 @@ Respond ONLY with valid JSON in this exact format:
   "root_cause_category": "Selected category from Root Cause list (must match Near Root Cause)"
 }}
 
-Return ONLY the JSON object, no additional text.
+CRITICAL: Return category names WITHOUT the numbers. For example:
+- CORRECT: "Documentation and Records Issue"
+- INCORRECT: "Documentation and Records Issue (#58)"
+
+Return ONLY the JSON object with category names (no numbers), no additional text.
