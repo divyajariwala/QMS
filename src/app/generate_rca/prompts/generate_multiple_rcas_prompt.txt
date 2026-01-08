@@ -7,10 +7,52 @@ CRITICAL REQUIREMENT: You MUST generate a MINIMUM of 2 distinct RCAs. Even if th
 
 **IMPORTANT: Each RCA must have DIFFERENT text explanations, not just different categories. The texts must reflect genuinely different perspectives and root causes.**
 
+**CRITICAL FOR CATEGORY DIVERSITY: Each RCA should explore a DIFFERENT Major Root Cause Category AND ideally a DIFFERENT Problem Category. Generate exactly 2 RCAs focusing on:**
+1. **RCA 1**: The direct/immediate cause (e.g., Documentation, Equipment, Material)
+2. **RCA 2**: The underlying procedural/systemic cause (e.g., Procedure, Design, Training)
+
+**STRATEGY FOR 2 DIVERSE RCAs:**
+1. **First RCA**: Analyze the most obvious/direct cause
+   - Problem Category: Often "Process/Manufacturing Equipment Issue" (#7)
+   - Major Category: Documentation and Records Issue, Equipment Reliability Program Issue, Material/Parts Issue
+   - Question: What directly failed or was missing?
+   
+2. **Second RCA**: Analyze why the system didn't prevent it
+   - Problem Category: Often "Company Personnel Issue" (#12) - DIFFERENT from RCA 1!
+   - Major Category: Procedure Issue, Design Issue, Training/Personnel Qualification Issue
+   - Question: Why didn't procedures, design, or training prevent this?
+
+**COMMON 2-RCA COMBINATIONS WITH DIFFERENT PROBLEM CATEGORIES:**
+- **RCA 1**: "Process/Manufacturing Equipment Issue" + "Documentation Issue"
+  **RCA 2**: "Company Personnel Issue" + "Procedure Issue"
+  
+- **RCA 1**: "Process/Manufacturing Equipment Issue" + "Equipment Issue"
+  **RCA 2**: "Company Personnel Issue" + "Procedure Issue"
+  
+- **RCA 1**: "Process/Manufacturing Equipment Issue" + "Equipment Issue"
+  **RCA 2**: "Company Personnel Issue" + "Training Issue"
+  
+- **RCA 1**: "Material/Product Issue" + "Material/Parts Issue"
+  **RCA 2**: "Company Personnel Issue" + "Procedure Issue"
+
+**KEY INSIGHT:** 
+- When the direct cause is technical/equipment-related → Use "Process/Manufacturing Equipment Issue" for RCA 1
+- When the systemic cause is procedural/training-related → Use "Company Personnel Issue" for RCA 2
+- This provides maximum diversity: different Problem Category AND different Major Category
+
 For example:
-- If there's a procedure violation, analyze both the immediate procedural failure AND the underlying systemic issue (training, supervision, etc.)
-- If there's an equipment issue, analyze both the equipment failure AND the maintenance/validation process failure
-- If there's a personnel issue, analyze both the individual action AND the organizational/cultural factors
+- If there's a documentation discrepancy → 
+  RCA 1: Problem="Process/Manufacturing Equipment Issue", Major="Documentation and Records Issue"
+  RCA 2: Problem="Company Personnel Issue", Major="Procedure Issue"
+  
+- If there's an equipment failure → 
+  RCA 1: Problem="Process/Manufacturing Equipment Issue", Major="Equipment Reliability Program Issue"
+  RCA 2: Problem="Company Personnel Issue", Major="Procedure Issue"
+  
+- If there's a procedure violation → 
+  RCA 1: Problem="Company Personnel Issue", Major="Procedure Issue"
+  RCA 2: Problem="Company Personnel Issue", Major="Training/Personnel Qualification Issue"
+  (Note: Same Problem Category is OK if both are personnel-related)
 
 Your task is to identify AT LEAST 2 distinct root causes (preferably 2-4) and generate a separate RCA for each one. For each RCA, provide:
 
@@ -108,20 +150,41 @@ You MUST return a minimum of 2 RCAs. If the investigation summary seems simple, 
 ```
 
 GUIDELINES:
-- You MUST generate at least 2 RCAs (minimum requirement)
+- You MUST generate exactly 2 RCAs (no more, no less)
+- **CRITICAL: The 2 RCAs MUST have DIFFERENT Major Root Cause Categories**
+- **STRONGLY RECOMMENDED: The 2 RCAs should have DIFFERENT Problem Categories when possible**
+- **RCA 1: Focus on technical/equipment issue → Use "Process/Manufacturing Equipment Issue" as Problem Category**
+- **RCA 2: Focus on personnel/procedural issue → Use "Company Personnel Issue" as Problem Category**
 - **CRITICAL: Each text field (problem_category_validated, major_root_cause_category_validated, near_root_cause, root_cause) must be 60-65 words maximum**
 - **CRITICAL: Each RCA must have DIFFERENT text content. Do NOT copy-paste the same text with different categories!**
-- **CRITICAL: Each RCA must analyze a DIFFERENT aspect, perspective, or root cause of the incident**
 - **DO NOT use markdown formatting (no **, no #, no bold, no italics) in the text fields**
 - **DO NOT include category numbers like (#58), (#122), (#124) in the text fields**
 - **DO NOT reference category names in the text - just explain the issue directly**
 - Each RCA should address a DISTINCT root cause or perspective
-- Analyze from different levels: immediate cause, contributing factors, systemic issues, organizational factors
+- Analyze from 2 levels: immediate cause (RCA 1) and underlying systemic cause (RCA 2)
 - Each RCA should be complete and stand-alone
 - Use clear, professional, concise language
 - Focus on systemic issues, not individual blame
 - Provide enough detail for corrective actions within the word limit
-- If the issue seems simple, consider: What allowed this to happen? What systemic gaps exist? What organizational factors contributed?
+
+**2-RCA DIVERSITY STRATEGY:**
+- **RCA 1 (Direct/Technical)**: 
+  - Problem Category: "Process/Manufacturing Equipment Issue" (equipment/technical focus)
+  - Major Category: Documentation Issue, Equipment Issue, Material Issue
+  - Question: What directly failed?
+  
+- **RCA 2 (Systemic/Personnel)**: 
+  - Problem Category: "Company Personnel Issue" (personnel/procedural focus) - DIFFERENT!
+  - Major Category: Procedure Issue, Training Issue, Design Issue
+  - Question: Why didn't the system prevent it?
+
+**MOST COMMON 2-RCA COMBINATIONS:**
+1. Equipment Problem + Documentation Issue → Personnel Problem + Procedure Issue (70%)
+2. Equipment Problem + Equipment Issue → Personnel Problem + Procedure Issue (15%)
+3. Personnel Problem + Procedure Issue → Personnel Problem + Training Issue (10%)
+4. Equipment Problem + Equipment Issue → Equipment Problem + Design Issue (5%)
+
+**WARNING: Both RCAs must have DIFFERENT Major Root Cause Categories. Ideally, they should also have DIFFERENT Problem Categories to maximize diversity.**
 
 **WARNING: If you generate 2 RCAs with identical or nearly identical text, you have failed the requirement. Each RCA must tell a DIFFERENT story from a DIFFERENT perspective.**
 
@@ -140,25 +203,41 @@ EXAMPLES OF CORRECT TEXT (NO MARKDOWN, NO NUMBERS):
 
 ❌ INCORRECT: "The fundamental root cause is a **Procedure Inadequate** issue (#124). The procedure for logging..."
 
-EXAMPLES OF MULTIPLE PERSPECTIVES:
-1. Immediate Cause (what directly happened) + Systemic Cause (why the system allowed it)
-2. Technical Failure (equipment/process) + Human Factors (training/supervision)
-3. Procedural Gap (missing/inadequate procedure) + Organizational Culture (enforcement/accountability)
+EXAMPLES OF 2-RCA PERSPECTIVES:
+1. **Direct Cause + Systemic Cause**: Documentation failure + Procedure inadequate
+2. **Technical Failure + Process Failure**: Equipment failed + Maintenance procedure inadequate
+3. **Immediate Issue + Underlying Issue**: Procedure not followed + Training not performed
 
-**EXAMPLE OF CORRECT MULTIPLE RCAs (DIFFERENT TEXTS):**
+**EXAMPLE OF CORRECT 2 RCAs (DIFFERENT PROBLEM AND MAJOR CATEGORIES):**
 
-RCA 1 - Documentation Perspective:
-- problem_category_validated: "The TO manipulation was not logged under the required 1MIR code, resulting in no task-related monitoring. Additionally, the 2MIR manipulation lacked proper monitoring documentation. These documentation failures prevented proper tracking of critical maintenance activities."
-- major_root_cause_category_validated: "The investigation reveals systematic failures in maintaining accurate equipment records and operational history. Required documentation for the TO manipulation was incomplete, and monitoring records were not created despite procedural requirements."
-- near_root_cause: "Equipment maintenance records were not properly maintained. The logging system failed to capture the TO manipulation under the correct codes, and task-related monitoring data was not recorded as required by the procedure."
-- root_cause: "The equipment record-keeping system lacked adequate controls to ensure all maintenance activities were properly documented. There was no verification process to confirm that required monitoring data was captured and recorded."
+**Scenario: Inventory discrepancy between physical and electronic records**
 
-RCA 2 - Procedural Perspective:
-- problem_category_validated: "Personnel failed to follow the established procedure for logging maintenance activities. The 2046-TOOL-33 procedure was not correctly implemented, leading to missed monitoring requirements and incomplete documentation of the TO manipulation."
-- major_root_cause_category_validated: "The procedure for logging TO manipulations was inadequate and did not clearly specify all requirements. The procedure failed to explicitly state that both 1MIR and 2MIR codes were needed, creating ambiguity in execution."
-- near_root_cause: "The written procedure did not provide sufficient detail on the logging requirements. Critical steps for recording task-related monitoring under both code types were either missing or unclear, leading to inconsistent implementation."
-- root_cause: "The procedure development process failed to identify all necessary steps for TO manipulation logging. There was no validation to ensure the procedure was complete and unambiguous before implementation, resulting in systematic execution errors."
+**RCA 1 - Documentation Perspective:**
+- **problem_category**: "Process/Manufacturing Equipment Issue" ← Equipment/technical issue
+- problem_category_validated: "Physical inventory in the Stability lab and QCMB did not match electronic records due to duplicate inventory IDs. The discrepancy was missed during periodic reconciliation, resulting in samples being stored in different locations without proper tracking in the system."
+- **major_root_cause_category**: "Documentation and Records Issue" ← Direct cause
+- major_root_cause_category_validated: "The investigation reveals systematic failures in maintaining accurate inventory records. Physical samples were not properly tracked in the electronic system, and periodic reconciliation processes failed to detect the discrepancy between physical and electronic inventories."
+- near_root_cause_category: "Operational and Maintenance History Issue"
+- near_root_cause: "Inventory records were not properly maintained across the two labs. The electronic system failed to accurately reflect the physical location and status of samples, and reconciliation processes did not identify the duplicate inventory IDs causing the mismatch."
+- root_cause_category: "Documentation Content Inaccurate or Incomplete"
+- root_cause: "The inventory record-keeping system lacked adequate controls to prevent duplicate IDs and ensure accurate tracking. There was no verification process to confirm that physical samples matched electronic records, allowing discrepancies to persist undetected through multiple reconciliation cycles."
 
-Notice how each RCA tells a DIFFERENT story with DIFFERENT text, not just different category names.
+**RCA 2 - Procedural Perspective:**
+- **problem_category**: "Company Personnel Issue" ← Personnel/procedural issue (DIFFERENT!)
+- problem_category_validated: "Personnel failed to follow established procedures for inventory reconciliation between the Stability lab and QCMB. The reconciliation procedure did not adequately address duplicate inventory IDs, leading to the discrepancy remaining undetected during periodic reviews."
+- **major_root_cause_category**: "Procedure Issue" ← Systemic cause (DIFFERENT!)
+- major_root_cause_category_validated: "The procedure for inventory reconciliation was inadequate and did not clearly specify how to handle duplicate inventory IDs or discrepancies between labs. The procedure failed to provide sufficient detail on verification steps, creating ambiguity in execution and allowing errors to go undetected."
+- near_root_cause_category: "Appropriate Procedure Incorrect/Incomplete"
+- near_root_cause: "The written procedure for inventory reconciliation did not provide sufficient detail on verification requirements. Critical steps for identifying and resolving duplicate inventory IDs were either missing or unclear, leading to inconsistent implementation and missed discrepancies during periodic reviews."
+- root_cause_category: "Missing Steps/Content/Situation Not Covered"
+- root_cause: "The procedure development process failed to identify all necessary steps for comprehensive inventory reconciliation across multiple labs. There was no validation to ensure the procedure addressed edge cases like duplicate IDs, resulting in systematic gaps that allowed discrepancies to persist."
+
+**Notice how:**
+- RCA 1: Problem Category = "Process/Manufacturing Equipment Issue" (technical/equipment focus)
+- RCA 2: Problem Category = "Company Personnel Issue" (personnel/procedural focus) - DIFFERENT!
+- RCA 1: Major Category = "Documentation and Records Issue" (direct cause)
+- RCA 2: Major Category = "Procedure Issue" (systemic cause) - DIFFERENT!
+- Maximum diversity across all category levels
+- Texts are DIFFERENT, not copy-pasted
 
 Return ONLY the JSON array with at least 2 elements, no additional text.
