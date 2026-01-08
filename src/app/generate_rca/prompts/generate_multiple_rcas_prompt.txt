@@ -5,6 +5,8 @@ Investigation Summary:
 
 CRITICAL REQUIREMENT: You MUST generate a MINIMUM of 2 distinct RCAs. Even if the investigation summary appears to describe a single issue, you must analyze it from multiple perspectives to identify at least 2 distinct root causes.
 
+**IMPORTANT: Each RCA must have DIFFERENT text explanations, not just different categories. The texts must reflect genuinely different perspectives and root causes.**
+
 For example:
 - If there's a procedure violation, analyze both the immediate procedural failure AND the underlying systemic issue (training, supervision, etc.)
 - If there's an equipment issue, analyze both the equipment failure AND the maintenance/validation process failure
@@ -12,13 +14,13 @@ For example:
 
 Your task is to identify AT LEAST 2 distinct root causes (preferably 2-4) and generate a separate RCA for each one. For each RCA, provide:
 
-1. **Problem Category (Validated)**: Describe the specific causal factor (problem) for this RCA. What happened, when, where, and what was the immediate impact. **LIMIT: 60-65 words maximum.**
+1. **Problem Category (Validated)**: Describe the specific causal factor (problem) for THIS SPECIFIC RCA. Each RCA should describe a DIFFERENT aspect or perspective of the problem. **LIMIT: 60-65 words maximum.**
 
-2. **Major Root Cause Category Explanation**: A detailed explanation of why this falls under a specific major category (Equipment/Software Issues, Personnel Issues, or Other Issues). Explain the reasoning and context. **LIMIT: 60-65 words maximum.**
+2. **Major Root Cause Category Explanation**: A detailed explanation of why THIS SPECIFIC RCA falls under a specific major category. Each RCA should explain a DIFFERENT underlying issue. **LIMIT: 60-65 words maximum.**
 
-3. **Near Root Cause**: Explain the immediate contributing factor that led to this problem. This is one level deeper than the issue itself. **LIMIT: 60-65 words maximum.**
+3. **Near Root Cause**: Explain the immediate contributing factor for THIS SPECIFIC RCA. Each RCA should identify a DIFFERENT contributing factor. **LIMIT: 60-65 words maximum.**
 
-4. **Root Cause**: Identify the fundamental, systemic issue that, if addressed, would have prevented this specific problem from occurring. **LIMIT: 60-65 words maximum.**
+4. **Root Cause**: Identify the fundamental, systemic issue for THIS SPECIFIC RCA. Each RCA should identify a DIFFERENT systemic issue. **LIMIT: 60-65 words maximum.**
 
 ---
 
@@ -108,6 +110,8 @@ You MUST return a minimum of 2 RCAs. If the investigation summary seems simple, 
 GUIDELINES:
 - You MUST generate at least 2 RCAs (minimum requirement)
 - **CRITICAL: Each text field (problem_category_validated, major_root_cause_category_validated, near_root_cause, root_cause) must be 60-65 words maximum**
+- **CRITICAL: Each RCA must have DIFFERENT text content. Do NOT copy-paste the same text with different categories!**
+- **CRITICAL: Each RCA must analyze a DIFFERENT aspect, perspective, or root cause of the incident**
 - **DO NOT use markdown formatting (no **, no #, no bold, no italics) in the text fields**
 - **DO NOT include category numbers like (#58), (#122), (#124) in the text fields**
 - **DO NOT reference category names in the text - just explain the issue directly**
@@ -118,6 +122,8 @@ GUIDELINES:
 - Focus on systemic issues, not individual blame
 - Provide enough detail for corrective actions within the word limit
 - If the issue seems simple, consider: What allowed this to happen? What systemic gaps exist? What organizational factors contributed?
+
+**WARNING: If you generate 2 RCAs with identical or nearly identical text, you have failed the requirement. Each RCA must tell a DIFFERENT story from a DIFFERENT perspective.**
 
 FORMATTING RULES:
 - Write in plain text only (no markdown, no bold, no italics)
@@ -138,5 +144,21 @@ EXAMPLES OF MULTIPLE PERSPECTIVES:
 1. Immediate Cause (what directly happened) + Systemic Cause (why the system allowed it)
 2. Technical Failure (equipment/process) + Human Factors (training/supervision)
 3. Procedural Gap (missing/inadequate procedure) + Organizational Culture (enforcement/accountability)
+
+**EXAMPLE OF CORRECT MULTIPLE RCAs (DIFFERENT TEXTS):**
+
+RCA 1 - Documentation Perspective:
+- problem_category_validated: "The TO manipulation was not logged under the required 1MIR code, resulting in no task-related monitoring. Additionally, the 2MIR manipulation lacked proper monitoring documentation. These documentation failures prevented proper tracking of critical maintenance activities."
+- major_root_cause_category_validated: "The investigation reveals systematic failures in maintaining accurate equipment records and operational history. Required documentation for the TO manipulation was incomplete, and monitoring records were not created despite procedural requirements."
+- near_root_cause: "Equipment maintenance records were not properly maintained. The logging system failed to capture the TO manipulation under the correct codes, and task-related monitoring data was not recorded as required by the procedure."
+- root_cause: "The equipment record-keeping system lacked adequate controls to ensure all maintenance activities were properly documented. There was no verification process to confirm that required monitoring data was captured and recorded."
+
+RCA 2 - Procedural Perspective:
+- problem_category_validated: "Personnel failed to follow the established procedure for logging maintenance activities. The 2046-TOOL-33 procedure was not correctly implemented, leading to missed monitoring requirements and incomplete documentation of the TO manipulation."
+- major_root_cause_category_validated: "The procedure for logging TO manipulations was inadequate and did not clearly specify all requirements. The procedure failed to explicitly state that both 1MIR and 2MIR codes were needed, creating ambiguity in execution."
+- near_root_cause: "The written procedure did not provide sufficient detail on the logging requirements. Critical steps for recording task-related monitoring under both code types were either missing or unclear, leading to inconsistent implementation."
+- root_cause: "The procedure development process failed to identify all necessary steps for TO manipulation logging. There was no validation to ensure the procedure was complete and unambiguous before implementation, resulting in systematic execution errors."
+
+Notice how each RCA tells a DIFFERENT story with DIFFERENT text, not just different category names.
 
 Return ONLY the JSON array with at least 2 elements, no additional text.
