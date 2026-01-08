@@ -1,41 +1,39 @@
 import React from "react";
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
+import LeftArrow from "../../../assets/icons/leftArrow.svg";
+import AISummary from "../../../assets/icons/aiSummary.svg";
 
 import styles from "./executiveSummary.module.scss";
 import { ExecutiveSummaryItem } from "./mockdata";
 
 export interface ExecutiveSummaryProps {
-  title?: string;
   items: ExecutiveSummaryItem[];
   onBack: () => void;
   onPrimaryAction?: () => void;
-  primaryActionLabel?: string;
 }
 
 const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
-  title = "AI Generated Executive Summary",
   items,
   onBack,
   onPrimaryAction,
-  primaryActionLabel = "Save and Send",
 }) => {
   return (
     <Paper variant="outlined" className={styles.summaryRoot}>
       <Box className={styles.headerRow}>
         <Stack direction="row" spacing={1} alignItems="center">
-          <Button
-            variant="text"
-            startIcon={<ArrowBackIcon />}
+          <img
+            src={LeftArrow}
+            alt={"left arrow"}
             onClick={onBack}
-            className={styles.backBtn}
-          >
-          </Button>
+            className={styles.backIcon}
+          />
           <Typography variant="h6" className={styles.title}>
-            {title}
+            <img src={AISummary} alt={"left arrow"} />
+            AI Generated Executive Summary
           </Typography>
         </Stack>
       </Box>
+      <Divider className={styles.headerDivider} />
 
       {/* Content */}
       <Box className={styles.contentBox}>
@@ -60,18 +58,15 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
           </Typography>
         )}
       </Box>
+      <Divider className={styles.headerDivider} />
 
       {/* Footer actions */}
-      <Box className={styles.footerRow}>
-        <Stack direction="row" spacing={1} justifyContent="flex-end">
+      <Box>
+        <Stack direction="row" spacing={1} className={styles.footerRow}>
           {onPrimaryAction && (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={onPrimaryAction}
-            >
-              {primaryActionLabel}
-            </Button>
+            <button className={styles.classifyBtn} onClick={onPrimaryAction}>
+              Save and Send to QMS
+            </button>
           )}
         </Stack>
       </Box>
@@ -80,4 +75,3 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
 };
 
 export default ExecutiveSummary;
-

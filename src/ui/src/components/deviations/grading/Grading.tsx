@@ -136,7 +136,6 @@ const Grading: React.FC = () => {
             severity: "success",
           });
         }}
-        primaryActionLabel="Save and Send"
       />
     );
   }
@@ -258,12 +257,12 @@ const Grading: React.FC = () => {
                         {isPositive ? (
                           <ThumbUpAltOutlinedIcon
                             fontSize="small"
-                            className="thumbsUp"
+                            className={styles.thumbsUp}
                           />
                         ) : isNegative ? (
                           <ThumbDownAltOutlinedIcon
                             fontSize="small"
-                            className="thumbsDown"
+                            className={styles.thumbsDown}
                           />
                         ) : (
                           <ThumbUpAltOutlinedIcon
@@ -307,7 +306,7 @@ const Grading: React.FC = () => {
         open={snack.open}
         autoHideDuration={2500}
         onClose={() => setSnack((s) => ({ ...s, open: false }))}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           severity={snack.severity ?? "info"}
