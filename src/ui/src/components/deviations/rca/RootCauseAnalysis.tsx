@@ -133,6 +133,7 @@ const RootCauseAnalysis = forwardRef<
           meta: {
             createdFrom: "seed",
             createdAt: new Date().toISOString(),
+            isEdited: false,
           },
         };
       });
@@ -185,7 +186,11 @@ const RootCauseAnalysis = forwardRef<
           explanation: "",
         },
       ],
-      meta: { createdFrom: "add", createdAt: new Date().toISOString() },
+      meta: {
+        createdFrom: "add",
+        createdAt: new Date().toISOString(),
+        isEdited: false,
+      },
     };
     setPendingRca(newRca);
     setSelectedIndex(rcas.length);
@@ -237,8 +242,16 @@ const RootCauseAnalysis = forwardRef<
       return;
     }
 
-    if (updated.meta?.createdFrom === "add") {
-      updated.meta.createdFrom = "new";
+    if (updated.meta) {
+      if (updated.meta.createdFrom === "add") {
+        updated.meta.createdFrom = "new";
+        updated.meta.isEdited = false;
+      } else if (preEditSnapshot) {
+        const wasEdited =
+          JSON.stringify(updated.sections) !==
+          JSON.stringify(preEditSnapshot.sections);
+        updated.meta.isEdited = wasEdited;
+      }
     }
 
     if (pendingRca) {
@@ -289,6 +302,9 @@ const RootCauseAnalysis = forwardRef<
 
       root_cause: isExcluded ? NA : root.explanation || root.value || "",
       root_cause_category: isExcluded ? NA : root.value || "",
+
+      isAdded: rca.meta?.createdFrom === "new",
+      isEdited: rca.meta?.isEdited ?? false,
     };
   };
 
@@ -391,32 +407,33 @@ const RootCauseAnalysis = forwardRef<
               isSubmittedSuccessfully={isSubmittedSuccessfully}
             />
           </Box>
-
-          <RcaHeader
-            currentTitle={selectedRca?.name ?? ""}
-            isEditing={isEditing}
-            onEdit={handleEditStart}
-            onDelete={handleDeleteSelected}
-            onCancelEdit={handleCancelEdit}
-            onSave={triggerExternalSave}
-            onReset={onResetAll}
-            showReset={selectedRca?.meta?.createdFrom !== "new"}
-            isSubmittedSuccessfully={isSubmittedSuccessfully}
-            rcas={rcas}
-          />
-
-          {!isEditing && selectedRca && <RcaView rca={selectedRca} />}
-
-          {isEditing && selectedRca && (
-            <RcaEdit
-              rca={selectedRca}
-              onSave={handleSaveRca}
-              registerOnSave={(fn) => {
-                externalSaveFn.current = fn;
-              }}
-              dropdownData={dropdownData}
+          <Box height={"72%"}>
+            <RcaHeader
+              currentTitle={selectedRca?.name ?? ""}
+              isEditing={isEditing}
+              onEdit={handleEditStart}
+              onDelete={handleDeleteSelected}
+              onCancelEdit={handleCancelEdit}
+              onSave={triggerExternalSave}
+              onReset={onResetAll}
+              showReset={selectedRca?.meta?.createdFrom !== "new"}
+              isSubmittedSuccessfully={isSubmittedSuccessfully}
+              rcas={rcas}
             />
-          )}
+
+            {!isEditing && selectedRca && <RcaView rca={selectedRca} />}
+
+            {isEditing && selectedRca && (
+              <RcaEdit
+                rca={selectedRca}
+                onSave={handleSaveRca}
+                registerOnSave={(fn) => {
+                  externalSaveFn.current = fn;
+                }}
+                dropdownData={dropdownData}
+              />
+            )}
+          </Box>
         </>
       )}
       <Notification

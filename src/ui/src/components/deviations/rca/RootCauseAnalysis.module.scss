@@ -13,7 +13,7 @@ $section-bg: #f9fbff;
    ────────────────────────────────────────────────────────────────────────────*/
 
 .maxRcaHeight {
-  max-height: 260px;
+  max-height: 78%;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #c1c1c1 #f0f0f0;
@@ -38,9 +38,8 @@ $section-bg: #f9fbff;
 .rootPaper {
   padding: 16px;
   border-radius: 16px !important;
-  height: 100%;
+  height: 78vh;
   background-color: #fff;
-  max-height: 500px;
 
   &::-webkit-scrollbar {
     width: 4px;
