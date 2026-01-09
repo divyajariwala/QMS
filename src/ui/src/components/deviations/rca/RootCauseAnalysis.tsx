@@ -407,7 +407,7 @@ const RootCauseAnalysis = forwardRef<
               isSubmittedSuccessfully={isSubmittedSuccessfully}
             />
           </Box>
-          <Box height={"72%"}>
+          <Box className={styles.rcaWrapper}>
             <RcaHeader
               currentTitle={selectedRca?.name ?? ""}
               isEditing={isEditing}

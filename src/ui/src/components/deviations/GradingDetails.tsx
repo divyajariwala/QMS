@@ -7,7 +7,7 @@ import { fetchDeviationDetailById } from "src/services/api.service";
 import { DeviationDetail } from "src/types";
 import Notification from "@components/Notification/Notification";
 import Grading from "./grading/Grading";
-import DeviationHeaderCard from "./DeviationsHeaderCard";
+import GradingHeaderCard from "./GradingHeaderCard";
 
 const GradingDetails: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -61,7 +61,7 @@ const GradingDetails: React.FC = () => {
   return (
     <Box className={styles.rootBox}>
       <CommonBreadcrumbs items={items} />
-      {deviationData && <DeviationHeaderCard deviationData={deviationData} />}
+      {deviationData && <GradingHeaderCard deviationData={deviationData} />}
       <Box className={styles.gridWithMarginTop} mt={1}>
         <Grid item xs={12} md={4.9}>
           <Grading />

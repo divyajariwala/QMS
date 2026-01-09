@@ -16,6 +16,7 @@ import {
 import { FileUploadPopupProps, fileUploadStatus } from "src/types";
 import { useLocation } from "react-router-dom";
 import styles from "./FileUpload.module.scss";
+import samplePdf from "../../../src/assets/files/deviationSample.pdf";
 
 const FileUpload: React.FC<FileUploadPopupProps> = ({
   open,
@@ -106,14 +107,15 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
 
   const handleDownloadExample = () => {
     const path = location.pathname.toLowerCase();
-
-    const columnHeader = path.includes("complaints")
-      ? "Narrative"
-      : path.includes("deviations")
-      ? "Investigation Summary"
-      : "Narrative"; // default fallback
-
-    const html = `
+    if (path.includes("deviations")) {
+      const link = document.createElement("a");
+      link.href = samplePdf;
+      link.download = "Sample Template.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (path.includes("complaints")) {
+      const html = `
     <html xmlns:o="urn:schemas-microsoft-com:office:office"
           xmlns:x="urn:schemas-microsoft-com:office:excel"
           xmlns="http://www.w3.org/TR/REC-html40">
@@ -139,7 +141,7 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
     </head>
     <body>
       <table>
-        <tr><th>Serial No</th><th>${columnHeader}</th></tr>
+        <tr><th>Serial No</th><th>Narrative</th></tr>
         <tr><td></td><td></td></tr>
         <tr><td></td><td></td></tr>
         <tr><td></td><td></td></tr>
@@ -148,16 +150,17 @@ const FileUpload: React.FC<FileUploadPopupProps> = ({
     </html>
   `;
 
-    const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+      const blob = new Blob([html], { type: "application/vnd.ms-excel" });
 
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "sample-template.xls"; // Note the .xls extension, not .xlsx
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "sample-template.xls"; // Note the .xls extension, not .xlsx
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
   const handleClickUploadArea = () => {

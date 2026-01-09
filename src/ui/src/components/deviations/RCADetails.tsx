@@ -7,16 +7,16 @@ import InvestigationSummary from "./InvestigationSummary";
 import RootCauseAnalysis, {
   RootCauseAnalysisHandle,
 } from "./rca/RootCauseAnalysis";
-import DeviationHeaderCard from "./DeviationsHeaderCard";
+import RCAHeaderCard from "./RCAHeaderCard";
 import {
   fetchDeviationDetailById,
-  generateRCA as generateRCAApi, // ⬅️ alias to avoid name collision
+  generateRCA as generateRCAApi, 
 } from "src/services/api.service";
 import { DeviationDetail } from "src/types";
 import Notification from "@components/Notification/Notification";
 import ArrowRight from "../../assets/icons/arrowRight.svg";
 
-const DeviationDetails: React.FC = () => {
+const RCADetails: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<"success" | "error">("success");
   const [message, setMessage] = useState<string>("");
@@ -114,11 +114,11 @@ const DeviationDetails: React.FC = () => {
       <CommonBreadcrumbs items={items} />
 
       {deviationData && (
-        <DeviationHeaderCard
+        <RCAHeaderCard
           deviationData={deviationData}
           onSubmit={() => rcaRef.current?.submit()}
           isRcaSubmitted={isRcaSubmitted}
-          hasRCA={hasRCA} 
+          hasRCA={hasRCA}
         />
       )}
 
@@ -168,4 +168,4 @@ const DeviationDetails: React.FC = () => {
   );
 };
 
-export default DeviationDetails;
+export default RCADetails;

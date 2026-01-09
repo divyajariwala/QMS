@@ -471,11 +471,10 @@ export async function searchAdverseEvent(
 }
 
 export async function searchDeviation(
-  status: string,
   deviation_id: string,
   page: number
 ): Promise<getDeviationsApiResponse> {
-  const url = `${API_BASE_URL}dev/getDeviation?status=${status}&page=${page}&search=${deviation_id}`;
+  const url = `${API_BASE_URL}dev/getDeviation?page=${page}&search=${deviation_id}`;
 
   const response = await fetch(url.toString());
   if (!response.ok) {

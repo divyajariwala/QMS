@@ -1,11 +1,14 @@
 import React from "react";
-import styles from "./DeviationsInterHeaderCard.module.scss";
+import styles from "./DeviationsHeaderCard.module.scss";
 
 import { Paper, Box, Stack, Typography } from "@mui/material";
 import { getDueStatus } from "src/helpers";
 import DeviationsDueDateChip from "./DeviationsDueDateChip";
 import ReceiptDateIcon from "../../assets/icons/receiptDate.svg";
+import LeftArrow from "../../assets/icons/leftArrow.svg";
 import { formatDateMMM_D_YYYY } from "src/utils";
+import CheckIcon from "@mui/icons-material/Check";
+import { useNavigate } from "react-router-dom";
 
 type DeviationData = {
   deviationData: {
@@ -14,13 +17,23 @@ type DeviationData = {
     rca_approved: boolean;
     grading_approved: boolean;
   };
+  onSubmit?: () => void;
+  isRcaSubmitted?: boolean;
+  hasRCA?: boolean;
 };
 
-const DeviationInterHeaderCard: React.FC<DeviationData> = ({
+const RCAHeaderCard: React.FC<DeviationData> = ({
   deviationData,
+  onSubmit,
+  isRcaSubmitted,
+  hasRCA = false,
 }) => {
   const { deviation_id, created_date, rca_approved, grading_approved } =
     deviationData;
+  const navigate = useNavigate();
+  const onBack = () => {
+    navigate(`/deviations`);
+  };
   return (
     <Paper className={styles.paper}>
       <Box className={styles.flexContainer}>
@@ -44,18 +57,43 @@ const DeviationInterHeaderCard: React.FC<DeviationData> = ({
               <div className={styles.infoItem}>
                 <div className={styles.infoItem__valueRow}>
                   <img src={ReceiptDateIcon} alt={"date"} />
-                  <Typography
-                    component="p"
-                    className={styles.infoItem__valueText}
-                  >
-                    {formatDateMMM_D_YYYY(created_date)}
-                  </Typography>
+                  {typeof created_date === "string" ? (
+                    <Typography
+                      component="p"
+                      className={styles.infoItem__valueText}
+                    >
+                      {formatDateMMM_D_YYYY(created_date)}
+                    </Typography>
+                  ) : (
+                    created_date
+                  )}
                 </div>
               </div>
               <DeviationsDueDateChip
                 type={created_date && getDueStatus(created_date).type}
                 label={created_date && getDueStatus(created_date).label}
               />
+
+              {hasRCA &&
+                (!isRcaSubmitted ? (
+                  <button
+                    type="button"
+                    className={styles.approveSendButton}
+                    onClick={onSubmit}
+                  >
+                    <CheckIcon />
+                    Submit
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.addBtn}
+                    onClick={onBack}
+                  >
+                    <img src={LeftArrow} alt={"left arrow"} />
+                    Back
+                  </button>
+                ))}
             </Stack>
           </Stack>
         </Box>
@@ -64,4 +102,4 @@ const DeviationInterHeaderCard: React.FC<DeviationData> = ({
   );
 };
 
-export default DeviationInterHeaderCard;
+export default RCAHeaderCard;
