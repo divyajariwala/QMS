@@ -61,7 +61,7 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
       <div className={styles.headerRow}>
         <Box>
           {gradingStatus === true ? (
-            <Box className={styles.statusTextGreen}>GRADING COMPLETED</Box>
+            <Box className={styles.statusTextGreen}>PROCESSED</Box>
           ) : rcaStatus === true && gradingStatus === false ? (
             <Box className={styles.statusGrad}>GRADING PENDING</Box>
           ) : (

@@ -40,7 +40,7 @@ const RCAHeaderCard: React.FC<DeviationData> = ({
         <Box className={styles.leftSide}>
           <Stack spacing={0.5} className={styles.stackCustom}>
             {grading_approved === true ? (
-              <Box className={styles.statusTextGreen}>GRADING COMPLETED</Box>
+              <Box className={styles.statusTextGreen}>PROCESSED</Box>
             ) : rca_approved === true && grading_approved === false ? (
               <Box className={styles.statusGrad}>GRADING PENDING</Box>
             ) : (

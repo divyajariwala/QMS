@@ -11,12 +11,14 @@ export interface ExecutiveSummaryProps {
   items: ExecutiveSummaryItem[];
   onBack: () => void;
   onPrimaryAction?: (payload: { label: string; content: string }[]) => void;
+  disabled?: boolean;
 }
 
 const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
   items,
   onBack,
   onPrimaryAction,
+  disabled = false,
 }) => {
   const [summaryValues, setSummaryValues] = useState<
     { label: string; content: string }[]
@@ -58,8 +60,9 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
       content_style:
         "body { font-family: Inter, Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }",
       placeholder: "Type or refine the AI-generated summary here...",
+      readonly: disabled ? 1 : 0,
     }),
-    []
+    [disabled]
   );
 
   const handleEditorChange = (idx: number, newValue: string) => {
@@ -70,7 +73,6 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
     });
   };
 
-  // Build payload and pass to parent
   const handlePrimaryAction = () => {
     const payload = summaryValues.map(({ label, content }) => ({
       label,
@@ -83,12 +85,15 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
     <Paper variant="outlined" className={styles.summaryRoot}>
       <Box className={styles.headerRow}>
         <Stack direction="row" spacing={1} alignItems="center">
-          <img
-            src={LeftArrow}
-            alt={"left arrow"}
-            onClick={onBack}
-            className={styles.backIcon}
-          />
+          {!disabled && (
+            <img
+              src={LeftArrow}
+              alt={"left arrow"}
+              onClick={onBack}
+              className={styles.backIcon}
+            />
+          )}
+
           <Typography variant="h6" className={styles.title}>
             <img src={AISummary} alt={"ai summary"} />
             AI Generated Executive Summary
@@ -112,6 +117,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
                 onEditorChange={(newValue: string) =>
                   handleEditorChange(idx, newValue)
                 }
+                disabled={disabled}
               />
             </Box>
           ))
@@ -124,7 +130,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
       <Divider className={styles.headerDivider} />
       <Box>
         <Stack direction="row" spacing={1} className={styles.footerRow}>
-          {onPrimaryAction && (
+          {onPrimaryAction && !disabled && (
             <button
               className={styles.classifyBtn}
               onClick={handlePrimaryAction}
