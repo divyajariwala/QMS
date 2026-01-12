@@ -1,4 +1,4 @@
-import fitz
+import fitz  # PyMuPDF
 import boto3
 import json
 import psycopg
@@ -7,6 +7,7 @@ import io
 import base64
 import logging
 import os
+
 from psycopg.rows import dict_row
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
@@ -20,9 +21,13 @@ try:
     from audit_logger import log_deviation_workflow
 except ImportError:
     import sys
+
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
     from audit_logger import log_deviation_workflow
 
+# =========================
+# Config
+# =========================
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -32,136 +37,181 @@ DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-mas
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 DB_REGION = os.environ.get('db_region', 'us-east-1')
 
+MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
+
 _db_credentials = None
 _connection_string = None
 
+
+# =========================
+# DB Utilities
+# =========================
 def get_connection_string():
     global _connection_string, _db_credentials
-    if _connection_string is not None:
+    if _connection_string:
         return _connection_string
-    try:
-        _db_credentials = get_secret(DB_SECRET_NAME, DB_REGION)
-        host = _db_credentials['host']
-        port = _db_credentials.get('port', 5432)
-        dbname = _db_credentials['dbname']
-        user = _db_credentials['username']
-        password = _db_credentials['password']
-        _connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
-        return _connection_string
-    except Exception as e:
-        logger.error(f"Error building connection string: {str(e)}")
-        raise
 
+    _db_credentials = get_secret(DB_SECRET_NAME, DB_REGION)
+    _connection_string = (
+        f"postgresql://{_db_credentials['username']}:"
+        f"{_db_credentials['password']}@"
+        f"{_db_credentials['host']}:"
+        f"{_db_credentials.get('port', 5432)}/"
+        f"{_db_credentials['dbname']}"
+    )
+    return _connection_string
+
+
+# =========================
+# S3
+# =========================
 def fetch_pdf_from_s3(s3_path):
-    try:
-        s3_client = boto3.client('s3')
-        path_parts = s3_path.replace('s3://', '').split('/')
-        bucket_name = path_parts[0]
-        key = '/'.join(path_parts[1:])
-        
-        head_response = s3_client.head_object(Bucket=bucket_name, Key=key)
-        file_size_mb = head_response['ContentLength'] / (1024 * 1024)
-        if file_size_mb > MAX_PDF_SIZE_MB:
-            raise ValueError(f"PDF too large: {file_size_mb:.1f}MB")
-        
-        response = s3_client.get_object(Bucket=bucket_name, Key=key)
-        return response['Body'].read()
-    except Exception as e:
-        logger.error(f"Error fetching PDF: {str(e)}")
-        raise
+    s3 = boto3.client("s3")
+    path_parts = s3_path.replace("s3://", "").split("/")
+    bucket = path_parts[0]
+    key = "/".join(path_parts[1:])
 
-def pdf_to_images(pdf_data):
-    doc = None
+    head = s3.head_object(Bucket=bucket, Key=key)
+    size_mb = head["ContentLength"] / (1024 * 1024)
+    if size_mb > MAX_PDF_SIZE_MB:
+        raise ValueError(f"PDF too large: {size_mb:.1f} MB")
+
+    obj = s3.get_object(Bucket=bucket, Key=key)
+    return obj["Body"].read()
+
+
+# =========================
+# PDF → Images (Vision fallback)
+# =========================
+def pdf_to_images(pdf_bytes):
+    images = []
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     try:
-        doc = fitz.open(stream=pdf_data, filetype="pdf")
-        images = []
-        for page_num in range(doc.page_count):
-            page = doc[page_num]
+        for page in doc:
             pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
-            img_data = pix.tobytes("png")
-            img = Image.open(io.BytesIO(img_data))
+            img = Image.open(io.BytesIO(pix.tobytes("png")))
             images.append(img)
         return images
-    except Exception as e:
-        logger.error(f"Error converting PDF: {str(e)}")
-        raise
     finally:
-        if doc:
-            doc.close()
+        doc.close()
+
 
 def images_to_base64(images):
-    base64_images = []
+    encoded = []
     for img in images:
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        img_base64 = base64.b64encode(buffer.getvalue()).decode('utf8')
-        base64_images.append(img_base64)
-    return base64_images
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        encoded.append(base64.b64encode(buf.getvalue()).decode("utf-8"))
+    return encoded
 
-def construct_prompt(base64_images):
+
+def construct_vision_prompt(base64_images):
     content = []
-    for img_base64 in base64_images:
+
+    for img in base64_images:
         content.append({
             "image": {
                 "format": "png",
-                "source": {"bytes": base64.b64decode(img_base64)}
+                "source": {"bytes": base64.b64decode(img)}
             }
         })
-    
-    with open('prompt.txt', 'r') as file:
-        prompt_text = file.read()
-    
-    content.append({"text": prompt_text})
+
+    with open("prompt.txt") as f:
+        content.append({"text": f.read()})
+
     return [{"role": "user", "content": content}]
 
-def load_tool_spec():
-    try:
-        with open('toolspec.json', 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        logger.error("Tool spec file not found")
-        raise
 
-def process_with_bedrock(messages):
+# =========================
+# Tool Spec
+# =========================
+def load_tool_spec():
+    with open("toolspec.json") as f:
+        return json.load(f)
+
+
+# =========================
+# Claude – PDF Document First
+# =========================
+def extract_from_pdf_document(pdf_bytes, pdf_name="document.pdf"):
+    pdf_name = pdf_name.replace(".pdf", "")
+    print("pdf_name", pdf_name)
     try:
-        bedrock_runtime = boto3.client('bedrock-runtime')
+        bedrock = boto3.client("bedrock-runtime")
         tool_spec = load_tool_spec()
-        
-        response = bedrock_runtime.converse(
-            modelId="anthropic.claude-3-haiku-20240307-v1:0",
+
+        with open("prompt.txt") as f:
+            prompt_text = f.read()
+
+        messages = [{
+            "role": "user",
+            "content": [
+                {
+                    "document": {
+                        "name": pdf_name,
+                        "format": "pdf",
+                        "source": {"bytes": pdf_bytes}
+                    }
+                },
+                {"text": prompt_text}
+            ]
+        }]
+
+        response = bedrock.converse(
+            modelId=MODEL_ID,
             messages=messages,
             toolConfig={
                 "tools": [tool_spec],
                 "toolChoice": {"auto": {}}
             }
         )
-        
-        content = response['output']['message']['content']
-        for item in content:
-            if isinstance(item, dict) and 'toolUse' in item:
-                return item['toolUse']['input']
-        
-        logger.warning("No tool use found in response")
-        return {
-            'title': 'N/A',
-            'description': 'N/A',
-            'immediate_steps_taken': 'N/A',
-            'quality_risk_evaluation': 'N/A',
-            'investigation_summary': 'N/A',
-            'capa_plan': 'N/A',
-            'recurrence_check_details': 'N/A',
-            'effectiveness_check_plan': 'N/A'
-        }
-    except Exception as e:
-        logger.error(f"Bedrock error: {str(e)}")
-        raise
 
-def update_deviation_in_db(deviation_id, extracted_data, start_time=None):
-    try:
-        conninfo = get_connection_string()
-        with psycopg.connect(conninfo) as conn:
-            with conn.cursor() as cur:
-                update_query = """
+        for item in response["output"]["message"]["content"]:
+            if isinstance(item, dict) and "toolUse" in item:
+                return item["toolUse"]["input"]
+
+        return None
+
+    except Exception as e:
+        logger.error(f"PDF document extraction failed: {str(e)}")
+        return None
+
+
+# =========================
+# Claude – Vision Fallback
+# =========================
+def extract_from_images(images):
+    bedrock = boto3.client("bedrock-runtime")
+    tool_spec = load_tool_spec()
+
+    base64_images = images_to_base64(images)
+    messages = construct_vision_prompt(base64_images)
+
+    response = bedrock.converse(
+        modelId=MODEL_ID,
+        messages=messages,
+        toolConfig={
+            "tools": [tool_spec],
+            "toolChoice": {"auto": {}}
+        }
+    )
+
+    for item in response["output"]["message"]["content"]:
+        if isinstance(item, dict) and "toolUse" in item:
+            return item["toolUse"]["input"]
+
+    return None
+
+
+# =========================
+# DB Update
+# =========================
+def update_deviation_in_db(deviation_id, extracted, start_time):
+    conninfo = get_connection_string()
+
+    with psycopg.connect(conninfo) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
                 UPDATE deviations SET
                     title = %s,
                     description = %s,
@@ -173,137 +223,100 @@ def update_deviation_in_db(deviation_id, extracted_data, start_time=None):
                     effectiveness_check_plan = %s,
                     text_extracted = TRUE
                 WHERE deviation_id = %s
-                """
-                
-                cur.execute(update_query, (
-                    extracted_data.get('title'),
-                    extracted_data.get('description'),
-                    extracted_data.get('immediate_steps_taken'),
-                    extracted_data.get('quality_risk_evaluation'),
-                    extracted_data.get('investigation_summary'),
-                    extracted_data.get('capa_plan'),
-                    extracted_data.get('recurrence_check_details'),
-                    extracted_data.get('effectiveness_check_plan'),
-                    deviation_id
-                ))
-                # WORKFLOW LOG: extraction completed
-                extracted_fields = [k for k, v in extracted_data.items() if v and v != 'N/A']
-                log_deviation_workflow(
-                    conn,
-                    deviation_id,
-                    step='TEXT_EXTRACTED',
-                    input_data={
-                        'source': 'pdf' if 's3path' in extracted_data else 'narrative'
-                    },
-                    output_data={
-                        "extracted_fields": extracted_fields,
-                        "description_length": len(extracted_data.get('description', '') or '')
-                    },
-                    start_time=start_time
-                )
-                
-                conn.commit()
-                logger.info(f"Updated deviation {deviation_id} in database")
-    except Exception as e:
-        logger.error(f"Database error: {str(e)}")
-        raise
+            """, (
+                extracted.get("title"),
+                extracted.get("description"),
+                extracted.get("immediate_steps_taken"),
+                extracted.get("quality_risk_evaluation"),
+                extracted.get("investigation_summary"),
+                extracted.get("capa_plan"),
+                extracted.get("recurrence_check_details"),
+                extracted.get("effectiveness_check_plan"),
+                deviation_id
+            ))
 
-def process_single_deviation(message_data):
-    deviation_id = message_data.get('deviation_id', 'unknown')
+            log_deviation_workflow(
+                conn,
+                deviation_id,
+                step="TEXT_EXTRACTED",
+                input_data={"source": extracted.get("_extraction_method")},
+                output_data={"fields": list(extracted.keys())},
+                start_time=start_time
+            )
+
+        conn.commit()
+
+
+# =========================
+# Main Processor
+# =========================
+def process_single_deviation(message):
+    deviation_id = message.get("deviation_id")
     start_time = datetime.utcnow()
+
     try:
-        logger.info(f"Processing deviation {deviation_id}")
-        
-        if 's3path' not in message_data:
-            raise ValueError("Missing s3path in message")
-        
-        pdf_data = fetch_pdf_from_s3(message_data['s3path'])
-        images = pdf_to_images(pdf_data)
-        
-        if not images:
-            logger.warning(f"PDF has no pages for deviation {deviation_id}")
-            extracted_data = {
-                'title': 'Empty PDF - No Pages',
-                'description': 'N/A',
-                'immediate_steps_taken': 'N/A',
-                'quality_risk_evaluation': 'N/A',
-                'investigation_summary': 'N/A',
-                'capa_plan': 'N/A',
-                'recurrence_check_details': 'N/A',
-                'effectiveness_check_plan': 'N/A'
-            }
+        pdf_bytes = fetch_pdf_from_s3(message["s3path"])
+
+        # PDF document extraction
+        extracted = extract_from_pdf_document(
+            pdf_bytes,
+            os.path.basename(message["s3path"])
+        )
+
+        # Fallback to vision
+        if not extracted or extracted.get("description") in ("", None, "N/A"):
+            logger.info(f"Fallback to vision for deviation {deviation_id}")
+            images = pdf_to_images(pdf_bytes)
+
+            if images:
+                extracted = extract_from_images(images)
+                extracted["_extraction_method"] = "vision"
+                print("image_extracted", extracted)
+            else:
+                extracted = {
+                    "title": "Empty PDF",
+                    "description": "N/A",
+                    "immediate_steps_taken": "N/A",
+                    "quality_risk_evaluation": "N/A",
+                    "investigation_summary": "N/A",
+                    "capa_plan": "N/A",
+                    "recurrence_check_details": "N/A",
+                    "effectiveness_check_plan": "N/A",
+                    "_extraction_method": "empty_pdf"
+                }
         else:
-            base64_images = images_to_base64(images)
-            messages = construct_prompt(base64_images)
-            extracted_data = process_with_bedrock(messages)
-        
-        update_deviation_in_db(deviation_id, extracted_data, start_time)
-        
-        return {
-            'success': True,
-            'deviation_id': deviation_id,
-            'extracted_data': extracted_data
-        }
+            extracted["_extraction_method"] = "pdf_document"
+
+        update_deviation_in_db(deviation_id, extracted, start_time)
+
+        return {"success": True, "deviation_id": deviation_id, "extracted_data": extracted}
+
     except Exception as e:
-        logger.error(f"Processing error for deviation {deviation_id}: {str(e)}")
-        # WORKFLOW LOG: extraction failed
-        try:
-            conninfo = get_connection_string()
-            with psycopg.connect(conninfo) as conn:
-                log_deviation_workflow(
-                    conn,
-                    deviation_id,
-                    step='TEXT_EXTRACTION_FAILED',
-                    input_data={
-                        's3path': message_data.get('s3path')
-                    },
-                    output_data={
-                        'error': str(e),
-                        'error_type': type(e).__name__
-                    },
-                    start_time=start_time
-                )
-                conn.commit()
-        except Exception as log_err:
-            logger.error(f"Failed to log extraction failure: {str(log_err)}")
+        logger.error(f"Deviation {deviation_id} failed: {str(e)}")
         raise
 
+
+# =========================
+# Lambda Handler
+# =========================
 def lambda_handler(event, context):
     try:
-        logger.info("Deviation processing started")
-        logger.info(f"Received event: {json.dumps(event)}")
-        
-        if 'Records' in event:
+        if "Records" in event:
             with ThreadPoolExecutor(max_workers=10) as executor:
-                futures = [
-                    executor.submit(process_single_deviation, json.loads(record['body']))
-                    for record in event['Records']
-                ]
-                results = []
-                for future in futures:
-                    try:
-                        results.append(future.result())
-                    except Exception as e:
-                        logger.error(f"Error processing record: {str(e)}")
-                        results.append({'success': False, 'error': str(e)})
-            
-            return {
-                'statusCode': 200,
-                'body': json.dumps({
-                    'success': True,
-                    'processed_count': len(results),
-                    'results': results
-                })
-            }
-        else:
-            result = process_single_deviation(event)
-            return {
-                'statusCode': 200,
-                'body': json.dumps(result)
-            }
-    except Exception as e:
-        logger.error(f"Processing error: {str(e)}")
+                results = list(
+                    executor.map(
+                        lambda r: process_single_deviation(json.loads(r["body"])),
+                        event["Records"]
+                    )
+                )
+            return {"statusCode": 200, "body": json.dumps(results)}
+
+        result = process_single_deviation(event)
+        return {"statusCode": 200, "body": json.dumps(result)}
+
+    except Exception:
+        logger.exception("Lambda execution failed")
         return {
-            'statusCode': 500,
-            'body': json.dumps({'success': False, 'error': 'Internal error'})
+            "statusCode": 500,
+            "body": json.dumps({"success": False})
         }

@@ -90,36 +90,22 @@ def lambda_handler(event, context):
 # =====================================================
 def get_grading_by_deviation_id(conn, deviation_id):
     """
-    Fetch grading and RCA related details for a deviation.
-
-    Args:
-        conn (psycopg.Connection): Active DB connection
-        deviation_id (str): Deviation ID (e.g., DV-00001)
-
-    Returns:
-        dict: API Gateway compatible response
+    Fetch grading and RCA related details for a deviation
+    and return them as label-content pairs.
     """
     with conn.cursor(row_factory=dict_row) as cursor:
         cursor.execute(
             """
             SELECT
                 deviation_id,
-                investigation_summary,
+                title,
                 description,
+                investigation_summary,
                 immediate_steps_taken,
                 capa_plan,
-                created_at,
-                deviation_status,
-                title,
                 quality_risk_evaluation,
                 recurrence_check_details,
-                effectiveness_check_plan,
-                rca_generated,
-                grading_completed,
-                rca_approved,
-                grading_approved,
-                rca_approved_date,
-                grading_approved_date
+                effectiveness_check_plan
             FROM deviations
             WHERE deviation_id = %s
             """,
@@ -129,31 +115,22 @@ def get_grading_by_deviation_id(conn, deviation_id):
         row = cursor.fetchone()
 
         if not row:
-            return _response(
-                404,
-                {"error": "Deviation not found"}
-            )
+            return _response(404, {"error": "Deviation not found"})
 
-        return _response(
-            200,
-            {
-                "deviation_id": row["deviation_id"],
-                "title": row["title"],
-                "description": row["description"],
-                "investigation_summary": row["investigation_summary"],
-                "immediate_steps_taken": row["immediate_steps_taken"],
-                "capa_plan": row["capa_plan"],
-                "deviation_status": row["deviation_status"],
-                "quality_risk_evaluation": row["quality_risk_evaluation"],
-                "recurrence_check_details": row["recurrence_check_details"],
-                "effectiveness_check_plan": row["effectiveness_check_plan"],
-                "created_at": row["created_at"].isoformat() if row["created_at"] else None,
-                "rca_generated": row["rca_generated"],
-                "grading_completed": row["grading_completed"],
-                "rca_approved": row["rca_approved"],
-                "grading_approved": row["grading_approved"]
-            }
-        )
+        response_data = {
+            "data": [
+                {"label": "Title", "content": row["title"]},
+                {"label": "Description", "content": row["description"]},
+                {"label": "Immediate Steps Taken", "content": row["immediate_steps_taken"]},
+                {"label": "Quality Risk Evaluation", "content": row["quality_risk_evaluation"]},
+                {"label": "Investigation Details", "content": row["investigation_summary"]},
+                {"label": "CAPA Plan", "content": row["capa_plan"]},
+                {"label": "Recurrence Check Details", "content": row["recurrence_check_details"]},
+                {"label": "Effectiveness Check Plan", "content": row["effectiveness_check_plan"]}
+            ]
+        }
+
+        return _response(200, response_data)
 
 
 # =====================================================
