@@ -1,3 +1,7 @@
+export interface SectionDataRes {
+  data: { label: string; content: string }[];
+}
+
 export interface SectionData {
   label: string;
   content: string;
@@ -14,55 +18,8 @@ export interface ExecutiveSummaryItem {
   content: string;
 }
 
-export async function fetchSectionsMock(): Promise<SectionData[]> {
-  await delay(400);
-
-  return [
-    {
-      label: "Title",
-      content:
-        "Deviation: QA Oversight Gap in Non-Routine Analytical Results Verification",
-    },
-    {
-      label: "Description",
-      content:
-        "On 01Nov2023 during periodic review of KIN-OVR-42071 'Biotech Process Cleaning HP ALM System Operation' it was noted by the QA representative that non-routine Analytical Results verification did not have QA oversight as per procedure.",
-    },
-    {
-      label: "Immediate Steps Taken",
-      content:
-        "Cleaning representatives were notified and this record was raised. It was discovered upon investigation that there is a discrepancy in the approval requirements for analytical runs.",
-    },
-    {
-      label: "Quality Risk Evaluation",
-      content:
-        "Preliminary risk assessment indicates potential for inconsistent verification outcomes. No impact to product quality identified for batches reviewed; additional retrospective checks initiated.",
-    },
-    {
-      label: "Investigation Details",
-      content:
-        "It was discovered during the investigation that there is a discrepancy in approval requirements for analytical runs between KIN-OVR-42071 and KIN-OVR-41656. Process gaps were traced to oversight in procedural harmonization.",
-    },
-    {
-      label: "CAPA Plan",
-      content:
-        "1) Harmonize approval requirements across related procedures. 2) Update verification workflow in HP ALM. 3) Train impacted personnel. 4) Implement QA verification checkpoint for non-routine runs.",
-    },
-    {
-      label: "Recurrence Check Details",
-      content:
-        "Retrospective review of the last 12 months of non-routine analytical runs to confirm adherence. Monitoring dashboard to be established for quarterly checks.",
-    },
-    {
-      label: "Effectiveness Check Plan",
-      content:
-        "Effectiveness will be measured by zero recurrences over two consecutive quarters and audit verification of updated workflows and training completion.",
-    },
-  ];
-}
-
 export async function fetchImprovementSuggestionsMock(
-  currentValues: string[] 
+  currentValues: string[]
 ): Promise<SuggestionData[]> {
   await delay(600);
 
@@ -121,7 +78,7 @@ export async function fetchImprovementSuggestionsMock(
 }
 
 export async function fetchExecutiveSummaryMock(
-  values: string[] 
+  values: string[]
 ): Promise<ExecutiveSummaryItem[]> {
   await delay(500);
 

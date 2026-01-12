@@ -34,7 +34,7 @@ describe("RCAEdit", () => {
     id: "rca-1",
     name: "RCA 1",
     sections: [
-      { key: "issues", title: "Causal factor", value: "", explanation: "" },
+      { key: "issues", title: "Problem category", value: "", explanation: "" },
       {
         key: "major",
         title: "Major root cause category",
@@ -59,7 +59,7 @@ describe("RCAEdit", () => {
 
   test("renders all section titles", () => {
     render(<RCAEdit {...defaultProps} />);
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
     expect(screen.getByText("Major root cause category")).toBeInTheDocument();
     expect(screen.getByText("Near root cause")).toBeInTheDocument();
     expect(screen.getByText("Root cause")).toBeInTheDocument();
@@ -157,6 +157,6 @@ describe("RCAEdit", () => {
 
   test("handles null dropdownData", () => {
     render(<RCAEdit {...defaultProps} dropdownData={null} />);
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
   });
 });

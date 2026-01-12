@@ -4,7 +4,7 @@ import { Paper, Stack, Box, Button, Typography } from "@mui/material";
 import styles from "./InvestigationSummary.module.scss";
 import PlusIcon from "../../assets/icons/plus.svg";
 import EmptyImg from "../../assets/images/emptyState.svg";
-import { saveInvestigationSummary } from "src/services/api.service";
+import { saveInvestigationSummary } from "src/services/deviations";
 
 type Props = {
   summary: string;
