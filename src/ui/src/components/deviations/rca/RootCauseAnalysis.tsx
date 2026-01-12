@@ -21,7 +21,7 @@ import RcaHeader from "./RCAHeader";
 import RcaView from "./RCAView";
 import RcaEdit from "./RCAEdit";
 import Notification from "@components/Notification/Notification";
-import { fetchRcaCategories, submitRca } from "src/services/api.service";
+import { fetchRcaCategories, submitRca } from "src/services/deviations";
 import { useParams } from "react-router-dom";
 
 export interface RootCauseAnalysisHandle {
@@ -107,7 +107,7 @@ const RootCauseAnalysis = forwardRef<
           sections: [
             {
               key: "issues",
-              title: "Causal factor",
+              title: "Problem category",
               value: item.problem_category ?? "",
               explanation: item.problem_category_validated ?? "",
             },
@@ -163,7 +163,7 @@ const RootCauseAnalysis = forwardRef<
       sections: [
         {
           key: "issues",
-          title: "Causal factor",
+          title: "Problem category",
           value: "",
           explanation: "",
         },

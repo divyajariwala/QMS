@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Box, Grid } from "@mui/material";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import styles from "./DeviationsResult.module.scss";
-import { fetchDeviationDetailById } from "src/services/api.service";
+import { fetchDeviationDetailById } from "src/services/deviations";
 import { DeviationDetail } from "src/types";
 import Notification from "@components/Notification/Notification";
 import Grading from "./grading/Grading";

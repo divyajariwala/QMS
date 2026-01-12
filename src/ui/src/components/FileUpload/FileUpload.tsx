@@ -9,10 +9,8 @@ import {
 import CloudUploadIcon from "../../../src/assets/icons/upload.svg";
 import DownloadIcon from "../../../src/assets/icons/vector.svg";
 import CheckCircleIcon from "../../../src/assets/icons/uploadSuccess.svg";
-import {
-  uploadComplaintFile,
-  uploadDeviationFile,
-} from "src/services/api.service";
+import { uploadComplaintFile } from "src/services/api.service";
+import { uploadDeviationFile } from "src/services/deviations";
 import { FileUploadPopupProps, fileUploadStatus } from "src/types";
 import { useLocation } from "react-router-dom";
 import styles from "./FileUpload.module.scss";

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   Box,
   CircularProgress,
@@ -19,7 +20,6 @@ import ArrowRight from "../../../assets/icons/arrowRight.svg";
 
 import styles from "./grading.module.scss";
 import {
-  fetchSectionsMock,
   fetchImprovementSuggestionsMock,
   fetchExecutiveSummaryMock,
   SectionData,
@@ -28,6 +28,7 @@ import {
 } from "./mockdata";
 
 import ExecutiveSummary from "./ExecutiveSummary";
+import { fetchGradingData } from "src/services/deviations";
 
 type Mode = "compose" | "grading";
 
@@ -43,6 +44,8 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   const [suggestions, setSuggestions] = useState<SuggestionData[]>([]);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const { deviationId } = useParams<{ deviationId: string | undefined }>();
+
   const [snack, setSnack] = useState<{
     open: boolean;
     message: string;
@@ -55,14 +58,14 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
 
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [summaryItems, setSummaryItems] = useState<ExecutiveSummaryItem[]>([]);
-  const [submitted, setSubmitted] = useState(false); 
+  const [submitted, setSubmitted] = useState(false);
   type ExecSummaryPayload = { label: string; content: string }[];
 
   useEffect(() => {
     (async () => {
       setLoadingSections(true);
       try {
-        const data = await fetchSectionsMock();
+        const {data} = await fetchGradingData(deviationId);
         setSections(data);
         setValues(data.map((s) => s.content ?? ""));
       } catch (err) {
@@ -111,7 +114,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
       const items = await fetchExecutiveSummaryMock(values);
       setSummaryItems(items);
       setSummaryOpen(true);
-      onEnterReview?.(); 
+      onEnterReview?.();
     } catch {
       setSnack({
         open: true,
@@ -132,8 +135,8 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
       message: "Summary sent successfully.",
       severity: "success",
     });
-    setSubmitted(true); 
-    onProcessed?.(); 
+    setSubmitted(true);
+    onProcessed?.();
   };
 
   if (summaryOpen) {
@@ -143,8 +146,8 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
         onBack={handleBackFromSummary}
         onPrimaryAction={
           !submitted ? handleExecutiveSummaryPrimaryAction : undefined
-        } 
-        disabled={submitted} 
+        }
+        disabled={submitted}
       />
     );
   }
@@ -181,7 +184,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
               <button
                 className={styles.classifyBtn}
                 onClick={handleGenerateSummary}
-                disabled={submitted} 
+                disabled={submitted}
               >
                 Generate Executive Summary
                 <img src={ArrowRight} alt="generate summary" />
@@ -219,7 +222,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
                         {section.label}
                       </Typography>
                     </Box>
-                    <Box className={styles.textField}>{val}</Box>
+                    <Box className={styles.textField}>{val || "N/A"}</Box>
                   </Paper>
                 );
               }
@@ -247,7 +250,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
                           {section.label}
                         </Typography>
                       </Box>
-                      <Box className={styles.textField}>{val}</Box>
+                      <Box className={styles.textField}>{val || "N/A"}</Box>
                     </Paper>
                   </Grid>
 

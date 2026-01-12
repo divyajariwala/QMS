@@ -5,7 +5,7 @@ import RootCauseAnalysis, {
 } from "./RootCauseAnalysis";
 import { ApiRcaItem } from "./RCATypes";
 
-jest.mock("src/services/api.service", () => ({
+jest.mock("src/services/deviations", () => ({
   fetchRcaCategories: jest.fn(),
   submitRca: jest.fn(),
 }));
@@ -34,7 +34,7 @@ jest.mock("@components/Notification/Notification", () => ({
     open ? <div data-testid="notification">{message}</div> : null,
 }));
 
-import { fetchRcaCategories, submitRca } from "src/services/api.service";
+import { fetchRcaCategories, submitRca } from "src/services/deviations";
 import * as apiService from "src/services/api.service";
 import { useParams } from "react-router-dom";
 
@@ -100,7 +100,7 @@ describe("RootCauseAnalysis", () => {
         screen.getByRole("heading", { name: "RCA 1" })
       ).toBeInTheDocument();
     });
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
   });
 
   test("switches to edit mode when edit button is clicked", async () => {
@@ -115,7 +115,7 @@ describe("RootCauseAnalysis", () => {
     fireEvent.click(editButton);
 
     // Should render edit sections
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
   });
 
   test("adds new RCA when Add RCA button is clicked", async () => {
@@ -231,7 +231,7 @@ describe("RootCauseAnalysis", () => {
     // Assume RCAEdit has a save button that triggers handleSaveRca
     // Since RCAEdit is mocked or not, we need to simulate the save
     // For now, this test ensures the edit mode is entered
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
   });
 
   test("cancels edit when cancel button is clicked", async () => {
@@ -251,7 +251,7 @@ describe("RootCauseAnalysis", () => {
     fireEvent.click(cancelButton);
 
     // Should return to view mode
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
   });
 
   test("resets RCA when reset button is clicked", async () => {
@@ -274,7 +274,7 @@ describe("RootCauseAnalysis", () => {
     fireEvent.click(resetButton);
 
     // Should reset to baseline
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
   });
 
   test("shows validation error on save with empty required fields", async () => {

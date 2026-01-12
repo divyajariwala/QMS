@@ -10,7 +10,7 @@ describe("RCAView", () => {
     sections: [
       {
         key: "issues",
-        title: "Causal factor",
+        title: "Problem category",
         value: "Issue 1",
         explanation: "Explanation for issue",
       },
@@ -37,13 +37,13 @@ describe("RCAView", () => {
 
   test("renders RCA sections", () => {
     render(<RCAView rca={mockRca} />);
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
     expect(screen.getByText("Issue 1")).toBeInTheDocument();
   });
 
   test("renders all section titles", () => {
     render(<RCAView rca={mockRca} />);
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
     expect(screen.getByText("Major root cause category")).toBeInTheDocument();
     expect(screen.getByText("Near root cause")).toBeInTheDocument();
     expect(screen.getByText("Root cause")).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe("RCAView", () => {
       })),
     };
     render(<RCAView rca={emptyRca} />);
-    expect(screen.getByText("Causal factor")).toBeInTheDocument();
+    expect(screen.getByText("Problem category")).toBeInTheDocument();
   });
 
   test("renders with different RCA data", () => {
@@ -85,7 +85,7 @@ describe("RCAView", () => {
       sections: [
         {
           key: "issues",
-          title: "Causal factor",
+          title: "Problem category",
           value: "Different Issue",
           explanation: "Different explanation",
         },

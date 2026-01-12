@@ -9,7 +9,7 @@ import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import { useAuth } from "react-oidc-context";
 import FileUpload from "@components/FileUpload/FileUpload";
 import { useStatus } from "src/context/StatusProvider";
-import { fetchDeviations, searchDeviation } from "src/services/api.service";
+import { fetchDeviations, searchDeviation } from "src/services/deviations";
 import Notification from "@components/Notification/Notification";
 import { getDeviationsApiResponse } from "src/types";
 import PaginationComponent from "@components/pagination/PaginationComponent";

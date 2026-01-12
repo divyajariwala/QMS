@@ -11,7 +11,7 @@ import RCAHeaderCard from "./RCAHeaderCard";
 import {
   fetchDeviationDetailById,
   generateRCA as generateRCAApi, 
-} from "src/services/api.service";
+} from "src/services/deviations";
 import { DeviationDetail } from "src/types";
 import Notification from "@components/Notification/Notification";
 import ArrowRight from "../../assets/icons/arrowRight.svg";
