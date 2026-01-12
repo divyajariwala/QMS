@@ -31,7 +31,12 @@ import ExecutiveSummary from "./ExecutiveSummary";
 
 type Mode = "compose" | "grading";
 
-const Grading: React.FC = () => {
+interface GradingProps {
+  onEnterReview?: () => void;
+  onProcessed?: () => void;
+}
+
+const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   const [mode, setMode] = useState<Mode>("compose");
   const [sections, setSections] = useState<SectionData[]>([]);
   const [values, setValues] = useState<string[]>([]);
@@ -48,9 +53,9 @@ const Grading: React.FC = () => {
     severity: "info",
   });
 
-  // Dedicated Summary View State
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [summaryItems, setSummaryItems] = useState<ExecutiveSummaryItem[]>([]);
+  const [submitted, setSubmitted] = useState(false); 
   type ExecSummaryPayload = { label: string; content: string }[];
 
   useEffect(() => {
@@ -106,6 +111,7 @@ const Grading: React.FC = () => {
       const items = await fetchExecutiveSummaryMock(values);
       setSummaryItems(items);
       setSummaryOpen(true);
+      onEnterReview?.(); 
     } catch {
       setSnack({
         open: true,
@@ -126,6 +132,8 @@ const Grading: React.FC = () => {
       message: "Summary sent successfully.",
       severity: "success",
     });
+    setSubmitted(true); 
+    onProcessed?.(); 
   };
 
   if (summaryOpen) {
@@ -133,7 +141,10 @@ const Grading: React.FC = () => {
       <ExecutiveSummary
         items={summaryItems}
         onBack={handleBackFromSummary}
-        onPrimaryAction={handleExecutiveSummaryPrimaryAction}
+        onPrimaryAction={
+          !submitted ? handleExecutiveSummaryPrimaryAction : undefined
+        } 
+        disabled={submitted} 
       />
     );
   }
@@ -170,6 +181,7 @@ const Grading: React.FC = () => {
               <button
                 className={styles.classifyBtn}
                 onClick={handleGenerateSummary}
+                disabled={submitted} 
               >
                 Generate Executive Summary
                 <img src={ArrowRight} alt="generate summary" />

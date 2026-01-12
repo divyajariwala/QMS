@@ -28,7 +28,7 @@ import { StatusProvider } from "./context/StatusProvider";
 import { useAuth } from "react-oidc-context";
 import SessionCleaner from "./auth/SessionCleaner";
 import AdverseEventDetails from "@components/adverseEvent/AdverseEventDetails";
-import DeviationDetails from "@components/deviations/DeviationDetails";
+import RCADetails from "@components/deviations/RCADetails";
 import GradingDetails from "@components/deviations/GradingDetails";
 // import Unauthorized from './components/Unauthorized';
 
@@ -109,7 +109,7 @@ const App = () => {
                     path="/approveRca/:deviationId"
                     element={
                       <ProtectedRoute>
-                        <DeviationDetails />
+                        <RCADetails />
                       </ProtectedRoute>
                     }
                   />

@@ -106,7 +106,7 @@ const Deviations = () => {
       return;
     }
     try {
-      const detail = await searchDeviation(activeStatus, formattedId, page);
+      const detail = await searchDeviation(formattedId, page);
       setDeviationDetail(detail);
       setSearchPagination(detail?.pagination ?? initialPagination);
       setSearchPageNumber(detail?.pagination?.current_page ?? page);
