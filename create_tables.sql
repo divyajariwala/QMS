@@ -330,7 +330,7 @@ BEGIN
     SET stat_value = (
             SELECT COUNT(*)
             FROM deviations
-            WHERE grading_approved = false
+            WHERE grading_completed = false
         ),
         updated_at = CURRENT_TIMESTAMP
     WHERE stat_name = 'grading_pending';
@@ -342,7 +342,7 @@ BEGIN
     SET stat_value = (
             SELECT COUNT(*)
             FROM deviations
-            WHERE grading_approved = true
+            WHERE grading_completed = true
         ),
         updated_at = CURRENT_TIMESTAMP
     WHERE stat_name = 'grading_done';
@@ -380,7 +380,6 @@ CREATE TABLE deviations (
     rca_generated BOOLEAN DEFAULT FALSE,
     rca_approved BOOLEAN DEFAULT FALSE,
     grading_completed BOOLEAN DEFAULT FALSE,
-    grading_approved BOOLEAN DEFAULT FALSE,
     deviation_status VARCHAR(20) DEFAULT 'Pending' CHECK (deviation_status IN ('Pending', 'Overdue', 'Processed'))
 );
 

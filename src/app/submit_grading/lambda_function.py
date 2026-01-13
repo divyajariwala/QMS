@@ -141,7 +141,6 @@ def save_grading_to_database(payload: dict, created_by: str):
                 UPDATE deviations
                 SET
                     grading_completed = true,
-                    grading_approved = true,
                     grading_approved_date = CURRENT_TIMESTAMP
                 WHERE deviation_id = %s
             """, (deviation_id,))
