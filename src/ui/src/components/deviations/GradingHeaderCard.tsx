@@ -67,10 +67,12 @@ const GradingHeaderCard: React.FC<GradingHeaderCardProps> = ({
                   )}
                 </div>
               </div>
-              <DeviationsDueDateChip
-                type={created_date && getDueStatus(created_date).type}
-                label={created_date && getDueStatus(created_date).label}
-              />
+              {status !== "processed" && (
+                <DeviationsDueDateChip
+                  type={created_date && getDueStatus(created_date).type}
+                  label={created_date && getDueStatus(created_date).label}
+                />
+              )}
               {status === "processed" && onBack && (
                 <button
                   type="button"

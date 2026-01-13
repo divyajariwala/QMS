@@ -129,7 +129,10 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   };
 
   const handleExecutiveSummaryPrimaryAction = (payload: ExecSummaryPayload) => {
-    console.log("Executive Summary (HTML):", JSON.stringify(payload, null, 2));
+    const apiPayload = {
+      deviation_id: deviationId,
+      sections: payload,
+    };
     setSnack({
       open: true,
       message: "Summary sent successfully.",
