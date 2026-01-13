@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
 import LeftArrow from "../../../assets/icons/leftArrow.svg";
 import AISummary from "../../../assets/icons/aiSummary.svg";
@@ -10,24 +10,35 @@ import { ExecutiveSummaryItem } from "./mockdata";
 export interface ExecutiveSummaryProps {
   items: ExecutiveSummaryItem[];
   onBack: () => void;
-  onPrimaryAction?: (payload: { label: string; content: string }[]) => void;
+  onPrimaryAction?: (
+    payload: { label: string; content: string; isEdited: boolean }[]
+  ) => void;
   disabled?: boolean;
+  tinymceScriptSrc?: string;
 }
+type SummaryValue = { label: string; content: string; isEdited: boolean };
 
 const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
   items,
   onBack,
   onPrimaryAction,
   disabled = false,
+  tinymceScriptSrc,
 }) => {
-  const [summaryValues, setSummaryValues] = useState<
-    { label: string; content: string }[]
-  >(() => items.map((i) => ({ label: i.label, content: i.content })));
+  const [summaryValues, setSummaryValues] = useState<SummaryValue[]>(() =>
+    items.map((i) => ({ label: i.label, content: i.content, isEdited: false }))
+  );
 
+  const ignoreFirstChangeRef = useRef<boolean[]>([]);
   useEffect(() => {
     setSummaryValues(
-      items.map((i) => ({ label: i.label, content: i.content }))
+      items.map((i) => ({
+        label: i.label,
+        content: i.content,
+        isEdited: false,
+      }))
     );
+    ignoreFirstChangeRef.current = items.map(() => false);
   }, [items]);
 
   const editorInit = useMemo(
@@ -60,23 +71,32 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
       content_style:
         "body { font-family: Inter, Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }",
       placeholder: "Type or refine the AI-generated summary here...",
-      readonly: disabled ? 1 : 0,
     }),
-    [disabled]
+    []
   );
 
   const handleEditorChange = (idx: number, newValue: string) => {
+    if (!ignoreFirstChangeRef.current[idx]) {
+      ignoreFirstChangeRef.current[idx] = true;
+      return;
+    }
+
     setSummaryValues((prev) => {
       const next = [...prev];
-      next[idx] = { ...next[idx], content: newValue };
+      next[idx] = {
+        ...next[idx],
+        content: newValue,
+        isEdited: true,
+      };
       return next;
     });
   };
 
   const handlePrimaryAction = () => {
-    const payload = summaryValues.map(({ label, content }) => ({
+    const payload = summaryValues.map(({ label, content, isEdited }) => ({
       label,
       content,
+      isEdited,
     }));
     onPrimaryAction?.(payload);
   };
@@ -111,7 +131,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
 
               <Editor
                 init={editorInit}
-                tinymceScriptSrc={import.meta.env.VITE_TINYMCE_CDN}
+                tinymceScriptSrc={tinymceScriptSrc}
                 id={`exec-summary-editor-${idx}`}
                 initialValue={item.content}
                 onEditorChange={(newValue: string) =>
