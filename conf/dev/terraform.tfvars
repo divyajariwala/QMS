@@ -323,6 +323,21 @@ lambda_configs = [
         http_method = "GET"
       }
     ]
+  },
+  {
+    function_name = "submit-grading"
+    path          = "src/app/submit_grading"
+    environment_variables = {
+      env                 = "dev"
+      db_secret_base_name = "aurora-postgres-master"
+      db_region           = "us-east-1"
+    }
+    api_gateway_paths = [
+      {
+        path_name   = "submitGrading"
+        http_method = "POST"
+      }
+    ]
   }
 ]
 
