@@ -339,6 +339,22 @@ lambda_configs = [
         http_method = "POST"
       }
     ]
+  },
+  {
+    function_name = "submit-grading"
+    path          = "src/app/submit_grading"
+    environment_variables = {
+      env                 = "dev"
+      aws_region          = "us-east-1"
+      llm_model_id        = "anthropic.claude-3-haiku-20240307-v1:0"
+      db_secret_base_name = "aurora-postgres-master"
+    }
+    api_gateway_paths = [
+      {
+        path_name   = "submitGrading"
+        http_method = "POST"
+      }
+    ]
   }
 ]
 
