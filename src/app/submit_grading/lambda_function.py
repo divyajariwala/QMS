@@ -55,11 +55,20 @@ def normalize_grading_sections(sections: list) -> dict:
     for item in sections:
         label = item.get("label")
         content = item.get("content")
-
         if label in label_map:
             result[label_map[label]] = content
 
     return result
+
+
+# =====================================================
+# CHECK IF ANY SECTION IS EDITED
+# =====================================================
+def is_any_section_edited(sections: list) -> bool:
+    """
+    Returns True if any section has isEdited = True
+    """
+    return any(section.get("isEdited") is True for section in sections)
 
 
 # =====================================================
@@ -74,6 +83,8 @@ def save_grading_to_database(payload: dict, created_by: str):
     sections = payload["sections"]
 
     grading_data = normalize_grading_sections(sections)
+    is_edit = is_any_section_edited(sections)
+
     start_time = datetime.now(timezone.utc)
 
     if not DB_SECRET_NAME:
@@ -105,7 +116,8 @@ def save_grading_to_database(payload: dict, created_by: str):
                     capa_plan,
                     recurrence_check,
                     effectiveness_check,
-                    created_by
+                    created_by,
+                    is_edit
                 ) VALUES (
                     %(deviation_id)s,
                     %(title)s,
@@ -116,7 +128,8 @@ def save_grading_to_database(payload: dict, created_by: str):
                     %(capa_plan)s,
                     %(recurrence_check)s,
                     %(effectiveness_check)s,
-                    %(created_by)s
+                    %(created_by)s,
+                    %(is_edit)s
                 )
                 RETURNING id
             """, {
@@ -129,7 +142,8 @@ def save_grading_to_database(payload: dict, created_by: str):
                 "capa_plan": grading_data.get("capa_plan"),
                 "recurrence_check": grading_data.get("recurrence_check"),
                 "effectiveness_check": grading_data.get("effectiveness_check"),
-                "created_by": created_by
+                "created_by": created_by,
+                "is_edit": is_edit
             })
 
             grading_id = cur.fetchone()[0]
@@ -153,7 +167,8 @@ def save_grading_to_database(payload: dict, created_by: str):
                 deviation_id=deviation_id,
                 step="GRADING_SUBMITTED",
                 input_data={
-                    "sections_saved": list(grading_data.keys())
+                    "sections_saved": list(grading_data.keys()),
+                    "is_edit": is_edit
                 },
                 output_data={
                     "grading_id": grading_id,
@@ -164,11 +179,12 @@ def save_grading_to_database(payload: dict, created_by: str):
 
             conn.commit()
 
-            logger.info(f"Grading saved successfully. ID={grading_id}")
+            logger.info(f"Grading saved successfully. ID={grading_id}, is_edit={is_edit}")
 
             return {
                 "grading_id": grading_id,
-                "deviation_id": deviation_id
+                "deviation_id": deviation_id,
+                "is_edit": is_edit
             }
 
 
