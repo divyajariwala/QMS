@@ -151,6 +151,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
           !submitted ? handleExecutiveSummaryPrimaryAction : undefined
         }
         disabled={submitted}
+        tinymceScriptSrc={import.meta.env.VITE_TINYMCE_CDN}
       />
     );
   }

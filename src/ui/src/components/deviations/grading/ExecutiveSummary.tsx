@@ -14,6 +14,7 @@ export interface ExecutiveSummaryProps {
     payload: { label: string; content: string; isEdited: boolean }[]
   ) => void;
   disabled?: boolean;
+  tinymceScriptSrc?: string;
 }
 type SummaryValue = { label: string; content: string; isEdited: boolean };
 
@@ -22,6 +23,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
   onBack,
   onPrimaryAction,
   disabled = false,
+  tinymceScriptSrc,
 }) => {
   const [summaryValues, setSummaryValues] = useState<SummaryValue[]>(() =>
     items.map((i) => ({ label: i.label, content: i.content, isEdited: false }))
@@ -129,7 +131,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
 
               <Editor
                 init={editorInit}
-                tinymceScriptSrc={import.meta.env.VITE_TINYMCE_CDN}
+                tinymceScriptSrc={tinymceScriptSrc}
                 id={`exec-summary-editor-${idx}`}
                 initialValue={item.content}
                 onEditorChange={(newValue: string) =>

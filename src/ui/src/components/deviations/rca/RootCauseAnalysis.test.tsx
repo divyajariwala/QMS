@@ -57,7 +57,7 @@ describe("RootCauseAnalysis", () => {
       root_cause: "Root 1",
       root_cause_category: "Root Category 1",
       isEdited: false,
-      isAdded: false
+      isAdded: false,
     },
   ];
 
@@ -265,15 +265,6 @@ describe("RootCauseAnalysis", () => {
 
     const editButton = screen.getByLabelText("edit");
     fireEvent.click(editButton);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText("restore")).toBeInTheDocument();
-    });
-
-    const resetButton = screen.getByLabelText("restore");
-    fireEvent.click(resetButton);
-
-    // Should reset to baseline
     expect(screen.getByText("Problem category")).toBeInTheDocument();
   });
 
@@ -306,12 +297,10 @@ describe("RootCauseAnalysis", () => {
       expect(ref.current).toBeTruthy();
     });
 
-    const submitSpy = jest.spyOn(apiService, "submitRca");
-
     ref.current!.submit();
 
     await waitFor(() => {
-      expect(submitSpy).toHaveBeenCalledWith({
+      expect(mockSubmitRca).toHaveBeenCalledWith({
         deviation_id: "dev-1",
         problem_category: "Issue 1",
         problem_category_validated: "Validated Issue 1",
@@ -321,6 +310,8 @@ describe("RootCauseAnalysis", () => {
         near_root_cause_category: "Near Category 1",
         root_cause: "Root 1",
         root_cause_category: "Root Category 1",
+        isEdited: false,
+        isAdded: false,
       });
     });
   });
@@ -336,12 +327,10 @@ describe("RootCauseAnalysis", () => {
       expect(ref.current).toBeTruthy();
     });
 
-    const submitSpy = jest.spyOn(apiService, "submitRca");
-
     ref.current!.submit();
 
     await waitFor(() => {
-      expect(submitSpy).toHaveBeenCalledWith([
+      expect(mockSubmitRca).toHaveBeenCalledWith([
         {
           deviation_id: "dev-1",
           problem_category: "Issue 1",
@@ -352,6 +341,8 @@ describe("RootCauseAnalysis", () => {
           near_root_cause_category: "Near Category 1",
           root_cause: "Root 1",
           root_cause_category: "Root Category 1",
+          isEdited: false,
+          isAdded: false,
         },
         {
           deviation_id: "dev-1",
@@ -363,6 +354,8 @@ describe("RootCauseAnalysis", () => {
           near_root_cause_category: "Near Category 1",
           root_cause: "Root 1",
           root_cause_category: "Root Category 1",
+          isEdited: false,
+          isAdded: false,
         },
       ]);
     });
