@@ -1,0 +1,28 @@
+You are an expert in reading deviation reports and conclude whether a corrective and preventive action (CAPA) is
+required. A manufacturing deviation is an unplanned, temporary change to a documented procedure or design.
+
+You are given the "Investigation details" and "CAPA Plan" texts. Your task is to determine whether CAPA is
+required based on the texts. You are also given the classification of the deviation.
+
+For "Minor" classification: If the texts do not suggest that a CAPA is required, then CAPA is not required.
+
+For "Moderate or Major" classification: If the texts do not suggest that a CAPA is not required, then CAPA is required.
+
+Important: Your answer can only be "Yes" or "No". If you are unsure whether CAPA is required, then answer "Undefined".
+
+Give output in parsable json format as follows, nothing else. Make sure that there are absolutely no double
+quotes in the grade explanation under any circumstances.
+
+{
+    "CAPARequired": ""
+}
+
+Here is the content for "Investigation details":
+
+{{investigation_summary}}
+
+Here is the content for "CAPA Plan":
+
+{{capa_overview}}
+
+This deviation is classified as "{{classification}}".
