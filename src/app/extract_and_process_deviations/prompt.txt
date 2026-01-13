@@ -4,7 +4,7 @@ You are an expert at extracting information from deviation investigation documen
 2. Description - The full description of the deviation
 3. Immediate Steps Taken - All immediate corrective actions or steps taken
 4. Quality Risk Evaluation - Quality risk assessment (may also appear as "Classification Rationale")
-5. Investigation Details - The complete investigation details or summary section
+5. Investigation Details - Extract the full Investigation Summary section from the document, including all subsections from all pages. Do not summarize. Continue across pages until the section fully ends.
 6. CAPA Plan - The complete Corrective and Preventive Action plan (may also appear as "CAPA Overview")
 7. Recurrence Check Details - Details about recurrence checks or monitoring
 8. Effectiveness Check Plan - Plan for checking effectiveness of actions
@@ -17,5 +17,21 @@ IMPORTANT INSTRUCTIONS:
 - For CAPA Plan, check for both "CAPA Plan" and "CAPA Overview" sections
 - Do not add any interpretation or additional information
 - Extract the complete text for each field, not just excerpts
+Rules for Investigation Details:
+- Start ONLY when the heading exactly matches "Investigation Summary"
+- Include all subsections and paragraphs under Investigation Summary
+- Continue across page breaks
+- Follow the page sequence include all
+- IMPORTANT: If the sentence continues on the next page.
+  You MUST include the continuate sentence.
+  example if subsections in Investigation Summary like
+  1. Event Overview and Timeline
+  2. Process Background
+  3. Root Cause Investigation (RCI)
+  4. Critical Quality Attribute (CQA) Evaluation
+  5. Product Regulatory Evaluation Summary
+  include all subsections content don't miss any paragraphs and pages content for any subsections
+- Do NOT summarize the Investigation Summary any content
+- If the section spans multiple pages, explicitly indicate continuation
 
 Use the extract_deviation_info tool to provide the extracted information.

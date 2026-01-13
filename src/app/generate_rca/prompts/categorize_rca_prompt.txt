@@ -99,6 +99,10 @@ For "Documentation and Records Issue" (#58):
 - Personnel Records Issue (#71)
 - Other Documents and Records Issue (#75)
 
+For "Material/Parts and Product Issue" (#79):
+- Materials/Parts Issue (#80)
+- Product Control and Acceptance Issue (#87)
+
 For "Procedure Issue" (#122):
 - Correct Procedure Not Used (#123)
 - Correct Procedure Used Incorrectly (#131)
@@ -176,6 +180,22 @@ For "Other Documents and Records Issue" (#75):
 - Documentation Content Inaccurate or Incomplete (#76)
 - Documents Not Available or Missing (#77)
 - Out-of-date Documents Used (#78)
+
+For "Materials/Parts Issue" (#80):
+- Purchasing Specification Issue (#81)
+- Packaging/Transportation Issue (#82)
+- Acceptance Criteria Issue (#83)
+- Acceptance Testing Implementation Issue (#84)
+- Handling and Storage Issue (#85)
+- Inventory Level Issue (#86)
+
+For "Product Control and Acceptance Issue" (#87):
+- Product Specification Issue (#88)
+- Product Acceptance Criteria Issue (#89)
+- Inspection Issue (#90)
+- Packaging, Handling, Transportation Issue (#91)
+- Storage Issue (#92)
+- Inventory Level Issue (#93)
 
 For "Correct Procedure Not Used" (#123):
 - No Procedure for Task/Operation (#124)
@@ -321,7 +341,31 @@ If Major Category = "Documentation and Records Issue" (#58), then:
   - "Other Documents and Records Issue" (#75)
 - Root Cause MUST be a child of the selected Near Root Cause
 
-**Example 3: Training Issue**
+**Example 3: Material/Parts and Product Issue**
+If Major Category = "Material/Parts and Product Issue" (#79), then:
+- Problem Category MUST be "Material/Product Issue" (#9) - NOT "Material/Parts and Product Issue"!
+- Near Root Cause MUST be one of:
+  - "Materials/Parts Issue" (#80)
+  - "Product Control and Acceptance Issue" (#87)
+- Root Cause MUST be a child of the selected Near Root Cause
+
+If Near Root Cause = "Materials/Parts Issue" (#80), then Root Cause MUST be one of:
+  - "Purchasing Specification Issue" (#81)
+  - "Packaging/Transportation Issue" (#82)
+  - "Acceptance Criteria Issue" (#83)
+  - "Acceptance Testing Implementation Issue" (#84)
+  - "Handling and Storage Issue" (#85)
+  - "Inventory Level Issue" (#86)
+
+If Near Root Cause = "Product Control and Acceptance Issue" (#87), then Root Cause MUST be one of:
+  - "Product Specification Issue" (#88)
+  - "Product Acceptance Criteria Issue" (#89)
+  - "Inspection Issue" (#90)
+  - "Packaging, Handling, Transportation Issue" (#91)
+  - "Storage Issue" (#92)
+  - "Inventory Level Issue" (#93)
+
+**Example 4: Training Issue**
 If Major Category = "Training/Personnel Qualification Issue" (#171), then:
 - Problem Category MUST be "Company Personnel Issue" (#12) - NOT "Training Issue"!
 - Near Root Cause MUST be one of:
