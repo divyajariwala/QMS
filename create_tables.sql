@@ -108,6 +108,24 @@ CREATE TABLE deviation_workflow_logs (
     output JSONB
 );
 
+----- store grading executive summary -----
+CREATE TABLE deviation_grading_executive(
+    deviation_id VARCHAR(20) PRIMARY KEY,
+
+    title TEXT,
+    overview TEXT,
+    immediate_actions TEXT,
+    quality_risk_evaluation TEXT,
+    investigation_summary TEXT,
+    capa_plan TEXT,
+    recurrence_check TEXT,
+    effectiveness_check TEXT,
+
+    isedited BOOLEAN DEFAULT FALSE,
+
+    created_by VARCHAR(255),
+    updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Processed Complaints Table
 CREATE TABLE processed_complaints (
