@@ -216,7 +216,7 @@ def lambda_handler(event, context):
             return response(400, "sections must be a non-empty array")
 
         for idx, section in enumerate(body["sections"]):
-            if not section.get("label") or not section.get("content"):
+            if not section.get("label"):
                 return response(
                     400,
                     f"Section at index {idx} must contain label and content"
