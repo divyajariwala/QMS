@@ -13,7 +13,7 @@ import AISummary from "../../../assets/icons/aiSummary.svg";
 import { Editor } from "@tinymce/tinymce-react";
 
 import styles from "./executiveSummary.module.scss";
-import { ExecutiveSummaryItem } from "./mockdata";
+import { ExecutiveSummaryItem } from "./GradingTypes";
 
 export interface ExecutiveSummaryProps {
   items: ExecutiveSummaryItem[];
@@ -38,14 +38,14 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
     items.map((i) => ({ label: i.label, content: i.content, isEdited: false }))
   );
   const [snack, setSnack] = useState<{
-      open: boolean;
-      message: string;
-      severity?: "success" | "info" | "error";
-    }>({
-      open: false,
-      message: "",
-      severity: "info",
-    });
+    open: boolean;
+    message: string;
+    severity?: "success" | "info" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   const ignoreFirstChangeRef = useRef<boolean[]>([]);
   useEffect(() => {
@@ -88,7 +88,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
         "bullist numlist outdent indent | removeformat | help",
       content_style:
         "body { font-family: Inter, Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }",
-      placeholder: "Type or refine the AI-generated summary here...",
+      placeholder: "Type here...",
     }),
     []
   );

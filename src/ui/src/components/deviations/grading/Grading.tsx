@@ -20,17 +20,16 @@ import ArrowRight from "../../../assets/icons/arrowRight.svg";
 
 import styles from "./grading.module.scss";
 import {
-  fetchImprovementSuggestionsMock,
   SectionDataRes,
   SectionData,
   SuggestionData,
   ExecutiveSummaryItem,
-} from "./mockdata";
+} from "./GradingTypes";
 
 import ExecutiveSummary from "./ExecutiveSummary";
 import {
   fetchGradingData,
-  // fetchGradingSuggestions,
+  fetchGradingSuggestions,
   submitGrading,
 } from "src/services/deviations";
 
@@ -56,7 +55,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [summaryItems, setSummaryItems] = useState<ExecutiveSummaryItem[]>([]);
   const [submitted, setSubmitted] = useState(false);
-   const { deviationId } = useParams<{ deviationId: string | undefined }>();
+  const { deviationId } = useParams<{ deviationId: string | undefined }>();
   const [snack, setSnack] = useState<{
     open: boolean;
     message: string;
@@ -91,35 +90,15 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   const isCompose = mode === "compose";
   const isGrading = mode === "grading";
 
-  const alignSuggestionsToSections = (
-    sectionList: SectionData[],
-    suggs: SuggestionData[]
-  ): SuggestionData[] => {
-    const byLabel = new Map<string, SuggestionData>();
-    for (const s of suggs) {
-      const key = (s.sectionLabel ?? "").toLowerCase().trim();
-      if (key) byLabel.set(key, s);
-    }
-
-    return sectionList.map((sec) => {
-      const key = sec.label.toLowerCase().trim();
-      return byLabel.get(key) ?? { improvement_suggestion: "", score: 0 };
-    });
-  };
-
   const handleStartGrading = async () => {
     setMode("grading");
     setLoadingSuggestions(true);
+    onEnterReview?.();
     try {
-      const suggs = await fetchImprovementSuggestionsMock({
+      const suggs = await fetchGradingSuggestions({
         deviation_id: deviationId,
       });
-      // const suggs = await fetchGradingSuggestions({
-      //   deviation_id: deviationId,
-      // });
-      const aligned = alignSuggestionsToSections(sections, suggs);
-
-      setSuggestions(aligned);
+      setSuggestions(suggs.data);
     } catch (err) {
       notify("Failed to start grading", "error");
     } finally {
@@ -134,18 +113,13 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
         label: s.label,
         content: values[idx] ?? "",
       }));
-      const suggs = await fetchImprovementSuggestionsMock({
+      const suggs = await fetchGradingSuggestions({
         deviation_id: deviationId,
         previous_result,
       });
 
-      // const suggs = await fetchGradingSuggestions({
-      //   deviation_id: deviationId,
-      //   previous_result,
-      // });
+      setSuggestions(suggs.data);
 
-      const aligned = alignSuggestionsToSections(sections, suggs);
-      setSuggestions(aligned);
       notify("Improvement suggestions updated", "success");
     } catch (err) {
       notify("Failed to fetch improvement suggestions", "error");
@@ -162,7 +136,6 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
       }));
       setSummaryItems(items);
       setSummaryOpen(true);
-      onEnterReview?.();
       notify("Executive summary generated.", "success");
     } catch {
       notify("Failed to generate executive summary", "error");
@@ -188,49 +161,60 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
     }
   };
 
+  if (summaryOpen) {
+    return (
+      <ExecutiveSummary
+        items={summaryItems}
+        onBack={handleBackFromSummary}
+        onSaveAndSubmit={!submitted ? handleSaveAndSubmit : undefined}
+        disabled={submitted}
+        tinymceScriptSrc={import.meta.env.VITE_TINYMCE_CDN}
+        onNotify={notify}
+      />
+    );
+  }
+
   return (
     <Paper variant="outlined" className={styles.rootPaper}>
       <Box className={styles.headerRow}>
         <Typography variant="h6" className={styles.title}>
           Grading
         </Typography>
-        {!summaryOpen && (
-          <Stack direction="row" spacing={1} className={styles.actionBtnBox}>
-            {isCompose && (
+        <Stack direction="row" spacing={1} className={styles.actionBtnBox}>
+          {isCompose && (
+            <button
+              type="button"
+              className={styles.gradingBtn}
+              onClick={handleStartGrading}
+              disabled={loadingSections || !deviationId}
+            >
+              Start Grading
+              <img src={GradingIcon} alt={"start grading"} />
+            </button>
+          )}
+
+          {isGrading && (
+            <>
               <button
                 type="button"
-                className={styles.gradingBtn}
-                onClick={handleStartGrading}
-                disabled={loadingSections || !deviationId}
+                className={styles.regenerateBtn}
+                onClick={regenerateSuggestions}
+                disabled={loadingSuggestions}
               >
-                Start Grading
-                <img src={GradingIcon} alt={"start grading"} />
+                Regenerate
+                <img src={RegenerateIcon} alt={"regenerate"} />
               </button>
-            )}
-
-            {isGrading && (
-              <>
-                <button
-                  type="button"
-                  className={styles.regenerateBtn}
-                  onClick={regenerateSuggestions}
-                  disabled={loadingSuggestions}
-                >
-                  Regenerate
-                  <img src={RegenerateIcon} alt={"regenerate"} />
-                </button>
-                <button
-                  className={styles.classifyBtn}
-                  onClick={handleGenerateSummary}
-                  disabled={submitted}
-                >
-                  Generate Executive Summary
-                  <img src={ArrowRight} alt="generate summary" />
-                </button>
-              </>
-            )}
-          </Stack>
-        )}
+              <button
+                className={styles.classifyBtn}
+                onClick={handleGenerateSummary}
+                disabled={submitted}
+              >
+                Generate Executive Summary
+                <img src={ArrowRight} alt="generate summary" />
+              </button>
+            </>
+          )}
+        </Stack>
       </Box>
 
       <Divider className={styles.headerDivider} />
@@ -244,25 +228,43 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
           </Box>
         ) : (
           <Box>
-            {summaryOpen ? (
-              <ExecutiveSummary
-                items={summaryItems}
-                onBack={handleBackFromSummary}
-                onSaveAndSubmit={!submitted ? handleSaveAndSubmit : undefined}
-                disabled={submitted}
-                tinymceScriptSrc={import.meta.env.VITE_TINYMCE_CDN}
-                onNotify={notify}
-              />
-            ) : (
-              sections.map((section, idx) => {
-                const val = values[idx] ?? "";
-                if (isCompose) {
-                  return (
-                    <Paper
-                      key={`section-${idx}`}
-                      variant="outlined"
-                      className={styles.sectionPaper}
-                    >
+            {sections.map((section, idx) => {
+              const val = values[idx] ?? "";
+              if (isCompose) {
+                return (
+                  <Paper
+                    key={`section-${idx}`}
+                    variant="outlined"
+                    className={styles.sectionPaper}
+                  >
+                    <Box className={styles.labelRow}>
+                      <Typography
+                        variant="subtitle1"
+                        className={styles.sectionLabel}
+                      >
+                        {section.label}
+                      </Typography>
+                    </Box>
+                    <Box className={styles.textField}>{val || "N/A"}</Box>
+                  </Paper>
+                );
+              }
+
+              const suggestion = suggestions[idx];
+              const score = suggestion?.score;
+              const hasScore = typeof score === "number";
+              const isPositive = hasScore && (score as number) >= 6;
+              const isNegative = hasScore && (score as number) <= 5;
+
+              return (
+                <Grid
+                  key={`section-${idx}`}
+                  container
+                  spacing={2}
+                  className={styles.sectionRow}
+                >
+                  <Grid item xs={12} md={6}>
+                    <Paper variant="outlined" className={styles.sectionPaper}>
                       <Box className={styles.labelRow}>
                         <Typography
                           variant="subtitle1"
@@ -273,94 +275,65 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
                       </Box>
                       <Box className={styles.textField}>{val || "N/A"}</Box>
                     </Paper>
-                  );
-                }
-
-                const suggestion = suggestions[idx];
-                const score = suggestion?.score;
-                const hasScore = typeof score === "number";
-                const isPositive = hasScore && (score as number) >= 6;
-                const isNegative = hasScore && (score as number) <= 5;
-
-                return (
-                  <Grid
-                    key={`section-${idx}`}
-                    container
-                    spacing={2}
-                    className={styles.sectionRow}
-                  >
-                    <Grid item xs={12} md={6}>
-                      <Paper variant="outlined" className={styles.sectionPaper}>
-                        <Box className={styles.labelRow}>
-                          <Typography
-                            variant="subtitle1"
-                            className={styles.sectionLabel}
-                          >
-                            {section.label}
-                          </Typography>
-                        </Box>
-                        <Box className={styles.textField}>{val || "N/A"}</Box>
-                      </Paper>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                      <Paper
-                        variant="outlined"
-                        className={styles.suggestionsPaper}
-                      >
-                        <Box className={styles.suggestionLabelRow}>
-                          <Typography
-                            variant="subtitle1"
-                            className={styles.sectionLabel}
-                          >
-                            Improvement Suggestion
-                          </Typography>
-
-                          {isPositive ? (
-                            <ThumbUpAltOutlinedIcon
-                              fontSize="small"
-                              className={styles.thumbsUp}
-                            />
-                          ) : isNegative ? (
-                            <ThumbDownAltOutlinedIcon
-                              fontSize="small"
-                              className={styles.thumbsDown}
-                            />
-                          ) : (
-                            <ThumbUpAltOutlinedIcon
-                              fontSize="small"
-                              style={{ opacity: 0.4 }}
-                            />
-                          )}
-                        </Box>
-
-                        <Box className={styles.suggestionBody}>
-                          {loadingSuggestions ? (
-                            <Box className={styles.loaderInline}>
-                              <CircularProgress size={18} />
-                              <Typography variant="body2" sx={{ ml: 1 }}>
-                                Updating…
-                              </Typography>
-                            </Box>
-                          ) : suggestion ? (
-                            <Typography
-                              variant="body2"
-                              className={styles.suggestionText}
-                            >
-                              {suggestion.improvement_suggestion}
-                            </Typography>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              No suggestion available for this section yet.
-                            </Typography>
-                          )}
-                        </Box>
-                      </Paper>
-                    </Grid>
                   </Grid>
-                );
-              })
-            )}
+
+                  <Grid item xs={12} md={6}>
+                    <Paper
+                      variant="outlined"
+                      className={styles.suggestionsPaper}
+                    >
+                      <Box className={styles.suggestionLabelRow}>
+                        <Typography
+                          variant="subtitle1"
+                          className={styles.sectionLabel}
+                        >
+                          Improvement Suggestion
+                        </Typography>
+
+                        {isPositive ? (
+                          <ThumbUpAltOutlinedIcon
+                            fontSize="small"
+                            className={styles.thumbsUp}
+                          />
+                        ) : isNegative ? (
+                          <ThumbDownAltOutlinedIcon
+                            fontSize="small"
+                            className={styles.thumbsDown}
+                          />
+                        ) : (
+                          <ThumbUpAltOutlinedIcon
+                            fontSize="small"
+                            style={{ opacity: 0.4 }}
+                          />
+                        )}
+                      </Box>
+
+                      <Box className={styles.suggestionBody}>
+                        {loadingSuggestions ? (
+                          <Box className={styles.loaderInline}>
+                            <CircularProgress size={18} />
+                            <Typography variant="body2" sx={{ ml: 1 }}>
+                              Updating…
+                            </Typography>
+                          </Box>
+                        ) : suggestion ? (
+                          <Typography
+                            variant="body2"
+                            className={styles.suggestionText}
+                          >
+                            {suggestion.improvement_suggestion}
+                          </Typography>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            No suggestion available for this section yet.
+                          </Typography>
+                        )}
+                      </Box>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              );
+            })}
           </Box>
         )}
       </Box>
