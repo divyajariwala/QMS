@@ -1,4 +1,9 @@
-import { SectionData, SectionDataRes } from "@components/deviations/grading/mockdata";
+import {
+  SectionData,
+  SectionDataRes,
+  GradingSuggestionsPayload,
+  SubmitGradingPayload,
+} from "@components/deviations/grading/mockdata";
 import {
   getDeviationsApiResponse,
   DeviationDetail,
@@ -164,6 +169,42 @@ export async function fetchGradingData(
 
 export const fetchImprovementSuggestions = async (payload: SectionData[]) => {
   const response = await fetch(`${API_BASE_URL}dev/getImprovementSuggestions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const fetchGradingSuggestions = async (
+  payload: GradingSuggestionsPayload
+) => {
+  const response = await fetch(`${API_BASE_URL}dev/getImprovementSuggestions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const submitGrading = async (payload: SubmitGradingPayload) => {
+  const response = await fetch(`${API_BASE_URL}dev/submitGrading`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

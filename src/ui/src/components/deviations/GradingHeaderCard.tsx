@@ -13,7 +13,7 @@ type GradingHeaderCardProps = {
     deviation_id: string;
     created_date: string;
     rca_approved: boolean;
-    grading_approved: boolean;
+    grading_completed: boolean;
   };
   status?: "pending" | "in_review" | "processed";
   onBack?: () => void;

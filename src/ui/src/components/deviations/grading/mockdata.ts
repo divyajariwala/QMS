@@ -9,7 +9,7 @@ export interface SectionData {
 
 export interface SuggestionData {
   sectionLabel?: string;
-  text: string;
+  improvement_suggestion: string;
   score: number;
 }
 
@@ -18,17 +18,26 @@ export interface ExecutiveSummaryItem {
   content: string;
 }
 
+export type GradingSuggestionsPayload =
+  | { deviation_id: string | undefined } // Start Grading
+  | { deviation_id: string | undefined; previous_result: SectionData[] }; // Regenerate
+
+export type SubmitGradingPayload = {
+  deviation_id: string | undefined;
+  sections: { label: string; content: string; isEdited: boolean }[];
+};
+
 export async function fetchImprovementSuggestionsMock(
-  currentValues: string[]
+  payload: GradingSuggestionsPayload
 ): Promise<SuggestionData[]> {
   await delay(600);
 
   const mk = (
-    text: string,
+    improvement_suggestion: string,
     score: number,
     sectionLabel?: string
   ): SuggestionData => ({
-    text,
+    improvement_suggestion,
     score,
     sectionLabel,
   });
@@ -74,56 +83,6 @@ export async function fetchImprovementSuggestionsMock(
       8,
       "Effectiveness Check Plan"
     ),
-  ];
-}
-
-export async function fetchExecutiveSummaryMock(
-  values: string[]
-): Promise<ExecutiveSummaryItem[]> {
-  await delay(500);
-
-  const title = values[0] ?? "";
-  const desc = values[1] ?? "";
-  const steps = values[2] ?? "";
-  const risk = values[3] ?? "";
-  const inv = values[4] ?? "";
-  const capa = values[5] ?? "";
-  const recur = values[6] ?? "";
-  const eff = values[7] ?? "";
-
-  return [
-    {
-      label: "Title",
-      content: title || "No title provided.",
-    },
-    {
-      label: "Overview",
-      content: desc || "No description provided.",
-    },
-    {
-      label: "Immediate Actions",
-      content: steps || "No immediate steps documented.",
-    },
-    {
-      label: "Quality Risk Evaluation",
-      content: risk || "No quality risk evaluation provided.",
-    },
-    {
-      label: "Investigation Summary",
-      content: inv || "No investigation details provided.",
-    },
-    {
-      label: "CAPA Plan",
-      content: capa || "No CAPA plan provided.",
-    },
-    {
-      label: "Recurrence Check",
-      content: recur || "No recurrence check details provided.",
-    },
-    {
-      label: "Effectiveness Check",
-      content: eff || "No effectiveness check plan provided.",
-    },
   ];
 }
 

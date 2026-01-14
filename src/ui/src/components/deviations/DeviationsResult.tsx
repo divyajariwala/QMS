@@ -17,12 +17,12 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
   const CHAR_LIMIT = 200;
   const progress = !deviation.rca_approved
     ? 0
-    : !deviation.grading_approved
+    : !deviation.grading_completed
     ? 50
     : 100;
 
   const rcaStatus = deviation?.rca_approved;
-  const gradingStatus = deviation?.grading_approved;
+  const gradingStatus = deviation?.grading_completed;
   const dueInfo = getDueStatus(created_date);
 
   const onStartRca = () => {

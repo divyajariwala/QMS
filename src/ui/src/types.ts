@@ -313,7 +313,6 @@ export interface DeviationProps {
     created_date: string;
     deviation_description: string;
     status: string;
-    grading_approved: boolean;
     rca_approved: boolean;
     grading_completed: boolean;
     rca_generated: boolean;
@@ -439,7 +438,6 @@ export type Deviation = {
   created_date: string;
   deviation_description: string;
   status: string;
-  grading_approved: boolean;
   rca_approved: boolean;
   grading_completed: boolean;
   rca_generated: boolean;
@@ -563,7 +561,7 @@ export interface DeviationDetail {
   created_date: string;
   status: string;
   rca_approved: boolean;
-  grading_approved: boolean;
+  grading_completed: boolean;
 }
 
 export type CaseStatusKey = "pending" | "processed" | "overdue";
