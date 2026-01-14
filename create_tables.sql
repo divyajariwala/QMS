@@ -12,6 +12,8 @@ CREATE SEQUENCE complaint_id_seq START 1;
 CREATE SEQUENCE inference_results_inference_id_seq START 1;
 CREATE SEQUENCE audit_id_seq START 1;
 CREATE SEQUENCE workflow_id_seq START 1;
+CREATE SEQUENCE deviation_workflow_id_seq START 1;
+CREATE SEQUENCE deviation_audit_id_seq START 1;
 
 -- Modified Complaints Table with CAS-XXXXX format
 CREATE TABLE complaints (
@@ -65,6 +67,20 @@ CREATE TABLE unified_audit (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     changed_by VARCHAR(100)
 );
+-- Deviation Unified Audit Table
+CREATE TABLE deviation_field_audit (
+    audit_id VARCHAR(20) PRIMARY KEY
+        DEFAULT 'DAUD-' || LPAD(nextval('deviation_audit_id_seq')::text, 5, '0'),
+
+    entity_type VARCHAR(20) NOT NULL
+        CHECK (entity_type IN ('RCA', 'Grading')),
+
+    deviation_id VARCHAR(20) NOT NULL,
+    audit_type VARCHAR(10) NOT NULL
+    new_fields JSONB NOT NULL,
+
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Workflow Logs
 CREATE TABLE workflow_logs (
@@ -75,6 +91,40 @@ CREATE TABLE workflow_logs (
     end_date TIMESTAMP,
     input JSONB,
     output JSONB
+);
+
+-- Deviation Workflow Logs
+CREATE TABLE deviation_workflow_logs (
+    log_id VARCHAR(20) PRIMARY KEY
+        DEFAULT 'DWL-' || LPAD(nextval('deviation_workflow_id_seq')::text, 5, '0'),
+
+    deviation_id VARCHAR(20) NOT NULL
+        REFERENCES deviations(deviation_id),
+
+    step VARCHAR(100),
+    start_date TIMESTAMP,
+    end_date TIMESTAMP,
+    input JSONB,
+    output JSONB
+);
+
+----- store grading executive summary -----
+CREATE TABLE deviation_grading_executive(
+    deviation_id VARCHAR(20) PRIMARY KEY,
+
+    title TEXT,
+    overview TEXT,
+    immediate_actions TEXT,
+    quality_risk_evaluation TEXT,
+    investigation_summary TEXT,
+    capa_plan TEXT,
+    recurrence_check TEXT,
+    effectiveness_check TEXT,
+
+    isedited BOOLEAN DEFAULT FALSE,
+
+    created_by VARCHAR(255),
+    updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Processed Complaints Table
@@ -151,6 +201,29 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+------- rca_approved average time -------
+CREATE OR REPLACE FUNCTION approved_avg_cycle_time()
+RETURNS void AS $$
+BEGIN
+    UPDATE deviations_case_stats
+    SET
+        stat_value = COALESCE((
+            SELECT ROUND(
+                AVG(
+                    CASE
+                        WHEN EXTRACT(EPOCH FROM (d.grading_approved_date - d.created_at))/86400 < 1 THEN 1
+                        ELSE EXTRACT(EPOCH FROM (d.grading_approved_date - d.created_at))/86400
+                    END
+                )
+            )::INTEGER
+            FROM deviations d
+            WHERE d.grading_approved_date IS NOT NULL
+        ), 0),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE stat_name = 'avg_cycle_time';
+END;
+$$ LANGUAGE plpgsql;
+
 -- Procedure to calculate average cycle time
 CREATE OR REPLACE FUNCTION update_avg_cycle_time()
 RETURNS void AS $$
@@ -193,6 +266,121 @@ CREATE TABLE deviation_files (
     upload_by VARCHAR(100)
 );
 
+CREATE OR REPLACE FUNCTION update_deviations_and_stats()
+RETURNS INTEGER AS $$
+DECLARE
+    updated_count INTEGER;
+BEGIN
+    -- -------------------------------------------------
+    -- Update overdue complaints
+    -- -------------------------------------------------
+    UPDATE deviations
+    SET deviation_status = 'Overdue'
+    WHERE deviation_status = 'Pending'
+      AND created_at < NOW() - INTERVAL '5 days';
+
+    GET DIAGNOSTICS updated_count = ROW_COUNT;
+
+    -- -------------------------------------------------
+    -- Update pending stats count
+    -- -------------------------------------------------
+    UPDATE deviations_case_stats
+    SET stat_value = (
+            SELECT COUNT(*)
+            FROM deviations
+            WHERE deviation_status = 'Pending'
+        ),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE stat_name = 'Pending';
+
+    -- -------------------------------------------------
+    -- Update processed stats count
+    -- -------------------------------------------------
+    UPDATE deviations_case_stats
+    SET stat_value = (
+            SELECT COUNT(*)
+            FROM deviations
+            WHERE deviation_status = 'Processed'
+        ),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE stat_name = 'Processed';
+
+    -- -------------------------------------------------
+    -- Update overdue stats count
+    -- -------------------------------------------------
+    UPDATE deviations_case_stats
+    SET stat_value = (
+            SELECT COUNT(*)
+            FROM deviations
+            WHERE deviation_status = 'Overdue'
+        ),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE stat_name = 'Overdue';
+
+    -- -------------------------------------------------
+    -- Update RCA pending stats count
+    -- -------------------------------------------------
+    UPDATE deviations_case_stats
+    SET stat_value = (
+            SELECT COUNT(*)
+            FROM deviations
+            WHERE rca_approved = false
+        ),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE stat_name = 'rca_pending';
+
+    -- -------------------------------------------------
+    -- Update RCA done stats count
+    -- -------------------------------------------------
+    UPDATE deviations_case_stats
+    SET stat_value = (
+            SELECT COUNT(*)
+            FROM deviations
+            WHERE rca_approved = true
+        ),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE stat_name = 'rca_done';
+
+    -- -------------------------------------------------
+    -- Update grading pending stats count
+    -- -------------------------------------------------
+    UPDATE deviations_case_stats
+    SET stat_value = (
+            SELECT COUNT(*)
+            FROM deviations
+            WHERE grading_completed = false
+        ),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE stat_name = 'grading_pending';
+
+    -- -------------------------------------------------
+    -- NEW: Update grading done stats count
+    -- -------------------------------------------------
+    UPDATE deviations_case_stats
+    SET stat_value = (
+            SELECT COUNT(*)
+            FROM deviations
+            WHERE grading_completed = true
+        ),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE stat_name = 'grading_done';
+
+    -- -------------------------------------------------
+    -- NEW: Update workflow progress stats count
+    -- -------------------------------------------------
+    UPDATE deviations_case_stats
+    SET stat_value = (
+            SELECT COUNT(*)
+            FROM deviations
+            WHERE rca_generated = true
+        ),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE stat_name = 'workflow_progress';
+
+    RETURN updated_count;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Deviations Table with DV-XXXXX format
 CREATE TABLE deviations (
     deviation_id VARCHAR(20) PRIMARY KEY DEFAULT 'DV-' || LPAD(nextval('deviation_id_seq')::text, 5, '0'),
@@ -208,6 +396,7 @@ CREATE TABLE deviations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     text_extracted BOOLEAN DEFAULT FALSE,
     rca_generated BOOLEAN DEFAULT FALSE,
+    rca_approved BOOLEAN DEFAULT FALSE,
     grading_completed BOOLEAN DEFAULT FALSE,
     deviation_status VARCHAR(20) DEFAULT 'Pending' CHECK (deviation_status IN ('Pending', 'Overdue', 'Processed'))
 );
