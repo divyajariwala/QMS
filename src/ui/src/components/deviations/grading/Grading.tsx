@@ -20,15 +20,18 @@ import ArrowRight from "../../../assets/icons/arrowRight.svg";
 
 import styles from "./grading.module.scss";
 import {
-  fetchImprovementSuggestionsMock,
-  fetchExecutiveSummaryMock,
+  SectionDataRes,
   SectionData,
   SuggestionData,
   ExecutiveSummaryItem,
-} from "./mockdata";
+} from "./GradingTypes";
 
 import ExecutiveSummary from "./ExecutiveSummary";
-import { fetchGradingData } from "src/services/deviations";
+import {
+  fetchGradingData,
+  fetchGradingSuggestions,
+  submitGrading,
+} from "src/services/deviations";
 
 type Mode = "compose" | "grading";
 
@@ -36,6 +39,11 @@ interface GradingProps {
   onEnterReview?: () => void;
   onProcessed?: () => void;
 }
+type ExecSummaryPayload = {
+  label: string;
+  content: string;
+  isEdited: boolean;
+}[];
 
 const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   const [mode, setMode] = useState<Mode>("compose");
@@ -44,8 +52,10 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   const [suggestions, setSuggestions] = useState<SuggestionData[]>([]);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [summaryItems, setSummaryItems] = useState<ExecutiveSummaryItem[]>([]);
+  const [submitted, setSubmitted] = useState(false);
   const { deviationId } = useParams<{ deviationId: string | undefined }>();
-
   const [snack, setSnack] = useState<{
     open: boolean;
     message: string;
@@ -55,55 +65,64 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
     message: "",
     severity: "info",
   });
-
-  const [summaryOpen, setSummaryOpen] = useState(false);
-  const [summaryItems, setSummaryItems] = useState<ExecutiveSummaryItem[]>([]);
-  const [submitted, setSubmitted] = useState(false);
-  type ExecSummaryPayload = { label: string; content: string }[];
+  const notify = (
+    message: string,
+    severity: "success" | "info" | "error" = "info"
+  ) => {
+    setSnack({ open: true, message, severity });
+  };
 
   useEffect(() => {
     (async () => {
       setLoadingSections(true);
       try {
-        const {data} = await fetchGradingData(deviationId);
+        const { data }: SectionDataRes = await fetchGradingData(deviationId);
         setSections(data);
         setValues(data.map((s) => s.content ?? ""));
       } catch (err) {
-        setSnack({
-          open: true,
-          message: "Failed to load sections",
-          severity: "error",
-        });
+        notify("Failed to load sections", "error");
       } finally {
         setLoadingSections(false);
       }
     })();
-  }, []);
+  }, [deviationId]);
 
   const isCompose = mode === "compose";
   const isGrading = mode === "grading";
 
   const handleStartGrading = async () => {
     setMode("grading");
-    await regenerateSuggestions();
+    setLoadingSuggestions(true);
+    onEnterReview?.();
+    try {
+      const suggs = await fetchGradingSuggestions({
+        deviation_id: deviationId,
+      });
+      setSuggestions(suggs.data);
+    } catch (err) {
+      notify("Failed to start grading", "error");
+    } finally {
+      setLoadingSuggestions(false);
+    }
   };
 
   const regenerateSuggestions = async () => {
     setLoadingSuggestions(true);
     try {
-      const suggs = await fetchImprovementSuggestionsMock(values);
-      setSuggestions(suggs);
-      setSnack({
-        open: true,
-        message: "Improvement suggestions updated",
-        severity: "success",
+      const previous_result: SectionData[] = sections.map((s, idx) => ({
+        label: s.label,
+        content: values[idx] ?? "",
+      }));
+      const suggs = await fetchGradingSuggestions({
+        deviation_id: deviationId,
+        previous_result,
       });
+
+      setSuggestions(suggs.data);
+
+      notify("Improvement suggestions updated", "success");
     } catch (err) {
-      setSnack({
-        open: true,
-        message: "Failed to fetch improvement suggestions",
-        severity: "error",
-      });
+      notify("Failed to fetch improvement suggestions", "error");
     } finally {
       setLoadingSuggestions(false);
     }
@@ -111,16 +130,15 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
 
   const handleGenerateSummary = async () => {
     try {
-      const items = await fetchExecutiveSummaryMock(values);
+      const items: ExecutiveSummaryItem[] = sections.map((s, idx) => ({
+        label: s.label,
+        content: values[idx] ?? "",
+      }));
       setSummaryItems(items);
       setSummaryOpen(true);
-      onEnterReview?.();
+      notify("Executive summary generated.", "success");
     } catch {
-      setSnack({
-        open: true,
-        message: "Failed to generate executive summary",
-        severity: "error",
-      });
+      notify("Failed to generate executive summary", "error");
     }
   };
 
@@ -128,18 +146,19 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
     setSummaryOpen(false);
   };
 
-  const handleExecutiveSummaryPrimaryAction = (payload: ExecSummaryPayload) => {
-    const apiPayload = {
-      deviation_id: deviationId,
-      sections: payload,
-    };
-    setSnack({
-      open: true,
-      message: "Summary sent successfully.",
-      severity: "success",
-    });
-    setSubmitted(true);
-    onProcessed?.();
+  const handleSaveAndSubmit = async (payload: ExecSummaryPayload) => {
+    try {
+      const apiPayload = {
+        deviation_id: deviationId,
+        sections: payload,
+      };
+      await submitGrading(apiPayload);
+      notify("Summary sent to QMS.", "success");
+      setSubmitted(true);
+      onProcessed?.();
+    } catch (err) {
+      notify("Failed to send to QMS.", "error");
+    }
   };
 
   if (summaryOpen) {
@@ -147,11 +166,10 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
       <ExecutiveSummary
         items={summaryItems}
         onBack={handleBackFromSummary}
-        onPrimaryAction={
-          !submitted ? handleExecutiveSummaryPrimaryAction : undefined
-        }
+        onSaveAndSubmit={!submitted ? handleSaveAndSubmit : undefined}
         disabled={submitted}
         tinymceScriptSrc={import.meta.env.VITE_TINYMCE_CDN}
+        onNotify={notify}
       />
     );
   }
@@ -168,6 +186,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
               type="button"
               className={styles.gradingBtn}
               onClick={handleStartGrading}
+              disabled={loadingSections || !deviationId}
             >
               Start Grading
               <img src={GradingIcon} alt={"start grading"} />
@@ -302,7 +321,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
                             variant="body2"
                             className={styles.suggestionText}
                           >
-                            {suggestion.text}
+                            {suggestion.improvement_suggestion}
                           </Typography>
                         ) : (
                           <Typography variant="body2" color="text.secondary">

@@ -1,33 +1,51 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Divider,
+  Paper,
+  Stack,
+  Typography,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import LeftArrow from "../../../assets/icons/leftArrow.svg";
 import AISummary from "../../../assets/icons/aiSummary.svg";
 import { Editor } from "@tinymce/tinymce-react";
 
 import styles from "./executiveSummary.module.scss";
-import { ExecutiveSummaryItem } from "./mockdata";
+import { ExecutiveSummaryItem } from "./GradingTypes";
 
 export interface ExecutiveSummaryProps {
   items: ExecutiveSummaryItem[];
   onBack: () => void;
-  onPrimaryAction?: (
+  onSaveAndSubmit?: (
     payload: { label: string; content: string; isEdited: boolean }[]
   ) => void;
   disabled?: boolean;
   tinymceScriptSrc?: string;
+  onNotify?: (message: string, severity?: "success" | "info" | "error") => void;
 }
 type SummaryValue = { label: string; content: string; isEdited: boolean };
 
 const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
   items,
   onBack,
-  onPrimaryAction,
+  onSaveAndSubmit,
   disabled = false,
   tinymceScriptSrc,
 }) => {
   const [summaryValues, setSummaryValues] = useState<SummaryValue[]>(() =>
     items.map((i) => ({ label: i.label, content: i.content, isEdited: false }))
   );
+  const [snack, setSnack] = useState<{
+    open: boolean;
+    message: string;
+    severity?: "success" | "info" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   const ignoreFirstChangeRef = useRef<boolean[]>([]);
   useEffect(() => {
@@ -70,7 +88,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
         "bullist numlist outdent indent | removeformat | help",
       content_style:
         "body { font-family: Inter, Roboto, Helvetica, Arial, sans-serif; font-size: 14px; }",
-      placeholder: "Type or refine the AI-generated summary here...",
+      placeholder: "Type here...",
     }),
     []
   );
@@ -98,7 +116,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
       content,
       isEdited,
     }));
-    onPrimaryAction?.(payload);
+    onSaveAndSubmit?.(payload);
   };
 
   return (
@@ -150,7 +168,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
       <Divider className={styles.headerDivider} />
       <Box>
         <Stack direction="row" spacing={1} className={styles.footerRow}>
-          {onPrimaryAction && !disabled && (
+          {onSaveAndSubmit && !disabled && (
             <button
               className={styles.classifyBtn}
               onClick={handlePrimaryAction}
@@ -160,6 +178,19 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
           )}
         </Stack>
       </Box>
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={2500}
+        onClose={() => setSnack((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity={snack.severity ?? "info"}
+          onClose={() => setSnack((s) => ({ ...s, open: false }))}
+        >
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 };

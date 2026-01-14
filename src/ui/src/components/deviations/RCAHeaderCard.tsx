@@ -15,7 +15,7 @@ type DeviationData = {
     deviation_id: string;
     created_date: string;
     rca_approved: boolean;
-    grading_approved: boolean;
+    grading_completed: boolean;
   };
   onSubmit?: () => void;
   isRcaSubmitted?: boolean;
@@ -28,7 +28,7 @@ const RCAHeaderCard: React.FC<DeviationData> = ({
   isRcaSubmitted,
   hasRCA = false,
 }) => {
-  const { deviation_id, created_date, rca_approved, grading_approved } =
+  const { deviation_id, created_date, rca_approved, grading_completed } =
     deviationData;
   const navigate = useNavigate();
   const onBack = () => {
@@ -39,9 +39,9 @@ const RCAHeaderCard: React.FC<DeviationData> = ({
       <Box className={styles.flexContainer}>
         <Box className={styles.leftSide}>
           <Stack spacing={0.5} className={styles.stackCustom}>
-            {grading_approved === true ? (
+            {grading_completed === true ? (
               <Box className={styles.statusTextGreen}>PROCESSED</Box>
-            ) : rca_approved === true && grading_approved === false ? (
+            ) : rca_approved === true && grading_completed === false ? (
               <Box className={styles.statusGrad}>GRADING PENDING</Box>
             ) : (
               <Box className={styles.statusText}>IN REVIEW</Box>
