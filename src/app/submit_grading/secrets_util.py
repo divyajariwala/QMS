@@ -21,3 +21,21 @@ def get_secret(secret_name, region_name='us-east-1'):
     except Exception as e:
         print(f"Error retrieving secret: {str(e)}")
         raise e
+
+
+def get_db_credentials(secret_name: str, region_name: str) -> Dict[str, Any]:
+    """
+    Retrieve database credentials from AWS Secrets Manager.
+    Alias for get_secret() for consistency with other lambda functions.
+
+    Args:
+        secret_name: Name of the secret in Secrets Manager
+        region_name: AWS region where the secret is stored
+
+    Returns:
+        Dictionary containing the database credentials (host, port, dbname, username, password)
+
+    Raises:
+        Exception: If secret cannot be retrieved or parsed
+    """
+    return get_secret(secret_name, region_name)
