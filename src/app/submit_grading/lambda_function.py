@@ -7,6 +7,13 @@ from datetime import datetime, timezone
 from utils import response, handle_cors_preflight, parse_event_body
 from secrets_util import get_db_credentials
 
+import json
+import os
+import logging
+import psycopg
+from datetime import datetime, timezone
+from utils import response, handle_cors_preflight, parse_event_body
+from secrets_util import get_db_credentials
 # =====================================================
 # WORKFLOW LOGGER IMPORT
 # =====================================================
@@ -106,7 +113,7 @@ def save_grading_to_database(payload: dict, created_by: str):
             logger.info(f"Saving grading for deviation {deviation_id}")
 
             cur.execute("""
-                INSERT INTO deviation_grading (
+                INSERT INTO deviation_grading_executive(
                     deviation_id,
                     title,
                     overview,
@@ -116,8 +123,7 @@ def save_grading_to_database(payload: dict, created_by: str):
                     capa_plan,
                     recurrence_check,
                     effectiveness_check,
-                    created_by,
-                    is_edit
+                    isedited
                 ) VALUES (
                     %(deviation_id)s,
                     %(title)s,
@@ -128,10 +134,8 @@ def save_grading_to_database(payload: dict, created_by: str):
                     %(capa_plan)s,
                     %(recurrence_check)s,
                     %(effectiveness_check)s,
-                    %(created_by)s,
-                    %(is_edit)s
+                    %(isedited)s
                 )
-                RETURNING id
             """, {
                 "deviation_id": deviation_id,
                 "title": grading_data.get("title"),
@@ -142,11 +146,8 @@ def save_grading_to_database(payload: dict, created_by: str):
                 "capa_plan": grading_data.get("capa_plan"),
                 "recurrence_check": grading_data.get("recurrence_check"),
                 "effectiveness_check": grading_data.get("effectiveness_check"),
-                "created_by": created_by,
-                "is_edit": is_edit
+                "isedited": is_edit
             })
-
-            grading_id = cur.fetchone()[0]
 
             # =====================================================
             # UPDATE DEVIATIONS TABLE
@@ -163,15 +164,15 @@ def save_grading_to_database(payload: dict, created_by: str):
             # WORKFLOW LOG
             # =====================================================
             log_deviation_workflow(
-                conn=conn,
-                deviation_id=deviation_id,
+                conn,
+                deviation_id,
                 step="GRADING_SUBMITTED",
                 input_data={
                     "sections_saved": list(grading_data.keys()),
                     "is_edit": is_edit
                 },
                 output_data={
-                    "grading_id": grading_id,
+                    "deviation_id": deviation_id,
                     "grading_completed": True
                 },
                 start_time=start_time
@@ -179,10 +180,9 @@ def save_grading_to_database(payload: dict, created_by: str):
 
             conn.commit()
 
-            logger.info(f"Grading saved successfully. ID={grading_id}, is_edit={is_edit}")
+            logger.info(f"Grading saved successfully. ID={deviation_id}, is_edit={is_edit}")
 
             return {
-                "grading_id": grading_id,
                 "deviation_id": deviation_id,
                 "is_edit": is_edit
             }
