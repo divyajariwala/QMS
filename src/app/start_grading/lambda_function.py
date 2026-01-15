@@ -427,6 +427,212 @@ def grade_all_sections(deviation_info: dict) -> list:
         raise
 
 
+def save_grading_results(deviation_id: str, grading_results: list, is_regeneration: bool = False) -> None:
+    """
+    Save or update grading results in deviation_grading_executive table
+    
+    Args:
+        deviation_id: The deviation ID (e.g., "DV-00001")
+        grading_results: List of grading results from grade_all_sections()
+        is_regeneration: True if this is a regeneration (update), False if initial (insert)
+        
+    Table structure:
+        - deviation_id (PK)
+        - title (text)
+        - overview (text)
+        - immediate_actions (text)
+        - quality_risk_evaluation (text)
+        - investigation_summary (text)
+        - capa_plan (text)
+        - recurrence_check (text)
+        - effectiveness_check (text)
+        - isedited (boolean, default false)
+        - updated_date (timestamp, default CURRENT_TIMESTAMP)
+    """
+    try:
+        logger.info(f"Saving grading results for {deviation_id} (regeneration={is_regeneration})")
+        
+        # Map section_label to database column names
+        section_to_column = {
+            "Title": "title",
+            "Description": "overview",
+            "Immediate Steps Taken": "immediate_actions",
+            "Quality Risk Evaluation": "quality_risk_evaluation",
+            "Investigation Details": "investigation_summary",
+            "CAPA Plan": "capa_plan",
+            "Recurrence Check Details": "recurrence_check",
+            "Effectiveness Check Plan": "effectiveness_check"
+        }
+        
+        # Build data dict for database
+        data = {}
+        for result in grading_results:
+            section_label = result.get('section_label')
+            improvement_suggestion = result.get('improvement_suggestion', '')
+            
+            if section_label in section_to_column:
+                column_name = section_to_column[section_label]
+                data[column_name] = improvement_suggestion
+        
+        # Get database connection
+        secret = get_secret(DB_SECRET_NAME, DB_REGION)
+        conn = psycopg.connect(
+            host=secret["host"],
+            port=secret["port"],
+            dbname=secret["dbname"],
+            user=secret["username"],
+            password=secret["password"],
+            row_factory=dict_row
+        )
+        
+        with conn.cursor() as cur:
+            if is_regeneration:
+                # UPDATE existing record
+                logger.info(f"Updating existing grading record for {deviation_id}")
+                
+                cur.execute("""
+                    UPDATE deviation_grading_executive
+                    SET 
+                        title = %s,
+                        overview = %s,
+                        immediate_actions = %s,
+                        quality_risk_evaluation = %s,
+                        investigation_summary = %s,
+                        capa_plan = %s,
+                        recurrence_check = %s,
+                        effectiveness_check = %s,
+                        isedited = true,
+                        updated_date = CURRENT_TIMESTAMP
+                    WHERE deviation_id = %s
+                """, (
+                    data.get('title', ''),
+                    data.get('overview', ''),
+                    data.get('immediate_actions', ''),
+                    data.get('quality_risk_evaluation', ''),
+                    data.get('investigation_summary', ''),
+                    data.get('capa_plan', ''),
+                    data.get('recurrence_check', ''),
+                    data.get('effectiveness_check', ''),
+                    deviation_id
+                ))
+                
+                if cur.rowcount == 0:
+                    logger.warning(f"No existing record found for {deviation_id}, inserting new record")
+                    # If no record was updated, insert instead
+                    cur.execute("""
+                        INSERT INTO deviation_grading_executive (
+                            deviation_id,
+                            title,
+                            overview,
+                            immediate_actions,
+                            quality_risk_evaluation,
+                            investigation_summary,
+                            capa_plan,
+                            recurrence_check,
+                            effectiveness_check,
+                            isedited,
+                            updated_date
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                    """, (
+                        deviation_id,
+                        data.get('title', ''),
+                        data.get('overview', ''),
+                        data.get('immediate_actions', ''),
+                        data.get('quality_risk_evaluation', ''),
+                        data.get('investigation_summary', ''),
+                        data.get('capa_plan', ''),
+                        data.get('recurrence_check', ''),
+                        data.get('effectiveness_check', ''),
+                        True
+                    ))
+                    logger.info(f"✅ Inserted new grading record for {deviation_id}")
+                else:
+                    logger.info(f"✅ Updated grading record for {deviation_id}")
+            else:
+                # INSERT new record (initial grading)
+                logger.info(f"Inserting new grading record for {deviation_id}")
+                
+                # Check if record already exists
+                cur.execute("""
+                    SELECT deviation_id FROM deviation_grading_executive
+                    WHERE deviation_id = %s
+                """, (deviation_id,))
+                
+                existing = cur.fetchone()
+                
+                if existing:
+                    # Record exists, update instead
+                    logger.warning(f"Record already exists for {deviation_id}, updating instead")
+                    cur.execute("""
+                        UPDATE deviation_grading_executive
+                        SET 
+                            title = %s,
+                            overview = %s,
+                            immediate_actions = %s,
+                            quality_risk_evaluation = %s,
+                            investigation_summary = %s,
+                            capa_plan = %s,
+                            recurrence_check = %s,
+                            effectiveness_check = %s,
+                            isedited = false,
+                            updated_date = CURRENT_TIMESTAMP
+                        WHERE deviation_id = %s
+                    """, (
+                        data.get('title', ''),
+                        data.get('overview', ''),
+                        data.get('immediate_actions', ''),
+                        data.get('quality_risk_evaluation', ''),
+                        data.get('investigation_summary', ''),
+                        data.get('capa_plan', ''),
+                        data.get('recurrence_check', ''),
+                        data.get('effectiveness_check', ''),
+                        deviation_id
+                    ))
+                    logger.info(f"✅ Updated existing grading record for {deviation_id}")
+                else:
+                    # Insert new record
+                    cur.execute("""
+                        INSERT INTO deviation_grading_executive (
+                            deviation_id,
+                            title,
+                            overview,
+                            immediate_actions,
+                            quality_risk_evaluation,
+                            investigation_summary,
+                            capa_plan,
+                            recurrence_check,
+                            effectiveness_check,
+                            isedited,
+                            updated_date
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                    """, (
+                        deviation_id,
+                        data.get('title', ''),
+                        data.get('overview', ''),
+                        data.get('immediate_actions', ''),
+                        data.get('quality_risk_evaluation', ''),
+                        data.get('investigation_summary', ''),
+                        data.get('capa_plan', ''),
+                        data.get('recurrence_check', ''),
+                        data.get('effectiveness_check', ''),
+                        False
+                    ))
+                    logger.info(f"✅ Inserted new grading record for {deviation_id}")
+            
+            # Commit transaction
+            conn.commit()
+            logger.info(f"✅ Successfully saved grading results for {deviation_id}")
+            
+    except Exception as e:
+        logger.error(f"Error saving grading results: {str(e)}")
+        if 'conn' in locals():
+            conn.rollback()
+        raise
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+
 # TODO: Add grading functions here in future iterations
 # def grade_investigation_summary(deviation_info: dict) -> dict:
 #     """Grade the investigation summary"""
@@ -442,10 +648,20 @@ def lambda_handler(event, context):
     Lambda handler for POST /start-grading endpoint
 
     Fetches deviation information from database and grades all sections.
+    Supports regeneration with existing results.
     
     Expected request body:
     {
-        "deviation_id": "DV-00001"
+        "deviation_id": "DV-00001",
+        "existing_results": [  // Optional: for regeneration
+            {
+                "section_label": "Title",
+                "text": "...",
+                "improvement_suggestion": "...",
+                "score": 7
+            },
+            ...
+        ]
     }
 
     Response:
@@ -484,6 +700,11 @@ def lambda_handler(event, context):
     6. CAPA Plan
     7. Recurrence Check Details
     8. Effectiveness Check Plan
+    
+    Regeneration:
+    - If existing_results is provided, the system will regenerate the grading
+    - Useful for improving specific sections or regenerating all sections
+    - The text field from existing_results is used as the content to grade
     """
     try:
         logger.info(f"Environment: {ENV}, Region: {AWS_REGION}")
@@ -500,6 +721,7 @@ def lambda_handler(event, context):
         # Parse event body
         body = parse_event_body(event)
         deviation_id = body.get('deviation_id')
+        existing_results = body.get('existing_results')  # Optional for regeneration
 
         # Validate required fields
         if not deviation_id:
@@ -511,28 +733,74 @@ def lambda_handler(event, context):
         if not deviation_id.strip():
             return response(400, "deviation_id cannot be empty")
 
+        # Validate existing_results if provided
+        if existing_results is not None:
+            if not isinstance(existing_results, list):
+                return response(400, "existing_results must be an array")
+            logger.info(f"Regeneration mode: {len(existing_results)} existing results provided")
+
         logger.info(f"Starting grading process for deviation: {deviation_id}")
         
-        # Get deviation information from database
-        try:
-            deviation_info = get_deviation_info(deviation_id)
-        except ValueError as e:
-            # Deviation not found
-            return response(404, str(e))
-        except Exception as e:
-            # Database error
-            logger.error(f"Database error: {str(e)}")
-            return response(500, "Error fetching deviation information", {"details": str(e)})
-        
-        # Log field lengths
-        logger.info(f"Fields retrieved: title={len(deviation_info['title'])} chars, "
-                   f"description={len(deviation_info['description'])} chars, "
-                   f"immediate_steps_taken={len(deviation_info['immediate_steps_taken'])} chars, "
-                   f"quality_risk_evaluation={len(deviation_info['quality_risk_evaluation'])} chars, "
-                   f"investigation_summary={len(deviation_info['investigation_summary'])} chars, "
-                   f"capa_plan={len(deviation_info['capa_plan'])} chars, "
-                   f"recurrence_check_details={len(deviation_info['recurrence_check_details'])} chars, "
-                   f"effectiveness_check_plan={len(deviation_info['effectiveness_check_plan'])} chars")
+        # Determine if this is a regeneration or initial grading
+        if existing_results:
+            # Regeneration mode: use existing_results
+            logger.info("Using existing_results for regeneration")
+            
+            # Convert existing_results to deviation_info format
+            deviation_info = {
+                'deviation_id': deviation_id
+            }
+            
+            # Map existing results to deviation_info fields
+            section_mapping = {
+                "Title": "title",
+                "Description": "description",
+                "Immediate Steps Taken": "immediate_steps_taken",
+                "Quality Risk Evaluation": "quality_risk_evaluation",
+                "Investigation Details": "investigation_summary",
+                "CAPA Plan": "capa_plan",
+                "Recurrence Check Details": "recurrence_check_details",
+                "Effectiveness Check Plan": "effectiveness_check_plan"
+            }
+            
+            for result in existing_results:
+                section_label = result.get('section_label')
+                text = result.get('text', '')
+                
+                if section_label in section_mapping:
+                    field_name = section_mapping[section_label]
+                    deviation_info[field_name] = text
+            
+            # Fill missing fields with empty strings
+            for field_name in section_mapping.values():
+                if field_name not in deviation_info:
+                    deviation_info[field_name] = ''
+            
+            logger.info("Deviation info constructed from existing_results")
+            
+        else:
+            # Initial grading mode: get from database
+            logger.info("Fetching deviation info from database")
+            
+            try:
+                deviation_info = get_deviation_info(deviation_id)
+            except ValueError as e:
+                # Deviation not found
+                return response(404, str(e))
+            except Exception as e:
+                # Database error
+                logger.error(f"Database error: {str(e)}")
+                return response(500, "Error fetching deviation information", {"details": str(e)})
+            
+            # Log field lengths
+            logger.info(f"Fields retrieved: title={len(deviation_info['title'])} chars, "
+                       f"description={len(deviation_info['description'])} chars, "
+                       f"immediate_steps_taken={len(deviation_info['immediate_steps_taken'])} chars, "
+                       f"quality_risk_evaluation={len(deviation_info['quality_risk_evaluation'])} chars, "
+                       f"investigation_summary={len(deviation_info['investigation_summary'])} chars, "
+                       f"capa_plan={len(deviation_info['capa_plan'])} chars, "
+                       f"recurrence_check_details={len(deviation_info['recurrence_check_details'])} chars, "
+                       f"effectiveness_check_plan={len(deviation_info['effectiveness_check_plan'])} chars")
         
         # Grade all sections
         try:
@@ -541,8 +809,18 @@ def lambda_handler(event, context):
             logger.error(f"Grading error: {str(e)}")
             return response(500, "Error grading deviation sections", {"details": str(e)})
         
+        # Save grading results to database
+        try:
+            is_regeneration = existing_results is not None
+            save_grading_results(deviation_id, grading_results, is_regeneration)
+        except Exception as e:
+            logger.error(f"Error saving grading results: {str(e)}")
+            # Don't fail the request if saving fails, just log the error
+            logger.warning("Grading completed but failed to save to database")
+        
         # Log successful completion
-        logger.info(f"✅ Grading completed successfully for {deviation_id}")
+        mode = "regenerated" if existing_results else "completed"
+        logger.info(f"✅ Grading {mode} successfully for {deviation_id}")
         logger.info(f"Graded {len(grading_results)} sections")
         
         # Log scores summary
@@ -550,7 +828,8 @@ def lambda_handler(event, context):
         avg_score = sum(scores) / len(scores) if scores else 0
         logger.info(f"Scores: {scores}, Average: {avg_score:.1f}")
         
-        return response(200, "Grading completed successfully", grading_results)
+        message = f"Grading {mode} successfully" if existing_results else "Grading completed successfully"
+        return response(200, message, grading_results)
 
     except Exception as e:
         logger.error(f"❌ Unexpected error: {str(e)}")
