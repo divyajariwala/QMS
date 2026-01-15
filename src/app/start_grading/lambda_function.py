@@ -442,10 +442,20 @@ def lambda_handler(event, context):
     Lambda handler for POST /start-grading endpoint
 
     Fetches deviation information from database and grades all sections.
+    Supports regeneration with existing results.
     
     Expected request body:
     {
-        "deviation_id": "DV-00001"
+        "deviation_id": "DV-00001",
+        "existing_results": [  // Optional: for regeneration
+            {
+                "section_label": "Title",
+                "text": "...",
+                "improvement_suggestion": "...",
+                "score": 7
+            },
+            ...
+        ]
     }
 
     Response:
@@ -484,6 +494,11 @@ def lambda_handler(event, context):
     6. CAPA Plan
     7. Recurrence Check Details
     8. Effectiveness Check Plan
+    
+    Regeneration:
+    - If existing_results is provided, the system will regenerate the grading
+    - Useful for improving specific sections or regenerating all sections
+    - The text field from existing_results is used as the content to grade
     """
     try:
         logger.info(f"Environment: {ENV}, Region: {AWS_REGION}")
@@ -500,6 +515,7 @@ def lambda_handler(event, context):
         # Parse event body
         body = parse_event_body(event)
         deviation_id = body.get('deviation_id')
+        existing_results = body.get('existing_results')  # Optional for regeneration
 
         # Validate required fields
         if not deviation_id:
@@ -511,28 +527,74 @@ def lambda_handler(event, context):
         if not deviation_id.strip():
             return response(400, "deviation_id cannot be empty")
 
+        # Validate existing_results if provided
+        if existing_results is not None:
+            if not isinstance(existing_results, list):
+                return response(400, "existing_results must be an array")
+            logger.info(f"Regeneration mode: {len(existing_results)} existing results provided")
+
         logger.info(f"Starting grading process for deviation: {deviation_id}")
         
-        # Get deviation information from database
-        try:
-            deviation_info = get_deviation_info(deviation_id)
-        except ValueError as e:
-            # Deviation not found
-            return response(404, str(e))
-        except Exception as e:
-            # Database error
-            logger.error(f"Database error: {str(e)}")
-            return response(500, "Error fetching deviation information", {"details": str(e)})
-        
-        # Log field lengths
-        logger.info(f"Fields retrieved: title={len(deviation_info['title'])} chars, "
-                   f"description={len(deviation_info['description'])} chars, "
-                   f"immediate_steps_taken={len(deviation_info['immediate_steps_taken'])} chars, "
-                   f"quality_risk_evaluation={len(deviation_info['quality_risk_evaluation'])} chars, "
-                   f"investigation_summary={len(deviation_info['investigation_summary'])} chars, "
-                   f"capa_plan={len(deviation_info['capa_plan'])} chars, "
-                   f"recurrence_check_details={len(deviation_info['recurrence_check_details'])} chars, "
-                   f"effectiveness_check_plan={len(deviation_info['effectiveness_check_plan'])} chars")
+        # Determine if this is a regeneration or initial grading
+        if existing_results:
+            # Regeneration mode: use existing_results
+            logger.info("Using existing_results for regeneration")
+            
+            # Convert existing_results to deviation_info format
+            deviation_info = {
+                'deviation_id': deviation_id
+            }
+            
+            # Map existing results to deviation_info fields
+            section_mapping = {
+                "Title": "title",
+                "Description": "description",
+                "Immediate Steps Taken": "immediate_steps_taken",
+                "Quality Risk Evaluation": "quality_risk_evaluation",
+                "Investigation Details": "investigation_summary",
+                "CAPA Plan": "capa_plan",
+                "Recurrence Check Details": "recurrence_check_details",
+                "Effectiveness Check Plan": "effectiveness_check_plan"
+            }
+            
+            for result in existing_results:
+                section_label = result.get('section_label')
+                text = result.get('text', '')
+                
+                if section_label in section_mapping:
+                    field_name = section_mapping[section_label]
+                    deviation_info[field_name] = text
+            
+            # Fill missing fields with empty strings
+            for field_name in section_mapping.values():
+                if field_name not in deviation_info:
+                    deviation_info[field_name] = ''
+            
+            logger.info("Deviation info constructed from existing_results")
+            
+        else:
+            # Initial grading mode: get from database
+            logger.info("Fetching deviation info from database")
+            
+            try:
+                deviation_info = get_deviation_info(deviation_id)
+            except ValueError as e:
+                # Deviation not found
+                return response(404, str(e))
+            except Exception as e:
+                # Database error
+                logger.error(f"Database error: {str(e)}")
+                return response(500, "Error fetching deviation information", {"details": str(e)})
+            
+            # Log field lengths
+            logger.info(f"Fields retrieved: title={len(deviation_info['title'])} chars, "
+                       f"description={len(deviation_info['description'])} chars, "
+                       f"immediate_steps_taken={len(deviation_info['immediate_steps_taken'])} chars, "
+                       f"quality_risk_evaluation={len(deviation_info['quality_risk_evaluation'])} chars, "
+                       f"investigation_summary={len(deviation_info['investigation_summary'])} chars, "
+                       f"capa_plan={len(deviation_info['capa_plan'])} chars, "
+                       f"recurrence_check_details={len(deviation_info['recurrence_check_details'])} chars, "
+                       f"effectiveness_check_plan={len(deviation_info['effectiveness_check_plan'])} chars")
         
         # Grade all sections
         try:
@@ -542,7 +604,8 @@ def lambda_handler(event, context):
             return response(500, "Error grading deviation sections", {"details": str(e)})
         
         # Log successful completion
-        logger.info(f"✅ Grading completed successfully for {deviation_id}")
+        mode = "regenerated" if existing_results else "completed"
+        logger.info(f"✅ Grading {mode} successfully for {deviation_id}")
         logger.info(f"Graded {len(grading_results)} sections")
         
         # Log scores summary
@@ -550,7 +613,8 @@ def lambda_handler(event, context):
         avg_score = sum(scores) / len(scores) if scores else 0
         logger.info(f"Scores: {scores}, Average: {avg_score:.1f}")
         
-        return response(200, "Grading completed successfully", grading_results)
+        message = f"Grading {mode} successfully" if existing_results else "Grading completed successfully"
+        return response(200, message, grading_results)
 
     except Exception as e:
         logger.error(f"❌ Unexpected error: {str(e)}")
