@@ -8,7 +8,7 @@ import styles from "./DeviationsResult.module.scss";
 import { getDueStatus } from "src/helpers";
 import { DeviationProps } from "src/types";
 import { formatDateMMM_D_YYYY } from "src/utils";
-import DeviationsDueDateChip from "./DeviationsDueDateChip";
+import DueDateChip from "@components/common/DueDateChip/DueDateChip";
 
 const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
           </div>
         </Box>
         {deviation.status !== "processed" && (
-          <DeviationsDueDateChip type={dueInfo.type} label={dueInfo.label} />
+          <DueDateChip type={dueInfo.type} label={dueInfo.label} />
         )}
       </div>
       {loading ? (

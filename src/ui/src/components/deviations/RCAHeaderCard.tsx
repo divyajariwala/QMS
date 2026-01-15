@@ -3,12 +3,12 @@ import styles from "./DeviationsHeaderCard.module.scss";
 
 import { Paper, Box, Stack, Typography } from "@mui/material";
 import { getDueStatus } from "src/helpers";
-import DeviationsDueDateChip from "./DeviationsDueDateChip";
 import ReceiptDateIcon from "../../assets/icons/receiptDate.svg";
 import LeftArrow from "../../assets/icons/leftArrow.svg";
 import { formatDateMMM_D_YYYY } from "src/utils";
 import CheckIcon from "@mui/icons-material/Check";
 import { useNavigate } from "react-router-dom";
+import DueDateChip from "@components/common/DueDateChip/DueDateChip";
 
 type DeviationData = {
   deviationData: {
@@ -69,7 +69,7 @@ const RCAHeaderCard: React.FC<DeviationData> = ({
                   )}
                 </div>
               </div>
-              <DeviationsDueDateChip
+              <DueDateChip
                 type={created_date && getDueStatus(created_date).type}
                 label={created_date && getDueStatus(created_date).label}
               />
