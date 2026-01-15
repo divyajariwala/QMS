@@ -427,6 +427,212 @@ def grade_all_sections(deviation_info: dict) -> list:
         raise
 
 
+def save_grading_results(deviation_id: str, grading_results: list, is_regeneration: bool = False) -> None:
+    """
+    Save or update grading results in deviation_grading_executive table
+    
+    Args:
+        deviation_id: The deviation ID (e.g., "DV-00001")
+        grading_results: List of grading results from grade_all_sections()
+        is_regeneration: True if this is a regeneration (update), False if initial (insert)
+        
+    Table structure:
+        - deviation_id (PK)
+        - title (text)
+        - overview (text)
+        - immediate_actions (text)
+        - quality_risk_evaluation (text)
+        - investigation_summary (text)
+        - capa_plan (text)
+        - recurrence_check (text)
+        - effectiveness_check (text)
+        - isedited (boolean, default false)
+        - updated_date (timestamp, default CURRENT_TIMESTAMP)
+    """
+    try:
+        logger.info(f"Saving grading results for {deviation_id} (regeneration={is_regeneration})")
+        
+        # Map section_label to database column names
+        section_to_column = {
+            "Title": "title",
+            "Description": "overview",
+            "Immediate Steps Taken": "immediate_actions",
+            "Quality Risk Evaluation": "quality_risk_evaluation",
+            "Investigation Details": "investigation_summary",
+            "CAPA Plan": "capa_plan",
+            "Recurrence Check Details": "recurrence_check",
+            "Effectiveness Check Plan": "effectiveness_check"
+        }
+        
+        # Build data dict for database
+        data = {}
+        for result in grading_results:
+            section_label = result.get('section_label')
+            improvement_suggestion = result.get('improvement_suggestion', '')
+            
+            if section_label in section_to_column:
+                column_name = section_to_column[section_label]
+                data[column_name] = improvement_suggestion
+        
+        # Get database connection
+        secret = get_secret(DB_SECRET_NAME, DB_REGION)
+        conn = psycopg.connect(
+            host=secret["host"],
+            port=secret["port"],
+            dbname=secret["dbname"],
+            user=secret["username"],
+            password=secret["password"],
+            row_factory=dict_row
+        )
+        
+        with conn.cursor() as cur:
+            if is_regeneration:
+                # UPDATE existing record
+                logger.info(f"Updating existing grading record for {deviation_id}")
+                
+                cur.execute("""
+                    UPDATE deviation_grading_executive
+                    SET 
+                        title = %s,
+                        overview = %s,
+                        immediate_actions = %s,
+                        quality_risk_evaluation = %s,
+                        investigation_summary = %s,
+                        capa_plan = %s,
+                        recurrence_check = %s,
+                        effectiveness_check = %s,
+                        isedited = true,
+                        updated_date = CURRENT_TIMESTAMP
+                    WHERE deviation_id = %s
+                """, (
+                    data.get('title', ''),
+                    data.get('overview', ''),
+                    data.get('immediate_actions', ''),
+                    data.get('quality_risk_evaluation', ''),
+                    data.get('investigation_summary', ''),
+                    data.get('capa_plan', ''),
+                    data.get('recurrence_check', ''),
+                    data.get('effectiveness_check', ''),
+                    deviation_id
+                ))
+                
+                if cur.rowcount == 0:
+                    logger.warning(f"No existing record found for {deviation_id}, inserting new record")
+                    # If no record was updated, insert instead
+                    cur.execute("""
+                        INSERT INTO deviation_grading_executive (
+                            deviation_id,
+                            title,
+                            overview,
+                            immediate_actions,
+                            quality_risk_evaluation,
+                            investigation_summary,
+                            capa_plan,
+                            recurrence_check,
+                            effectiveness_check,
+                            isedited,
+                            updated_date
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                    """, (
+                        deviation_id,
+                        data.get('title', ''),
+                        data.get('overview', ''),
+                        data.get('immediate_actions', ''),
+                        data.get('quality_risk_evaluation', ''),
+                        data.get('investigation_summary', ''),
+                        data.get('capa_plan', ''),
+                        data.get('recurrence_check', ''),
+                        data.get('effectiveness_check', ''),
+                        True
+                    ))
+                    logger.info(f"✅ Inserted new grading record for {deviation_id}")
+                else:
+                    logger.info(f"✅ Updated grading record for {deviation_id}")
+            else:
+                # INSERT new record (initial grading)
+                logger.info(f"Inserting new grading record for {deviation_id}")
+                
+                # Check if record already exists
+                cur.execute("""
+                    SELECT deviation_id FROM deviation_grading_executive
+                    WHERE deviation_id = %s
+                """, (deviation_id,))
+                
+                existing = cur.fetchone()
+                
+                if existing:
+                    # Record exists, update instead
+                    logger.warning(f"Record already exists for {deviation_id}, updating instead")
+                    cur.execute("""
+                        UPDATE deviation_grading_executive
+                        SET 
+                            title = %s,
+                            overview = %s,
+                            immediate_actions = %s,
+                            quality_risk_evaluation = %s,
+                            investigation_summary = %s,
+                            capa_plan = %s,
+                            recurrence_check = %s,
+                            effectiveness_check = %s,
+                            isedited = false,
+                            updated_date = CURRENT_TIMESTAMP
+                        WHERE deviation_id = %s
+                    """, (
+                        data.get('title', ''),
+                        data.get('overview', ''),
+                        data.get('immediate_actions', ''),
+                        data.get('quality_risk_evaluation', ''),
+                        data.get('investigation_summary', ''),
+                        data.get('capa_plan', ''),
+                        data.get('recurrence_check', ''),
+                        data.get('effectiveness_check', ''),
+                        deviation_id
+                    ))
+                    logger.info(f"✅ Updated existing grading record for {deviation_id}")
+                else:
+                    # Insert new record
+                    cur.execute("""
+                        INSERT INTO deviation_grading_executive (
+                            deviation_id,
+                            title,
+                            overview,
+                            immediate_actions,
+                            quality_risk_evaluation,
+                            investigation_summary,
+                            capa_plan,
+                            recurrence_check,
+                            effectiveness_check,
+                            isedited,
+                            updated_date
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                    """, (
+                        deviation_id,
+                        data.get('title', ''),
+                        data.get('overview', ''),
+                        data.get('immediate_actions', ''),
+                        data.get('quality_risk_evaluation', ''),
+                        data.get('investigation_summary', ''),
+                        data.get('capa_plan', ''),
+                        data.get('recurrence_check', ''),
+                        data.get('effectiveness_check', ''),
+                        False
+                    ))
+                    logger.info(f"✅ Inserted new grading record for {deviation_id}")
+            
+            # Commit transaction
+            conn.commit()
+            logger.info(f"✅ Successfully saved grading results for {deviation_id}")
+            
+    except Exception as e:
+        logger.error(f"Error saving grading results: {str(e)}")
+        if 'conn' in locals():
+            conn.rollback()
+        raise
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+
 # TODO: Add grading functions here in future iterations
 # def grade_investigation_summary(deviation_info: dict) -> dict:
 #     """Grade the investigation summary"""
@@ -602,6 +808,15 @@ def lambda_handler(event, context):
         except Exception as e:
             logger.error(f"Grading error: {str(e)}")
             return response(500, "Error grading deviation sections", {"details": str(e)})
+        
+        # Save grading results to database
+        try:
+            is_regeneration = existing_results is not None
+            save_grading_results(deviation_id, grading_results, is_regeneration)
+        except Exception as e:
+            logger.error(f"Error saving grading results: {str(e)}")
+            # Don't fail the request if saving fails, just log the error
+            logger.warning("Grading completed but failed to save to database")
         
         # Log successful completion
         mode = "regenerated" if existing_results else "completed"
