@@ -10,11 +10,12 @@ import RootCauseAnalysis, {
 import RCAHeaderCard from "./RCAHeaderCard";
 import {
   fetchDeviationDetailById,
-  generateRCA as generateRCAApi, 
+  generateRCA as generateRCAApi,
 } from "src/services/deviations";
 import { DeviationDetail } from "src/types";
 import Notification from "@components/Notification/Notification";
 import ArrowRight from "../../assets/icons/arrowRight.svg";
+import Spinner from "@components/common/Spinner/Spinner";
 
 const RCADetails: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -105,7 +106,7 @@ const RCADetails: React.FC = () => {
     }
   };
 
-  if (loading) return <p>Loading details...</p>;
+  if (loading) return <Spinner />;
 
   const hasRCA = rcaData?.length > 0;
 

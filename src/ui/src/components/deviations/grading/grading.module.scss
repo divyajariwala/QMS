@@ -82,6 +82,10 @@
   justify-content: space-between;
 }
 
+.baseButton:disabled {
+  cursor: not-allowed;
+}
+
 .gradingBtn {
   @extend .baseButton;
   color: #272d37;

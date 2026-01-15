@@ -16,6 +16,7 @@ import PaginationComponent from "@components/pagination/PaginationComponent";
 
 import { usePollingContext } from "@components/polling/PollingProvider";
 import { PollingConfig } from "@components/polling/Polling";
+import Spinner from "@components/common/Spinner/Spinner";
 
 const Deviations = () => {
   // Initial pagination state
@@ -174,7 +175,7 @@ const Deviations = () => {
     setOpenNotification(false);
   };
 
-  if (loading) return <p>Loading deviations...</p>;
+  if (loading) return <Spinner />;
 
   return (
     <Box component="main">

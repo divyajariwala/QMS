@@ -25,6 +25,7 @@ import { PollingConfig } from "@components/polling/Polling";
 import Notification from "@components/Notification/Notification";
 import { useAuth } from "react-oidc-context";
 import { useStatus } from "src/context/StatusProvider";
+import Spinner from "@components/common/Spinner/Spinner";
 
 const Complaints = () => {
   // Initial pagination state
@@ -215,7 +216,7 @@ const Complaints = () => {
     await fetchData(); // Refresh on upload success
   };
 
-  if (loading) return <p>Loading complaints...</p>;
+  if (loading) return <Spinner />;
 
   return (
     <Box component="main">
