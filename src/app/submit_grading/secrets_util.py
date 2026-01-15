@@ -1,6 +1,7 @@
 import boto3
 import json
-import os
+from typing import Dict, Any
+
 
 def get_secret(secret_name, region_name='us-east-1'):
     """
@@ -11,7 +12,7 @@ def get_secret(secret_name, region_name='us-east-1'):
         service_name='secretsmanager',
         region_name=region_name
     )
-    
+
     try:
         get_secret_value_response = client.get_secret_value(
             SecretId=secret_name
