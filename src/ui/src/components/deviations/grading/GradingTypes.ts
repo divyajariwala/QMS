@@ -14,6 +14,12 @@ export interface SuggestionData {
   score: number;
 }
 
+export type ExecSummaryPayload = {
+  label: string;
+  content: string;
+  isEdited: boolean;
+}[];
+
 export interface ExecutiveSummaryItem {
   label: string;
   content: string;
@@ -21,7 +27,7 @@ export interface ExecutiveSummaryItem {
 
 export type GradingSuggestionsPayload =
   | { deviation_id: string | undefined } // Start Grading
-  | { deviation_id: string | undefined; previous_result: SectionData[] }; // Regenerate
+  | { deviation_id: string | undefined; existing_results: SuggestionData[] }; // Regenerate
 
 export type SubmitGradingPayload = {
   deviation_id: string | undefined;

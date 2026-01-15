@@ -16,6 +16,7 @@ import { formatDateMMM_D_YYYY } from 'src/utils';
 import { calculateOverdueDays } from 'src/helpers';
 import { fetchComplaintDetailById } from 'src/services/api.service';
 import styles from "./AdverseEventDetails.module.scss";
+import Spinner from '@components/common/Spinner/Spinner';
 
 const AdverseEventDetails: React.FC = () => {
   const [complaintDetails, setComplaintDetails] = useState<ComplaintDetail | null>(null);
@@ -88,7 +89,7 @@ const AdverseEventDetails: React.FC = () => {
     if (complaintId) fetchData();
   }, [complaintId]);
 
-  if (loading) return <p>Loading details...</p>;
+  if (loading) return <Spinner />;
   return (
     <Box className={styles.rootBox}>
       <CommonBreadcrumbs items={items} />

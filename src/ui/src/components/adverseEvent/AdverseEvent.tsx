@@ -8,6 +8,7 @@ import { searchAdverseEvent, fetchAdverseEvent } from 'src/services/api.service'
 import { getAdverseEventsApiResponse, searchAdverseEventsApiResponse } from 'src/types';
 import PaginationComponent from '@components/pagination/PaginationComponent';
 import { useAuth } from 'react-oidc-context';
+import Spinner from '@components/common/Spinner/Spinner';
 
 const AdverseEvent = () => {
   // Initial pagination state
@@ -88,7 +89,7 @@ const AdverseEvent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageNumber]);
 
-  if (loading) return <p>Loading adverse events...</p>;
+  if (loading) return <Spinner />;
 
   return (
     <Box component="main">

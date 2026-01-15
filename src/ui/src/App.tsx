@@ -30,6 +30,7 @@ import SessionCleaner from "./auth/SessionCleaner";
 import AdverseEventDetails from "@components/adverseEvent/AdverseEventDetails";
 import RCADetails from "@components/deviations/RCADetails";
 import GradingDetails from "@components/deviations/GradingDetails";
+import Spinner from "@components/common/Spinner/Spinner";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -64,7 +65,7 @@ const App = () => {
   const auth = useAuth();
 
   if (auth.isLoading) {
-    return <div>Loading...</div>;
+    return <Spinner />;
   }
 
   if (auth.error) {

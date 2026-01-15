@@ -16,12 +16,13 @@ import CategoryIcon from "../../assets/icons/category.svg";
 import ReceiptDateIcon from "../../assets/icons/receiptDate.svg";
 import { formatDateMMM_D_YYYY } from 'src/utils';
 import { calculateOverdueDays } from 'src/helpers';
-import { fetchComplaintDetailById, postApproveComplaint, classifyComplaint, modifyExtractedDetails } from 'src/services/api.service';
+import { fetchComplaintDetailById, classifyComplaint, modifyExtractedDetails } from 'src/services/api.service';
 import Notification from '@components/Notification/Notification';
 import ModifyDetails from '../../components/modifyDetails/ModifyDetails';
 import ProcessingNotification from '@components/processingNotification/ProcessingNotification';
 import { usePollingClassify } from '@components/polling/PollingClassify';
 import styles from "./ComplaintsResult.module.scss";
+import Spinner from '@components/common/Spinner/Spinner';
 
 const ComplaintsIntermediate: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -166,9 +167,7 @@ const ComplaintsIntermediate: React.FC = () => {
     }
   }
 
-
-
-  if (loading) return <p>Loading details...</p>;
+  if (loading) return <Spinner />;
 
   return (
     <Box className={styles.rootBox}>

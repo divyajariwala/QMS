@@ -2,7 +2,6 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Box,
   Divider,
-  Paper,
   Stack,
   Typography,
   Snackbar,
@@ -120,7 +119,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
   };
 
   return (
-    <Paper variant="outlined" className={styles.summaryRoot}>
+    <Box>
       <Box className={styles.headerRow}>
         <Stack direction="row" spacing={1} alignItems="center">
           {!disabled && (
@@ -191,7 +190,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
           {snack.message}
         </Alert>
       </Snackbar>
-    </Paper>
+    </Box>
   );
 };
 

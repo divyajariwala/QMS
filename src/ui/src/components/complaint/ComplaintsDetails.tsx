@@ -19,6 +19,7 @@ import { calculateOverdueDays } from 'src/helpers';
 import { fetchComplaintDetailById, postApproveComplaint } from 'src/services/api.service';
 import Notification from '@components/Notification/Notification';
 import styles from "./ComplaintsResult.module.scss";
+import Spinner from '@components/common/Spinner/Spinner';
 
 const ComplaintsDetails: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -145,7 +146,7 @@ const ComplaintsDetails: React.FC = () => {
     if (complaintId) fetchData();
   }, [complaintId]);
 
-  if (loading) return <p>Loading details...</p>;
+  if (loading) return <Spinner />;
   return (
     <Box className={styles.rootBox}>
       <CommonBreadcrumbs items={items} />
