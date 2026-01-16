@@ -45,7 +45,8 @@ sys.modules["utils"] = mock_utils
 # MOCK secrets & audit logger
 # ------------------------------------------------------------------
 sys.modules["secrets_util"] = Mock()
-sys.modules["audit_logger"] = Mock()
+mock_audit_logger = Mock()
+sys.modules["audit_logger"] = mock_audit_logger
 
 # ------------------------------------------------------------------
 # IMPORT LAMBDA
@@ -68,9 +69,19 @@ spec.loader.exec_module(lambda_function)
 # FIXTURES
 # ------------------------------------------------------------------
 @pytest.fixture
-def valid_payload():
+def valid_sections():
+    return [
+        {"label": "Title", "isEdited": False},
+        {"label": "Overview", "isEdited": True},
+        {"label": "CAPA Plan", "isEdited": False},
+    ]
+
+
+@pytest.fixture
+def valid_payload(valid_sections):
     return {
-        "deviation_id": "DV-001"
+        "deviation_id": "DV-001",
+        "sections": valid_sections,
     }
 
 
@@ -95,11 +106,39 @@ def mock_db_context(rowcount=1):
 
 
 # ==================================================================
+# HELPER FUNCTION TESTS
+# ==================================================================
+def test_is_any_section_edited(valid_sections):
+    result = lambda_function.is_any_section_edited(valid_sections)
+    assert result == {"labels": ["Overview"]}
+
+
+def test_is_any_section_edited_no_changes():
+    result = lambda_function.is_any_section_edited(
+        [{"label": "Title", "isEdited": False}]
+    )
+    assert result == {"labels": []}
+
+
+def test_save_grading_audit_log_not_called_when_no_edit():
+    conn = Mock()
+    sections = [{"label": "Title", "isEdited": False}]
+
+    lambda_function.save_grading_audit_log(
+        conn=conn,
+        sections=sections,
+        deviation_id="DV-001"
+    )
+
+    mock_audit_logger.log_deviation_audit.assert_not_called()
+
+
+# ==================================================================
 # UPDATE GRADING STATUS TESTS
 # ==================================================================
 @patch.object(lambda_function, "get_db_credentials")
 @patch.object(lambda_function, "log_deviation_workflow")
-def test_update_grading_status_success(mock_log, mock_creds):
+def test_update_grading_status_success(mock_workflow, mock_creds, valid_sections):
     mock_creds.return_value = {
         "host": "localhost",
         "dbname": "db",
@@ -110,12 +149,15 @@ def test_update_grading_status_success(mock_log, mock_creds):
     conn_ctx, conn, cur = mock_db_context()
     lambda_function.psycopg.connect.return_value = conn_ctx
 
-    result = lambda_function.update_grading_status("DV-001")
+    result = lambda_function.update_grading_status(
+        deviation_id="DV-001",
+        sections=valid_sections
+    )
 
     assert result["deviation_id"] == "DV-001"
     assert result["grading_completed"] is True
     assert cur.execute.call_count == 2
-    mock_log.assert_called_once()
+    mock_workflow.assert_called_once()
 
 
 @patch.object(lambda_function, "get_db_credentials")
@@ -131,7 +173,10 @@ def test_update_grading_status_deviation_not_found(mock_creds):
     lambda_function.psycopg.connect.return_value = conn_ctx
 
     with pytest.raises(ValueError):
-        lambda_function.update_grading_status("DV-404")
+        lambda_function.update_grading_status(
+            deviation_id="DV-404",
+            sections=[]
+        )
 
 
 # ==================================================================
@@ -174,7 +219,10 @@ def test_submit_grading_success(mock_parse, mock_update, valid_payload):
     )
 
     assert result["statusCode"] == 200
-    mock_update.assert_called_once_with(deviation_id="DV-001")
+    mock_update.assert_called_once_with(
+        deviation_id="DV-001",
+        sections=valid_payload["sections"]
+    )
 
 
 @patch.object(lambda_function, "parse_event_body")

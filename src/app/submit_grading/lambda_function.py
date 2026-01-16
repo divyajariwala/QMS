@@ -11,12 +11,12 @@ from secrets_util import get_db_credentials
 # WORKFLOW LOGGER IMPORT
 # =====================================================
 try:
-    from audit_logger import log_deviation_workflow
+    from audit_logger import log_deviation_workflow, log_deviation_audit
 except ImportError:
     import sys
 
     sys.path.append(os.path.dirname(__file__))
-    from audit_logger import log_deviation_workflow
+    from audit_logger import log_deviation_workflow, log_deviation_audit
 
 # =====================================================
 # LOGGING
@@ -35,10 +35,45 @@ DB_SECRET_BASE_NAME = os.environ.get(
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 
 
+def is_any_section_edited(sections: list) -> dict:
+    """
+    Returns True if any section has isEdited = True
+    """
+    updated_filed = []
+    for section in sections:
+        if section.get("isEdited") is True:
+            updated_filed.append(section.get("label"))
+    return {"labels": updated_filed}
+
+
+# =====================================================
+# UPDATE GRADING AUDIT LOG
+# =====================================================
+
+def save_grading_audit_log(conn, sections, deviation_id):
+    """
+    Save Grading-related audit logs for a deviation.
+
+    This function extracts relevant grading lebels and logs an audit entry
+    based on whether the Grading edited.
+    """
+
+    updated_labels = is_any_section_edited(sections)
+    # If grading was edited, log EDITED audit
+    if updated_labels['labels']:
+        log_deviation_audit(
+            conn=conn,
+            entity_type="Grading",
+            deviation_id=deviation_id,
+            new_fields=updated_labels,
+            audit_type="EDITED"
+        )
+
+
 # =====================================================
 # UPDATE GRADING STATUS ONLY
 # =====================================================
-def update_grading_status(deviation_id: str):
+def update_grading_status(deviation_id: str, sections: list):
     """
     Marks grading as completed for a deviation
     """
@@ -106,6 +141,7 @@ def update_grading_status(deviation_id: str):
                 },
                 start_time=start_time
             )
+            save_grading_audit_log(conn, sections, deviation_id)
 
             conn.commit()
 
@@ -148,7 +184,8 @@ def lambda_handler(event, context):
             return response(400, "deviation_id is required")
 
         result = update_grading_status(
-            deviation_id=deviation_id
+            deviation_id=deviation_id,
+            sections=body.get("sections", [])
         )
 
         return response(
