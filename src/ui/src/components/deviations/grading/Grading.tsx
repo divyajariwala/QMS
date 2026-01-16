@@ -29,6 +29,7 @@ import {
 
 import ExecutiveSummary from "./ExecutiveSummary";
 import {
+  fetchExecutiveSummary,
   fetchGradingData,
   fetchGradingSuggestions,
   submitGrading,
@@ -119,13 +120,14 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   };
 
   const handleGenerateSummary = async () => {
+    setSummaryItems([]);
+    setSummaryOpen(true);
     try {
-      const items: ExecutiveSummaryItem[] = sections.map((s, idx) => ({
-        label: s.label,
-        content: values[idx] ?? "",
-      }));
-      setSummaryItems(items);
-      setSummaryOpen(true);
+      const apiPayload = {
+        deviation_id: deviationId,
+      };
+      const items = await fetchExecutiveSummary(apiPayload);
+      setSummaryItems(items.data);
       notify("Executive summary generated.", "success");
     } catch {
       notify("Failed to generate executive summary", "error");

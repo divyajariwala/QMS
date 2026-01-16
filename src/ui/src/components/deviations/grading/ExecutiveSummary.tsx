@@ -6,6 +6,7 @@ import {
   Typography,
   Snackbar,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import LeftArrow from "../../../assets/icons/leftArrow.svg";
 import AISummary from "../../../assets/icons/aiSummary.svg";
@@ -145,7 +146,6 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
               <Typography variant="subtitle2" className={styles.sectionLabel}>
                 {item.label}
               </Typography>
-
               <Editor
                 init={editorInit}
                 tinymceScriptSrc={tinymceScriptSrc}
@@ -159,9 +159,12 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
             </Box>
           ))
         ) : (
-          <Typography variant="body2" color="text.secondary">
-            No summary available.
-          </Typography>
+          <Box className={styles.loaderBox}>
+            <CircularProgress size={24} />
+            <Typography variant="body2" sx={{ ml: 1 }}>
+              Loading summary...
+            </Typography>
+          </Box>
         )}
       </Box>
       <Divider className={styles.headerDivider} />
@@ -171,6 +174,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
             <button
               className={styles.classifyBtn}
               onClick={handlePrimaryAction}
+              disabled={!items?.length}
             >
               Save and Send to QMS
             </button>
