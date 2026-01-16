@@ -210,9 +210,10 @@ def get_section_requirements(section_label: str) -> str:
         "Title": """
 1. Clearly state the type of deviation (e.g., "Deviation", "Non-conformance")
 2. Include the affected system, process, or product
-3. Be concise (ideally under 100 characters)
+3. Be concise and specific
 4. Use action-oriented language
 5. Avoid vague terms like "issue" or "problem"
+6. Ensure the title is descriptive enough to understand the deviation at a glance
 Example: "Deviation ABC - QA Verification Gap in Batch Release Process"
         """,
         
