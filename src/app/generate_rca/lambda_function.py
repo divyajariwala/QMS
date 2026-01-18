@@ -351,6 +351,21 @@ def categorize_rca(investigation_summary: str, problem_category_text: str, major
 
         # Parse JSON response
         categories = json.loads(response_text)
+        
+        # Handle case where AI returns a list instead of dict
+        if isinstance(categories, list):
+            logger.warning("AI returned a list instead of dict, using first element")
+            if len(categories) > 0:
+                categories = categories[0]
+            else:
+                logger.error("AI returned empty list")
+                return {
+                    "problem_category": "Other",
+                    "major_root_cause_category": major_category_text,
+                    "near_root_cause_category": "Other",
+                    "root_cause_category": "Other"
+                }
+        
         logger.info(f"Successfully categorized RCA: {categories}")
 
         return categories
@@ -434,6 +449,7 @@ def lambda_handler(event, context):
 
     Note: The response data is always an array with a MINIMUM of 2 RCAs.
     """
+    conn = None  # Initialize connection variable to avoid UnboundLocalError in finally block
     try:
         logger.info(f"Environment: {ENV}, Region: {AWS_REGION}, Model: {MODEL_ID}")
         logger.info(f"Received event: {json.dumps(event)}")
@@ -522,6 +538,13 @@ def lambda_handler(event, context):
                 logger.error(
                     f"RCA_CATEGORIZATION_FAILED deviation_id={deviation_id}, index={idx}, error={str(e)}"
                 )
+                # Set default categories on error
+                categories = {
+                    "problem_category": "Other",
+                    "major_root_cause_category": "Other",
+                    "near_root_cause_category": "Other",
+                    "root_cause_category": "Other"
+                }
 
             # Structure result with generated text and auto-selected categories
             rca_result = {
