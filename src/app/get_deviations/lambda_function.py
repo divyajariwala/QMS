@@ -311,8 +311,9 @@ def get_deviation_by_id(conn, deviation_id):
             )
             grading_row = cursor.fetchone()
         except Exception as e:
-            # If columns don't exist (backward compatibility), query without them
+            # If columns don't exist (backward compatibility), rollback and query without them
             if "does not exist" in str(e):
+                conn.rollback()  # Rollback the failed transaction
                 cursor.execute(
                     """
                     SELECT
