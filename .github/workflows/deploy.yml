@@ -100,7 +100,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: test
           AWS_SESSION_TOKEN: test
           AWS_DEFAULT_REGION: us-east-1
-        run: pytest src/tests --cov=src/app --cov-report=term-missing --cov-report=html -W ignore
+        run: pytest src/tests --cov=src/app --cov-report=term-missing --cov-report=html --cov-fail-under=40 -W ignore
 
       - name: Run Pylint
         run: |
