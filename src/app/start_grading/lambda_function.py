@@ -475,6 +475,17 @@ def save_grading_results(deviation_id: str, grading_results: list, is_regenerati
                 column_name = section_to_column[section_label]
                 data[column_name] = improvement_suggestion
         
+        # Build grading_details dict for JSONB column
+        # Format: {"Title": {"improvement_suggestion": "...", "score": 10}, ...}
+        grading_details = {}
+        for result in grading_results:
+            section_label = result.get('section_label')
+            if section_label:
+                grading_details[section_label] = {
+                    "improvement_suggestion": result.get('improvement_suggestion', ''),
+                    "score": result.get('score', 0)
+                }
+        
         # Get database connection
         secret = get_secret(DB_SECRET_NAME, DB_REGION)
         conn = psycopg.connect(
@@ -502,6 +513,7 @@ def save_grading_results(deviation_id: str, grading_results: list, is_regenerati
                         capa_plan = %s,
                         recurrence_check = %s,
                         effectiveness_check = %s,
+                        grading_details = %s::jsonb,
                         isedited = true,
                         updated_date = CURRENT_TIMESTAMP
                     WHERE deviation_id = %s
@@ -514,6 +526,7 @@ def save_grading_results(deviation_id: str, grading_results: list, is_regenerati
                     data.get('capa_plan', ''),
                     data.get('recurrence_check', ''),
                     data.get('effectiveness_check', ''),
+                    json.dumps(grading_details),
                     deviation_id
                 ))
                 
@@ -531,9 +544,10 @@ def save_grading_results(deviation_id: str, grading_results: list, is_regenerati
                             capa_plan,
                             recurrence_check,
                             effectiveness_check,
+                            grading_details,
                             isedited,
                             updated_date
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, CURRENT_TIMESTAMP)
                     """, (
                         deviation_id,
                         data.get('title', ''),
@@ -544,6 +558,7 @@ def save_grading_results(deviation_id: str, grading_results: list, is_regenerati
                         data.get('capa_plan', ''),
                         data.get('recurrence_check', ''),
                         data.get('effectiveness_check', ''),
+                        json.dumps(grading_details),
                         True
                     ))
                     logger.info(f"✅ Inserted new grading record for {deviation_id}")
@@ -575,6 +590,7 @@ def save_grading_results(deviation_id: str, grading_results: list, is_regenerati
                             capa_plan = %s,
                             recurrence_check = %s,
                             effectiveness_check = %s,
+                            grading_details = %s::jsonb,
                             isedited = false,
                             updated_date = CURRENT_TIMESTAMP
                         WHERE deviation_id = %s
@@ -587,6 +603,7 @@ def save_grading_results(deviation_id: str, grading_results: list, is_regenerati
                         data.get('capa_plan', ''),
                         data.get('recurrence_check', ''),
                         data.get('effectiveness_check', ''),
+                        json.dumps(grading_details),
                         deviation_id
                     ))
                     logger.info(f"✅ Updated existing grading record for {deviation_id}")
@@ -603,9 +620,10 @@ def save_grading_results(deviation_id: str, grading_results: list, is_regenerati
                             capa_plan,
                             recurrence_check,
                             effectiveness_check,
+                            grading_details,
                             isedited,
                             updated_date
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, CURRENT_TIMESTAMP)
                     """, (
                         deviation_id,
                         data.get('title', ''),
@@ -616,6 +634,7 @@ def save_grading_results(deviation_id: str, grading_results: list, is_regenerati
                         data.get('capa_plan', ''),
                         data.get('recurrence_check', ''),
                         data.get('effectiveness_check', ''),
+                        json.dumps(grading_details),
                         False
                     ))
                     logger.info(f"✅ Inserted new grading record for {deviation_id}")

@@ -300,7 +300,8 @@ def get_deviation_by_id(conn, deviation_id):
                 capa_plan,
                 recurrence_check,
                 effectiveness_check,
-                executive_summary
+                executive_summary,
+                grading_details
             FROM deviation_grading_executive
             WHERE deviation_id = %s
             """,
@@ -313,6 +314,11 @@ def get_deviation_by_id(conn, deviation_id):
         executive_summary = []
         
         if grading_row:
+            # Get grading_details JSONB (contains improvement_suggestion and score for each section)
+            grading_details_json = grading_row.get("grading_details") or {}
+            if isinstance(grading_details_json, str):
+                grading_details_json = json.loads(grading_details_json)
+            
             # Map each column to its section_label
             section_mapping = [
                 ("Title", grading_row.get("title")),
@@ -327,11 +333,14 @@ def get_deviation_by_id(conn, deviation_id):
             
             for section_label, content in section_mapping:
                 if content:  # Only include sections with content
+                    # Get improvement_suggestion and score from grading_details
+                    section_grading = grading_details_json.get(section_label, {})
+                    
                     grading_data.append({
                         "section_label": section_label,
                         "text": content,
-                        "improvement_suggestion": "Pending implementation",  # TODO: Store in database
-                        "score": 0,  # TODO: Store in database
+                        "improvement_suggestion": section_grading.get("improvement_suggestion", ""),
+                        "score": section_grading.get("score", 0),
                     })
             
             # Get executive summary from JSONB column
