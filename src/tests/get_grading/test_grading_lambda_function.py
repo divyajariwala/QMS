@@ -119,6 +119,91 @@ class TestLambdaHandler:
         body = json.loads(result["body"])
 
         assert result["statusCode"] == 400
+    
+    @patch.object(lambda_function, "get_db_connection")
+    def test_database_error(self, mock_get_db):
+        """Test database error handling"""
+        # Import psycopg.Error from the mocked module
+        psycopg_error = type('Error', (Exception,), {})
+        lambda_function.psycopg.Error = psycopg_error
+        
+        mock_get_db.side_effect = psycopg_error("Database connection failed")
+        
+        event = {
+            "queryStringParameters": {
+                "deviation_id": "DV-00001"
+            }
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+        
+        assert result["statusCode"] == 500
+        assert body["success"] is False
+        assert "Database error" in body["error"]
+    
+    def test_missing_query_parameters(self):
+        """Test when queryStringParameters is None"""
+        event = {}
+        
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+        
+        assert result["statusCode"] == 400
+        assert "Missing required query parameter" in body["error"]
+    
+    @patch.object(lambda_function, "get_db_connection")
+    def test_connection_closed_on_success(self, mock_get_db):
+        """Test database connection is closed after successful request"""
+        mock_conn = Mock()
+        mock_conn.close = Mock()
+        
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+        
+        cursor.fetchone.return_value = {
+            "deviation_id": "DV-00001",
+            "title": "Test",
+            "description": "Test",
+            "investigation_summary": "Test",
+            "immediate_steps_taken": "Test",
+            "capa_plan": "Test",
+            "quality_risk_evaluation": "Test",
+            "recurrence_check_details": "Test",
+            "effectiveness_check_plan": "Test",
+        }
+        
+        event = {
+            "queryStringParameters": {
+                "deviation_id": "DV-00001"
+            }
+        }
+        
+        lambda_function.lambda_handler(event, {})
+        
+        # Verify connection was closed
+        mock_conn.close.assert_called_once()
+    
+    @patch.object(lambda_function, "get_db_connection")
+    def test_connection_closed_on_error(self, mock_get_db):
+        """Test database connection is closed even when error occurs"""
+        mock_conn = Mock()
+        mock_conn.close = Mock()
+        mock_conn.cursor.side_effect = Exception("Query failed")
+        
+        mock_get_db.return_value = mock_conn
+        
+        event = {
+            "queryStringParameters": {
+                "deviation_id": "DV-00001"
+            }
+        }
+        
+        lambda_function.lambda_handler(event, {})
+        
+        # Verify connection was closed despite error
+        mock_conn.close.assert_called_once()
 
 
 # ==================================================================

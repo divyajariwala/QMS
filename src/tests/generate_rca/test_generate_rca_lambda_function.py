@@ -420,3 +420,218 @@ class TestIntegration:
                 assert 'major_root_cause_category' in rca
                 assert 'is_ai_generated' in rca
                 assert rca['is_ai_generated'] is True
+
+
+# ==================================================================
+# ADDITIONAL ERROR HANDLING TESTS
+# ==================================================================
+class TestErrorHandling:
+    
+    def test_load_prompt_multiple_paths(self):
+        """Test load_prompt tries multiple paths"""
+        prompt_content = "Test prompt"
+        
+        def exists_side_effect(path):
+            # Only second path exists
+            return '/var/task' in path
+        
+        with patch('os.path.exists', side_effect=exists_side_effect):
+            with patch('builtins.open', mock_open(read_data=prompt_content)):
+                result = lambda_function.load_prompt('test.txt')
+                assert result == prompt_content
+    
+    def test_load_prompt_error_handling(self):
+        """Test load_prompt error handling"""
+        with patch('os.path.exists', return_value=True):
+            with patch('builtins.open', side_effect=Exception("Read error")):
+                with pytest.raises(Exception):
+                    lambda_function.load_prompt('test.txt')
+    
+    def test_call_bedrock_logging(self, mock_bedrock_client):
+        """Test call_bedrock logs correctly"""
+        mock_response = {
+            'output': {
+                'message': {
+                    'content': [{'text': 'Response text'}]
+                }
+            }
+        }
+        mock_bedrock_client.converse.return_value = mock_response
+        
+        result = lambda_function.call_bedrock("Test prompt")
+        assert result == "Response text"
+    
+    def test_generate_major_root_cause_category(self, sample_investigation_summary):
+        """Test generate_major_root_cause_category"""
+        with patch.object(lambda_function, 'load_prompt', return_value="Test {investigation_summary}"):
+            with patch.object(lambda_function, 'call_bedrock', return_value="Major category"):
+                result = lambda_function.generate_major_root_cause_category(
+                    sample_investigation_summary
+                )
+                assert result == "Major category"
+    
+    def test_generate_near_root_cause(self, sample_investigation_summary):
+        """Test generate_near_root_cause"""
+        with patch.object(lambda_function, 'load_prompt', return_value="Test {investigation_summary}"):
+            with patch.object(lambda_function, 'call_bedrock', return_value="Near cause"):
+                result = lambda_function.generate_near_root_cause(
+                    sample_investigation_summary
+                )
+                assert result == "Near cause"
+    
+    def test_generate_root_cause(self, sample_investigation_summary):
+        """Test generate_root_cause"""
+        with patch.object(lambda_function, 'load_prompt', return_value="Test {investigation_summary}"):
+            with patch.object(lambda_function, 'call_bedrock', return_value="Root cause"):
+                result = lambda_function.generate_root_cause(
+                    sample_investigation_summary
+                )
+                assert result == "Root cause"
+    
+    @patch.object(lambda_function, 'get_db_connection')
+    def test_lambda_handler_database_error(self, mock_get_db, sample_investigation_summary):
+        """Test database connection error"""
+        mock_get_db.side_effect = Exception("Database connection failed")
+        
+        event = {
+            'httpMethod': 'POST',
+            'body': json.dumps({
+                'investigation_summary': sample_investigation_summary
+            })
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result['body'])
+        
+        assert result['statusCode'] == 500
+        assert body['success'] is False
+    
+    @patch.object(lambda_function, 'get_db_connection')
+    @patch.object(lambda_function, 'generate_multiple_rcas')
+    def test_lambda_handler_with_deviation_id_logging(self, mock_generate_rcas, mock_get_db, sample_investigation_summary, sample_rca_response):
+        """Test lambda handler logs workflow when deviation_id provided"""
+        mock_conn, cursor = create_mock_cursor()
+        mock_get_db.return_value = mock_conn
+        mock_generate_rcas.return_value = sample_rca_response
+        
+        with patch('sys.modules', {'audit_logger': Mock()}):
+            event = {
+                'httpMethod': 'POST',
+                'body': json.dumps({
+                    'investigation_summary': sample_investigation_summary,
+                    'deviationId': 'DV-00001'
+                })
+            }
+            
+            result = lambda_function.lambda_handler(event, {})
+            assert result['statusCode'] == 200
+    
+    @patch.object(lambda_function, 'get_db_connection')
+    @patch.object(lambda_function, 'generate_multiple_rcas')
+    def test_lambda_handler_without_deviation_id(self, mock_generate_rcas, mock_get_db, sample_investigation_summary, sample_rca_response):
+        """Test lambda handler without deviation_id"""
+        mock_conn, cursor = create_mock_cursor()
+        mock_get_db.return_value = mock_conn
+        mock_generate_rcas.return_value = sample_rca_response
+        
+        event = {
+            'httpMethod': 'POST',
+            'body': json.dumps({
+                'investigation_summary': sample_investigation_summary
+            })
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result['body'])
+        
+        assert result['statusCode'] == 200
+        assert body['success'] is True
+    
+    @patch.object(lambda_function, 'get_db_connection')
+    @patch.object(lambda_function, 'generate_multiple_rcas')
+    def test_lambda_handler_database_commit_error(self, mock_generate_rcas, mock_get_db, sample_investigation_summary, sample_rca_response):
+        """Test error during database commit"""
+        mock_conn, cursor = create_mock_cursor()
+        mock_conn.commit.side_effect = Exception("Commit failed")
+        mock_get_db.return_value = mock_conn
+        mock_generate_rcas.return_value = sample_rca_response
+        
+        event = {
+            'httpMethod': 'POST',
+            'body': json.dumps({
+                'investigation_summary': sample_investigation_summary,
+                'deviationId': 'DV-00001'
+            })
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result['body'])
+        
+        assert result['statusCode'] == 500
+        assert body['success'] is False
+    
+    @patch.object(lambda_function, 'get_db_connection')
+    @patch.object(lambda_function, 'generate_multiple_rcas')
+    def test_lambda_handler_rollback_on_error(self, mock_generate_rcas, mock_get_db, sample_investigation_summary):
+        """Test database rollback on error"""
+        mock_conn, cursor = create_mock_cursor()
+        mock_conn.rollback = Mock()
+        mock_get_db.return_value = mock_conn
+        
+        # Make cursor.execute fail
+        cursor.execute.side_effect = Exception("Insert failed")
+        mock_generate_rcas.return_value = [{"problem_category": "Test"}]
+        
+        event = {
+            'httpMethod': 'POST',
+            'body': json.dumps({
+                'investigation_summary': sample_investigation_summary,
+                'deviationId': 'DV-00001'
+            })
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        # Verify rollback was called
+        mock_conn.rollback.assert_called()
+        assert result['statusCode'] == 500
+    
+    def test_lambda_handler_invalid_json_body(self):
+        """Test invalid JSON in request body"""
+        event = {
+            'httpMethod': 'POST',
+            'body': 'invalid json'
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result['body'])
+        
+        # Invalid JSON is caught and returns 500
+        assert result['statusCode'] == 500
+        assert body['success'] is False
+    
+    @patch.object(lambda_function, 'generate_multiple_rcas')
+    def test_generate_multiple_rcas_exception_handling(self, mock_generate, sample_investigation_summary):
+        """Test exception handling in generate_multiple_rcas"""
+        mock_generate.side_effect = Exception("Bedrock error")
+        
+        with pytest.raises(Exception):
+            lambda_function.generate_multiple_rcas(sample_investigation_summary)
+    
+    def test_generate_rcas_sequential_all_steps(self, sample_investigation_summary):
+        """Test all steps in sequential generation"""
+        with patch.object(lambda_function, 'generate_problem_category', return_value="Problem 1"):
+            with patch.object(lambda_function, 'generate_major_root_cause_category', return_value="Major 1"):
+                with patch.object(lambda_function, 'generate_near_root_cause', return_value="Near 1"):
+                    with patch.object(lambda_function, 'generate_root_cause', return_value="Root 1"):
+                        result = lambda_function.generate_rcas_sequential(sample_investigation_summary)
+                        
+                        assert len(result) == 2
+                        assert result[0]['problem_category_validated'] == "Problem 1"
+                        assert result[0]['major_root_cause_category_validated'] == "Major 1"
+                        assert result[0]['near_root_cause'] == "Near 1"
+                        assert result[0]['root_cause'] == "Root 1"
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

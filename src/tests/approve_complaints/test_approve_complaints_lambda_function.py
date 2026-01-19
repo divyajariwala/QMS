@@ -441,5 +441,283 @@ class TestEdgeCases:
 
 
 
+class TestAuditLoggingErrors:
+    """Tests for audit logging error handling"""
+    
+    def test_audit_log_status_error(self):
+        """Test: Continue processing even if status audit logging fails"""
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg, \
+             patch.object(lambda_function, 'log_audit') as mock_log_audit, \
+             patch.object(lambda_function, 'log_workflow') as mock_log_workflow:
+            
+            mock_cursor = MagicMock()
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                None  # No inference_results
+            ]
+            
+            mock_conn = MagicMock()
+            mock_conn.__enter__ = Mock(return_value=mock_conn)
+            mock_conn.__exit__ = Mock(return_value=False)
+            mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+            mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+            mock_psycopg.connect.return_value = mock_conn
+            
+            # Make audit logging fail
+            mock_log_audit.side_effect = Exception("Audit log failed")
+            
+            event = {
+                'body': json.dumps({
+                    'case_id': 'CAS-00001',
+                    'caseStatus': 'pending',
+                    'categoryDetails': []
+                })
+            }
+            
+            result = lambda_function.lambda_handler(event, {})
+            
+            # Should still succeed despite audit logging failure
+            assert result['statusCode'] == 200
+            body = json.loads(result['body'])
+            assert body['success'] is True
+    
+    def test_workflow_log_approved_error(self):
+        """Test: Continue processing even if COMPLAINT_APPROVED workflow logging fails"""
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg, \
+             patch.object(lambda_function, 'log_workflow') as mock_log_workflow:
+            
+            mock_cursor = MagicMock()
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                None
+            ]
+            
+            mock_conn = MagicMock()
+            mock_conn.__enter__ = Mock(return_value=mock_conn)
+            mock_conn.__exit__ = Mock(return_value=False)
+            mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+            mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+            mock_psycopg.connect.return_value = mock_conn
+            
+            # Make workflow logging fail
+            mock_log_workflow.side_effect = Exception("Workflow log failed")
+            
+            event = {
+                'body': json.dumps({
+                    'case_id': 'CAS-00001',
+                    'caseStatus': 'pending',
+                    'categoryDetails': []
+                })
+            }
+            
+            result = lambda_function.lambda_handler(event, {})
+            
+            # Should still succeed
+            assert result['statusCode'] == 200
+    
+    def test_workflow_log_modified_error(self):
+        """Test: Continue processing even if CATEGORY_DETAILS_MODIFIED workflow logging fails"""
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg, \
+             patch.object(lambda_function, 'log_workflow') as mock_log_workflow:
+            
+            mock_cursor = MagicMock()
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                {
+                    'levels': {'2': 0.9},
+                    'subcategories': {'Dose confirmation': 0.9},
+                    'crl_codes': {'CRL-000100': 0.9},
+                    'units': 5,
+                    'priority': 0
+                }
+            ]
+            
+            mock_conn = MagicMock()
+            mock_conn.__enter__ = Mock(return_value=mock_conn)
+            mock_conn.__exit__ = Mock(return_value=False)
+            mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+            mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+            mock_psycopg.connect.return_value = mock_conn
+            
+            # First call succeeds (COMPLAINT_APPROVED), second fails (CATEGORY_DETAILS_MODIFIED)
+            mock_log_workflow.side_effect = [None, Exception("Workflow log failed")]
+            
+            modified_categories = [
+                {'label': 'Dose confirmation', 'percentage': 95.0, 'level': '2', 'crl': 'CRL-000100', 'priority': 'Low', 'unit': 5}
+            ]
+            event = {
+                'body': json.dumps({
+                    'case_id': 'CAS-00001',
+                    'caseStatus': 'pending',
+                    'categoryDetails': modified_categories
+                })
+            }
+            
+            result = lambda_function.lambda_handler(event, {})
+            
+            # Should still succeed
+            assert result['statusCode'] == 200
+
+
+class TestUserExtractionEdgeCases:
+    """Tests for user extraction edge cases"""
+    
+    def test_get_user_cognito_sub_fallback(self):
+        """Test: Use sub when email not available in Cognito claims"""
+        event = {
+            'requestContext': {
+                'authorizer': {
+                    'claims': {
+                        'sub': 'user-sub-123'
+                    }
+                }
+            }
+        }
+        
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'user-sub-123'
+    
+    def test_get_user_header_user_id(self):
+        """Test: Use x-user-id header when x-user-email not available"""
+        event = {
+            'headers': {
+                'x-user-id': 'user-id-456'
+            }
+        }
+        
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'user-id-456'
+    
+    def test_get_user_exception_handling(self):
+        """Test: Handle exception during user extraction"""
+        # Create event that will cause exception
+        event = {
+            'requestContext': {
+                'authorizer': None  # This will cause exception when accessing ['claims']
+            }
+        }
+        
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'system'
+
+
+class TestBodyParsing:
+    """Tests for request body parsing"""
+    
+    def test_body_already_dict(self):
+        """Test: Handle body that's already a dict (not string)"""
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg:
+            
+            mock_cursor = MagicMock()
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                None
+            ]
+            
+            mock_conn = MagicMock()
+            mock_conn.__enter__ = Mock(return_value=mock_conn)
+            mock_conn.__exit__ = Mock(return_value=False)
+            mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+            mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+            mock_psycopg.connect.return_value = mock_conn
+            
+            # Body as dict instead of string
+            event = {
+                'body': {
+                    'case_id': 'CAS-00001',
+                    'caseStatus': 'pending',
+                    'categoryDetails': []
+                }
+            }
+            
+            result = lambda_function.lambda_handler(event, {})
+            
+            assert result['statusCode'] == 200
+            body = json.loads(result['body'])
+            assert body['success'] is True
+
+
+class TestInferenceResultsEdgeCases:
+    """Tests for inference results edge cases"""
+    
+    def test_inference_results_non_dict_fields(self):
+        """Test: Handle inference results with non-dict fields"""
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg:
+            
+            mock_cursor = MagicMock()
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                {
+                    'levels': 'not-a-dict',  # Invalid type
+                    'subcategories': None,  # None
+                    'crl_codes': [],  # Empty list
+                    'units': 5,
+                    'priority': 0
+                }
+            ]
+            
+            mock_conn = MagicMock()
+            mock_conn.__enter__ = Mock(return_value=mock_conn)
+            mock_conn.__exit__ = Mock(return_value=False)
+            mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+            mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+            mock_psycopg.connect.return_value = mock_conn
+            
+            event = {
+                'body': json.dumps({
+                    'case_id': 'CAS-00001',
+                    'caseStatus': 'pending',
+                    'categoryDetails': []
+                })
+            }
+            
+            result = lambda_function.lambda_handler(event, {})
+            
+            # Should handle gracefully and still succeed
+            assert result['statusCode'] == 200
+    
+    def test_priority_mapping(self):
+        """Test: Priority value mapping to string"""
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg:
+            
+            mock_cursor = MagicMock()
+            # Test different priority values
+            mock_cursor.fetchone.side_effect = [
+                {'complaint_id': 'CAS-00001', 'status': 'Pending'},
+                {
+                    'levels': {'2': 0.9},
+                    'subcategories': {'Test': 0.9},
+                    'crl_codes': {'CRL-000100': 0.9},
+                    'units': 5,
+                    'priority': 1  # Should map to "High"
+                }
+            ]
+            
+            mock_conn = MagicMock()
+            mock_conn.__enter__ = Mock(return_value=mock_conn)
+            mock_conn.__exit__ = Mock(return_value=False)
+            mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+            mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+            mock_psycopg.connect.return_value = mock_conn
+            
+            event = {
+                'body': json.dumps({
+                    'case_id': 'CAS-00001',
+                    'caseStatus': 'pending',
+                    'categoryDetails': []
+                })
+            }
+            
+            result = lambda_function.lambda_handler(event, {})
+            
+            assert result['statusCode'] == 200
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--cov=lambda_function", "--cov-report=term-missing"])

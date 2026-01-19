@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import io
+import base64
 import importlib.util
 from unittest.mock import Mock, patch, MagicMock
 import pandas as pd
@@ -469,6 +470,360 @@ class TestCSVProcessing:
         
         assert result['success'] is False
         assert 'must have a column named "narrative"' in result['message']
+
+
+class TestErrorHandling:
+    """Tests for error handling scenarios"""
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    def test_queue_not_found(self, mock_boto3):
+        """Test: Error when SQS queue doesn't exist"""
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_sqs
+        mock_sqs.get_queue_url.side_effect = Exception("Queue not found")
+        
+        event = {
+            'body': 'test',
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 500
+        body = json.loads(result['body'])
+        assert 'not found' in body['message'].lower()
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    def test_invalid_content_type(self, mock_boto3):
+        """Test: Error when content-type is not multipart/form-data"""
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        
+        event = {
+            'body': 'test',
+            'headers': {'content-type': 'application/json'}
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert 'Content-Type must be multipart/form-data' in body['message']
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    def test_file_too_large(self, mock_parse, mock_boto3):
+        """Test: Error when file exceeds maximum size"""
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        
+        # Create a body larger than MAX_FILE_SIZE (50MB)
+        large_body = b'x' * (51 * 1024 * 1024)
+        
+        event = {
+            'body': large_body,
+            'isBase64Encoded': False,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert 'File too large' in body['message']
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    def test_no_file_in_multipart(self, mock_parse, mock_boto3):
+        """Test: Error when no file found in multipart data"""
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        
+        mock_parse.return_value = None
+        
+        event = {
+            'body': 'multipart-data',
+            'isBase64Encoded': False,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert 'No valid file found' in body['message']
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    def test_invalid_file_extension(self, mock_parse, mock_boto3):
+        """Test: Error when file has invalid extension"""
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        
+        mock_parse.return_value = {
+            'filename': 'test.txt',
+            'content': b'test content',
+            'content_type': 'text/plain',
+            'field_name': 'file'
+        }
+        
+        event = {
+            'body': 'multipart-data',
+            'isBase64Encoded': False,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert 'Invalid file format' in body['message']
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch('boto3.client')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    def test_empty_file(self, mock_parse, mock_boto3):
+        """Test: Error when file is empty"""
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        
+        mock_parse.return_value = {
+            'filename': 'test.csv',
+            'content': b'',
+            'content_type': 'text/csv',
+            'field_name': 'file'
+        }
+        
+        event = {
+            'body': 'multipart-data',
+            'isBase64Encoded': False,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert 'File is empty' in body['message']
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch.object(lambda_function, 'get_secret')
+    @patch('boto3.client')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    @patch.object(lambda_function, 'create_file_record')
+    @patch.object(lambda_function, 'process_csv_excel_file')
+    def test_csv_processing_error(self, mock_process, mock_create_file, mock_parse, mock_boto3, mock_get_secret):
+        """Test: Error during CSV processing"""
+        mock_get_secret.return_value = {
+            'host': 'test-host',
+            'port': 5432,
+            'dbname': 'test-db',
+            'username': 'test-user',
+            'password': 'test-pass'
+        }
+        mock_s3 = Mock()
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_s3 if service == 's3' else mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        
+        mock_parse.return_value = {
+            'filename': 'test.csv',
+            'content': b'invalid,csv,data',
+            'content_type': 'text/csv',
+            'field_name': 'file'
+        }
+        
+        mock_process.return_value = {
+            'success': False,
+            'message': 'CSV parsing error'
+        }
+        
+        event = {
+            'body': 'multipart-data',
+            'isBase64Encoded': False,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert 'CSV parsing error' in body['message']
+    
+    @patch.object(lambda_function, 'get_connection_string')
+    @patch.object(lambda_function, 'psycopg')
+    def test_create_file_record_error(self, mock_psycopg, mock_get_conn):
+        """Test: Database error when creating file record"""
+        mock_get_conn.return_value = 'mock_connection_string'
+        mock_psycopg.connect.side_effect = Exception("Database connection failed")
+        
+        with pytest.raises(Exception) as exc_info:
+            lambda_function.create_file_record('test-id', 'test.pdf', 's3://bucket/key', 'user')
+        
+        assert "Database connection failed" in str(exc_info.value)
+    
+    @patch.object(lambda_function, 'get_connection_string')
+    @patch.object(lambda_function, 'psycopg')
+    def test_create_complaint_db_error(self, mock_psycopg, mock_get_conn):
+        """Test: Database error when creating complaint"""
+        mock_get_conn.return_value = 'mock_connection_string'
+        mock_psycopg.connect.side_effect = Exception("Database error")
+        
+        with pytest.raises(Exception) as exc_info:
+            lambda_function.create_complaint_in_db('test-file-id')
+        
+        assert "Database error" in str(exc_info.value)
+
+
+class TestBase64Encoding:
+    """Tests for base64 encoding scenarios"""
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch.object(lambda_function, 'get_secret')
+    @patch('boto3.client')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    @patch.object(lambda_function, 'create_file_record')
+    @patch.object(lambda_function, 'create_complaint_in_db')
+    def test_base64_encoded_body(self, mock_create_complaint, mock_create_file, mock_parse, mock_boto3, mock_get_secret):
+        """Test: Handle base64 encoded body"""
+        mock_get_secret.return_value = {
+            'host': 'test-host',
+            'port': 5432,
+            'dbname': 'test-db',
+            'username': 'test-user',
+            'password': 'test-pass'
+        }
+        mock_s3 = Mock()
+        mock_sqs = Mock()
+        mock_boto3.side_effect = lambda service: mock_s3 if service == 's3' else mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.us-east-1.amazonaws.com/123456789/test-queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'test-123'}
+        mock_create_complaint.return_value = 'CAS-00001'
+        
+        # Base64 encode the body
+        original_body = b'multipart-fake-content'
+        encoded_body = base64.b64encode(original_body).decode('utf-8')
+        
+        mock_parse.return_value = {
+            'filename': 'test.pdf',
+            'content': b'%PDF-1.4 content',
+            'content_type': 'application/pdf',
+            'field_name': 'file'
+        }
+        
+        event = {
+            'body': encoded_body,
+            'isBase64Encoded': True,
+            'headers': {'content-type': 'multipart/form-data; boundary=test'}
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 200
+
+
+class TestUserExtraction:
+    """Tests for user extraction from event"""
+    
+    def test_get_user_from_cognito(self):
+        """Test: Extract user from Cognito claims"""
+        event = {
+            'requestContext': {
+                'authorizer': {
+                    'claims': {
+                        'email': 'test@example.com'
+                    }
+                }
+            }
+        }
+        
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'test@example.com'
+    
+    def test_get_user_from_header(self):
+        """Test: Extract user from custom header"""
+        event = {
+            'headers': {
+                'x-user-email': 'header@example.com'
+            }
+        }
+        
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'header@example.com'
+    
+    def test_get_user_anonymous(self):
+        """Test: Return anonymous when no user info"""
+        event = {}
+        
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'anonymous'
+
+
+class TestMultipartParsing:
+    """Tests for multipart parsing edge cases"""
+    
+    def test_parse_multipart_no_boundary(self):
+        """Test: Error when no boundary in content-type"""
+        body = b'test-content'
+        content_type = 'multipart/form-data'
+        
+        result = lambda_function.parse_multipart_manual(body, content_type)
+        
+        assert result is None
+    
+    def test_parse_multipart_with_boundary(self):
+        """Test: Parse multipart with proper boundary"""
+        boundary = b'----WebKitFormBoundary'
+        body = b'------WebKitFormBoundary\r\nContent-Disposition: form-data; name="file"; filename="test.pdf"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 content\r\n------WebKitFormBoundary--'
+        content_type = 'multipart/form-data; boundary=----WebKitFormBoundary'
+        
+        result = lambda_function.parse_multipart_manual(body, content_type)
+        
+        assert result is not None
+        assert result['filename'] == 'test.pdf'
+        assert b'%PDF-1.4 content' in result['content']
 
 
 if __name__ == "__main__":
