@@ -707,6 +707,7 @@ def lambda_handler(event, context):
     - Useful for improving specific sections or regenerating all sections
     - The text field from existing_results is used as the content to grade
     """
+    deviation_id = None  # Initialize to avoid UnboundLocalError in exception handler
     try:
         logger.info(f"Environment: {ENV}, Region: {AWS_REGION}")
         logger.info(f"Received event: {json.dumps(event)}")
@@ -863,18 +864,22 @@ def lambda_handler(event, context):
 
     except Exception as e:
         logger.error(f"❌ Unexpected error: {str(e)}")
-        conn = get_db_connection()
-        log_deviation_workflow(
-            conn,
-            deviation_id,
-            step="GRADING_FAILED",
-            input_data={
-                "deviation_id": deviation_id,
-            },
-            output_data={
-                "error": str(e)
-            },
-            start_time=workflow_start_time
-        )
-        conn.commit()
+        
+        # Only log to database if we have a deviation_id
+        if deviation_id:
+            conn = get_db_connection()
+            log_deviation_workflow(
+                conn,
+                deviation_id,
+                step="GRADING_FAILED",
+                input_data={
+                    "deviation_id": deviation_id,
+                },
+                output_data={
+                    "error": str(e)
+                },
+                start_time=workflow_start_time
+            )
+            conn.commit()
+        
         return response(500, "Internal server error", {"details": str(e)})
