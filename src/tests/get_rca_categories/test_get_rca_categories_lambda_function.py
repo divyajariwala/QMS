@@ -343,7 +343,7 @@ class TestIntegration:
         body = json.loads(result['body'])
         assert body['success'] is True
         assert 'data' in body
-        assert 'timestamp' in body
+        assert 'message' in body
         
         # Verify data structure
         data = body['data']
