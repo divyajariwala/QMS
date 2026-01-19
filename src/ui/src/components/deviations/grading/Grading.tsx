@@ -49,6 +49,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   const [suggestions, setSuggestions] = useState<SuggestionData[]>([]);
   const [loadingSections, setLoadingSections] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [loadingSummary, setLoadingSummary] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [summaryItems, setSummaryItems] = useState<ExecutiveSummaryItem[]>([]);
   const [submitted, setSubmitted] = useState(false);
@@ -122,6 +123,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
   const handleGenerateSummary = async () => {
     setSummaryItems([]);
     setSummaryOpen(true);
+    setLoadingSummary(true);
     try {
       const apiPayload = {
         deviation_id: deviationId,
@@ -129,8 +131,13 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
       const items = await fetchExecutiveSummary(apiPayload);
       setSummaryItems(items.data);
       notify("Executive summary generated.", "success");
-    } catch {
-      notify("Failed to generate executive summary", "error");
+    } catch (err) {
+      notify(
+        `Failed to generate executive summary: ${err}`,
+        "error"
+      );
+    } finally {
+      setLoadingSummary(false);
     }
   };
 
@@ -163,6 +170,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
           disabled={submitted}
           tinymceScriptSrc={import.meta.env.VITE_TINYMCE_CDN}
           onNotify={notify}
+          summaryLoad={loadingSummary}
         />
       ) : (
         <>

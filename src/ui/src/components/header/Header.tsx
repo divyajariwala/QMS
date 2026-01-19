@@ -61,6 +61,11 @@ const Header = () => {
     { label: "Complaints", path: "/complaints" },
     { label: "Deviations", path: "/deviations" },
     { label: "Adverse Events", path: "/adverseEvent" },
+    {
+      label: "Trending",
+      external: true,
+      path: "https://us-east-1.quicksight.aws.amazon.com/sn/account/pwc-qms-quicksight/dashboards/b6b5f745-262d-4a71-8442-c9690d9cf6c5/views/f66eaa9f-d3db-4bdb-b3f1-4f1950f49c77",
+    },
   ];
 
   // Find the index of current tab by checking if location pathname starts with path
@@ -97,15 +102,27 @@ const Header = () => {
               value={currentTab}
               TabIndicatorProps={{ style: { display: "none" } }}
             >
-              {navLinks.map(({ label, path }) => (
-                <Tab
-                  key={label}
-                  label={label}
-                  component={Link}
-                  to={path}
-                  className="qms-header-navigation-tab"
-                />
-              ))}
+              {navLinks.map(({ label, path, external }) =>
+                external ? (
+                  <Tab
+                    key={label}
+                    label={label}
+                    component="a"
+                    href={path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="qms-header-navigation-tab"
+                  />
+                ) : (
+                  <Tab
+                    key={label}
+                    label={label}
+                    component={Link}
+                    to={path}
+                    className="qms-header-navigation-tab"
+                  />
+                )
+              )}
             </Tabs>
           </div>
           <div className="qms-header-container-navbar-right">
