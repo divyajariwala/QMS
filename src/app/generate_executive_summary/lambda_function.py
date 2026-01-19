@@ -275,6 +275,66 @@ def generate_executive_summary(deviation_info: dict) -> list:
         raise
 
 
+def save_executive_summary(deviation_id: str, summary: list) -> None:
+    """
+    Save executive summary to deviation_grading_executive table
+    
+    Args:
+        deviation_id: The deviation ID (e.g., "DV-00001")
+        summary: List of executive summary sections with format:
+                 [{"label": "Title", "content": "<p>...</p>"}, ...]
+    
+    Raises:
+        Exception: If database error occurs
+    """
+    try:
+        logger.info(f"Saving executive summary for {deviation_id}")
+        
+        # Get database connection
+        secret = get_secret(DB_SECRET_NAME, DB_REGION)
+        conn = psycopg.connect(
+            host=secret["host"],
+            port=secret["port"],
+            dbname=secret["dbname"],
+            user=secret["username"],
+            password=secret["password"],
+            row_factory=dict_row
+        )
+        
+        with conn.cursor() as cur:
+            # Update executive_summary column in deviation_grading_executive
+            cur.execute("""
+                UPDATE deviation_grading_executive
+                SET 
+                    executive_summary = %s::jsonb,
+                    updated_date = CURRENT_TIMESTAMP
+                WHERE deviation_id = %s
+            """, (json.dumps(summary), deviation_id))
+            
+            if cur.rowcount == 0:
+                # If no record exists, insert one
+                logger.warning(f"No grading record found for {deviation_id}, inserting new record")
+                cur.execute("""
+                    INSERT INTO deviation_grading_executive (
+                        deviation_id,
+                        executive_summary,
+                        updated_date
+                    ) VALUES (%s, %s::jsonb, CURRENT_TIMESTAMP)
+                """, (deviation_id, json.dumps(summary)))
+            
+            conn.commit()
+            logger.info(f"✅ Executive summary saved successfully for {deviation_id}")
+        
+        conn.close()
+        
+    except Exception as e:
+        logger.error(f"Error saving executive summary: {str(e)}")
+        if 'conn' in locals():
+            conn.rollback()
+            conn.close()
+        raise
+
+
 def lambda_handler(event, context):
     """
     Lambda handler for POST /generate-executive-summary endpoint
@@ -393,6 +453,10 @@ def lambda_handler(event, context):
         # Generate executive summary
         try:
             summary = generate_executive_summary(deviation_info)
+            
+            # Save executive summary to database
+            save_executive_summary(deviation_id, summary)
+            
             update_audit_workflow(deviation_id, start_time)
         except Exception as e:
             logger.error(f"Error generating executive summary: {str(e)}")

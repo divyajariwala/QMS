@@ -299,7 +299,8 @@ def get_deviation_by_id(conn, deviation_id):
                 investigation_summary,
                 capa_plan,
                 recurrence_check,
-                effectiveness_check
+                effectiveness_check,
+                executive_summary
             FROM deviation_grading_executive
             WHERE deviation_id = %s
             """,
@@ -309,6 +310,8 @@ def get_deviation_by_id(conn, deviation_id):
         
         # Transform columns into array format matching the grading_results structure
         grading_data = []
+        executive_summary = []
+        
         if grading_row:
             # Map each column to its section_label
             section_mapping = [
@@ -330,12 +333,13 @@ def get_deviation_by_id(conn, deviation_id):
                         "improvement_suggestion": "Pending implementation",  # TODO: Store in database
                         "score": 0,  # TODO: Store in database
                     })
-
-        # Fetch executive summary data
-        # TODO: Executive summary is currently not stored in database
-        # It's generated on-demand by generate_executive_summary lambda
-        # For now, return empty array
-        executive_summary = []
+            
+            # Get executive summary from JSONB column
+            if grading_row.get("executive_summary"):
+                executive_summary = grading_row["executive_summary"]
+                # If it's a string, parse it as JSON
+                if isinstance(executive_summary, str):
+                    executive_summary = json.loads(executive_summary)
 
         return {
             "statusCode": 200,

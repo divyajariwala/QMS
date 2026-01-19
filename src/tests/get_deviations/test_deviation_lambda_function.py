@@ -198,6 +198,10 @@ class TestLambdaHandler:
                 "capa_plan": "Test CAPA",
                 "recurrence_check": "Test Recurrence",
                 "effectiveness_check": "Test Effectiveness",
+                "executive_summary": [
+                    {"label": "Title", "content": "<p>Test Title Content</p>"},
+                    {"label": "Overview", "content": "<p>Test Overview Content</p>"}
+                ]
             }
         ]
         
@@ -222,6 +226,8 @@ class TestLambdaHandler:
         assert "executiveSummary" in body
         assert len(body["rcaData"]) == 1
         assert body["rcaData"][0]["problem_category"] == "Equipment Issue"
+        assert len(body["executiveSummary"]) == 2
+        assert body["executiveSummary"][0]["label"] == "Title"
 
     @patch.object(lambda_function, "get_db_connection")
     def test_get_single_deviation_not_found(self, mock_get_db):
