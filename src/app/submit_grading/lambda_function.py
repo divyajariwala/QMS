@@ -7,23 +7,16 @@ from datetime import datetime, timezone
 from utils import response, handle_cors_preflight, parse_event_body
 from secrets_util import get_db_credentials
 
-import json
-import os
-import logging
-import psycopg
-from datetime import datetime, timezone
-from utils import response, handle_cors_preflight, parse_event_body
-from secrets_util import get_db_credentials
 # =====================================================
 # WORKFLOW LOGGER IMPORT
 # =====================================================
 try:
-    from audit_logger import log_deviation_workflow
+    from audit_logger import log_deviation_workflow, log_deviation_audit
 except ImportError:
     import sys
 
     sys.path.append(os.path.dirname(__file__))
-    from audit_logger import log_deviation_workflow
+    from audit_logger import log_deviation_workflow, log_deviation_audit
 
 # =====================================================
 # LOGGING
@@ -36,62 +29,54 @@ logger.setLevel(logging.INFO)
 # =====================================================
 ENV = os.environ.get("env", "dev")
 AWS_REGION = os.environ.get("aws_region", "us-east-1")
-DB_SECRET_BASE_NAME = os.environ.get("db_secret_base_name", "aurora-postgres-master")
+DB_SECRET_BASE_NAME = os.environ.get(
+    "db_secret_base_name", "aurora-postgres-master"
+)
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 
 
-# =====================================================
-# SECTION NORMALIZER
-# =====================================================
-def normalize_grading_sections(sections: list) -> dict:
-    """
-    Converts UI label-content array into DB-ready column dictionary
-    """
-    label_map = {
-        "Title": "title",
-        "Overview": "overview",
-        "Immediate Actions": "immediate_actions",
-        "Quality Risk Evaluation": "quality_risk_evaluation",
-        "Investigation Summary": "investigation_summary",
-        "CAPA Plan": "capa_plan",
-        "Recurrence Check": "recurrence_check",
-        "Effectiveness Check": "effectiveness_check"
-    }
-
-    result = {}
-    for item in sections:
-        label = item.get("label")
-        content = item.get("content")
-        if label in label_map:
-            result[label_map[label]] = content
-
-    return result
-
-
-# =====================================================
-# CHECK IF ANY SECTION IS EDITED
-# =====================================================
-def is_any_section_edited(sections: list) -> bool:
+def is_any_section_edited(sections: list) -> dict:
     """
     Returns True if any section has isEdited = True
     """
-    return any(section.get("isEdited") is True for section in sections)
+    updated_filed = []
+    for section in sections:
+        if section.get("isEdited") is True:
+            updated_filed.append(section.get("label"))
+    return {"labels": updated_filed}
 
 
 # =====================================================
-# SAVE GRADING TO DATABASE
+# UPDATE GRADING AUDIT LOG
 # =====================================================
-def save_grading_to_database(payload: dict, created_by: str):
-    """
-    Inserts grading data into deviation_grading table
-    Updates deviations table to mark grading completed & approved
-    """
-    deviation_id = payload["deviation_id"]
-    sections = payload["sections"]
 
-    grading_data = normalize_grading_sections(sections)
-    is_edit = is_any_section_edited(sections)
+def save_grading_audit_log(conn, sections, deviation_id):
+    """
+    Save Grading-related audit logs for a deviation.
 
+    This function extracts relevant grading lebels and logs an audit entry
+    based on whether the Grading edited.
+    """
+
+    updated_labels = is_any_section_edited(sections)
+    # If grading was edited, log EDITED audit
+    if updated_labels['labels']:
+        log_deviation_audit(
+            conn=conn,
+            entity_type="Grading",
+            deviation_id=deviation_id,
+            new_fields=updated_labels,
+            audit_type="EDITED"
+        )
+
+
+# =====================================================
+# UPDATE GRADING STATUS ONLY
+# =====================================================
+def update_grading_status(deviation_id: str, sections: list):
+    """
+    Marks grading as completed for a deviation
+    """
     start_time = datetime.now(timezone.utc)
 
     if not DB_SECRET_NAME:
@@ -110,66 +95,45 @@ def save_grading_to_database(payload: dict, created_by: str):
 
     with psycopg.connect(conn_string) as conn:
         with conn.cursor() as cur:
-            logger.info(f"Saving grading for deviation {deviation_id}")
+            logger.info(f"Updating grading status for deviation {deviation_id}")
 
-            cur.execute("""
-                INSERT INTO deviation_grading_executive(
-                    deviation_id,
-                    title,
-                    overview,
-                    immediate_actions,
-                    quality_risk_evaluation,
-                    investigation_summary,
-                    capa_plan,
-                    recurrence_check,
-                    effectiveness_check,
-                    isedited
-                ) VALUES (
-                    %(deviation_id)s,
-                    %(title)s,
-                    %(overview)s,
-                    %(immediate_actions)s,
-                    %(quality_risk_evaluation)s,
-                    %(investigation_summary)s,
-                    %(capa_plan)s,
-                    %(recurrence_check)s,
-                    %(effectiveness_check)s,
-                    %(isedited)s
-                )
-            """, {
-                "deviation_id": deviation_id,
-                "title": grading_data.get("title"),
-                "overview": grading_data.get("overview"),
-                "immediate_actions": grading_data.get("immediate_actions"),
-                "quality_risk_evaluation": grading_data.get("quality_risk_evaluation"),
-                "investigation_summary": grading_data.get("investigation_summary"),
-                "capa_plan": grading_data.get("capa_plan"),
-                "recurrence_check": grading_data.get("recurrence_check"),
-                "effectiveness_check": grading_data.get("effectiveness_check"),
-                "isedited": is_edit
-            })
-
-            # =====================================================
+            # ==============================
             # UPDATE DEVIATIONS TABLE
-            # =====================================================
-            cur.execute("""
+            # ==============================
+            cur.execute(
+                """
                 UPDATE deviations
-                SET
-                    grading_completed = true,
+                SET grading_completed = TRUE,
                     grading_approved_date = CURRENT_TIMESTAMP
                 WHERE deviation_id = %s
-            """, (deviation_id,))
+                """,
+                (deviation_id,)
+            )
 
-            # =====================================================
+            if cur.rowcount == 0:
+                raise ValueError(f"Deviation ID not found: {deviation_id}")
+
+            cur.execute(
+                """
+                UPDATE deviations
+                SET deviation_status = 'Processed'
+                WHERE deviation_id = %s
+                AND grading_completed = true
+                AND rca_approved = true
+                AND deviation_status IS DISTINCT FROM 'Processed'
+                """,
+                (deviation_id,),
+            )
+
+            # ==============================
             # WORKFLOW LOG
-            # =====================================================
+            # ==============================
             log_deviation_workflow(
                 conn,
                 deviation_id,
                 step="GRADING_SUBMITTED",
                 input_data={
-                    "sections_saved": list(grading_data.keys()),
-                    "is_edit": is_edit
+                    "action": "grading_completed",
                 },
                 output_data={
                     "deviation_id": deviation_id,
@@ -177,15 +141,16 @@ def save_grading_to_database(payload: dict, created_by: str):
                 },
                 start_time=start_time
             )
+            save_grading_audit_log(conn, sections, deviation_id)
 
             conn.commit()
 
-            logger.info(f"Grading saved successfully. ID={deviation_id}, is_edit={is_edit}")
+    logger.info(f"Grading status updated successfully for {deviation_id}")
 
-            return {
-                "deviation_id": deviation_id,
-                "is_edit": is_edit
-            }
+    return {
+        "deviation_id": deviation_id,
+        "grading_completed": True
+    }
 
 
 # =====================================================
@@ -194,6 +159,11 @@ def save_grading_to_database(payload: dict, created_by: str):
 def lambda_handler(event, context):
     """
     POST /submit-grading
+    Payload:
+    {
+        "deviation_id": "DV-00105",
+        "created_by": "user@example.com"
+    }
     """
     try:
         logger.info(f"Received event: {json.dumps(event)}")
@@ -209,29 +179,18 @@ def lambda_handler(event, context):
         # ==============================
         # BASIC VALIDATION
         # ==============================
-        if not body.get("deviation_id"):
+        deviation_id = body.get("deviation_id")
+        if not deviation_id:
             return response(400, "deviation_id is required")
 
-        if not isinstance(body.get("sections"), list) or not body["sections"]:
-            return response(400, "sections must be a non-empty array")
-
-        for idx, section in enumerate(body["sections"]):
-            if not section.get("label"):
-                return response(
-                    400,
-                    f"Section at index {idx} must contain label and content"
-                )
-
-        created_by = body.get("created_by", "system")
-
-        result = save_grading_to_database(
-            payload=body,
-            created_by=created_by
+        result = update_grading_status(
+            deviation_id=deviation_id,
+            sections=body.get("sections", [])
         )
 
         return response(
             200,
-            "Grading saved successfully",
+            "Grading status updated successfully",
             result
         )
 
@@ -240,5 +199,9 @@ def lambda_handler(event, context):
         return response(400, str(e))
 
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
-        return response(500, "Internal server error", {"details": str(e)})
+        logger.exception("Unexpected error")
+        return response(
+            500,
+            "Internal server error",
+            {"details": str(e)}
+        )
