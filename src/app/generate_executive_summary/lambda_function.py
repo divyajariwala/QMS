@@ -372,8 +372,6 @@ def lambda_handler(event, context):
         # Fetch deviation info from database
         try:
             deviation_info = get_deviation_info(deviation_id)
-            update_audit_workflow(deviation_id, start_time)
-
         except ValueError as e:
             # Deviation not found
             return response(404, str(e))
@@ -395,8 +393,32 @@ def lambda_handler(event, context):
         # Generate executive summary
         try:
             summary = generate_executive_summary(deviation_info)
+            update_audit_workflow(deviation_id, start_time)
         except Exception as e:
             logger.error(f"Error generating executive summary: {str(e)}")
+            secret = get_secret(DB_SECRET_NAME, DB_REGION)
+            conn = psycopg.connect(
+                host=secret["host"],
+                port=secret["port"],
+                dbname=secret["dbname"],
+                user=secret["username"],
+                password=secret["password"],
+                row_factory=dict_row
+            )
+            log_deviation_workflow(
+                conn,
+                deviation_id,
+                step="GENERATED EXECUTED SUMMARY FAILED ",
+                input_data={
+                    "deviation_id": deviation_id,
+                },
+                output_data={
+                    "error": str(e)
+                },
+                start_time=start_time
+            )
+            conn.commit()
+            conn.close()
             return response(500, "Error generating executive summary", {"details": str(e)})
         
         # Log successful completion
