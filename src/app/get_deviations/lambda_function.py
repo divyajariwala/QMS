@@ -239,6 +239,7 @@ def get_all_deviations(conn, page=1, status_filter=None, search_query=None):
 # =====================================================
 def get_deviation_by_id(conn, deviation_id):
     with conn.cursor(row_factory=dict_row) as cursor:
+        # Fetch deviation details
         cursor.execute(
             """
             SELECT
@@ -263,6 +264,79 @@ def get_deviation_by_id(conn, deviation_id):
                 "body": json.dumps({"error": "Deviation not found"}),
             }
 
+        # Fetch RCA categories data from rca_analysis table
+        cursor.execute(
+            """
+            SELECT
+                problem_category,
+                major_root_cause_category,
+                near_root_cause_category,
+                root_cause_category
+            FROM rca_analysis
+            WHERE deviation_id = %s
+            ORDER BY id
+            """,
+            (deviation_id,),
+        )
+        rca_data = [
+            {
+                "problem_category": r["problem_category"],
+                "major_root_cause_category": r["major_root_cause_category"],
+                "near_root_cause_category": r["near_root_cause_category"],
+                "root_cause_category": r["root_cause_category"],
+            }
+            for r in cursor.fetchall()
+        ]
+
+        # Fetch grading results data from deviation_grading_executive table
+        cursor.execute(
+            """
+            SELECT
+                title,
+                overview,
+                immediate_actions,
+                quality_risk_evaluation,
+                investigation_summary,
+                capa_plan,
+                recurrence_check,
+                effectiveness_check
+            FROM deviation_grading_executive
+            WHERE deviation_id = %s
+            """,
+            (deviation_id,),
+        )
+        grading_row = cursor.fetchone()
+        
+        # Transform columns into array format matching the grading_results structure
+        grading_data = []
+        if grading_row:
+            # Map each column to its section_label
+            section_mapping = [
+                ("Title", grading_row.get("title")),
+                ("Overview", grading_row.get("overview")),
+                ("Immediate Actions", grading_row.get("immediate_actions")),
+                ("Quality Risk Evaluation", grading_row.get("quality_risk_evaluation")),
+                ("Investigation Summary", grading_row.get("investigation_summary")),
+                ("CAPA Plan", grading_row.get("capa_plan")),
+                ("Recurrence Check", grading_row.get("recurrence_check")),
+                ("Effectiveness Check", grading_row.get("effectiveness_check")),
+            ]
+            
+            for section_label, content in section_mapping:
+                if content:  # Only include sections with content
+                    grading_data.append({
+                        "section_label": section_label,
+                        "text": content,
+                        "improvement_suggestion": "Pending implementation",  # TODO: Store in database
+                        "score": 0,  # TODO: Store in database
+                    })
+
+        # Fetch executive summary data
+        # TODO: Executive summary is currently not stored in database
+        # It's generated on-demand by generate_executive_summary lambda
+        # For now, return empty array
+        executive_summary = []
+
         return {
             "statusCode": 200,
             "headers": _get_cors_headers(),
@@ -278,6 +352,9 @@ def get_deviation_by_id(conn, deviation_id):
                 "rca_approved": row["rca_approved"],
                 "grading_completed": row["grading_completed"],
                 "rca_generated": row["rca_generated"],
+                "rcaData": rca_data,
+                "gradingData": grading_data,
+                "executiveSummary": executive_summary,
             }, default=str),
         }
 

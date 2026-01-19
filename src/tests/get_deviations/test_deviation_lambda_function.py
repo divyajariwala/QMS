@@ -175,17 +175,41 @@ class TestLambdaHandler:
         mock_conn.cursor.return_value = ctx
         mock_get_db.return_value = mock_conn
 
-        cursor.fetchone.return_value = {
-            "deviation_id": "DV-005",
-            "investigation_summary": "Root cause analysis",
-            "created_at": datetime(2023, 2, 1, 10, 0),
-            "deviation_status": "pending",
-            "grading_approved": True,
-            "rca_approved": True,
-            "grading_completed": False,
-            "rca_generated":True,
-
-        }
+        # Mock multiple queries: deviation, rca_analysis, deviation_grading_executive
+        cursor.fetchone.side_effect = [
+            # First query: deviation details
+            {
+                "deviation_id": "DV-005",
+                "investigation_summary": "Root cause analysis",
+                "created_at": datetime(2023, 2, 1, 10, 0),
+                "deviation_status": "pending",
+                "grading_approved": True,
+                "rca_approved": True,
+                "grading_completed": False,
+                "rca_generated": True,
+            },
+            # Third query: deviation_grading_executive (single row)
+            {
+                "title": "Test Title",
+                "overview": "Test Overview",
+                "immediate_actions": "Test Actions",
+                "quality_risk_evaluation": "Test Risk",
+                "investigation_summary": "Test Investigation",
+                "capa_plan": "Test CAPA",
+                "recurrence_check": "Test Recurrence",
+                "effectiveness_check": "Test Effectiveness",
+            }
+        ]
+        
+        # Mock fetchall for rca_analysis (can have multiple rows)
+        cursor.fetchall.return_value = [
+            {
+                "problem_category": "Equipment Issue",
+                "major_root_cause_category": "Process Issue",
+                "near_root_cause_category": "Human Error",
+                "root_cause_category": "Training Gap",
+            }
+        ]
 
         event = {"queryStringParameters": {"deviation_id": "DV-005"}}
         result = lambda_function.lambda_handler(event, {})
@@ -193,6 +217,11 @@ class TestLambdaHandler:
 
         assert result["statusCode"] == 200
         assert body["deviation_id"] == "DV-005"
+        assert "rcaData" in body
+        assert "gradingData" in body
+        assert "executiveSummary" in body
+        assert len(body["rcaData"]) == 1
+        assert body["rcaData"][0]["problem_category"] == "Equipment Issue"
 
     @patch.object(lambda_function, "get_db_connection")
     def test_get_single_deviation_not_found(self, mock_get_db):
@@ -201,12 +230,93 @@ class TestLambdaHandler:
         mock_conn.cursor.return_value = ctx
         mock_get_db.return_value = mock_conn
 
+        # First query returns None (deviation not found)
         cursor.fetchone.return_value = None
 
         event = {"queryStringParameters": {"deviation_id": "DV-999"}}
         result = lambda_function.lambda_handler(event, {})
 
         assert result["statusCode"] == 404
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_single_deviation_with_empty_rca_data(self, mock_get_db):
+        """Test: Deviation with no RCA data returns empty array"""
+        mock_conn = Mock()
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+
+        cursor.fetchone.side_effect = [
+            {
+                "deviation_id": "DV-006",
+                "investigation_summary": "Test summary",
+                "created_at": datetime(2023, 2, 1, 10, 0),
+                "deviation_status": "pending",
+                "grading_approved": False,
+                "rca_approved": False,
+                "grading_completed": False,
+                "rca_generated": False,
+            },
+            None  # No grading data
+        ]
+        
+        cursor.fetchall.return_value = []  # No RCA data
+
+        event = {"queryStringParameters": {"deviation_id": "DV-006"}}
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 200
+        assert body["rcaData"] == []
+        assert body["gradingData"] == []
+        assert body["executiveSummary"] == []
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_single_deviation_with_multiple_rca_entries(self, mock_get_db):
+        """Test: Deviation with multiple RCA analysis entries"""
+        mock_conn = Mock()
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+
+        cursor.fetchone.side_effect = [
+            {
+                "deviation_id": "DV-007",
+                "investigation_summary": "Multiple RCA",
+                "created_at": datetime(2023, 2, 1, 10, 0),
+                "deviation_status": "pending",
+                "grading_approved": True,
+                "rca_approved": True,
+                "grading_completed": True,
+                "rca_generated": True,
+            },
+            None  # No grading data
+        ]
+        
+        # Multiple RCA entries
+        cursor.fetchall.return_value = [
+            {
+                "problem_category": "Equipment Issue",
+                "major_root_cause_category": "Process Issue",
+                "near_root_cause_category": "Human Error",
+                "root_cause_category": "Training Gap",
+            },
+            {
+                "problem_category": "Documentation Issue",
+                "major_root_cause_category": "System Issue",
+                "near_root_cause_category": "Procedure Gap",
+                "root_cause_category": "Missing SOP",
+            }
+        ]
+
+        event = {"queryStringParameters": {"deviation_id": "DV-007"}}
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 200
+        assert len(body["rcaData"]) == 2
+        assert body["rcaData"][0]["problem_category"] == "Equipment Issue"
+        assert body["rcaData"][1]["problem_category"] == "Documentation Issue"
 
     @patch.object(lambda_function, "get_db_connection")
     def test_lambda_handler_exception(self, mock_get_db):
