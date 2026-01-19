@@ -3,18 +3,29 @@ import json
 import os
 import sys
 import io
+import importlib.util
 from unittest.mock import Mock, patch, MagicMock
 import pandas as pd
 
-# Add src directory to path for importing lambda_function
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app'))
-from upload_complaints import lambda_function
+# Mock dependencies before importing
+sys.modules['psycopg'] = Mock()
+sys.modules['psycopg.rows'] = Mock()
+sys.modules['secrets_util'] = Mock()
+sys.modules['audit_logger'] = Mock()
+
+# Load lambda_function using importlib to avoid module name conflicts
+lambda_function_path = os.path.join(
+    os.path.dirname(__file__), '..', '..', 'app', 'upload_complaints', 'lambda_function.py'
+)
+spec = importlib.util.spec_from_file_location("upload_complaints_lambda", lambda_function_path)
+lambda_function = importlib.util.module_from_spec(spec)
+sys.modules['upload_complaints_lambda'] = lambda_function
+spec.loader.exec_module(lambda_function)
 
 
 class TestLambdaHandler:
     """Unit tests for the main lambda_handler function"""
 
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     @patch.dict(os.environ, {
         'env': 'dev',
         'S3_BUCKET_NAME': 'test-bucket',
@@ -22,11 +33,11 @@ class TestLambdaHandler:
         'db_secret_base_name': 'aurora-postgres-master',
         'db_region': 'us-east-1'
     })
-    @patch('upload_complaints.lambda_function.secrets_util.get_secret')
+    @patch.object(lambda_function, 'get_secret')
     @patch('boto3.client')
-    @patch('upload_complaints.lambda_function.parse_multipart_manual')
-    @patch('upload_complaints.lambda_function.create_file_record')
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    @patch.object(lambda_function, 'create_file_record')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_successful_csv_upload(self, mock_create_complaint, mock_create_file, mock_parse, mock_boto3, mock_get_secret):
         """Test: Successful CSV file upload with database integration"""
         # Mock secrets
@@ -74,7 +85,6 @@ class TestLambdaHandler:
         mock_create_complaint.assert_called_once()
         mock_sqs.send_message.assert_called_once()
 
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     @patch.dict(os.environ, {
         'env': 'dev',
         'S3_BUCKET_NAME': 'test-bucket',
@@ -82,11 +92,11 @@ class TestLambdaHandler:
         'db_secret_base_name': 'aurora-postgres-master',
         'db_region': 'us-east-1'
     })
-    @patch('upload_complaints.lambda_function.secrets_util.get_secret')
+    @patch.object(lambda_function, 'get_secret')
     @patch('boto3.client')
-    @patch('upload_complaints.lambda_function.parse_multipart_manual')
-    @patch('upload_complaints.lambda_function.create_file_record')
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    @patch.object(lambda_function, 'create_file_record')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_successful_pdf_upload_sqs(self, mock_create_complaint, mock_create_file, mock_parse, mock_boto3, mock_get_secret):
         """Test: Successful PDF upload with SQS message"""
         # Mock secrets
@@ -166,17 +176,16 @@ class TestLambdaHandler:
         body = json.loads(result['body'])
         assert body['message'] == "No file provided"
     
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     @patch.dict(os.environ, {
         'env': 'dev',
         'S3_BUCKET_NAME': 'test-bucket',
         'SQS_QUEUE_NAME': 'test-queue'
     })
-    @patch('upload_complaints.lambda_function.secrets_util.get_secret')
+    @patch.object(lambda_function, 'get_secret')
     @patch('boto3.client')
-    @patch('upload_complaints.lambda_function.parse_multipart_manual')
-    @patch('upload_complaints.lambda_function.create_file_record')
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    @patch.object(lambda_function, 'create_file_record')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_csv_with_extra_columns(self, mock_create_complaint, mock_create_file, mock_parse, mock_boto3, mock_get_secret):
         """Test: CSV file with more than 2 columns is accepted if narrative column exists"""
         # Mock secrets
@@ -252,15 +261,18 @@ class TestUtilityFunctions:
 class TestDatabaseFunctions:
     """Tests for database-related functions"""
     
-    @patch('upload_complaints.lambda_function.get_connection_string')
-    @patch('psycopg.connect')
-    def test_create_file_record(self, mock_connect, mock_get_conn):
+    @patch.object(lambda_function, 'get_connection_string')
+    @patch.object(lambda_function, 'psycopg')
+    def test_create_file_record(self, mock_psycopg, mock_get_conn):
         """Test: Create file record in database"""
         mock_get_conn.return_value = 'mock_connection_string'
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_connect.return_value.__enter__.return_value = mock_conn
-        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+        mock_conn.__enter__ = Mock(return_value=mock_conn)
+        mock_conn.__exit__ = Mock(return_value=False)
+        mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+        mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+        mock_psycopg.connect.return_value = mock_conn
         
         lambda_function.create_file_record(
             'test-file-id', 
@@ -272,15 +284,18 @@ class TestDatabaseFunctions:
         mock_cursor.execute.assert_called_once()
         mock_conn.commit.assert_called_once()
     
-    @patch('upload_complaints.lambda_function.get_connection_string')
-    @patch('psycopg.connect')
-    def test_create_complaint_in_db(self, mock_connect, mock_get_conn):
+    @patch.object(lambda_function, 'get_connection_string')
+    @patch.object(lambda_function, 'psycopg')
+    def test_create_complaint_in_db(self, mock_psycopg, mock_get_conn):
         """Test: Create complaint record in database with text_extracted set to false"""
         mock_get_conn.return_value = 'mock_connection_string'
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_connect.return_value.__enter__.return_value = mock_conn
-        mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+        mock_conn.__enter__ = Mock(return_value=mock_conn)
+        mock_conn.__exit__ = Mock(return_value=False)
+        mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+        mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+        mock_psycopg.connect.return_value = mock_conn
         mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00001'}
         
         result = lambda_function.create_complaint_in_db('test-file-id', 'Test narrative')
@@ -297,7 +312,7 @@ class TestDatabaseFunctions:
 class TestCSVProcessing:
     """Tests for CSV/Excel processing functions with enhanced parsing"""
     
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_process_csv_excel_file_success(self, mock_create_complaint):
         """Test: Successfully process valid CSV file"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002']
@@ -312,7 +327,7 @@ class TestCSVProcessing:
         assert result['complaints'][0]['complaint_id'] == 'CAS-00001'
         assert result['complaints'][1]['complaint_id'] == 'CAS-00002'
     
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_csv_with_quoted_commas(self, mock_create_complaint):
         """Test: CSV with quoted fields containing commas"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002', 'CAS-00003']
@@ -333,7 +348,7 @@ class TestCSVProcessing:
         assert 'Customer service was unhelpful, rude during call' in complaints[1]['narrative_text']
         assert 'Wrong item shipped, received blue instead of red' in complaints[2]['narrative_text']
     
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_tab_separated_csv_with_commas(self, mock_create_complaint):
         """Test: Tab-separated CSV with commas in text fields"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002', 'CAS-00003']
@@ -353,7 +368,7 @@ class TestCSVProcessing:
         assert 'Product arrived damaged, packaging was torn' in complaints[0]['narrative_text']
         assert 'Quality is poor - broke after first use' in complaints[2]['narrative_text']
     
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_csv_with_long_narrative(self, mock_create_complaint):
         """Test: CSV with long narrative text (1500+ chars) with punctuation"""
         mock_create_complaint.return_value = 'CAS-00001'
@@ -367,7 +382,7 @@ class TestCSVProcessing:
         assert result['processed_complaints'] == 1
         assert long_narrative in result['complaints'][0]['narrative_text']
     
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_csv_with_utf8_bom(self, mock_create_complaint):
         """Test: CSV file with UTF-8 BOM"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002']
@@ -398,7 +413,7 @@ class TestCSVProcessing:
         assert result['success'] is False
         assert 'must have a column named "narrative"' in result['message']
     
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_csv_empty_narratives_skipped(self, mock_create_complaint):
         """Test: Rows with empty narratives are skipped"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00003']
@@ -414,7 +429,7 @@ class TestCSVProcessing:
         assert result['total_rows'] == 3
         assert result['processed_complaints'] == 2  # Row 2 skipped due to empty text
     
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_excel_file_processing(self, mock_create_complaint):
         """Test: Excel file processing"""
         mock_create_complaint.side_effect = ['CAS-00001', 'CAS-00002', 'CAS-00003']
@@ -434,7 +449,7 @@ class TestCSVProcessing:
         assert result['success'] is True
         assert result['processed_complaints'] == 3
     
-    @patch('upload_complaints.lambda_function.create_complaint_in_db')
+    @patch.object(lambda_function, 'create_complaint_in_db')
     def test_process_csv_with_multiple_columns(self, mock_create_complaint):
         """Test: Accept CSV with multiple columns if narrative exists"""
         mock_create_complaint.return_value = 'CAS-00001'
