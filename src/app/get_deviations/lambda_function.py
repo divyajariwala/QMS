@@ -289,25 +289,54 @@ def get_deviation_by_id(conn, deviation_id):
         ]
 
         # Fetch grading results data from deviation_grading_executive table
-        cursor.execute(
-            """
-            SELECT
-                title,
-                overview,
-                immediate_actions,
-                quality_risk_evaluation,
-                investigation_summary,
-                capa_plan,
-                recurrence_check,
-                effectiveness_check,
-                executive_summary,
-                grading_details
-            FROM deviation_grading_executive
-            WHERE deviation_id = %s
-            """,
-            (deviation_id,),
-        )
-        grading_row = cursor.fetchone()
+        # Handle backward compatibility: grading_details and executive_summary columns may not exist
+        try:
+            cursor.execute(
+                """
+                SELECT
+                    title,
+                    overview,
+                    immediate_actions,
+                    quality_risk_evaluation,
+                    investigation_summary,
+                    capa_plan,
+                    recurrence_check,
+                    effectiveness_check,
+                    executive_summary,
+                    grading_details
+                FROM deviation_grading_executive
+                WHERE deviation_id = %s
+                """,
+                (deviation_id,),
+            )
+            grading_row = cursor.fetchone()
+        except Exception as e:
+            # If columns don't exist (backward compatibility), query without them
+            if "does not exist" in str(e):
+                cursor.execute(
+                    """
+                    SELECT
+                        title,
+                        overview,
+                        immediate_actions,
+                        quality_risk_evaluation,
+                        investigation_summary,
+                        capa_plan,
+                        recurrence_check,
+                        effectiveness_check
+                    FROM deviation_grading_executive
+                    WHERE deviation_id = %s
+                    """,
+                    (deviation_id,),
+                )
+                grading_row = cursor.fetchone()
+                # Add missing columns as None for backward compatibility
+                if grading_row:
+                    grading_row = dict(grading_row)
+                    grading_row['executive_summary'] = None
+                    grading_row['grading_details'] = None
+            else:
+                raise
         
         # Transform columns into array format matching the grading_results structure
         grading_data = []

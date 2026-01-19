@@ -501,20 +501,28 @@ def lambda_handler(event, context):
             )
         except Exception as e:
             logger.error(f"RCA_GENERATION_FAILED: {str(e)}")
-            log_deviation_workflow(
-                conn=conn,
-                entity_id=deviation_id,
-                step="RCA_GENERATION_FAILED",
-                input_data={
-                    "summary_length": len(investigation_summary),
-                    "model": MODEL_ID
-                },
-                output_data={
-                    "error": str(e),
-                    "error_type": type(e).__name__
-                },
-                start_time=start_time,
-            )
+            try:
+                log_deviation_workflow(
+                    conn=conn,
+                    entity_id=deviation_id,
+                    step="RCA_GENERATION_FAILED",
+                    input_data={
+                        "summary_length": len(investigation_summary),
+                        "model": MODEL_ID
+                    },
+                    output_data={
+                        "error": str(e),
+                        "error_type": type(e).__name__
+                    },
+                    start_time=start_time,
+                )
+                conn.commit()
+            except Exception as log_error:
+                logger.error(f"Failed to log workflow error: {str(log_error)}")
+                conn.rollback()
+            
+            # Return error response instead of continuing
+            return response(500, "RCA generation failed", {"details": str(e)})
 
         conn.commit()
         # Categorize each RCA
@@ -593,6 +601,13 @@ def lambda_handler(event, context):
 
     except Exception as e:
         logger.error(f"❌ Unexpected error: {str(e)}")
+        # Rollback transaction on error
+        if conn:
+            try:
+                conn.rollback()
+                logger.info("Transaction rolled back due to error")
+            except Exception as rollback_error:
+                logger.error(f"Error during rollback: {str(rollback_error)}")
         return response(500, "Internal server error", {"details": str(e)})
     finally:
         if conn:
