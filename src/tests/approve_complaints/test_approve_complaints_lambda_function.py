@@ -2,6 +2,7 @@ import pytest
 import json
 import os
 import sys
+import importlib.util
 from unittest.mock import Mock, patch, MagicMock
 
 # Mock dependencies before importing
@@ -10,9 +11,14 @@ sys.modules['psycopg.rows'] = Mock()
 sys.modules['secrets_util'] = Mock()
 sys.modules['audit_logger'] = Mock()
 
-# Add src directory to path for importing lambda_function
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'app', 'approve_complaints'))
-import lambda_function
+# Load lambda_function using importlib to avoid module name conflicts
+lambda_function_path = os.path.join(
+    os.path.dirname(__file__), '..', '..', 'app', 'approve_complaints', 'lambda_function.py'
+)
+spec = importlib.util.spec_from_file_location("approve_complaints_lambda", lambda_function_path)
+lambda_function = importlib.util.module_from_spec(spec)
+sys.modules['approve_complaints_lambda'] = lambda_function
+spec.loader.exec_module(lambda_function)
 
 
 @pytest.fixture(autouse=True)
@@ -43,12 +49,13 @@ def mock_all_external_dependencies():
 class TestLambdaHandler:
     """Unit tests for the main lambda_handler function"""
 
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_approve_complaint_success(self):
         """Test: Successful complaint approval with category details and workflow logging"""
-        with patch('lambda_function.psycopg.connect') as mock_connect, \
-             patch('lambda_function.log_workflow') as mock_log_workflow, \
-             patch('lambda_function.log_audit') as mock_log_audit:
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg, \
+             patch.object(lambda_function, 'log_workflow') as mock_log_workflow, \
+             patch.object(lambda_function, 'log_audit') as mock_log_audit:
+            
             mock_cursor = MagicMock()
             # First fetchone for existing complaint, second for inference_results
             mock_cursor.fetchone.side_effect = [
@@ -67,7 +74,7 @@ class TestLambdaHandler:
             mock_conn.__exit__ = Mock(return_value=False)
             mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
             mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
-            mock_connect.return_value = mock_conn
+            mock_psycopg.connect.return_value = mock_conn
 
             category_details = [{'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 'Low', 'unit': 5}]
             event = {
@@ -121,10 +128,11 @@ class TestLambdaHandler:
         assert body['success'] is False
         assert 'Invalid status' in body['error'] and 'pending or overdue' in body['error']
 
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_approve_overdue_complaint(self):
         """Test: Successful overdue complaint approval"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg:
+            
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
                 {'complaint_id': 'CAS-00002', 'status': 'Overdue'},
@@ -136,7 +144,7 @@ class TestLambdaHandler:
             mock_conn.__exit__ = Mock(return_value=False)
             mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
             mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
-            mock_connect.return_value = mock_conn
+            mock_psycopg.connect.return_value = mock_conn
 
             category_details = [{'label': 'Test issue', 'percentage': 100.0, 'level': '1', 'crl': 'CRL-000100', 'priority': 'High', 'unit': 1}]
             event = {
@@ -155,10 +163,11 @@ class TestLambdaHandler:
             assert body['data']['caseStatus'] == 'processed'
             assert body['data']['category_details'] == category_details
 
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_complaint_not_found(self):
         """Test: Complaint not found in database"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg:
+            
             mock_cursor = MagicMock()
             mock_cursor.fetchone.return_value = None
             
@@ -167,7 +176,7 @@ class TestLambdaHandler:
             mock_conn.__exit__ = Mock(return_value=False)
             mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
             mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
-            mock_connect.return_value = mock_conn
+            mock_psycopg.connect.return_value = mock_conn
 
             event = {
                 'body': json.dumps({
@@ -186,8 +195,10 @@ class TestLambdaHandler:
 
     def test_database_error(self):
         """Test: Database error during connection"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
-            mock_connect.side_effect = Exception("Database connection failed")
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg:
+            
+            mock_psycopg.connect.side_effect = Exception("Database connection failed")
 
             event = {
                 'body': json.dumps({
@@ -218,10 +229,11 @@ class TestLambdaHandler:
         assert body['success'] is False
         assert 'Invalid JSON format' in body['error']
 
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_category_details_stored_as_is(self):
         """Test: Category details are stored as-is in processed_complaints"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg:
+            
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
                 {'complaint_id': 'CAS-00001', 'status': 'Pending'},
@@ -233,7 +245,7 @@ class TestLambdaHandler:
             mock_conn.__exit__ = Mock(return_value=False)
             mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
             mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
-            mock_connect.return_value = mock_conn
+            mock_psycopg.connect.return_value = mock_conn
 
             category_details = [
                 {'label': 'Dose confirmation', 'percentage': 94.92, 'level': '2', 'crl': 'CRL-000100', 'priority': 'Low', 'unit': 5},
@@ -339,10 +351,11 @@ class TestEdgeCases:
         body = json.loads(result['body'])
         assert body['error'] == 'case_id is required'
 
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_case_insensitive_status(self):
         """Test: Case insensitive status check - PENDING should work"""
-        with patch('lambda_function.psycopg.connect') as mock_connect:
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg:
+            
             mock_cursor = MagicMock()
             mock_cursor.fetchone.side_effect = [
                 {'complaint_id': 'CAS-00001', 'status': 'Pending'},
@@ -354,7 +367,7 @@ class TestEdgeCases:
             mock_conn.__exit__ = Mock(return_value=False)
             mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
             mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
-            mock_connect.return_value = mock_conn
+            mock_psycopg.connect.return_value = mock_conn
 
             event = {
                 'body': json.dumps({
@@ -370,12 +383,13 @@ class TestEdgeCases:
             body = json.loads(result['body'])
             assert body['success'] is True
 
-    @pytest.mark.skip(reason="Mocking issue in CI/CD - needs investigation")
     def test_category_audit_logging(self):
         """Test: Audit logging for category detail changes and workflow step"""
-        with patch('lambda_function.psycopg.connect') as mock_connect, \
-             patch('lambda_function.log_audit') as mock_log_audit, \
-             patch('lambda_function.log_workflow') as mock_log_workflow:
+        with patch.object(lambda_function, 'get_connection_string', return_value='postgresql://test:test@test:5432/test'), \
+             patch.object(lambda_function, 'psycopg') as mock_psycopg, \
+             patch.object(lambda_function, 'log_audit') as mock_log_audit, \
+             patch.object(lambda_function, 'log_workflow') as mock_log_workflow:
+            
             mock_cursor = MagicMock()
             # Mock inference_results with original values
             mock_cursor.fetchone.side_effect = [
@@ -394,7 +408,7 @@ class TestEdgeCases:
             mock_conn.__exit__ = Mock(return_value=False)
             mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
             mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
-            mock_connect.return_value = mock_conn
+            mock_psycopg.connect.return_value = mock_conn
 
             # Modified category details
             modified_categories = [
@@ -418,7 +432,9 @@ class TestEdgeCases:
             
             # Verify workflow logging: COMPLAINT_APPROVED + CATEGORY_DETAILS_MODIFIED
             assert mock_log_workflow.call_count == 2
-            workflow_calls = [call[0][1] for call in mock_log_workflow.call_args_list]
+            # Extract workflow step names (third positional argument, index 2)
+            # log_workflow(conn, case_id, step_name, ...)
+            workflow_calls = [call.args[2] if len(call.args) > 2 else None for call in mock_log_workflow.call_args_list]
             assert 'COMPLAINT_APPROVED' in workflow_calls
             assert 'CATEGORY_DETAILS_MODIFIED' in workflow_calls
 
