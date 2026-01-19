@@ -7,8 +7,6 @@ import io
 import base64
 import logging
 import os
-
-from psycopg.rows import dict_row
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 

@@ -32,6 +32,35 @@ DB_REGION = os.environ.get("db_region", "us-east-1")
 # Bedrock client
 bedrock_client = boto3.client('bedrock-runtime', region_name=AWS_REGION)
 
+def update_audit_workflow(deviation_id, start_time):
+    # add logs in db table
+    # successfully generated executive summary
+
+    secret = get_secret(DB_SECRET_NAME, DB_REGION)
+    conn = psycopg.connect(
+        host=secret["host"],
+        port=secret["port"],
+        dbname=secret["dbname"],
+        user=secret["username"],
+        password=secret["password"],
+        row_factory=dict_row
+    )
+    log_deviation_workflow(
+        conn,
+        deviation_id,
+        step=f"GENERATED EXECUTIVE SUMMARY",
+        input_data={
+            "deviation_id": deviation_id,
+            "status": "generated summary"
+        },
+        output_data={
+            "status": "generated summary",
+        },
+        start_time=start_time
+    )
+    conn.commit()
+    conn.close()
+
 
 def get_deviation_info(deviation_id: str) -> dict:
     """
@@ -312,6 +341,7 @@ def lambda_handler(event, context):
     8. Effectiveness Check Plan
     """
     try:
+        start_time = datetime.now(timezone.utc)
         logger.info(f"Environment: {ENV}, Region: {AWS_REGION}")
         logger.info(f"Received event: {json.dumps(event)}")
 
@@ -363,8 +393,32 @@ def lambda_handler(event, context):
         # Generate executive summary
         try:
             summary = generate_executive_summary(deviation_info)
+            update_audit_workflow(deviation_id, start_time)
         except Exception as e:
             logger.error(f"Error generating executive summary: {str(e)}")
+            secret = get_secret(DB_SECRET_NAME, DB_REGION)
+            conn = psycopg.connect(
+                host=secret["host"],
+                port=secret["port"],
+                dbname=secret["dbname"],
+                user=secret["username"],
+                password=secret["password"],
+                row_factory=dict_row
+            )
+            log_deviation_workflow(
+                conn,
+                deviation_id,
+                step="GENERATED EXECUTED SUMMARY FAILED ",
+                input_data={
+                    "deviation_id": deviation_id,
+                },
+                output_data={
+                    "error": str(e)
+                },
+                start_time=start_time
+            )
+            conn.commit()
+            conn.close()
             return response(500, "Error generating executive summary", {"details": str(e)})
         
         # Log successful completion

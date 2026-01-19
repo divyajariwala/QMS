@@ -710,7 +710,7 @@ def lambda_handler(event, context):
     try:
         logger.info(f"Environment: {ENV}, Region: {AWS_REGION}")
         logger.info(f"Received event: {json.dumps(event)}")
-
+        workflow_start_time = datetime.now(timezone.utc)
         # Handle OPTIONS request for CORS preflight
         if event.get('httpMethod') == 'OPTIONS':
             return handle_cors_preflight()
@@ -741,7 +741,21 @@ def lambda_handler(event, context):
             logger.info(f"Regeneration mode: {len(existing_results)} existing results provided")
 
         logger.info(f"Starting grading process for deviation: {deviation_id}")
-        
+        conn = get_db_connection()
+        log_deviation_workflow(
+            conn,
+            deviation_id,
+            step="GRADING_STARTED",
+            input_data={
+                "Status": "Grading Started",
+                "mode": "regeneration" if existing_results else "initial"
+            },
+            output_data={"status": "started"},
+            start_time=workflow_start_time
+        )
+        conn.commit()
+        conn.close()
+        start_time = datetime.now(timezone.utc)
         # Determine if this is a regeneration or initial grading
         if existing_results:
             # Regeneration mode: use existing_results
@@ -818,9 +832,24 @@ def lambda_handler(event, context):
             logger.error(f"Error saving grading results: {str(e)}")
             # Don't fail the request if saving fails, just log the error
             logger.warning("Grading completed but failed to save to database")
-        
         # Log successful completion
         mode = "regenerated" if existing_results else "completed"
+        conn = get_db_connection()
+        log_deviation_workflow(
+            conn,
+            deviation_id,
+            step=f"GRADING_{mode.upper()}",
+            input_data={
+                "deviation_id": deviation_id,
+                "sections_graded": len(grading_results)
+            },
+            output_data={
+                "status": mode,
+            },
+            start_time=start_time
+        )
+        conn.commit()
+        conn.close()
         logger.info(f"✅ Grading {mode} successfully for {deviation_id}")
         logger.info(f"Graded {len(grading_results)} sections")
         
@@ -834,4 +863,18 @@ def lambda_handler(event, context):
 
     except Exception as e:
         logger.error(f"❌ Unexpected error: {str(e)}")
+        conn = get_db_connection()
+        log_deviation_workflow(
+            conn,
+            deviation_id,
+            step="GRADING_FAILED",
+            input_data={
+                "deviation_id": deviation_id,
+            },
+            output_data={
+                "error": str(e)
+            },
+            start_time=workflow_start_time
+        )
+        conn.commit()
         return response(500, "Internal server error", {"details": str(e)})
