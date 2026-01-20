@@ -69,11 +69,6 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
           )}
           <div className={styles.container}>
             <span className={styles.caseNumberText}>{deviation_id}</span>
-            {loading && (
-              <span className={styles.processText}>
-                Deviation is being processed...
-              </span>
-            )}
             <div className={styles.dateGroup}>
               <img src={Calendar} className={styles.dateIcon} />
               <span className={styles.label}>Received Date: </span>
@@ -81,6 +76,9 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
                 {formatDateMMM_D_YYYY(created_date)}
               </span>
             </div>
+            {loading && (
+              <span className={styles.processText}>Processing...</span>
+            )}
           </div>
         </Box>
         {deviation.status !== "processed" && (

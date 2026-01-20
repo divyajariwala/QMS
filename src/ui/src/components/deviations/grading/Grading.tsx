@@ -132,10 +132,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
       setSummaryItems(items.data);
       notify("Executive summary generated.", "success");
     } catch (err) {
-      notify(
-        `Failed to generate executive summary: ${err}`,
-        "error"
-      );
+      notify(`Failed to generate executive summary: ${err}`, "error");
     } finally {
       setLoadingSummary(false);
     }
@@ -203,7 +200,7 @@ const Grading: React.FC<GradingProps> = ({ onEnterReview, onProcessed }) => {
                     <img src={RegenerateIcon} alt={"regenerate"} />
                   </button>
                   <button
-                    className={styles.classifyBtn}
+                    className={styles.gradingBtn}
                     onClick={handleGenerateSummary}
                     disabled={loadingSuggestions}
                   >
