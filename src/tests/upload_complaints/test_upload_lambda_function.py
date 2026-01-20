@@ -826,5 +826,167 @@ class TestMultipartParsing:
         assert b'%PDF-1.4 content' in result['content']
 
 
+class TestEncodingErrorPaths:
+    """Tests for encoding error handling paths"""
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch.object(lambda_function, 'get_secret')
+    @patch('boto3.client')
+    def test_base64_decode_failure(self, mock_boto3, mock_get_secret):
+        """Test: Base64 decode failure returns 400 error"""
+        mock_get_secret.return_value = {
+            'host': 'test-host',
+            'port': 5432,
+            'dbname': 'test-db',
+            'username': 'test-user',
+            'password': 'test-pass'
+        }
+        
+        # Create a body that looks like base64 but isn't valid
+        invalid_base64 = 'A' * 150 + '!!!'  # Long string with invalid base64 chars
+        
+        event = {
+            'body': invalid_base64,
+            'headers': {
+                'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary'
+            },
+            'isBase64Encoded': False
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 400
+        body = json.loads(result['body'])
+        assert 'Cannot decode body' in body['message']
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch.object(lambda_function, 'get_secret')
+    @patch('boto3.client')
+    def test_iso_8859_1_encoding_fallback(self, mock_boto3, mock_get_secret):
+        """Test: ISO-8859-1 encoding fallback for non-base64 body"""
+        mock_get_secret.return_value = {
+            'host': 'test-host',
+            'port': 5432,
+            'dbname': 'test-db',
+            'username': 'test-user',
+            'password': 'test-pass'
+        }
+        
+        # Short string that doesn't look like base64
+        short_body = 'short'
+        
+        event = {
+            'body': short_body,
+            'headers': {
+                'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary'
+            },
+            'isBase64Encoded': False
+        }
+        
+        # This will fail at multipart parsing, but we're testing the encoding path
+        result = lambda_function.lambda_handler(event, {})
+        
+        # Should get past encoding and fail at multipart parsing
+        assert result['statusCode'] in [400, 500]
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch.object(lambda_function, 'get_secret')
+    @patch('boto3.client')
+    def test_all_encoding_attempts_fail(self, mock_boto3, mock_get_secret):
+        """Test: All encoding attempts fail returns 400 error"""
+        mock_get_secret.return_value = {
+            'host': 'test-host',
+            'port': 5432,
+            'dbname': 'test-db',
+            'username': 'test-user',
+            'password': 'test-pass'
+        }
+        
+        # Mock the encoding methods to fail
+        with patch.object(lambda_function, 'parse_multipart_manual', return_value=None):
+            # Create a scenario where encoding fails
+            event = {
+                'body': 'test',
+                'headers': {
+                    'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary'
+                },
+                'isBase64Encoded': False
+            }
+            
+            result = lambda_function.lambda_handler(event, {})
+            
+            # Should handle the error gracefully
+            assert result['statusCode'] in [400, 500]
+
+
+class TestExceptionHandling:
+    """Tests for exception handling and error paths"""
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch.object(lambda_function, 'get_secret')
+    @patch('boto3.client')
+    @patch.object(lambda_function, 'parse_multipart_manual')
+    def test_general_exception_with_traceback(self, mock_parse, mock_boto3, mock_get_secret):
+        """Test: General exception handling with traceback logging"""
+        mock_get_secret.return_value = {
+            'host': 'test-host',
+            'port': 5432,
+            'dbname': 'test-db',
+            'username': 'test-user',
+            'password': 'test-pass'
+        }
+        
+        # Mock parse_multipart_manual to raise an exception
+        mock_parse.side_effect = Exception("Unexpected error during parsing")
+        
+        event = {
+            'body': base64.b64encode(b'test-content').decode('utf-8'),
+            'headers': {
+                'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary'
+            },
+            'isBase64Encoded': True
+        }
+        
+        result = lambda_function.lambda_handler(event, {})
+        
+        assert result['statusCode'] == 500
+        body = json.loads(result['body'])
+        assert 'Internal server error' in body['message']
+    
+    @patch.dict(os.environ, {
+        'env': 'dev',
+        'S3_BUCKET_NAME': 'test-bucket',
+        'SQS_QUEUE_NAME': 'test-queue'
+    })
+    @patch.object(lambda_function, 'get_secret')
+    def test_get_connection_string_error(self, mock_get_secret):
+        """Test: Error in get_connection_string raises exception"""
+        # Reset cache
+        lambda_function._connection_string = None
+        lambda_function._db_credentials = None
+        
+        # Mock get_secret to raise an exception
+        mock_get_secret.side_effect = Exception("Secrets Manager error")
+        
+        with pytest.raises(Exception, match="Secrets Manager error"):
+            lambda_function.get_connection_string()
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

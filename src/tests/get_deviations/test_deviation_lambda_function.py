@@ -334,6 +334,201 @@ class TestLambdaHandler:
         assert result["statusCode"] == 500
         assert body["error"] == "Internal server error"
 
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_deviations_with_pagination(self, mock_get_db):
+        """Test: Pagination with page parameter"""
+        mock_conn = Mock()
+        mock_conn.commit.return_value = None
+        mock_conn.close.return_value = None
+
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+        cursor.execute.return_value = None
+
+        cursor.fetchall.side_effect = [
+            [{"stat_name": "Pending", "stat_value": 5}],
+            [
+                {
+                    "deviation_id": "DV-016",
+                    "created_at": datetime(2023, 4, 1, 10, 0),
+                    "deviation_status": "Pending",
+                    "description": "Page 2 deviation",
+                    "grading_approved": False,
+                    "rca_approved": False,
+                    "grading_completed": False,
+                    "rca_generated": False,
+                    "text_extracted": None,
+                }
+            ],
+        ]
+        cursor.fetchone.return_value = {"total": 20}
+
+        event = {"queryStringParameters": {"page": "2"}}
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 200
+        assert body["pagination"]["current_page"] == 2
+        assert body["pagination"]["has_previous"] is True
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_deviations_with_search_and_status(self, mock_get_db):
+        """Test: Search with status filter combined"""
+        mock_conn = Mock()
+        mock_conn.commit.return_value = None
+        mock_conn.close.return_value = None
+
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+        cursor.execute.return_value = None
+
+        cursor.fetchall.side_effect = [
+            [{"stat_name": "Pending", "stat_value": 5}],
+            [
+                {
+                    "deviation_id": "DV-200",
+                    "created_at": datetime(2023, 5, 1, 10, 0),
+                    "deviation_status": "Pending",
+                    "description": "Combined search",
+                    "grading_approved": False,
+                    "rca_approved": False,
+                    "grading_completed": False,
+                    "rca_generated": False,
+                    "text_extracted": None,
+                }
+            ],
+        ]
+        cursor.fetchone.return_value = {"total": 1}
+
+        event = {"queryStringParameters": {"search": "200", "status": "pending"}}
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 200
+        assert body["deviations"][0]["deviation_id"] == "DV-200"
+        assert body["deviations"][0]["status"] == "pending"
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_single_deviation_backward_compatibility(self, mock_get_db):
+        """Test: Backward compatibility when grading_details and executive_summary columns don't exist"""
+        mock_conn = Mock()
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+
+        # First query: deviation details
+        cursor.fetchone.side_effect = [
+            {
+                "deviation_id": "DV-OLD",
+                "investigation_summary": "Old deviation",
+                "created_at": datetime(2023, 1, 1, 10, 0),
+                "deviation_status": "pending",
+                "grading_approved": False,
+                "rca_approved": False,
+                "grading_completed": False,
+                "rca_generated": False,
+            },
+            # Simulate column doesn't exist error, then return old format
+            {
+                "title": "Old Title",
+                "overview": "Old Overview",
+                "immediate_actions": None,
+                "quality_risk_evaluation": None,
+                "investigation_summary": None,
+                "capa_plan": None,
+                "recurrence_check": None,
+                "effectiveness_check": None,
+            }
+        ]
+        
+        cursor.fetchall.return_value = []
+        
+        # Simulate the first execute raising an error for missing columns
+        def execute_side_effect(*args, **kwargs):
+            sql = args[0] if args else ""
+            if "executive_summary" in sql and "grading_details" in sql:
+                raise Exception("column 'executive_summary' does not exist")
+        
+        cursor.execute.side_effect = execute_side_effect
+
+        event = {"queryStringParameters": {"deviation_id": "DV-OLD"}}
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 200
+        assert body["deviation_id"] == "DV-OLD"
+        # Should have backward compatible structure
+        assert "gradingData" in body
+        assert "executiveSummary" in body
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_single_deviation_with_grading_details_json(self, mock_get_db):
+        """Test: Grading details as JSON string (backward compatibility)"""
+        mock_conn = Mock()
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+
+        cursor.fetchone.side_effect = [
+            {
+                "deviation_id": "DV-JSON",
+                "investigation_summary": "JSON test",
+                "created_at": datetime(2023, 1, 1, 10, 0),
+                "deviation_status": "pending",
+                "grading_approved": True,
+                "rca_approved": True,
+                "grading_completed": True,
+                "rca_generated": True,
+            },
+            {
+                "title": "Test Title",
+                "overview": "Test Overview",
+                "immediate_actions": None,
+                "quality_risk_evaluation": None,
+                "investigation_summary": None,
+                "capa_plan": None,
+                "recurrence_check": None,
+                "effectiveness_check": None,
+                "executive_summary": json.dumps([{"label": "Test", "content": "Content"}]),
+                "grading_details": json.dumps({
+                    "Title": {"improvement_suggestion": "Improve title", "score": 8},
+                    "Overview": {"improvement_suggestion": "Improve overview", "score": 7}
+                })
+            }
+        ]
+        
+        cursor.fetchall.return_value = []
+
+        event = {"queryStringParameters": {"deviation_id": "DV-JSON"}}
+        result = lambda_function.lambda_handler(event, {})
+        body = json.loads(result["body"])
+
+        assert result["statusCode"] == 200
+        assert len(body["gradingData"]) == 2
+        assert body["gradingData"][0]["improvement_suggestion"] == "Improve title"
+        assert body["gradingData"][0]["score"] == 8
+        assert len(body["executiveSummary"]) == 1
+
+    @patch.object(lambda_function, "get_db_connection")
+    def test_get_all_deviations_error_handling(self, mock_get_db):
+        """Test: Error handling in get_all_deviations"""
+        mock_conn = Mock()
+        ctx, cursor = create_mock_cursor()
+        mock_conn.cursor.return_value = ctx
+        mock_get_db.return_value = mock_conn
+        
+        # Simulate database error
+        cursor.execute.side_effect = Exception("Database query failed")
+
+        event = {"queryStringParameters": {}}
+        result = lambda_function.lambda_handler(event, {})
+
+        assert result["statusCode"] == 500
+        body = json.loads(result["body"])
+        assert body["success"] is False
+
 
 # ==================================================================
 # DB CONNECTION TEST

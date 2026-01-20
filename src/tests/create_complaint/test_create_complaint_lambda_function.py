@@ -304,6 +304,57 @@ class TestLambdaHandler:
         body = json.loads(result['body'])
         assert body['success'] is False
 
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('boto3.client')
+    @patch('create_complaint.lambda_function.create_complaint_in_db')
+    def test_database_error_during_creation(self, mock_create_db, mock_boto3):
+        """Test: Error when database creation fails"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+
+        # Simulate database error
+        mock_create_db.side_effect = Exception("Database error")
+
+        event = {
+            'body': json.dumps({'narrative': 'Test complaint'}),
+            'headers': {'content-type': 'application/json'}
+        }
+
+        context = Mock()
+        context.request_id = 'req-db-error'
+
+        result = lambda_function.lambda_handler(event, context)
+
+        assert result['statusCode'] == 500
+        body = json.loads(result['body'])
+        assert body['success'] is False
+        assert 'Database error' in body['message']
+
+    @patch('create_complaint.lambda_function.SQS_QUEUE_NAME', 'test-queue')
+    @patch('boto3.client')
+    def test_body_as_dict_not_string(self, mock_boto3):
+        """Test: Handle body as dict instead of JSON string"""
+        mock_sqs = Mock()
+        mock_boto3.return_value = mock_sqs
+        mock_sqs.get_queue_url.return_value = {'QueueUrl': 'https://sqs.test.com/queue'}
+        mock_sqs.send_message.return_value = {'MessageId': 'msg-dict'}
+
+        # Body as dict (not JSON string)
+        event = {
+            'body': {'narrative': 'Direct dict body'},
+            'headers': {'content-type': 'application/json'}
+        }
+
+        context = Mock()
+        context.request_id = 'req-dict'
+
+        result = lambda_function.lambda_handler(event, context)
+
+        assert result['statusCode'] == 200
+        body = json.loads(result['body'])
+        assert body['success'] is True
+
 
 
 
@@ -349,8 +400,35 @@ class TestDatabaseIntegration:
         mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
         mock_connect.side_effect = Exception("Database connection failed")
 
+        event = {'headers': {}}
         with pytest.raises(Exception):
-            lambda_function.create_complaint_in_db('Test narrative')
+            lambda_function.create_complaint_in_db('Test narrative', event)
+
+    @patch('create_complaint.lambda_function.get_connection_string')
+    @patch('create_complaint.lambda_function.psycopg.connect')
+    @patch('create_complaint.lambda_function.log_workflow')
+    def test_create_complaint_workflow_logging_error(self, mock_log_workflow, mock_connect, mock_get_connection):
+        """Test: Workflow logging error doesn't prevent complaint creation"""
+        mock_get_connection.return_value = 'postgresql://user:pass@host:5432/db'
+        
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = {'complaint_id': 'CAS-00002'}
+        
+        mock_conn = MagicMock()
+        mock_conn.__enter__ = Mock(return_value=mock_conn)
+        mock_conn.__exit__ = Mock(return_value=False)
+        mock_conn.cursor.return_value.__enter__ = Mock(return_value=mock_cursor)
+        mock_conn.cursor.return_value.__exit__ = Mock(return_value=False)
+        mock_connect.return_value = mock_conn
+        
+        # Simulate workflow logging error
+        mock_log_workflow.side_effect = Exception("Workflow logging failed")
+
+        event = {'headers': {'x-user-email': 'test@example.com'}}
+        
+        # Should raise the exception
+        with pytest.raises(Exception):
+            lambda_function.create_complaint_in_db('Test narrative', event)
 
 
 class TestUtilityFunctions:
@@ -372,6 +450,21 @@ class TestUtilityFunctions:
         user = lambda_function._get_user_from_event(event)
         assert user == 'user@example.com'
 
+    def test_get_user_from_event_cognito_sub_only(self):
+        """Test: Extract user from Cognito sub when email is missing"""
+        event = {
+            'requestContext': {
+                'authorizer': {
+                    'claims': {
+                        'sub': 'user-456'
+                    }
+                }
+            }
+        }
+
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'user-456'
+
     def test_get_user_from_event_header(self):
         """Test: Extract user from header"""
         event = {
@@ -383,9 +476,31 @@ class TestUtilityFunctions:
         user = lambda_function._get_user_from_event(event)
         assert user == 'header-user@example.com'
 
+    def test_get_user_from_event_header_user_id(self):
+        """Test: Extract user from x-user-id header"""
+        event = {
+            'headers': {
+                'x-user-id': 'user-789'
+            }
+        }
+
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'user-789'
+
     def test_get_user_from_event_anonymous(self):
         """Test: Return anonymous when no user info"""
         event = {}
+
+        user = lambda_function._get_user_from_event(event)
+        assert user == 'anonymous'
+
+    def test_get_user_from_event_exception(self):
+        """Test: Return anonymous when exception occurs"""
+        event = {
+            'requestContext': {
+                'authorizer': None  # This will cause an error when accessing ['claims']
+            }
+        }
 
         user = lambda_function._get_user_from_event(event)
         assert user == 'anonymous'

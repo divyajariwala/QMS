@@ -179,6 +179,46 @@ def test_update_grading_status_deviation_not_found(mock_creds):
         )
 
 
+def test_update_grading_status_missing_db_secret():
+    """Test: Error when DB_SECRET_NAME is not configured"""
+    # Temporarily set DB_SECRET_NAME to None
+    original_secret = lambda_function.DB_SECRET_NAME
+    lambda_function.DB_SECRET_NAME = None
+    
+    try:
+        with pytest.raises(ValueError, match="DB_SECRET_NAME not configured"):
+            lambda_function.update_grading_status(
+                deviation_id="DV-001",
+                sections=[]
+            )
+    finally:
+        lambda_function.DB_SECRET_NAME = original_secret
+
+
+@patch.object(lambda_function, "get_db_credentials")
+@patch.object(lambda_function, "log_deviation_workflow")
+@patch.object(lambda_function, "save_grading_audit_log")
+def test_update_grading_status_with_audit_log(mock_audit, mock_workflow, mock_creds, valid_sections):
+    """Test: Audit log is called when sections are edited"""
+    mock_creds.return_value = {
+        "host": "localhost",
+        "dbname": "db",
+        "username": "u",
+        "password": "p",
+    }
+
+    conn_ctx, conn, cur = mock_db_context()
+    lambda_function.psycopg.connect.return_value = conn_ctx
+
+    result = lambda_function.update_grading_status(
+        deviation_id="DV-002",
+        sections=valid_sections
+    )
+
+    assert result["deviation_id"] == "DV-002"
+    mock_audit.assert_called_once_with(conn, valid_sections, "DV-002")
+
+
 # ==================================================================
 # LAMBDA HANDLER TESTS
 # ==================================================================
