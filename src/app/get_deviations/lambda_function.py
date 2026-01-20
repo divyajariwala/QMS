@@ -264,7 +264,7 @@ def get_deviation_by_id(conn, deviation_id):
                 "body": json.dumps({"error": "Deviation not found"}),
             }
 
-        # Fetch RCA categories data from rca_analysis table
+        # Fetch RCA categories data from deviation_rca_analysis table
         cursor.execute(
             """
             SELECT
@@ -272,7 +272,7 @@ def get_deviation_by_id(conn, deviation_id):
                 major_root_cause_category,
                 near_root_cause_category,
                 root_cause_category
-            FROM rca_analysis
+            FROM deviation_rca_analysis
             WHERE deviation_id = %s
             ORDER BY id
             """,

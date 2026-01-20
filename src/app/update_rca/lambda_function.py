@@ -63,7 +63,7 @@ def update_rca_in_database(rca_id: int, deviation_id: str, issues: str, issues_c
             with conn.cursor() as cur:
                 # First check if RCA exists
                 cur.execute("""
-                    SELECT id FROM rca_analysis WHERE id = %s
+                    SELECT id FROM deviation_rca_analysis WHERE id = %s
                 """, (rca_id,))
                 
                 if cur.fetchone() is None:
@@ -71,7 +71,7 @@ def update_rca_in_database(rca_id: int, deviation_id: str, issues: str, issues_c
                 
                 # Update the RCA
                 cur.execute("""
-                    UPDATE rca_analysis
+                    UPDATE deviation_rca_analysis
                     SET
                         deviation_id = %s,
                         issues = %s,

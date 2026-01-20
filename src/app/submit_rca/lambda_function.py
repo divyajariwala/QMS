@@ -147,9 +147,9 @@ def save_rca_batch_to_database(rca_list: list, created_by: str = 'system'):
                     
                     logger.info(f"Processing RCA {idx + 1}/{len(rca_list)} for deviation: {deviation_id} (AI generated: {is_ai_generated}, Added: {is_added}, Edited: {is_edited})")
 
-                    # Insert RCA into rca_analysis table
+                    # Insert RCA into deviation_rca_analysis table
                     cur.execute("""
-                        INSERT INTO rca_analysis (
+                        INSERT INTO deviation_rca_analysis (
                             deviation_id,
                             problem_category,
                             problem_category_validated,
@@ -368,7 +368,7 @@ def lambda_handler(event, context):
     }
 
     Database Updates:
-    1. Inserts RCA(s) into rca_analysis table
+    1. Inserts RCA(s) into deviation_rca_analysis table
     2. Updates deviations table:
        - Sets rca_generated = true
        - Sets rca_approved = true
