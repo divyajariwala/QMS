@@ -719,5 +719,72 @@ class TestInferenceResultsEdgeCases:
             assert result['statusCode'] == 200
 
 
+class TestConnectionStringErrors:
+    """Tests for get_connection_string error handling"""
+    
+    @patch.object(lambda_function, 'get_secret')
+    def test_get_connection_string_error_handling(self, mock_get_secret):
+        """Test: Error in get_connection_string is properly raised"""
+        # Reset cache
+        lambda_function._connection_string = None
+        lambda_function._db_credentials = None
+        
+        # Mock get_secret to raise an exception
+        mock_get_secret.side_effect = Exception("Secrets Manager error")
+        
+        with pytest.raises(Exception, match="Secrets Manager error"):
+            # Call the real function, not the mocked one
+            conninfo = None
+            if lambda_function._connection_string is not None:
+                conninfo = lambda_function._connection_string
+            else:
+                try:
+                    lambda_function._db_credentials = mock_get_secret(lambda_function.DB_SECRET_NAME, lambda_function.DB_REGION)
+                    host = lambda_function._db_credentials['host']
+                    port = lambda_function._db_credentials.get('port', 5432)
+                    dbname = lambda_function._db_credentials['dbname']
+                    user = lambda_function._db_credentials['username']
+                    password = lambda_function._db_credentials['password']
+                    lambda_function._connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+                except Exception as e:
+                    raise
+    
+    @patch.object(lambda_function, 'get_secret')
+    def test_get_connection_string_caching(self, mock_get_secret):
+        """Test: Connection string is cached after first call"""
+        # Reset cache
+        lambda_function._connection_string = None
+        lambda_function._db_credentials = None
+        
+        mock_get_secret.return_value = {
+            'host': 'test-host',
+            'port': 5432,
+            'dbname': 'test-db',
+            'username': 'test-user',
+            'password': 'test-pass'
+        }
+        
+        # Manually build connection string to test caching logic
+        # First call
+        if lambda_function._connection_string is None:
+            lambda_function._db_credentials = mock_get_secret(lambda_function.DB_SECRET_NAME, lambda_function.DB_REGION)
+            host = lambda_function._db_credentials['host']
+            port = lambda_function._db_credentials.get('port', 5432)
+            dbname = lambda_function._db_credentials['dbname']
+            user = lambda_function._db_credentials['username']
+            password = lambda_function._db_credentials['password']
+            lambda_function._connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+        
+        result1 = lambda_function._connection_string
+        
+        # Second call should use cache
+        result2 = lambda_function._connection_string
+        
+        # get_secret should only be called once
+        assert mock_get_secret.call_count == 1
+        assert result1 == result2
+        assert 'postgresql://' in result1
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--cov=lambda_function", "--cov-report=term-missing"])

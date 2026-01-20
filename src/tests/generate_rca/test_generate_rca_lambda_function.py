@@ -631,6 +631,82 @@ class TestErrorHandling:
                         assert result[0]['major_root_cause_category_validated'] == "Major 1"
                         assert result[0]['near_root_cause'] == "Near 1"
                         assert result[0]['root_cause'] == "Root 1"
+    
+    def test_generate_multiple_rcas_fallback_on_single_rca(self, mock_bedrock_client, sample_investigation_summary):
+        """Test fallback to sequential when only 1 RCA is returned"""
+        # Mock response with only 1 RCA
+        single_rca_response = [{
+            "problem_category": "Test Problem",
+            "problem_category_validated": "Test",
+            "major_root_cause_category": "Test Major",
+            "major_root_cause_category_validated": "Test",
+            "near_root_cause_category": "Test Near",
+            "near_root_cause": "Test",
+            "root_cause_category": "Test Root Cat",
+            "root_cause": "Test Root"
+        }]
+        
+        mock_response = {
+            'output': {
+                'message': {
+                    'content': [{'text': json.dumps(single_rca_response)}]
+                }
+            }
+        }
+        mock_bedrock_client.converse.return_value = mock_response
+        
+        with patch.object(lambda_function, 'load_prompt', return_value="Test prompt"):
+            with patch.object(lambda_function, 'generate_rcas_sequential', return_value=single_rca_response * 2) as mock_sequential:
+                result = lambda_function.generate_multiple_rcas(sample_investigation_summary)
+                
+                # Should call sequential fallback
+                mock_sequential.assert_called_once()
+                assert len(result) == 2
+    
+    def test_generate_multiple_rcas_exception_fallback(self, mock_bedrock_client, sample_investigation_summary):
+        """Test fallback to sequential when exception occurs"""
+        # Mock bedrock to raise exception
+        mock_bedrock_client.converse.side_effect = Exception("Bedrock API error")
+        
+        with patch.object(lambda_function, 'load_prompt', return_value="Test prompt"):
+            with patch.object(lambda_function, 'generate_rcas_sequential', return_value=[{"test": "data"}] * 2) as mock_sequential:
+                result = lambda_function.generate_multiple_rcas(sample_investigation_summary)
+                
+                # Should call sequential fallback
+                mock_sequential.assert_called_once()
+                assert len(result) == 2
+    
+    def test_generate_problem_category_error(self, mock_bedrock_client, sample_investigation_summary):
+        """Test error handling in generate_problem_category"""
+        mock_bedrock_client.converse.side_effect = Exception("API Error")
+        
+        with patch.object(lambda_function, 'load_prompt', return_value="Test prompt"):
+            with pytest.raises(Exception):
+                lambda_function.generate_problem_category(sample_investigation_summary, 1)
+    
+    def test_generate_major_root_cause_category_error(self, mock_bedrock_client, sample_investigation_summary):
+        """Test error handling in generate_major_root_cause_category"""
+        mock_bedrock_client.converse.side_effect = Exception("API Error")
+        
+        with patch.object(lambda_function, 'load_prompt', return_value="Test prompt"):
+            with pytest.raises(Exception):
+                lambda_function.generate_major_root_cause_category(sample_investigation_summary, "Problem", 1)
+    
+    def test_generate_near_root_cause_error(self, mock_bedrock_client, sample_investigation_summary):
+        """Test error handling in generate_near_root_cause"""
+        mock_bedrock_client.converse.side_effect = Exception("API Error")
+        
+        with patch.object(lambda_function, 'load_prompt', return_value="Test prompt"):
+            with pytest.raises(Exception):
+                lambda_function.generate_near_root_cause(sample_investigation_summary, "Problem", "Major", 1)
+    
+    def test_generate_root_cause_error(self, mock_bedrock_client, sample_investigation_summary):
+        """Test error handling in generate_root_cause"""
+        mock_bedrock_client.converse.side_effect = Exception("API Error")
+        
+        with patch.object(lambda_function, 'load_prompt', return_value="Test prompt"):
+            with pytest.raises(Exception):
+                lambda_function.generate_root_cause(sample_investigation_summary, "Problem", "Major", "Near", 1)
 
 
 if __name__ == "__main__":

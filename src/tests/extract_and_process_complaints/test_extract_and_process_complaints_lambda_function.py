@@ -282,11 +282,9 @@ class TestFetchPdfFromS3:
 class TestPdfToImages:
     """Tests for pdf_to_images function"""
 
-    @pytest.mark.skip(reason="Mock conflict with module-level fitz mock - needs refactoring")
-    @patch('fitz.open')
-    def test_pdf_to_images_success(self, mock_fitz):
+    def test_pdf_to_images_success(self):
         """Test: Successful PDF to images conversion"""
-        # Create a simple object with real attributes instead of Mock
+        # Create a fake PDF document with real attributes
         class FakePdfDoc:
             page_count = 2
             def __getitem__(self, index):
@@ -295,23 +293,27 @@ class TestPdfToImages:
                 mock_pix.tobytes.return_value = b'fake-png-data'
                 mock_page.get_pixmap.return_value = mock_pix
                 return mock_page
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+            def close(self):
+                pass
         
-        mock_fitz.return_value = FakePdfDoc()
+        # Patch fitz.open at the module level where it's used
+        with patch.object(lambda_function.fitz, 'open', return_value=FakePdfDoc()):
+            # Mock PIL Image
+            with patch.object(lambda_function.Image, 'open') as mock_image_open:
+                mock_image = Mock()
+                mock_image_open.return_value = mock_image
 
-        # Mock PIL Image
-        with patch('PIL.Image.open') as mock_image_open:
-            mock_image = Mock()
-            mock_image_open.return_value = mock_image
+                result = lambda_function.pdf_to_images(b'pdf-data')
+                assert len(result) == 2
+                assert all(img is not None for img in result)
 
-            result = lambda_function.pdf_to_images(b'pdf-data')
-            assert len(result) == 2
-            assert all(img is not None for img in result)
-
-    @pytest.mark.skip(reason="Mock conflict with module-level fitz mock - needs refactoring")
-    @patch('fitz.open')
-    def test_pdf_to_images_all_pages(self, mock_fitz):
+    def test_pdf_to_images_all_pages(self):
         """Test: PDF with multiple pages processes all pages"""
-        # Create a simple object with real attributes instead of Mock
+        # Create a fake PDF document with 25 pages
         class FakePdfDoc:
             page_count = 25
             def __getitem__(self, index):
@@ -320,23 +322,28 @@ class TestPdfToImages:
                 mock_pix.tobytes.return_value = b'fake-png-data'
                 mock_page.get_pixmap.return_value = mock_pix
                 return mock_page
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+            def close(self):
+                pass
 
-        mock_fitz.return_value = FakePdfDoc()
+        # Patch fitz.open at the module level where it's used
+        with patch.object(lambda_function.fitz, 'open', return_value=FakePdfDoc()):
+            with patch.object(lambda_function.Image, 'open') as mock_image_open:
+                mock_image = Mock()
+                mock_image_open.return_value = mock_image
 
-        with patch('PIL.Image.open') as mock_image_open:
-            mock_image = Mock()
-            mock_image_open.return_value = mock_image
+                result = lambda_function.pdf_to_images(b'pdf-data')
+                assert len(result) == 25
 
-            result = lambda_function.pdf_to_images(b'pdf-data')
-            assert len(result) == 25
-
-    @patch('fitz.open')
-    def test_pdf_to_images_error(self, mock_fitz):
+    def test_pdf_to_images_error(self):
         """Test: Error handling in PDF conversion"""
-        mock_fitz.side_effect = Exception("PDF conversion error")
-
-        with pytest.raises(Exception):
-            lambda_function.pdf_to_images(b'invalid-pdf')
+        # Patch fitz.open to raise an exception
+        with patch.object(lambda_function.fitz, 'open', side_effect=Exception("PDF conversion error")):
+            with pytest.raises(Exception):
+                lambda_function.pdf_to_images(b'invalid-pdf')
 
 
 class TestImagesToBase64:
