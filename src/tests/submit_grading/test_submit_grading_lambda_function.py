@@ -70,10 +70,16 @@ spec.loader.exec_module(lambda_function)
 # ------------------------------------------------------------------
 @pytest.fixture
 def valid_sections():
+    """Sections with executive summary content"""
     return [
-        {"label": "Title", "isEdited": False},
-        {"label": "Overview", "isEdited": True},
-        {"label": "CAPA Plan", "isEdited": False},
+        {"label": "Title", "content": "<p>Deviation Title</p>", "isEdited": False},
+        {"label": "Overview", "content": "<p>Overview content</p>", "isEdited": True},
+        {"label": "Immediate Actions", "content": "<ul><li>Action 1</li></ul>", "isEdited": False},
+        {"label": "Quality Risk Evaluation", "content": "<ol><li>Risk 1</li></ol>", "isEdited": False},
+        {"label": "Investigation Summary", "content": "<p>Investigation details</p>", "isEdited": False},
+        {"label": "CAPA Plan", "content": "<ul><li>CAPA 1</li></ul>", "isEdited": False},
+        {"label": "Recurrence Check", "content": "<p>Recurrence check</p>", "isEdited": False},
+        {"label": "Effectiveness Check", "content": "<p>Effectiveness check</p>", "isEdited": False},
     ]
 
 
@@ -134,6 +140,87 @@ def test_save_grading_audit_log_not_called_when_no_edit():
 
 
 # ==================================================================
+# SAVE EXECUTIVE SUMMARY TESTS
+# ==================================================================
+def test_save_executive_summary_success(valid_sections):
+    """Test: Successfully save executive summary with UPDATE"""
+    cur = Mock()
+    cur.rowcount = 1  # UPDATE succeeded
+    
+    lambda_function.save_executive_summary(
+        cur=cur,
+        deviation_id="DV-001",
+        sections=valid_sections
+    )
+    
+    # Should call execute once for UPDATE
+    assert cur.execute.call_count == 1
+    call_args = cur.execute.call_args[0]
+    assert "UPDATE deviation_grading_executive" in call_args[0]
+    assert "DV-001" in call_args[1]
+
+
+def test_save_executive_summary_insert_when_no_record(valid_sections):
+    """Test: INSERT when no existing record found"""
+    cur = Mock()
+    cur.rowcount = 0  # UPDATE found no rows, need INSERT
+    
+    lambda_function.save_executive_summary(
+        cur=cur,
+        deviation_id="DV-002",
+        sections=valid_sections
+    )
+    
+    # Should call execute twice: UPDATE then INSERT
+    assert cur.execute.call_count == 2
+    
+    # First call is UPDATE
+    update_call = cur.execute.call_args_list[0][0]
+    assert "UPDATE deviation_grading_executive" in update_call[0]
+    
+    # Second call is INSERT
+    insert_call = cur.execute.call_args_list[1][0]
+    assert "INSERT INTO deviation_grading_executive" in insert_call[0]
+
+
+def test_save_executive_summary_empty_sections():
+    """Test: No action when sections list is empty"""
+    cur = Mock()
+    
+    lambda_function.save_executive_summary(
+        cur=cur,
+        deviation_id="DV-003",
+        sections=[]
+    )
+    
+    # Should not call execute at all
+    cur.execute.assert_not_called()
+
+
+def test_save_executive_summary_removes_isedited_field(valid_sections):
+    """Test: isEdited field is removed from saved data"""
+    cur = Mock()
+    cur.rowcount = 1
+    
+    lambda_function.save_executive_summary(
+        cur=cur,
+        deviation_id="DV-004",
+        sections=valid_sections
+    )
+    
+    # Get the JSON data that was passed to execute
+    call_args = cur.execute.call_args[0]
+    saved_json = call_args[1][0]
+    saved_data = json.loads(saved_json)
+    
+    # Verify isEdited field is not in saved data
+    for section in saved_data:
+        assert "isEdited" not in section
+        assert "label" in section
+        assert "content" in section
+
+
+# ==================================================================
 # UPDATE GRADING STATUS TESTS
 # ==================================================================
 @patch.object(lambda_function, "get_db_credentials")
@@ -156,7 +243,8 @@ def test_update_grading_status_success(mock_workflow, mock_creds, valid_sections
 
     assert result["deviation_id"] == "DV-001"
     assert result["grading_completed"] is True
-    assert cur.execute.call_count == 2
+    # 3 calls: 2 for deviations table updates + 1 for executive_summary save
+    assert cur.execute.call_count == 3
     mock_workflow.assert_called_once()
 
 
@@ -217,6 +305,59 @@ def test_update_grading_status_with_audit_log(mock_audit, mock_workflow, mock_cr
 
     assert result["deviation_id"] == "DV-002"
     mock_audit.assert_called_once_with(conn, valid_sections, "DV-002")
+
+
+@patch.object(lambda_function, "get_db_credentials")
+@patch.object(lambda_function, "log_deviation_workflow")
+@patch.object(lambda_function, "save_executive_summary")
+def test_update_grading_status_saves_executive_summary(mock_save_exec, mock_workflow, mock_creds, valid_sections):
+    """Test: Executive summary is always saved from sections"""
+    mock_creds.return_value = {
+        "host": "localhost",
+        "dbname": "db",
+        "username": "u",
+        "password": "p",
+    }
+
+    conn_ctx, conn, cur = mock_db_context()
+    lambda_function.psycopg.connect.return_value = conn_ctx
+
+    result = lambda_function.update_grading_status(
+        deviation_id="DV-003",
+        sections=valid_sections
+    )
+
+    assert result["deviation_id"] == "DV-003"
+    assert result["grading_completed"] is True
+    
+    # Verify save_executive_summary was called with sections
+    mock_save_exec.assert_called_once_with(cur, "DV-003", valid_sections)
+
+
+@patch.object(lambda_function, "get_db_credentials")
+@patch.object(lambda_function, "log_deviation_workflow")
+@patch.object(lambda_function, "save_executive_summary")
+def test_update_grading_status_with_empty_sections(mock_save_exec, mock_workflow, mock_creds):
+    """Test: Executive summary save is called even with empty sections (it handles empty internally)"""
+    mock_creds.return_value = {
+        "host": "localhost",
+        "dbname": "db",
+        "username": "u",
+        "password": "p",
+    }
+
+    conn_ctx, conn, cur = mock_db_context()
+    lambda_function.psycopg.connect.return_value = conn_ctx
+
+    result = lambda_function.update_grading_status(
+        deviation_id="DV-004",
+        sections=[]
+    )
+
+    assert result["deviation_id"] == "DV-004"
+    
+    # Verify save_executive_summary was called (it will handle empty list internally)
+    mock_save_exec.assert_called_once_with(cur, "DV-004", [])
 
 
 # ==================================================================

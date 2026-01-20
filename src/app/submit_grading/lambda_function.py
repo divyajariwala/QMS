@@ -71,11 +71,71 @@ def save_grading_audit_log(conn, sections, deviation_id):
 
 
 # =====================================================
+# SAVE EXECUTIVE SUMMARY
+# =====================================================
+def save_executive_summary(cur, deviation_id: str, sections: list):
+    """
+    Save executive summary sections to deviation_grading_executive table
+
+    Args:
+        cur: Database cursor
+        deviation_id: The deviation ID (e.g., "DV-00001")
+        sections: List of executive summary sections with format:
+                 [{"label": "Title", "content": "<p>...</p>",
+                   "isEdited": false}, ...]
+    """
+    if not sections:
+        logger.info("No executive summary sections to save for %s",
+                    deviation_id)
+        return
+
+    logger.info("Saving executive summary for %s with %d sections",
+                deviation_id, len(sections))
+
+    # Transform sections to match expected format (remove isEdited field)
+    summary_data = [
+        {"label": section["label"], "content": section["content"]}
+        for section in sections
+    ]
+
+    # Update executive_summary column in deviation_grading_executive
+    cur.execute("""
+        UPDATE deviation_grading_executive
+        SET
+            executive_summary = %s::jsonb,
+            updated_date = CURRENT_TIMESTAMP
+        WHERE deviation_id = %s
+    """, (json.dumps(summary_data), deviation_id))
+
+    if cur.rowcount == 0:
+        # If no record exists, insert one
+        logger.warning("No grading record found for %s, inserting new record",
+                       deviation_id)
+        cur.execute("""
+            INSERT INTO deviation_grading_executive (
+                deviation_id,
+                executive_summary,
+                updated_date
+            ) VALUES (%s, %s::jsonb, CURRENT_TIMESTAMP)
+        """, (deviation_id, json.dumps(summary_data)))
+
+    logger.info("✅ Executive summary saved successfully for %s",
+                deviation_id)
+
+
+# =====================================================
 # UPDATE GRADING STATUS ONLY
 # =====================================================
 def update_grading_status(deviation_id: str, sections: list):
     """
-    Marks grading as completed for a deviation
+    Marks grading as completed for a deviation and saves executive summary
+
+    Args:
+        deviation_id: The deviation ID
+        sections: List of executive summary sections with format:
+                 [{"label": "Title", "content": "<p>...</p>",
+                   "isEdited": false}, ...]
+                 Used for both audit logging and saving executive summary
     """
     start_time = datetime.now(timezone.utc)
 
@@ -95,7 +155,8 @@ def update_grading_status(deviation_id: str, sections: list):
 
     with psycopg.connect(conn_string) as conn:
         with conn.cursor() as cur:
-            logger.info(f"Updating grading status for deviation {deviation_id}")
+            logger.info("Updating grading status for deviation %s",
+                        deviation_id)
 
             # ==============================
             # UPDATE DEVIATIONS TABLE
@@ -126,6 +187,11 @@ def update_grading_status(deviation_id: str, sections: list):
             )
 
             # ==============================
+            # SAVE EXECUTIVE SUMMARY
+            # ==============================
+            save_executive_summary(cur, deviation_id, sections)
+
+            # ==============================
             # WORKFLOW LOG
             # ==============================
             log_deviation_workflow(
@@ -145,7 +211,7 @@ def update_grading_status(deviation_id: str, sections: list):
 
             conn.commit()
 
-    logger.info(f"Grading status updated successfully for {deviation_id}")
+    logger.info("Grading status updated successfully for %s", deviation_id)
 
     return {
         "deviation_id": deviation_id,
@@ -162,11 +228,33 @@ def lambda_handler(event, context):
     Payload:
     {
         "deviation_id": "DV-00105",
-        "created_by": "user@example.com"
+        "created_by": "user@example.com",
+        "sections": [
+            {"label": "Title", "content": "<p>HTML content</p>",
+             "isEdited": false},
+            {"label": "Overview", "content": "<p>HTML content</p>",
+             "isEdited": false},
+            {"label": "Immediate Actions",
+             "content": "<ul><li>Action 1</li></ul>", "isEdited": false},
+            {"label": "Quality Risk Evaluation",
+             "content": "<ol><li>Risk 1</li></ol>", "isEdited": false},
+            {"label": "Investigation Summary",
+             "content": "<p>Investigation details</p>", "isEdited": false},
+            {"label": "CAPA Plan",
+             "content": "<ul><li>CAPA 1</li></ul>", "isEdited": false},
+            {"label": "Recurrence Check",
+             "content": "<p>Recurrence check</p>", "isEdited": false},
+            {"label": "Effectiveness Check",
+             "content": "<p>Effectiveness check</p>", "isEdited": false}
+        ]
     }
+
+    The sections field contains the executive summary content and is saved
+    to the deviation_grading_executive table. The isEdited field is used
+    for audit logging to track which sections were modified by the user.
     """
     try:
-        logger.info(f"Received event: {json.dumps(event)}")
+        logger.info("Received event: %s", json.dumps(event))
 
         if event.get("httpMethod") == "OPTIONS":
             return handle_cors_preflight()
@@ -195,7 +283,7 @@ def lambda_handler(event, context):
         )
 
     except ValueError as e:
-        logger.error(f"Validation error: {str(e)}")
+        logger.error("Validation error: %s", str(e))
         return response(400, str(e))
 
     except Exception as e:
