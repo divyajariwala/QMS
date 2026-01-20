@@ -562,6 +562,9 @@ export interface DeviationDetail {
   status: string;
   rca_approved: boolean;
   grading_completed: boolean;
+  rcaData: [];
+  gradingData: [];
+  executiveSummary: [];
 }
 
 export type CaseStatusKey = "pending" | "processed" | "overdue";

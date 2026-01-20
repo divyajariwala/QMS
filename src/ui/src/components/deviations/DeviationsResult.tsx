@@ -10,7 +10,11 @@ import { DeviationProps } from "src/types";
 import { formatDateMMM_D_YYYY } from "src/utils";
 import DueDateChip from "@components/common/DueDateChip/DueDateChip";
 
-const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
+const DeviationsResult: React.FC<DeviationProps> = ({
+  deviation,
+  loading,
+  activeStatus,
+}) => {
   const navigate = useNavigate();
   const { deviation_id, created_date, deviation_description } = deviation;
   const [descExpanded, setDescExpanded] = useState(false);
@@ -34,6 +38,9 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
     if (!loading) {
       navigate(`/approveGrading/${deviation_id}`);
     }
+  };
+  const goToProcessedDeviation = () => {
+    navigate(`/processedDeviation/${deviation_id}`);
   };
 
   const truncateAtWord = (text: string, limit: number) => {
@@ -68,7 +75,17 @@ const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
             <Box className={styles.statusText}>IN REVIEW</Box>
           )}
           <div className={styles.container}>
-            <span className={styles.caseNumberText}>{deviation_id}</span>
+            {activeStatus === "processed" ? (
+              <span
+                className={styles.caseNumberText}
+                onClick={goToProcessedDeviation}
+                style={{ cursor: "pointer" }}
+              >
+                {deviation_id}
+              </span>
+            ) : (
+              <span className={styles.caseNumberText}>{deviation_id}</span>
+            )}
             <div className={styles.dateGroup}>
               <img src={Calendar} className={styles.dateIcon} />
               <span className={styles.label}>Received Date: </span>

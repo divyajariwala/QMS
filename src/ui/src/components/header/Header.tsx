@@ -77,7 +77,8 @@ const Header = () => {
       ? 1
       : location.pathname.startsWith("/deviations") ||
         location.pathname.startsWith("/approveRca") ||
-        location.pathname.startsWith("/approveGrading")
+        location.pathname.startsWith("/approveGrading") ||
+        location.pathname.startsWith("/processedDeviation")
       ? 2
       : location.pathname.startsWith("/adverseEvent")
       ? 3

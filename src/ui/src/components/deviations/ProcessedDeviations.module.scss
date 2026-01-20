@@ -1,0 +1,149 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.rootPaper {
+  margin-top: 32px;
+  border-radius: 16px !important;
+  background: $color-white;
+  width: 100%;
+  padding: 16px;
+}
+.mainTitle {
+  font-weight: $font-weight-bold !important;
+  font-size: 15px !important;
+  color: #474747;
+}
+
+.title {
+  font-weight: $font-weight-bold !important;
+  font-size: 15px !important;
+  color: #474747;
+}
+
+.sectionRow {
+  margin-top: 12px;
+}
+.headerDivider {
+  border-color: #eeeff1 !important;
+}
+.boxSection {
+  border-radius: 8px !important;
+  background: $color-white;
+  width: 100%;
+  box-shadow: 0px 2px 1px -1px rgb(0 0 0 / 0%), 0px 1px 1px 0px rgb(0 0 0 / 10%),
+    0px 1px 3px 0px rgba(0, 0, 0, 0.18) !important;
+
+  &::before {
+    display: none !important;
+  }
+}
+.boxRca,
+.boxGrading {
+  @extend .boxSection;
+  margin-bottom: 20px;
+}
+.boxSummary {
+  @extend .boxSection;
+}
+.rootPaper:not(:first-child) .boxSection {
+  margin-top: 20px;
+}
+
+.sectionPaper {
+  border: none !important;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.sectionLabel {
+  font-weight: $font-weight-bold !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  color: #272d37;
+}
+
+.sectionPaper:not(:first-child) .sectionLabel,
+.sectionRow:not(:first-child) .sectionLabel {
+  margin-top: 20px;
+}
+.thumbsUp {
+  color: $advanced-blue;
+}
+.thumbsDown {
+  color: #e2341d;
+}
+.textField {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #dae0e6;
+  height: 124px;
+  padding: 12px 16px;
+  color: #272d37;
+  font-size: 15px;
+  line-height: 22px;
+  overflow-y: auto;
+  @include Scrollbar;
+}
+
+.suggestionsPaper {
+  // padding: 12px;
+  background: #f8fafc; /* light bg to distinguish */
+  border: none !important;
+}
+
+.suggestionLabelRow {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.suggestionBody {
+  height: 124px;
+  background-color: #f1f9ff;
+  padding: 16.5px 14px;
+  border-radius: 5px;
+  overflow-y: auto;
+  @include Scrollbar;
+}
+
+.suggestionText {
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.summaryContemt {
+  margin-top: 2px;
+  letter-spacing: -0.2px;
+}
+
+.MuiAccordionSummary-content.Mui-expanded {
+  margin: 16px 0 !important;
+}
+
+.myAccordionSummary .MuiAccordionSummary-content.Mui-expanded {
+  margin: 12px 0;
+}
+
+.myAccordionSummary.MuiAccordionSummary-root.Mui-expanded {
+  min-height: fit-content;
+}
+
+.myAccordionSummary {
+  position: relative;
+}
+
+.myAccordionSummary.Mui-expanded::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background-color: var(--mui-palette-divider); /* You can override this */
+}

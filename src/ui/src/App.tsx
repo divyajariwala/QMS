@@ -31,6 +31,7 @@ import AdverseEventDetails from "@components/adverseEvent/AdverseEventDetails";
 import RCADetails from "@components/deviations/RCADetails";
 import GradingDetails from "@components/deviations/GradingDetails";
 import Spinner from "@components/common/Spinner/Spinner";
+import ProcessedDeviation from "@components/deviations/ProcessedDeviations";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -119,6 +120,14 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <GradingDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/processedDeviation/:deviationId"
+                    element={
+                      <ProtectedRoute>
+                        <ProcessedDeviation />
                       </ProtectedRoute>
                     }
                   />
