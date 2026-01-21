@@ -35,7 +35,7 @@ DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-mas
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 DB_REGION = os.environ.get('db_region', 'us-east-1')
 
-MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
+MODEL_ID = "us.anthropic.claude-opus-4-1-20250805-v1:0"
 
 _db_credentials = None
 _connection_string = None
