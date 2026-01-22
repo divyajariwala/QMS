@@ -1,14 +1,15 @@
-import fitz  # PyMuPDF
-import boto3
 import json
-import psycopg
-from PIL import Image
 import io
 import base64
 import logging
 import os
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
+
+import fitz  # PyMuPDF
+import boto3
+import psycopg
+from PIL import Image
 
 try:
     from secrets_util import get_secret
@@ -35,7 +36,7 @@ DB_SECRET_BASE_NAME = os.environ.get('db_secret_base_name', 'aurora-postgres-mas
 DB_SECRET_NAME = f"qms-{ENV}-{DB_SECRET_BASE_NAME}"
 DB_REGION = os.environ.get('db_region', 'us-east-1')
 
-MODEL_ID = "us.anthropic.claude-opus-4-1-20250805-v1:0"
+MODEL_ID = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
 
 _db_credentials = None
 _connection_string = None
@@ -124,23 +125,62 @@ def construct_vision_prompt(base64_images):
 # Tool Spec
 # =========================
 def load_tool_spec():
-    with open("toolspec.json") as f:
-        return json.load(f)
-
-
-# =========================
-# Claude – PDF Document First
-# =========================
-def extract_from_pdf_document(pdf_bytes, pdf_name="document.pdf"):
-    pdf_name = pdf_name.replace(".pdf", "")
-    print("pdf_name", pdf_name)
     try:
-        bedrock = boto3.client("bedrock-runtime")
+        toolspec_path = os.path.join(os.path.dirname(__file__), "toolspec.json")
+        logger.info(f"Loading toolspec from: {toolspec_path}")
+        with open(toolspec_path) as f:
+            spec = json.load(f)
+            logger.info("Toolspec loaded successfully")
+            return spec
+    except Exception as e:
+        logger.error(f"Failed to load toolspec: {str(e)}", exc_info=True)
+        raise
+
+
+# =========================
+# Claude – PDF Document First (with timeout)
+# =========================
+def extract_from_pdf_document(pdf_bytes, pdf_name="document.pdf", timeout_seconds=480):
+    """
+    Extract data from PDF using Bedrock Document API.
+    
+    Args:
+        pdf_bytes: PDF file bytes
+        pdf_name: Name of the PDF file
+        timeout_seconds: Maximum time to wait for Bedrock response (default 4 minutes)
+    
+    Returns:
+        Extracted data dict or None if failed
+    """
+    pdf_name = pdf_name.replace(".pdf", "")
+    logger.info(f"Starting PDF extraction for: {pdf_name}")
+    logger.info(f"Timeout set to: {timeout_seconds} seconds")
+    
+    try:
+        # Try to create client with config (production)
+        try:
+            bedrock = boto3.client(
+                "bedrock-runtime",
+                config=boto3.session.Config(
+                    read_timeout=timeout_seconds,
+                    connect_timeout=10,
+                    retries={'max_attempts': 1}
+                )
+            )
+        except TypeError:
+            # Fallback for mocked boto3 in tests (doesn't accept config)
+            bedrock = boto3.client("bedrock-runtime")
+        
         tool_spec = load_tool_spec()
 
-        with open("prompt.txt") as f:
+        prompt_path = os.path.join(os.path.dirname(__file__), "prompt.txt")
+        logger.info(f"Loading prompt from: {prompt_path}")
+        with open(prompt_path) as f:
             prompt_text = f.read()
 
+        logger.info(f"Calling Bedrock Converse API with model: {MODEL_ID}")
+        logger.info(f"PDF size: {len(pdf_bytes)} bytes ({len(pdf_bytes)/1024:.2f} KB)")
+        
         messages = [{
             "role": "user",
             "content": [
@@ -155,6 +195,11 @@ def extract_from_pdf_document(pdf_bytes, pdf_name="document.pdf"):
             ]
         }]
 
+        # Call Bedrock with explicit timeout handling
+        import time
+        start_time = time.time()
+        
+        logger.info("Waiting for Bedrock response...")
         response = bedrock.converse(
             modelId=MODEL_ID,
             messages=messages,
@@ -163,15 +208,31 @@ def extract_from_pdf_document(pdf_bytes, pdf_name="document.pdf"):
                 "toolChoice": {"auto": {}}
             }
         )
-
+        
+        elapsed_time = time.time() - start_time
+        logger.info(f"✓ Bedrock response received in {elapsed_time:.2f} seconds")
+        logger.info(f"Stop reason: {response.get('stopReason')}")
+        logger.info(f"Usage: {response.get('usage', {})}")
+        
         for item in response["output"]["message"]["content"]:
             if isinstance(item, dict) and "toolUse" in item:
-                return item["toolUse"]["input"]
+                extracted_data = item["toolUse"]["input"]
+                logger.info(f"✓ Successfully extracted data with {len(extracted_data)} fields")
+                logger.info(f"Extracted fields: {list(extracted_data.keys())}")
+                return extracted_data
 
+        logger.warning("⚠ No toolUse found in response content")
+        logger.warning(f"Response content: {response['output']['message']['content']}")
         return None
 
     except Exception as e:
-        logger.error(f"PDF document extraction failed: {str(e)}")
+        logger.error(f"✗ PDF document extraction failed: {str(e)}", exc_info=True)
+        logger.error(f"Error type: {type(e).__name__}")
+        
+        # Check if it's a timeout error
+        if "timeout" in str(e).lower() or "timed out" in str(e).lower():
+            logger.error(f"⏱ TIMEOUT: Bedrock took longer than {timeout_seconds} seconds")
+        
         return None
 
 
@@ -252,52 +313,113 @@ def process_single_deviation(message):
     deviation_id = message.get("deviation_id")
     start_time = datetime.utcnow()
 
+    logger.info(f"{'='*60}")
+    logger.info(f"Processing deviation: {deviation_id}")
+    logger.info(f"S3 path: {message.get('s3path')}")
+    logger.info(f"{'='*60}")
+
     try:
         pdf_bytes = fetch_pdf_from_s3(message["s3path"])
-
-        # PDF document extraction
-        extracted = extract_from_pdf_document(
-            pdf_bytes,
-            os.path.basename(message["s3path"])
+        pdf_size_kb = len(pdf_bytes) / 1024
+        logger.info(
+            "✓ PDF fetched successfully. Size: %d bytes (%.2f KB)",
+            len(pdf_bytes), pdf_size_kb
         )
 
-        # Fallback to vision
-        if not extracted or extracted.get("description") in ("", None, "N/A"):
-            logger.info(f"Fallback to vision for deviation {deviation_id}")
-            images = pdf_to_images(pdf_bytes)
+        # Try PDF document extraction with timeout
+        extracted = None
+        extraction_method = None
 
-            if images:
-                extracted = extract_from_images(images)
-                extracted["_extraction_method"] = "vision"
-                print("image_extracted", extracted)
+        logger.info("→ Attempting PDF document extraction (timeout: 8 minutes)...")
+        try:
+            extracted = extract_from_pdf_document(
+                pdf_bytes,
+                os.path.basename(message["s3path"]),
+                timeout_seconds=480  # 8 minutes timeout
+            )
+            
+            if extracted and extracted.get("description") not in ("", None, "N/A"):
+                extraction_method = "pdf_document"
+                logger.info("✓ PDF document extraction successful!")
             else:
-                extracted = {
-                    "title": "Empty PDF",
-                    "description": "N/A",
-                    "immediate_steps_taken": "N/A",
-                    "quality_risk_evaluation": "N/A",
-                    "investigation_summary": "N/A",
-                    "capa_plan": "N/A",
-                    "recurrence_check_details": "N/A",
-                    "effectiveness_check_plan": "N/A",
-                    "_extraction_method": "empty_pdf"
-                }
-        else:
-            extracted["_extraction_method"] = "pdf_document"
+                logger.warning("⚠ PDF extraction returned empty/invalid data")
+                extracted = None
+                
+        except Exception as e:
+            logger.warning(f"⚠ PDF document extraction failed: {str(e)}")
+            extracted = None
 
+        # Fallback to vision if PDF extraction failed
+        if not extracted:
+            logger.info("→ Falling back to Vision API...")
+            try:
+                images = pdf_to_images(pdf_bytes)
+                logger.info(f"✓ Converted PDF to {len(images)} images")
+
+                if images:
+                    logger.info("→ Calling Vision API...")
+                    extracted = extract_from_images(images)
+                    
+                    if extracted and extracted.get("description") not in ("", None, "N/A"):
+                        extraction_method = "vision"
+                        logger.info("✓ Vision extraction successful!")
+                    else:
+                        logger.warning("⚠ Vision extraction returned empty/invalid data")
+                        extracted = None
+                else:
+                    logger.error("✗ No images extracted from PDF")
+                    
+            except Exception as e:
+                logger.error(f"✗ Vision extraction failed: {str(e)}", exc_info=True)
+                extracted = None
+
+        # Last resort: use default values
+        if not extracted:
+            logger.warning("⚠ All extraction methods failed, using default values")
+            extracted = {
+                "title": "Extraction Failed",
+                "description": "Unable to extract data from PDF",
+                "immediate_steps_taken": "N/A",
+                "quality_risk_evaluation": "N/A",
+                "investigation_summary": "N/A",
+                "capa_plan": "N/A",
+                "recurrence_check_details": "N/A",
+                "effectiveness_check_plan": "N/A",
+            }
+            extraction_method = "failed"
+
+        extracted["_extraction_method"] = extraction_method
+        
+        logger.info(f"→ Updating database for deviation: {deviation_id}")
+        logger.info(f"Extraction method: {extraction_method}")
         update_deviation_in_db(deviation_id, extracted, start_time)
+        logger.info(f"✓ Database updated successfully!")
+        logger.info(f"{'='*60}")
 
         return {"success": True, "deviation_id": deviation_id, "extracted_data": extracted}
 
     except Exception as e:
-        logger.error(f"Deviation {deviation_id} failed: {str(e)}")
+        logger.error(f"{'='*60}")
+        logger.error(f"✗ Deviation {deviation_id} processing failed!")
+        logger.error(f"Error: {str(e)}", exc_info=True)
+        logger.error(f"{'='*60}")
         raise
 
 
 # =========================
 # Lambda Handler
 # =========================
-def lambda_handler(event, context):
+def lambda_handler(event, context):  # pylint: disable=unused-argument
+    """
+    AWS Lambda handler for processing deviation PDF extraction.
+
+    Args:
+        event: Lambda event containing deviation information
+        context: Lambda context (unused)
+
+    Returns:
+        dict: Response with statusCode and body
+    """
     try:
         if "Records" in event:
             with ThreadPoolExecutor(max_workers=10) as executor:

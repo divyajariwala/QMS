@@ -467,9 +467,9 @@ def test_empty_pdf_handling(mock_secrets, mock_psycopg, mock_boto3,
     assert response['statusCode'] == 200
     body = json.loads(response['body'])
     assert body['success'] is True
-    assert body['extracted_data']['_extraction_method'] == 'empty_pdf'
-    assert body['extracted_data']['title'] == 'Empty PDF'
-    assert body['extracted_data']['description'] == 'N/A'
+    assert body['extracted_data']['_extraction_method'] == 'failed'
+    assert body['extracted_data']['title'] == 'Extraction Failed'
+    assert body['extracted_data']['description'] == 'Unable to extract data from PDF'
 
 
 # ============================================================================
@@ -543,7 +543,7 @@ def test_database_update_error(mock_secrets, mock_psycopg, mock_boto3,
 
 def test_bedrock_api_error(mock_secrets, mock_psycopg, mock_boto3,
                            sample_pdf_bytes, sample_tool_spec, valid_direct_event):
-    """Test error when Bedrock API fails - falls back to vision then empty PDF"""
+    """Test error when Bedrock API fails - falls back to vision then marks as failed"""
     # Setup S3 mock
     mock_boto3['s3'].head_object.return_value = {'ContentLength': 1024 * 1024}
     mock_boto3['s3'].get_object.return_value = {'Body': io.BytesIO(sample_pdf_bytes)}
@@ -566,11 +566,11 @@ def test_bedrock_api_error(mock_secrets, mock_psycopg, mock_boto3,
         with patch('builtins.open', side_effect=mock_open_handler):
             response = lambda_module.lambda_handler(valid_direct_event, None)
     
-    # When both PDF and vision fail, it returns 200 with empty_pdf
+    # When both PDF and vision fail, it returns 200 with failed status
     assert response['statusCode'] == 200
     body = json.loads(response['body'])
     assert body['success'] is True
-    assert body['extracted_data']['_extraction_method'] == 'empty_pdf'
+    assert body['extracted_data']['_extraction_method'] == 'failed'
 
 
 # ============================================================================
