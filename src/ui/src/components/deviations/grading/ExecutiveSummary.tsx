@@ -2,11 +2,11 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   Box,
   Divider,
+  Paper,
   Stack,
   Typography,
   Snackbar,
   Alert,
-  CircularProgress,
 } from "@mui/material";
 import LeftArrow from "../../../assets/icons/leftArrow.svg";
 import AISummary from "../../../assets/icons/aiSummary.svg";
@@ -24,7 +24,6 @@ export interface ExecutiveSummaryProps {
   disabled?: boolean;
   tinymceScriptSrc?: string;
   onNotify?: (message: string, severity?: "success" | "info" | "error") => void;
-  summaryLoad: boolean;
 }
 type SummaryValue = { label: string; content: string; isEdited: boolean };
 
@@ -34,7 +33,6 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
   onSaveAndSubmit,
   disabled = false,
   tinymceScriptSrc,
-  summaryLoad,
 }) => {
   const [summaryValues, setSummaryValues] = useState<SummaryValue[]>(() =>
     items.map((i) => ({ label: i.label, content: i.content, isEdited: false }))
@@ -122,7 +120,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
   };
 
   return (
-    <Box>
+    <Paper variant="outlined" className={styles.summaryRoot}>
       <Box className={styles.headerRow}>
         <Stack direction="row" spacing={1} alignItems="center">
           {!disabled && (
@@ -142,44 +140,29 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
       </Box>
       <Divider className={styles.headerDivider} />
       <Box className={styles.contentBox}>
-        {summaryLoad ? (
-          <Box className={styles.loaderBox}>
-            <CircularProgress size={24} />
-            <Typography variant="body2" sx={{ ml: 1 }}>
-              Loading summary...
-            </Typography>
-          </Box>
+        {items?.length ? (
+          items.map((item, idx) => (
+            <Box key={`${item.label}-${idx}`} className={styles.section}>
+              <Typography variant="subtitle2" className={styles.sectionLabel}>
+                {item.label}
+              </Typography>
+
+              <Editor
+                init={editorInit}
+                tinymceScriptSrc={tinymceScriptSrc}
+                id={`exec-summary-editor-${idx}`}
+                initialValue={item.content}
+                onEditorChange={(newValue: string) =>
+                  handleEditorChange(idx, newValue)
+                }
+                disabled={disabled}
+              />
+            </Box>
+          ))
         ) : (
-          <>
-            {items?.length ? (
-              items.map((item, idx) => (
-                <Box key={`${item.label}-${idx}`} className={styles.section}>
-                  <Typography
-                    variant="subtitle2"
-                    className={styles.sectionLabel}
-                  >
-                    {item.label}
-                  </Typography>
-                  <Editor
-                    init={editorInit}
-                    tinymceScriptSrc={tinymceScriptSrc}
-                    id={`exec-summary-editor-${idx}`}
-                    initialValue={item.content}
-                    onEditorChange={(newValue: string) =>
-                      handleEditorChange(idx, newValue)
-                    }
-                    disabled={disabled}
-                  />
-                </Box>
-              ))
-            ) : (
-              <Box className={styles.loaderBox}>
-                <Typography variant="body2" sx={{ ml: 1 }}>
-                  No summary to load
-                </Typography>
-              </Box>
-            )}
-          </>
+          <Typography variant="body2" color="text.secondary">
+            No summary available.
+          </Typography>
         )}
       </Box>
       <Divider className={styles.headerDivider} />
@@ -189,7 +172,6 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
             <button
               className={styles.classifyBtn}
               onClick={handlePrimaryAction}
-              disabled={!items?.length}
             >
               Save and Send to QMS
             </button>
@@ -209,7 +191,7 @@ const ExecutiveSummary: React.FC<ExecutiveSummaryProps> = ({
           {snack.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Paper>
   );
 };
 

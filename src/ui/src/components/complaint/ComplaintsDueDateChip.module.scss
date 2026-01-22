@@ -1,0 +1,32 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.dueChipBase {
+  border-radius: 5px;
+  gap: 2px;
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+}
+
+/* Modifier classes that add colors */
+.overdueChip {
+  @include due-chip-variant(#e2341d, #fff2f0);
+}
+
+.dueTodayChip {
+  @include due-chip-variant(#ffffff, #5390f8);
+}
+
+.dueTomorrowChip {
+  @include due-chip-variant(#437ef7, #f5faff);
+}
+
+.dueChip {
+ @include due-chip-variant(#437ef7, #f5faff);
+}
+
+/* The base container for icon + label with gap */
+.dueDateChip {
+  @include due-date-base;
+}

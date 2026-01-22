@@ -30,8 +30,7 @@ import SessionCleaner from "./auth/SessionCleaner";
 import AdverseEventDetails from "@components/adverseEvent/AdverseEventDetails";
 import RCADetails from "@components/deviations/RCADetails";
 import GradingDetails from "@components/deviations/GradingDetails";
-import Spinner from "@components/common/Spinner/Spinner";
-import ProcessedDeviation from "@components/deviations/ProcessedDeviations";
+import SupplierPortal from "@components/scn/SupplierPortal";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -66,7 +65,7 @@ const App = () => {
   const auth = useAuth();
 
   if (auth.isLoading) {
-    return <Spinner />;
+    return <div>Loading...</div>;
   }
 
   if (auth.error) {
@@ -124,14 +123,6 @@ const App = () => {
                     }
                   />
                   <Route
-                    path="/processedDeviation/:deviationId"
-                    element={
-                      <ProtectedRoute>
-                        <ProcessedDeviation />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
                     path="/adverseEvent"
                     element={
                       <ProtectedRoute>
@@ -152,6 +143,14 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <Complaints />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/scn/supplier"
+                    element={
+                      <ProtectedRoute>
+                        <SupplierPortal />
                       </ProtectedRoute>
                     }
                   />

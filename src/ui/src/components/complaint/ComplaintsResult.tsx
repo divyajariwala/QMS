@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Stack } from "@mui/material";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import ComplaintsDueDateChip from "./ComplaintsDueDateChip";
 import { getDueStatus } from "src/helpers";
 import { formatDateMMM_D_YYYY } from "src/utils";
 import Skeleton from "@mui/material/Skeleton";
@@ -15,7 +16,6 @@ import AdverseEventIcon from "../../assets/icons/adverseEvent.svg";
 
 import styles from "./ComplaintsResult.module.scss";
 import { InfoChipProps, InfoItemProps, ComplaintProps } from "src/types";
-import DueDateChip from "@components/common/DueDateChip/DueDateChip";
 
 const InfoItem = ({
   label,
@@ -112,7 +112,7 @@ const ComplaintsResult: React.FC<ComplaintProps> = ({ complaint, selected, activ
             {loading && <span className={styles.processText}>Complaint is being processed...</span>}</Box>
         </Box>
         {(!searching ? (activeStatus !== "processed") : (complaint?.status !== "processed")) && (
-          <DueDateChip
+          <ComplaintsDueDateChip
             type={getDueStatus(complaint.created_at).type}
             label={getDueStatus(complaint.created_at).label}
           />

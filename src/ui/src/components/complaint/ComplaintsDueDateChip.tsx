@@ -1,13 +1,13 @@
 import React from "react";
 import { Stack, Box } from "@mui/material";
-import OverdueIcon from "../../../assets/icons/overdue.svg";
-import DueTodayIcon from "../../../assets/icons/dueToday.svg";
-import DueTomorrowIcon from "../../../assets/icons/dueTomorrow.svg";
-import DueIcon from "../../../assets/icons/due.svg";
+import OverdueIcon from "../../assets/icons/overdue.svg";
+import DueTodayIcon from "../../assets/icons/dueToday.svg";
+import DueTomorrowIcon from "../../assets/icons/dueTomorrow.svg";
+import DueIcon from "../../assets/icons/due.svg";
 import { ModuleDueDateChipProps, DueDateChipProps } from "src/types";
-import styles from "./DueDateChip.module.scss";
+import styles from "./ComplaintsDueDateChip.module.scss";
 
-const DueDateChipBase = ({
+const DueDateChip = ({
   iconSrc,
   iconAlt,
   label,
@@ -32,14 +32,14 @@ const DueDateChipBase = ({
   </Stack>
 );
 
-const DueDateChip: React.FC<ModuleDueDateChipProps> = ({
+const ComplaintsDueDateChip: React.FC<ModuleDueDateChipProps> = ({
   type,
   label,
 }) => {
   switch (type) {
     case "Overdue":
       return (
-        <DueDateChipBase
+        <DueDateChip
           iconSrc={OverdueIcon}
           iconAlt="Overdue"
           label={label}
@@ -48,7 +48,7 @@ const DueDateChip: React.FC<ModuleDueDateChipProps> = ({
       );
     case "Today":
       return (
-        <DueDateChipBase
+        <DueDateChip
           iconSrc={DueTodayIcon}
           iconAlt="Due Today"
           label={label}
@@ -57,7 +57,7 @@ const DueDateChip: React.FC<ModuleDueDateChipProps> = ({
       );
     case "Tomorrow":
       return (
-        <DueDateChipBase
+        <DueDateChip
           iconSrc={DueTomorrowIcon}
           iconAlt="Due Tomorrow"
           label={label}
@@ -66,7 +66,7 @@ const DueDateChip: React.FC<ModuleDueDateChipProps> = ({
       );
     case "Due":
       return (
-        <DueDateChipBase
+        <DueDateChip
           iconSrc={DueIcon}
           iconAlt="Due"
           label={label}
@@ -75,7 +75,7 @@ const DueDateChip: React.FC<ModuleDueDateChipProps> = ({
       );
     default:
       return (
-        <DueDateChipBase
+        <DueDateChip
           iconSrc={DueIcon}
           iconAlt="Due"
           label={label}
@@ -85,4 +85,4 @@ const DueDateChip: React.FC<ModuleDueDateChipProps> = ({
   }
 };
 
-export default DueDateChip;
+export default ComplaintsDueDateChip;

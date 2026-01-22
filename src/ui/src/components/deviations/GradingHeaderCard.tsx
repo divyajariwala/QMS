@@ -3,10 +3,10 @@ import styles from "./DeviationsHeaderCard.module.scss";
 
 import { Paper, Box, Stack, Typography } from "@mui/material";
 import { getDueStatus } from "src/helpers";
+import DeviationsDueDateChip from "./DeviationsDueDateChip";
 import ReceiptDateIcon from "../../assets/icons/receiptDate.svg";
 import LeftArrow from "../../assets/icons/leftArrow.svg"; // ✅ NEW
 import { formatDateMMM_D_YYYY } from "src/utils";
-import DueDateChip from "@components/common/DueDateChip/DueDateChip";
 
 type GradingHeaderCardProps = {
   deviationData: {
@@ -68,7 +68,7 @@ const GradingHeaderCard: React.FC<GradingHeaderCardProps> = ({
                 </div>
               </div>
               {status !== "processed" && (
-                <DueDateChip
+                <DeviationsDueDateChip
                   type={created_date && getDueStatus(created_date).type}
                   label={created_date && getDueStatus(created_date).label}
                 />

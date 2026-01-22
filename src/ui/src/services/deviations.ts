@@ -185,25 +185,6 @@ export const fetchGradingSuggestions = async (
   return data;
 };
 
-export const fetchExecutiveSummary = async (payload: {
-  deviation_id: string | undefined;
-}) => {
-  const response = await fetch(`${API_BASE_URL}dev/generateExecutiveSummary`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data;
-};
-
 export const submitGrading = async (payload: SubmitGradingPayload) => {
   const response = await fetch(`${API_BASE_URL}dev/submitGrading`, {
     method: "POST",

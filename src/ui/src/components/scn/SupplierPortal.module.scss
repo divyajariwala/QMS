@@ -1,0 +1,88 @@
+.supplierPortal {
+  width: 100%;
+}
+
+.headerSection {
+  margin-top: 8px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.pageSubtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 4px 0 0 0;
+  font-weight: 400;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.addManuallyButton {
+  border: 1px solid #d1d5db !important;
+  color: #374151 !important;
+  background-color: #fff !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+
+  &:hover {
+    background-color: #f9fafb !important;
+    border-color: #9ca3af !important;
+  }
+}
+
+.plusIcon {
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.uploadButton {
+  background-color: #2563eb !important;
+  color: #fff !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  padding: 8px 20px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+
+  &:hover {
+    background-color: #1d4ed8 !important;
+  }
+}
+
+.uploadIcon {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.scnList {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  gap: 12px;
+}
+
+.noResults {
+  text-align: center;
+  color: #6b7280;
+  padding: 40px;
+  font-size: 14px;
+}

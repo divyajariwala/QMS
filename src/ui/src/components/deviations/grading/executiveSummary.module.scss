@@ -80,9 +80,6 @@
   align-items: center;
   justify-content: space-between;
 }
-.baseButton:disabled {
-  cursor: not-allowed;
-}
 .classifyBtn {
   @extend .baseButton;
   background: $advanced-blue;
@@ -93,9 +90,4 @@
   border: none;
   letter-spacing: 0px;
   filter: brightness(0.95);
-}
-.loaderBox {
-  display: flex;
-  align-items: center;
-  padding: 16px 0;
 }

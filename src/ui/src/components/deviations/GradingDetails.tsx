@@ -8,7 +8,6 @@ import { DeviationDetail } from "src/types";
 import Notification from "@components/Notification/Notification";
 import Grading from "./grading/Grading";
 import GradingHeaderCard from "./GradingHeaderCard";
-import Spinner from "@components/common/Spinner/Spinner";
 
 const GradingDetails: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -61,7 +60,7 @@ const GradingDetails: React.FC = () => {
     navigate("/deviations");
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <p>Loading details...</p>;
   return (
     <Box className={styles.rootBox}>
       <CommonBreadcrumbs items={items} />

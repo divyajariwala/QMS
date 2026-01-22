@@ -1,0 +1,114 @@
+.statusCard {
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  flex: 1;
+}
+
+.totalSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 120px;
+}
+
+.iconWrapper {
+  width: 48px;
+  height: 48px;
+  background-color: #eef2ff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.totalContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.totalLabel {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.totalValue {
+  font-size: 36px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.divider {
+  width: 1px;
+  height: 80px;
+  background-color: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.statsGrid {
+  flex: 1;
+}
+
+.statsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.blueDot {
+  background-color: #3b82f6;
+}
+
+.orangeDot {
+  background-color: #f97316;
+}
+
+.redDot {
+  background-color: #ef4444;
+}
+
+.yellowDot {
+  background-color: #eab308;
+}
+
+.greenDot {
+  background-color: #22c55e;
+}
+
+.grayDot {
+  background-color: #6b7280;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #374151;
+  min-width: 160px;
+}
+
+.statValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  min-width: 40px;
+  text-align: right;
+}

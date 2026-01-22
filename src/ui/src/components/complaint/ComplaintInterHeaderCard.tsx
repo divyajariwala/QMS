@@ -3,10 +3,10 @@ import styles from './ComplaintHeaderCard.module.scss';
 import Edit from '../../assets/icons/edit.svg'
 
 import { Paper, Box, Stack, Grid } from '@mui/material';
+import ComplaintsDueDateChip from './ComplaintsDueDateChip';
 import { formatDateMMM_D_YYYY } from 'src/utils';
 import { ComplaintInterHeaderCardProps } from 'src/types';
 import { getDueStatus } from 'src/helpers';
-import DueDateChip from '@components/common/DueDateChip/DueDateChip';
 
 const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
   complaintData,
@@ -40,7 +40,7 @@ const ComplaintInterHeaderCard: React.FC<ComplaintInterHeaderCardProps> = ({
             )}
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
               <Box className={styles.caseIdText}>{caseId}</Box>
-              <DueDateChip
+              <ComplaintsDueDateChip
                 type={createdAt && getDueStatus(createdAt).type}
                 label={createdAt && getDueStatus(createdAt).label}
               />

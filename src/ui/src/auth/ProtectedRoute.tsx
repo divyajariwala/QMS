@@ -17,35 +17,34 @@
 
 // export default ProtectedRoute;
 
-
 import React from "react";
 import { useAuth } from "react-oidc-context";
 import { useLocation } from "react-router-dom";
- 
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
- 
+
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const auth = useAuth();
   const location = useLocation();
- 
+
   if (auth.isLoading) return <div>Loading...</div>;
   if (auth.error) return <div>Error: {auth.error.message}</div>;
- 
-  if (!auth.isAuthenticated) {
+
+  if (auth.isAuthenticated) {
     const returnTo = location.pathname + location.search;
- 
+
     auth.signinRedirect({
       state: {
         returnTo, // we'll use this in AuthCallback
       },
     });
- 
+
     return null;
   }
- 
+
   return <>{children}</>;
 };
- 
+
 export default ProtectedRoute;

@@ -82,21 +82,15 @@
   justify-content: space-between;
 }
 
-.baseButton:disabled {
-  cursor: not-allowed;
-}
-
 .gradingBtn {
   @extend .baseButton;
-  background: $advanced-blue;
-  color: $color-white;
-  padding: 10px 16px;
-  width: fit-content;
+  color: #272d37;
+  padding: 10px;
+  width: 137px;
   height: 36px;
-  gap: 8px;
-  border: none;
-  letter-spacing: 0px;
-  filter: brightness(0.95);
+  border: 1px solid #dae0e6;
+  margin-left: auto !important;
+  background-color: $color-white;
 }
 .regenerateBtn {
   @extend .baseButton;
@@ -107,6 +101,18 @@
   border: 1px solid #dae0e6;
   margin-left: auto !important;
   background-color: $color-white;
+}
+.classifyBtn {
+  @extend .baseButton;
+  background: $advanced-blue;
+  color: $color-white;
+  padding: 10px 16px;
+  width: 247px;
+  height: 36px;
+  gap: 8px;
+  border: none;
+  letter-spacing: 0px;
+  filter: brightness(0.95);
 }
 .thumbsUp {
   color: $advanced-blue;

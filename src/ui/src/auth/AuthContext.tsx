@@ -3,7 +3,9 @@ import { User, UserManager, WebStorageStateStore } from "oidc-client-ts";
 import { oidcConfig } from "./oidcConfig";
 import { AuthContextType } from "../types";
 
-export const authContext = createContext<AuthContextType | undefined>(undefined);
+export const authContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [manager] = useState(

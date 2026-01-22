@@ -2,9 +2,9 @@ import React from 'react';
 import styles from './ComplaintHeaderCard.module.scss';
 import CheckIcon from '@mui/icons-material/Check';
 import { Paper, Box, Stack, Grid } from '@mui/material';
+import ComplaintsDueDateChip from './ComplaintsDueDateChip';
 import { ComplaintHeaderCardProps } from 'src/types';
 import { getDueStatus } from 'src/helpers';
-import DueDateChip from '@components/common/DueDateChip/DueDateChip';
 
 const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
   complaintData,
@@ -46,7 +46,7 @@ const ComplaintHeaderCard: React.FC<ComplaintHeaderCardProps> = ({
             )}
             <Stack direction="row" spacing={2} alignItems="center" flexWrap="nowrap" className={styles.topRowInner}>
               <Box className={styles.caseIdText}>{caseId}</Box>
-              {(caseStatus === 'pending' || caseStatus === 'overdue') && <DueDateChip
+              {(caseStatus === 'pending' || caseStatus === 'overdue') &&<ComplaintsDueDateChip
                 type={createdAt && getDueStatus(createdAt).type}
                 label={createdAt && getDueStatus(createdAt).label}
               />}

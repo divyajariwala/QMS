@@ -8,13 +8,9 @@ import styles from "./DeviationsResult.module.scss";
 import { getDueStatus } from "src/helpers";
 import { DeviationProps } from "src/types";
 import { formatDateMMM_D_YYYY } from "src/utils";
-import DueDateChip from "@components/common/DueDateChip/DueDateChip";
+import DeviationsDueDateChip from "./DeviationsDueDateChip";
 
-const DeviationsResult: React.FC<DeviationProps> = ({
-  deviation,
-  loading,
-  activeStatus,
-}) => {
+const DeviationsResult: React.FC<DeviationProps> = ({ deviation, loading }) => {
   const navigate = useNavigate();
   const { deviation_id, created_date, deviation_description } = deviation;
   const [descExpanded, setDescExpanded] = useState(false);
@@ -38,9 +34,6 @@ const DeviationsResult: React.FC<DeviationProps> = ({
     if (!loading) {
       navigate(`/approveGrading/${deviation_id}`);
     }
-  };
-  const goToProcessedDeviation = () => {
-    navigate(`/processedDeviation/${deviation_id}`);
   };
 
   const truncateAtWord = (text: string, limit: number) => {
@@ -75,16 +68,11 @@ const DeviationsResult: React.FC<DeviationProps> = ({
             <Box className={styles.statusText}>IN REVIEW</Box>
           )}
           <div className={styles.container}>
-            {activeStatus === "processed" ? (
-              <span
-                className={styles.caseNumberText}
-                onClick={goToProcessedDeviation}
-                style={{ cursor: "pointer" }}
-              >
-                {deviation_id}
+            <span className={styles.caseNumberText}>{deviation_id}</span>
+            {loading && (
+              <span className={styles.processText}>
+                Deviation is being processed...
               </span>
-            ) : (
-              <span className={styles.caseNumberText}>{deviation_id}</span>
             )}
             <div className={styles.dateGroup}>
               <img src={Calendar} className={styles.dateIcon} />
@@ -93,13 +81,10 @@ const DeviationsResult: React.FC<DeviationProps> = ({
                 {formatDateMMM_D_YYYY(created_date)}
               </span>
             </div>
-            {loading && (
-              <span className={styles.processText}>Processing...</span>
-            )}
           </div>
         </Box>
         {deviation.status !== "processed" && (
-          <DueDateChip type={dueInfo.type} label={dueInfo.label} />
+          <DeviationsDueDateChip type={dueInfo.type} label={dueInfo.label} />
         )}
       </div>
       {loading ? (

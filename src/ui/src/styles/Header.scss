@@ -36,7 +36,7 @@ $black: #000;
     padding: 15px;
 
     .qms-header-container-navbar {
-      position: relative;  // for absolute positioning context
+      position: relative;
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -56,12 +56,12 @@ $black: #000;
       }
 
       .qms-header-container-navbar-center {
-        position: absolute;  // center links absolutely
+        position: absolute;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
         display: flex;
-        gap: 16px; // spacing between tabs
+        gap: 16px;
         align-items: center;
 
         .qms-header-navigation-tab {
@@ -74,14 +74,31 @@ $black: #000;
           border-radius: 5px;
           padding: 9px 16px;
           min-height: 40px;
-
-          /* Ensure the class inherits the header font (even if MUI changes default) */
           font-family: inherit;
+
+          // SCN Portal tab with dropdown chevron
+          &-chevron {
+            display: flex;
+            align-items: center;
+            margin-left: 4px;
+            
+            img {
+              width: 21px;
+              height: 18px;
+              transition: transform 0.2s ease;
+            }
+          }
         }
 
         .Mui-selected {
           color: #437ef7;
           background-color: #f5faff;
+
+          // Rotate chevron when selected/menu open (optional)
+          .qms-header-navigation-tab-chevron img {
+            // You can add rotation here if needed
+            // transform: rotate(180deg);
+          }
         }
       }
 
@@ -98,8 +115,6 @@ $black: #000;
             letter-spacing: -0.4px;
             text-align: center;
             vertical-align: middle;
-
-            /* Keep avatar font consistent too */
             font-family: var(--app-font-family, inherit) !important;
           }
 
@@ -111,6 +126,28 @@ $black: #000;
           }
         }
       }
+    }
+  }
+}
+
+// SCN Portal Dropdown Menu Styling
+.MuiMenu-paper {
+  margin-top: 8px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+
+  .MuiMenuItem-root {
+    font-family: var(--app-font-family, inherit) !important;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    padding: 10px 20px;
+    min-width: 160px;
+
+    &:hover {
+      background-color: #f5faff;
+      color: #437ef7;
     }
   }
 }
