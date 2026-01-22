@@ -27,8 +27,8 @@
 }
 
 .addManuallyButton {
-  border: 1px solid #d1d5db !important;
-  color: #374151 !important;
+  border: 1px solid transparent !important;
+  color: #437EF7 !important;
   background-color: #fff !important;
   text-transform: none !important;
   font-weight: 500 !important;
@@ -38,7 +38,7 @@
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-
+  font-weight: 600 !important;
   &:hover {
     background-color: #f9fafb !important;
     border-color: #9ca3af !important;
@@ -52,7 +52,7 @@
 }
 
 .uploadButton {
-  background-color: #2563eb !important;
+  background-color: #437EF7 !important;
   color: #fff !important;
   text-transform: none !important;
   font-weight: 500 !important;
@@ -62,6 +62,7 @@
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
+  font-weight: 600 !important;
 
   &:hover {
     background-color: #1d4ed8 !important;

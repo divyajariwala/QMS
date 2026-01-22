@@ -1,7 +1,9 @@
 import React from "react";
 import { Box, Stack } from "@mui/material";
 import styles from "./SCNStatsQuickLinks.module.scss";
-import TotalSCNIcon from "../../assets/icons/totalSCNIcon.svg"
+// import TotalSCNIcon from "../../assets/icons/totalSCNIcon.svg";
+import OpenSCNsIcon from "../../assets/icons/openSCNs.svg";
+import SCNsSummaryIcon from "../../assets/icons/summarySCNs.svg";
 
 const GridIcon = () => (
   <svg
@@ -47,10 +49,11 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
         <Box className={styles.statsHeader}>
           <Box className={styles.iconWrapper}>
             {/* <GridIcon /> */}
-            <img src={TotalSCNIcon} /> 
+            {/* <img src={TotalSCNIcon} /> */}
+            <img src={OpenSCNsIcon} />
           </Box>
           <Box className={styles.totalContent}>
-            <span className={styles.totalLabel}>Total SCNs</span>
+            <span className={styles.totalLabel}>Open SCNs</span>
             <span className={styles.totalValue}>{stats.total}</span>
           </Box>
         </Box>
@@ -60,36 +63,50 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
           {/* Left Column */}
           <Box className={styles.statsColumn}>
             <Box className={styles.statRow}>
-              <span className={`${styles.dot} ${styles.blueDot}`} />
+              <span className={`${styles.dot} ${styles.yellowDot}`} />
               <span className={styles.statLabel}>Pending Review</span>
               <span className={styles.statValue}>{stats.pendingReview}</span>
             </Box>
             <Box className={styles.statRow}>
-              <span className={`${styles.dot} ${styles.orangeDot}`} />
+              <span className={`${styles.dot} ${styles.greenDot}`} />
               <span className={styles.statLabel}>In Review</span>
               <span className={styles.statValue}>{stats.inReview}</span>
             </Box>
             <Box className={styles.statRow}>
               <span className={`${styles.dot} ${styles.redDot}`} />
               <span className={styles.statLabel}>Supplier Action Required</span>
-              <span className={styles.statValue}>{stats.supplierActionRequired}</span>
+              <span className={styles.statValue}>
+                {stats.supplierActionRequired}
+              </span>
             </Box>
           </Box>
+        </Box>
+      </Box>
 
+      {/* Stats Card */}
+      <Box className={styles.statsCard}>
+        {/* Header: Icon + Total SCNs */}
+        <Box className={styles.statsHeader}>
+          <Box className={styles.iconWrapper}>
+            {/* <GridIcon /> */}
+            {/* <img src={TotalSCNIcon} /> */}
+            <img src={SCNsSummaryIcon} />
+          </Box>
+          <Box className={styles.totalContent}>
+            <span className={styles.totalLabel}>SCNs Summary</span>
+            <span className={styles.totalValue}>{stats.total}</span>
+          </Box>
+        </Box>
+
+        {/* Stats Grid - 2 Columns */}
+        <Box className={styles.statsGrid}>
           {/* Right Column */}
           <Box className={styles.statsColumn}>
             <Box className={styles.statRow}>
-              <span className={`${styles.dot} ${styles.yellowDot}`} />
-              <span className={styles.statLabel}>Open SCNs</span>
-              <span className={styles.statValue}>{stats.openSCNs}</span>
-            </Box>
-            <Box className={styles.statRow}>
-              <span className={`${styles.dot} ${styles.greenDot}`} />
               <span className={styles.statLabel}>Approved</span>
               <span className={styles.statValue}>{stats.approved}</span>
             </Box>
             <Box className={styles.statRow}>
-              <span className={`${styles.dot} ${styles.grayDot}`} />
               <span className={styles.statLabel}>Rejected</span>
               <span className={styles.statValue}>{stats.rejected}</span>
             </Box>
