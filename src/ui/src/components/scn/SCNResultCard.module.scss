@@ -1,7 +1,6 @@
 .card {
   background-color: #fff;
   border: 1px solid #e5e7eb;
-  border-left-width: 4px;
   padding: 20px 24px;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -9,19 +8,8 @@
 
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+    background-color: #f3f9ff;
   }
-}
-
-.borderRed {
-  border-left-color: #ef4444;
-}
-
-.borderOrange {
-  border-left-color: #f97316;
-}
-
-.borderBlue {
-  border-left-color: #3b82f6;
 }
 
 .headerRow {
@@ -29,36 +17,57 @@
 }
 
 .status {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: block;
   margin-bottom: 4px;
+  line-height: 24px;
 }
 
 .statusRed {
-  color: #ef4444;
+  color: #e0301e;
 }
 
 .statusOrange {
-  color: #f97316;
+  color: #fd6412;
 }
 
 .statusBlue {
-  color: #3b82f6;
+  color: #6b2cda;
+}
+
+.classificationStatus {
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  width: fit-content;
+}
+.statusHigh {
+  color: #e2341d;
+  background-color: #fff2f0;
+}
+
+.statusMedium {
+  color: #eea23e;
+  background-color: #fff8eb;
+}
+
+.statusLow {
+  color: #2d8a39;
+  background-color: #f0faf0;
 }
 
 .scnNumber {
   font-size: 16px;
   font-weight: 600;
-  color: #2563eb;
+  color: #0089eb;
   margin: 0;
-  text-decoration: underline;
   cursor: pointer;
 
   &:hover {
-    color: #1d4ed8;
+    color: #2563eb;
   }
 }
 
@@ -67,8 +76,8 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #f97316;
-  background-color: #fff7ed;
+  color: #e2341d;
+  background-color: #fff2f0;
   padding: 6px 12px;
   border-radius: 6px;
   font-weight: 500;
@@ -90,23 +99,23 @@
 
 .infoLabel {
   font-size: 12px;
-  color: #9ca3af;
-  font-weight: 400;
+  color: #5f6d7e;
+  font-weight: 500;
 }
 
 .infoValue {
-  font-size: 14px;
-  color: #374151;
-  font-weight: 500;
+  font-size: 12px;
+  color: #272d37;
+  font-weight: 600;
 }
 
 .dateValue {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
-  color: #374151;
-  font-weight: 500;
+  font-size: 12px;
+  color: #272d37;
+  font-weight: 600;
 }
 
 .changeTypeTag {
@@ -121,13 +130,13 @@
 }
 
 .changeTypeOrange {
-  background-color: #fff7ed;
-  color: #ea580c;
+  background-color: #fff8eb;
+  color: #eea23e;
 }
 
 .changeTypeBlue {
-  background-color: #eff6ff;
-  color: #2563eb;
+  background-color: #f5faff;
+  color: #437ef7;
 }
 
 .summaryRow {
@@ -181,21 +190,25 @@
 
 .seeDetailsLink {
   font-size: 14px;
-  color: #6b7280;
+  color: #437ef7;
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 4px;
   white-space: nowrap;
-  font-weight: 500;
+  font-weight: 600;
   flex-shrink: 0;
 
   &:hover {
-    color: #374151;
+    color: #2563eb;
   }
 }
 
 .arrowIcon {
   font-size: 18px;
   line-height: 1;
+  color: #000;
+  font-weight: 600;
+  text-align: center;
+  padding-bottom: 1px;
 }
