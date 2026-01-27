@@ -23,10 +23,15 @@ interface SCNItem {
 
 interface SCNResultCardProps {
   scn: SCNItem;
-  onSeeDetails: (id: string) => void;
+  onSeeDetails?: (id: string) => void;
+  isEditingCard?: boolean;
 }
 
-const SCNResultCard: React.FC<SCNResultCardProps> = ({ scn, onSeeDetails }) => {
+const SCNResultCard: React.FC<SCNResultCardProps> = ({
+  scn,
+  onSeeDetails,
+  isEditingCard,
+}) => {
   const navigate = useNavigate();
 
   const handleSeeDetailsClick = () => {
@@ -87,7 +92,13 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({ scn, onSeeDetails }) => {
           <span className={`${styles.status} ${getStatusClass()}`}>
             {scn.status}
           </span>
-          <h3 className={styles.scnNumber}>{scn.scnNumber}</h3>
+          <h3
+            className={
+              isEditingCard ? styles.scnNumberEditing : styles.scnNumber
+            }
+          >
+            {scn.scnNumber}
+          </h3>
         </Box>
         {scn.overdueDays && (
           <Box className={styles.overdueTag}>
@@ -133,38 +144,42 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({ scn, onSeeDetails }) => {
             <span>{scn.changeType}</span>
           </Box>
         </Box>
-        <Box className={styles.infoItem}>
-          <span className={styles.infoLabel}>Change Title</span>
-          <span className={styles.infoValue}>{scn.changeTitle}</span>
-        </Box>
+        {!isEditingCard && (
+          <Box className={styles.infoItem}>
+            <span className={styles.infoLabel}>Change Title</span>
+            <span className={styles.infoValue}>{scn.changeTitle}</span>
+          </Box>
+        )}
       </Box>
       {/* Summary Row */}
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="flex-end"
-        className={styles.summaryRow}
-      >
-        <Box className={styles.summarySection}>
-          {/* <Box className={styles.summaryHeader}>
+      {!isEditingCard && (
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="flex-end"
+          className={styles.summaryRow}
+        >
+          <Box className={styles.summarySection}>
+            {/* <Box className={styles.summaryHeader}>
             <span className={styles.summaryLabel}>Change Title / Summary</span>
             <a href="#" className={styles.editLink}>
               Edit <ExternalLinkIcon />
             </a>
           </Box> */}
-          <p className={styles.summaryText}>{scn.changeTitleSummary}</p>
-        </Box>
-        <a
-          href="#"
-          className={styles.seeDetailsLink}
-          onClick={(e) => {
-            e.preventDefault();
-            handleSeeDetailsClick();
-          }}
-        >
-          See details <span className={styles.arrowIcon}>›</span>
-        </a>
-      </Stack>
+            <p className={styles.summaryText}>{scn.changeTitleSummary}</p>
+          </Box>
+          <a
+            href="#"
+            className={styles.seeDetailsLink}
+            onClick={(e) => {
+              e.preventDefault();
+              handleSeeDetailsClick();
+            }}
+          >
+            See details <span className={styles.arrowIcon}>›</span>
+          </a>
+        </Stack>
+      )}
     </Box>
   );
 };

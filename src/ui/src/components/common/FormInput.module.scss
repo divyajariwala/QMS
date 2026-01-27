@@ -1,0 +1,70 @@
+@use "../../styles/mixins" as *;
+
+.formGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6f7682;
+  text-transform: uppercase;
+}
+
+.formInput {
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1f2937;
+  background-color: #f9fafb;
+  font-family: inherit;
+
+  &:not(:disabled) {
+    background-color: white;
+    border-color: #d1d5db;
+
+    &:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: #f9fafb;
+    color: #6b7280;
+  }
+}
+
+.formTextarea {
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1f2937;
+  background-color: #f9fafb;
+  font-family: inherit;
+  resize: vertical;
+
+  &:not(:disabled) {
+    background-color: white;
+    border-color: #d1d5db;
+
+    &:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: #f9fafb;
+    color: #6b7280;
+  }
+}
