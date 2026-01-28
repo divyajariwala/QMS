@@ -1,5 +1,5 @@
 import React, { useState, MouseEvent, useRef } from "react";
-import { Box, Stack, Button } from "@mui/material";
+import { Box, Stack, Button, Typography } from "@mui/material";
 import PlusIcon from "../../assets/icons/plus.svg";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import SCNStatusTabs from "@components/scn/SCNStatusTabs";
@@ -10,7 +10,8 @@ import SCNStatsQuickLinks from "./SCNStatsQuickLinks";
 import scnPlusIcon from "../../assets/icons/scnPlus.svg";
 import scnUploadIcon from "../../assets/icons/scnUploadIcon.svg";
 import SCNTabs from "./SCNTabs";
-import SCNFilter from "@components/scn/SCNFilter";
+import SCNFilter, { FilterOptions } from "@components/scn/SCNFilter";
+import { UploadSCNModal } from "./UploadSCNModal";
 
 // Types
 export interface SCNStats {
@@ -48,6 +49,8 @@ const SupplierPortal: React.FC = () => {
     { label: "Home", to: "/" },
     { label: "Supplier Portal" },
   ];
+  // Modal state
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
 
   // Mock stats data
   const [stats] = useState<SCNStats>({
@@ -76,6 +79,15 @@ const SupplierPortal: React.FC = () => {
     items_per_page: 15,
     has_next: false,
     has_previous: false,
+  });
+  const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
+    all: true,
+    approved: true,
+    rejected: true,
+    pendingReview: true,
+    supplierActionRequired: true,
+    inReview: true,
+    openScns: true,
   });
 
   // Mock SCN data
@@ -177,7 +189,11 @@ const SupplierPortal: React.FC = () => {
   };
 
   const handleUploadSCN = () => {
-    console.log("Upload SCN clicked");
+    setUploadModalOpen(true);
+  };
+
+  const handleCloseUploadModal = () => {
+    setUploadModalOpen(false);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -186,30 +202,81 @@ const SupplierPortal: React.FC = () => {
 
   const handleSearchPageChange = (newPage: number) => {
     setSearchPageNumber(newPage);
-    if (scnNumber.trim() !== "") doSearch(scnNumber, newPage);
+    if (scnNumber.trim() !== "") doSearch(scnNumber, newPage, currentFilters);
   };
 
   const handleSeeDetails = (scnId: string) => {
     console.log("See details for:", scnId);
   };
 
-  // Search function - filters SCN items by number
-  const doSearch = async (number: string, page: number = 1) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSCNNumber(val);
+
+    if (val.trim() === "") {
+      setSearchActive(false);
+      setSearchResults(null);
+      setSearchPagination({
+        current_page: 1,
+        total_pages: 0,
+        total_items: 0,
+        items_per_page: 15,
+        has_next: false,
+        has_previous: false,
+      });
+    } else {
+      setSearchActive(true);
+      doSearch(val, 1, currentFilters);
+    }
+  };
+
+  const handleSearchClick = () => {
+    if (scnNumber.trim() !== "") {
+      setSearchActive(true);
+      doSearch(scnNumber, 1, currentFilters);
+    }
+  };
+
+  // Search function - filters SCN items by number and status filters
+  const doSearch = async (
+    number: string,
+    page: number = 1,
+    filters?: FilterOptions,
+  ) => {
     const formattedNumber = number.trim();
 
-    if (!formattedNumber) {
-      return;
-    }
-
+    // Always filter, even if search box is empty
     try {
-      // Filter scnItems by matching SCN number (case-insensitive)
-      const filtered = scnItems.filter((item) =>
-        item.scnNumber.toLowerCase().includes(formattedNumber.toLowerCase()),
-      );
+      const activeFilters = filters || currentFilters;
+      if (filters) setCurrentFilters(filters);
+
+      let filtered = scnItems;
+
+      // Filter by SCN number if provided
+      if (formattedNumber) {
+        filtered = filtered.filter((item) =>
+          item.scnNumber.toLowerCase().includes(formattedNumber.toLowerCase()),
+        );
+      }
+
+      // Apply status filters - only filter if 'all' is false (meaning specific statuses selected)
+      if (activeFilters.all === false) {
+        filtered = filtered.filter((item) => {
+          if (activeFilters.pendingReview && item.status === "PENDING REVIEW")
+            return true;
+          if (
+            activeFilters.supplierActionRequired &&
+            item.status === "SUPPLIER ACTION REQUIRED"
+          )
+            return true;
+          if (activeFilters.inReview && item.status === "IN REVIEW")
+            return true;
+          return false;
+        });
+      }
 
       setSearchResults(filtered);
 
-      // Calculate pagination based on filtered results
       const itemsPerPage = 15;
       const totalItems = filtered.length;
       const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -259,7 +326,7 @@ const SupplierPortal: React.FC = () => {
             <Button
               variant="contained"
               className={styles.uploadButton}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleUploadSCN}
             >
               <span className={styles.uploadIcon}>
                 <img src={scnUploadIcon} />
@@ -269,7 +336,6 @@ const SupplierPortal: React.FC = () => {
             <input
               type="file"
               ref={fileInputRef}
-              onChange={handleUploadSCN}
               style={{ display: "none" }}
               accept=".pdf"
             />
@@ -292,6 +358,10 @@ const SupplierPortal: React.FC = () => {
         setSearchActive={setSearchActive}
         setPagination={setSearchPagination}
         doSearch={doSearch}
+        filters={currentFilters}
+        setFilters={setCurrentFilters}
+        handleInputChange={handleInputChange}
+        handleSearchClick={handleSearchClick}
       />
 
       {/* SCN List */}
@@ -338,6 +408,13 @@ const SupplierPortal: React.FC = () => {
               onPageChange={handlePageChange}
             />
           )}
+
+      {/* Upload SCN Modal */}
+      <UploadSCNModal
+        open={uploadModalOpen}
+        onClose={handleCloseUploadModal}
+        fileInputRef={fileInputRef}
+      />
     </Box>
   );
 };

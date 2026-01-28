@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./SCNFilter.module.scss";
 import SearchIcon from "../../assets/icons/search.svg";
 import {
@@ -40,6 +40,10 @@ interface SCNFilterProps {
     page?: number,
     filters?: FilterOptions,
   ) => Promise<void>;
+  filters: FilterOptions;
+  setFilters: (val: FilterOptions) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSearchClick: () => void;
 }
 
 const DEFAULT_FILTERS: FilterOptions = {
@@ -59,19 +63,27 @@ const SCNFilter = ({
   setSearchActive,
   setPagination,
   doSearch,
+  filters,
+  setFilters,
+  handleInputChange,
+  handleSearchClick,
 }: SCNFilterProps) => {
   const [error, setError] = useState<string | null>(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
     null,
   );
-
-  const [filters, setFilters] = useState<FilterOptions>(DEFAULT_FILTERS);
-  const [tempFilters, setTempFilters] =
-    useState<FilterOptions>(DEFAULT_FILTERS);
+  const [tempFilters, setTempFilters] = useState<FilterOptions>(filters);
 
   const filterMenuOpen = Boolean(filterAnchorEl);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Sync tempFilters with filters prop when menu is opened
+  useEffect(() => {
+    if (filterMenuOpen) {
+      setTempFilters(filters);
+    }
+  }, [filterMenuOpen, filters]);
+
+  const handleInputChange_Local = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSCNNumber(val);
 
@@ -89,16 +101,8 @@ const SCNFilter = ({
       });
     } else {
       setSearchActive(true);
+      // Use tempFilters if filter menu is open, otherwise use current filters
       doSearch(val, 1, filters).catch(() => {
-        setError("Failed to load the required SCN. Please try again.");
-      });
-    }
-  };
-
-  const handleSearchClick = () => {
-    if (scnNumber.trim() !== "") {
-      setSearchActive(true);
-      doSearch(scnNumber, 1, filters).catch(() => {
         setError("Failed to load the required SCN. Please try again.");
       });
     }
@@ -107,7 +111,6 @@ const SCNFilter = ({
   const handleFilterOpen_Menu = (
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
-    setTempFilters(filters);
     setFilterAnchorEl(event.currentTarget);
   };
 
@@ -120,10 +123,11 @@ const SCNFilter = ({
       // Select / Deselect ALL
       if (key === "all") {
         const value = !prev.all;
-        return Object.keys(prev).reduce((acc, k) => {
+        const newFilters = Object.keys(prev).reduce((acc, k) => {
           acc[k as keyof FilterOptions] = value;
           return acc;
         }, {} as FilterOptions);
+        return newFilters;
       }
 
       const updated = {
@@ -136,33 +140,27 @@ const SCNFilter = ({
         .filter(([k]) => k !== "all")
         .every(([, v]) => v);
 
-      return {
+      const result = {
         ...updated,
         all: allChecked,
       };
+      return result;
     });
   };
 
   const handleApplyFilters = () => {
     setFilters(tempFilters);
     setFilterAnchorEl(null);
+    setError(null);
+    setSearchActive(true);
 
-    if (scnNumber.trim() !== "") {
-      doSearch(scnNumber, 1, tempFilters).catch(() => {
-        setError("Failed to apply filters. Please try again.");
-      });
-    }
+    doSearch(scnNumber, 1, tempFilters).catch(() => {
+      setError("Failed to apply filters. Please try again.");
+    });
   };
 
   const handleClearFilters = () => {
     setTempFilters(DEFAULT_FILTERS);
-    setFilters(DEFAULT_FILTERS);
-
-    if (scnNumber.trim() !== "") {
-      doSearch(scnNumber, 1, DEFAULT_FILTERS).catch(() => {
-        setError("Failed to clear filters.");
-      });
-    }
   };
 
   return (
@@ -211,19 +209,26 @@ const SCNFilter = ({
         <h4 style={{ marginBottom: 8 }}>SCN Type</h4>
 
         <FormGroup>
-          {(Object.keys(tempFilters) as (keyof FilterOptions)[]).map((key) => (
-            <FormControlLabel
-              key={key}
-              label={key.replace(/([A-Z])/g, " $1")}
-              control={
-                <Checkbox
-                  size="small"
-                  checked={tempFilters[key]}
-                  onChange={() => handleFilterChange(key)}
-                />
-              }
-            />
-          ))}
+          {(Object.keys(tempFilters) as (keyof FilterOptions)[]).map((key) => {
+            const label = key
+              .replace(/([A-Z])/g, " $1")
+              .replace(/^./, (str) => str.toUpperCase())
+              .trim();
+
+            return (
+              <FormControlLabel
+                key={key}
+                label={label}
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={tempFilters[key]}
+                    onChange={() => handleFilterChange(key)}
+                  />
+                }
+              />
+            );
+          })}
         </FormGroup>
 
         <div className={styles.filterActions}>
@@ -250,3 +255,5 @@ const SCNFilter = ({
 };
 
 export default SCNFilter;
+
+export type { FilterOptions };

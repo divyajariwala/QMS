@@ -32,6 +32,7 @@ import RCADetails from "@components/deviations/RCADetails";
 import GradingDetails from "@components/deviations/GradingDetails";
 import SupplierPortal from "@components/scn/SupplierPortal";
 import SCNEditDetails from "@components/scn/SCNEditDetails";
+import UploadDetails from "@components/scn/UploadDetails";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -160,6 +161,14 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <SCNEditDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/scn/upload-details"
+                    element={
+                      <ProtectedRoute>
+                        <UploadDetails />
                       </ProtectedRoute>
                     }
                   />
