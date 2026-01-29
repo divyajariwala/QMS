@@ -7,7 +7,7 @@ import SCNResultCard from "@components/scn/SCNResultCard";
 import PaginationComponent from "@components/pagination/PaginationComponent";
 import styles from "./SupplierPortal.module.scss";
 import SCNStatsQuickLinks from "./SCNStatsQuickLinks";
-import scnPlusIcon from "../../assets/icons/scnPlus.svg";
+import EmailIcon from "../../assets/icons/email.svg";
 import scnUploadIcon from "../../assets/icons/scnUploadIcon.svg";
 import SCNTabs from "./SCNTabs";
 import SCNFilter, { FilterOptions } from "@components/scn/SCNFilter";
@@ -45,10 +45,7 @@ type SCNTab = "supplier_portal" | "internal_review";
 const SupplierPortal: React.FC = () => {
   // Breadcrumb items
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const breadcrumbItems = [
-    { label: "Home", to: "/" },
-    { label: "Supplier Portal" },
-  ];
+  const breadcrumbItems = [{ label: "Home", to: "/" }, { label: "SCN" }];
   // Modal state
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
 
@@ -319,9 +316,9 @@ const SupplierPortal: React.FC = () => {
               onClick={handleAddManually}
             >
               <span className={styles.plusIcon}>
-                <img src={scnPlusIcon} />
+                <img src={EmailIcon} />
               </span>
-              Add SCN Manually
+              Add Email Document
             </Button>
             <Button
               variant="contained"

@@ -1,0 +1,70 @@
+@use "../../styles/_variables" as *;
+
+.upload-details {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 32px 48px 32px;
+  background: $color-light-grey;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.form-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+  margin-bottom: 4px;
+  letter-spacing: -0.1px;
+}
+
+.form-value {
+  font-size: 16px;
+  color: #111827;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.MuiButton-root {
+  min-width: 220px;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 6px;
+  margin-top: 16px;
+  box-shadow: none;
+}
+
+.formContainer {
+  margin-top: 24px;
+}
+.actionButtons {
+  margin-top: 20px;
+  width: 100%;
+  justify-content: flex-end !important;
+}
+
+.cancelButton {
+  border-color: #d1d5db !important;
+  color: #272d37 !important;
+  font-size: 16px !important;
+  background-color: white !important;
+  padding: 12px 65px !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  text-transform: none !important;
+  &:hover {
+    background-color: #f3f4f6 !important;
+  }
+}
+
+.submitButton {
+  background-color: #437ef7 !important;
+  color: white !important;
+  font-size: 16px !important;
+  padding: 12px 65px !important;
+  font-weight: 700 !important;
+  border-radius: 6px !important;
+  text-transform: none !important;
+  &:hover {
+    background-color: #1d4ed8 !important;
+  }
+}

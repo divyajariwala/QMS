@@ -1,80 +1,90 @@
-import React from "react";
-import { useLocation } from "react-router-dom";
-import { Box, Typography, Button, Stack, Grid } from "@mui/material";
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Box, Button, Stack } from "@mui/material";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
-import "./UploadDetails.scss";
+import SCNFormFields from "./SCNForm";
+import styles from "./UploadDetails.module.scss";
+
+interface SCNItem {
+  id: string;
+  status: "SUPPLIER ACTION REQUIRED" | "PENDING REVIEW" | "IN REVIEW";
+  scnNumber: string;
+  changeClassification: string;
+  supplierRef: string;
+  notificationDate: string;
+  plannedImplementationDate: string;
+  changeType: "Adverse Event" | "Product Complaint";
+  changeTitleSummary: string;
+  overdueDays?: number;
+  changeTitle?: string;
+}
 
 const UploadDetails: React.FC = () => {
   const location = useLocation();
-  const data = location.state || {};
+  const navigate = useNavigate();
+  // Use uploaded/extracted data as initial form values
+  const initialData = location.state || {};
+  // Allow editing by default after upload
+  const [isEditing, setIsEditing] = useState(true);
+  const [formData, setFormData] = useState({ ...initialData });
+  const [originalData] = useState({ ...initialData });
 
   const breadcrumbItems = [
     { label: "Home", to: "/" },
-    { label: "Supplier Portal", to: "/scn/supplier" },
+    { label: "SCN", to: "/scn/supplier" },
     { label: "Upload SCN" },
   ];
 
+  const handleSaveClick = () => {
+    // API call to save formData would go here
+    setIsEditing(false);
+    navigate(`/scn/supplier/1`);
+  };
+
+  const handleCancelClick = () => {
+    setFormData({ ...originalData });
+    setIsEditing(true); // Stay editable after upload
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev: SCNItem) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
   return (
-    <Box className="upload-details">
-      <Box sx={{ marginBottom: "24px" }}>
-        <CommonBreadcrumbs items={breadcrumbItems} />
+    <Box className={styles.uploadDetails}>
+      <CommonBreadcrumbs items={breadcrumbItems} />
+      <Box className={styles.formContainer}>
+        <SCNFormFields
+          formData={formData}
+          isEditing={isEditing}
+          onEditClick={() => setIsEditing(true)}
+          onInputChange={handleInputChange}
+          isUpload
+        />
       </Box>
-      <Typography
-        variant="h5"
-        gutterBottom
-        sx={{
-          fontWeight: 600,
-          fontSize: 20,
-          lineHeight: "28px",
-          marginBottom: "24px",
-        }}
-      >
-        Upload SCN
-      </Typography>
-      <Grid container spacing={3} sx={{ marginBottom: "32px" }}>
-        <Grid item xs={12} sm={6}>
-          <Typography className="form-label">SCN Title</Typography>
-          <Typography className="form-value">{data.scnTitle || "-"}</Typography>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Typography className="form-label">
-            Planned Implementation Date
-          </Typography>
-          <Typography className="form-value">
-            {data.plannedImplementationDate || "-"}
-          </Typography>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Typography className="form-label">Supplier Name</Typography>
-          <Typography className="form-value">
-            {data.supplierName || "-"}
-          </Typography>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Typography className="form-label">File Name</Typography>
-          <Typography className="form-value">{data.file || "-"}</Typography>
-        </Grid>
-        {/* Add more fields as needed, matching screenshot order */}
-      </Grid>
-      <Button
-        variant="contained"
-        href="/scn/supplier"
-        sx={{
-          background: "#437EF7",
-          color: "#fff",
-          fontWeight: 700,
-          fontSize: 16,
-          borderRadius: "6px",
-          padding: "12px 65px",
-          textTransform: "none",
-          boxShadow: "none",
-          "&:hover": {
-            background: "#1d4ed8",
-          },
-        }}
-      >
-        Back to Portal
-      </Button>
+
+      <Stack direction="row" spacing={2} className={styles.actionButtons}>
+        {isEditing && (
+          <>
+            <Button
+              variant="outlined"
+              onClick={handleCancelClick}
+              className={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSaveClick}
+              className={styles.submitButton}
+            >
+              Submit
+            </Button>
+          </>
+        )}
+      </Stack>
     </Box>
   );
 };

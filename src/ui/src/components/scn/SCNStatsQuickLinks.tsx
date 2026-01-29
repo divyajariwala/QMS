@@ -50,6 +50,36 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
           <Box className={styles.iconWrapper}>
             {/* <GridIcon /> */}
             {/* <img src={TotalSCNIcon} /> */}
+            <img src={SCNsSummaryIcon} />
+          </Box>
+          <Box className={styles.totalContent}>
+            <span className={styles.totalLabel}>SCNs Summary</span>
+            <span className={styles.totalValue}>{stats.total}</span>
+          </Box>
+        </Box>
+
+        {/* Stats Grid - 2 Columns */}
+        <Box className={styles.statsGrid}>
+          {/* Right Column */}
+          <Box className={styles.statsColumn}>
+            <Box className={styles.statRow}>
+              <span className={styles.statLabel}>Approved</span>
+              <span className={styles.statValue}>{stats.approved}</span>
+            </Box>
+            <Box className={styles.statRow}>
+              <span className={styles.statLabel}>Rejected</span>
+              <span className={styles.statValue}>{stats.rejected}</span>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+      {/* Stats Card */}
+      <Box className={styles.statsCard}>
+        {/* Header: Icon + Total SCNs */}
+        <Box className={styles.statsHeader}>
+          <Box className={styles.iconWrapper}>
+            {/* <GridIcon /> */}
+            {/* <img src={TotalSCNIcon} /> */}
             <img src={OpenSCNsIcon} />
           </Box>
           <Box className={styles.totalContent}>
@@ -78,37 +108,6 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
               <span className={styles.statValue}>
                 {stats.supplierActionRequired}
               </span>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Stats Card */}
-      <Box className={styles.statsCard}>
-        {/* Header: Icon + Total SCNs */}
-        <Box className={styles.statsHeader}>
-          <Box className={styles.iconWrapper}>
-            {/* <GridIcon /> */}
-            {/* <img src={TotalSCNIcon} /> */}
-            <img src={SCNsSummaryIcon} />
-          </Box>
-          <Box className={styles.totalContent}>
-            <span className={styles.totalLabel}>SCNs Summary</span>
-            <span className={styles.totalValue}>{stats.total}</span>
-          </Box>
-        </Box>
-
-        {/* Stats Grid - 2 Columns */}
-        <Box className={styles.statsGrid}>
-          {/* Right Column */}
-          <Box className={styles.statsColumn}>
-            <Box className={styles.statRow}>
-              <span className={styles.statLabel}>Approved</span>
-              <span className={styles.statValue}>{stats.approved}</span>
-            </Box>
-            <Box className={styles.statRow}>
-              <span className={styles.statLabel}>Rejected</span>
-              <span className={styles.statValue}>{stats.rejected}</span>
             </Box>
           </Box>
         </Box>

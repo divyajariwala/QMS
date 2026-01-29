@@ -3,15 +3,15 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Box,
   Typography,
   Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import styles from "./UploadSCN.module.scss";
 import Frame from "../../assets/icons/Frame.svg";
+import UploadIcon from "../../assets/icons/scnUploadIcon.svg";
+import UploadDoneIcon from "../../assets/icons/greenTickDone.svg";
 
 interface UploadSCNModalProps {
   open: boolean;
@@ -19,14 +19,37 @@ interface UploadSCNModalProps {
   fileInputRef: RefObject<HTMLInputElement>;
 }
 
-const UPLOAD_ACCEPTED_FORMATS = [".pdf"];
-const UPLOAD_PROGRESS_INTERVAL = 30;
-const UPLOAD_PROGRESS_STEP = 2;
+const UPLOAD_ACCEPTED_FORMATS = [".pdf", ".csv", ".xlsx"];
+const UPLOAD_PROGRESS_INTERVAL = 200;
+const UPLOAD_PROGRESS_STEP = 5;
 
 const mockExtractedData = {
-  scnTitle: "SCN-12345",
+  id: "1",
+  status: "SUPPLIER ACTION REQUIRED" as const,
+  scnNumber: "SCN-000231",
+  changeClassification: "Lorem ipsum",
+  supplierRef: "SCN-12345",
   supplierName: "Supplier XYZ",
-  plannedImplementationDate: "2026-01-07",
+  notificationDate: "Jan 04 2026",
+  plannedImplementationDate: "Dec 23 2025",
+  changeType: "Adverse Event" as const,
+  changeTitleSummary:
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
+  overdueDays: 5,
+  changeTitle: "SCN-12345",
+  currentState:
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  proposedState:
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  justification:
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  temporaryChange: "No",
+  supplierSitesAffected: "Low",
+  supplierSitesAffected2: "Manufacturing",
+  supplierContactInfo: "quality@xyz.com",
+  changeTimingPlannedDate: "Dec 23 2025",
+  firstAffectedLotBatch: "Input text",
+  materialComponentNumber: "Component A",
 };
 
 export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
@@ -61,9 +84,10 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
 
   const handleFile = (file: File) => {
     setUploadError(null);
+    const fileExt = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
 
-    if (!UPLOAD_ACCEPTED_FORMATS.includes(file.name.slice(-4).toLowerCase())) {
-      setUploadError("Only PDF files are accepted.");
+    if (!UPLOAD_ACCEPTED_FORMATS.includes(fileExt)) {
+      setUploadError("Only PDF, CSV, or XLSX files are accepted.");
       setSelectedFile(null);
       return;
     }
@@ -104,87 +128,123 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      PaperProps={{
+        sx: {
+          width: "649px",
+          maxWidth: `${!selectedFile && !uploadSuccess ? "547px" : "660px"}`,
+          borderRadius: "10px",
+        },
+      }}
+    >
       <DialogTitle className={styles.dialogTitle}>File Upload</DialogTitle>
       <Box className={styles.divider} />
+
       <DialogContent>
-        <Box
-          className={styles.uploadArea}
-          onClick={() => !uploading && fileInputRef.current?.click()}
-          onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
-        >
-          <Box>
-            <img src={Frame} alt="Upload" />
-          </Box>
+        {!selectedFile && !uploadSuccess && (
+          <Box className={styles.contentWrapper}>
+            <Box
+              className={styles.uploadArea}
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              <Box>
+                <img src={Frame} alt="Upload" />
+              </Box>
 
-          <Typography className={styles.uploadText}>
-            Click or drag file to this area to upload
-          </Typography>
+              <Typography className={styles.uploadText}>
+                Click or drag file to this area to upload
+              </Typography>
 
-          <Button
-            variant="contained"
-            disabled={uploading}
-            onClick={(e) => {
-              e.stopPropagation();
-              fileInputRef.current?.click();
-            }}
-            className={styles.browseButton}
-          >
-            Browse Files
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/pdf"
-            hidden
-            onChange={handleFileChange}
-          />
-        </Box>
-        <Typography className={styles.uploadHint} mt={2}>
-          Formats accepted are .pdf, csv and .xlsx
-        </Typography>
-        <Box className={styles.divider2} />
-
-        <Typography className={styles.uploadText} mt={2}>
-          0 file uploaded
-        </Typography>
-        {selectedFile && !uploadSuccess && (
-          <Box mt={4}>
-            <Typography mb={1}>Uploading…</Typography>
-            <Box className="progress-bar-bg">
-              <Box
-                className="progress-bar"
-                sx={{ width: `${uploadProgress}%` }}
+              <Button
+                variant="contained"
+                disabled={uploading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+                className={styles.browseButton}
+              >
+                Browse Files
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.csv,.xlsx"
+                hidden
+                onChange={handleFileChange}
               />
             </Box>
-            <Typography mt={1}>{uploadProgress}%</Typography>
-          </Box>
-        )}
-
-        {uploadSuccess && (
-          <Box mt={4} textAlign="center">
-            <CheckCircleIcon sx={{ color: "#22C55E", fontSize: 40 }} />
-            <Typography fontWeight={600} mt={1}>
-              Upload complete
+            <Typography className={styles.uploadHint}>
+              Formats accepted are .pdf, .csv and .xlsx
+            </Typography>
+            <Box className={styles.divider2} />
+            <Typography className={styles.uploadFileCount}>
+              0 file uploaded
             </Typography>
           </Box>
         )}
 
+        {/* PHASE 2: UPLOADING STATE */}
+        {uploading && (
+          <Box className={styles.processWrapper}>
+            <Box className={styles.iconCircleBlue}>
+              <img src={UploadIcon} alt="uploading" />
+            </Box>
+            <Typography className={styles.statusTitle}>Uploading...</Typography>
+            <Typography className={styles.statusSubtitle}>1 file</Typography>
+
+            <Box className={styles.progressBarContainer}>
+              <Box
+                className={styles.progressBarFill}
+                sx={{ width: `${uploadProgress}%` }}
+              />
+            </Box>
+
+            <Box className={styles.progressLabels}>
+              <Typography>Upload progress</Typography>
+              <Typography>{uploadProgress}%</Typography>
+            </Box>
+          </Box>
+        )}
+
+        {/* PHASE 3: UPLOAD COMPLETE STATE */}
+        {uploadSuccess && (
+          <Box className={styles.processWrapper}>
+            <Box className={styles.iconCircleGreen}>
+              <img
+                src={UploadDoneIcon}
+                alt="Upload Complete"
+                className={styles.uploadCompleteIcon}
+              />
+            </Box>
+
+            <Typography className={styles.statusTitle}>
+              Upload complete
+            </Typography>
+            <Typography className={styles.statusSubtitle}>
+              1 file uploaded successfully
+            </Typography>
+
+            <Button
+              variant="contained"
+              onClick={handleDone}
+              className={styles.doneButton}
+            >
+              Done
+            </Button>
+          </Box>
+        )}
+
         {uploadError && (
-          <Typography color="error" mt={2}>
-            {uploadError}
-          </Typography>
+          <Box p={3} textAlign="center">
+            <Typography color="error">{uploadError}</Typography>
+          </Box>
         )}
       </DialogContent>
-
-      {/* <DialogActions sx={{ p: 4 }}>
-        {uploadSuccess && (
-          <Button variant="contained" onClick={handleDone}>
-            Done
-          </Button>
-        )}
-      </DialogActions> */}
     </Dialog>
   );
 };
