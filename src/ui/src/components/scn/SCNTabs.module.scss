@@ -29,11 +29,11 @@
 }
 
 .activeTab {
-  border-bottom-color: #2563eb;
+  border-bottom-color: #437ef7;
 
   .tabLabel {
-    color: #2563eb;
-    font-weight: 600;
+    color: #437ef7;
+    font-weight: 500;
   }
 }
 
@@ -41,13 +41,13 @@
   border-bottom-color: transparent;
 
   .tabLabel {
-    font-weight: 600;
+    font-weight: 500;
   }
 }
 
 .tabLabel {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  color: #6b7280;
+  color: #5f6d7e;
   text-transform: capitalize;
 }

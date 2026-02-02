@@ -58,7 +58,7 @@ const SCNEditDetails: React.FC = () => {
 
   const breadcrumbItems = [
     { label: "Home", to: "/" },
-    { label: "Supplier Portal", to: "/scn/supplier" },
+    { label: "SCN", to: "/scn/supplier" },
     { label: scnDetail.scnNumber },
   ];
 

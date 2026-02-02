@@ -27,8 +27,8 @@
 }
 
 .addManuallyButton {
-  border: 1px solid transparent !important;
-  color: #437EF7 !important;
+  border: 1px solid #437ef7 !important;
+  color: #437ef7 !important;
   background-color: #fff !important;
   text-transform: none !important;
   font-weight: 500 !important;
@@ -39,20 +39,22 @@
   align-items: center !important;
   gap: 8px !important;
   font-weight: 600 !important;
+  height: 40px !important;
   &:hover {
     background-color: #f9fafb !important;
-    border-color: #9ca3af !important;
+    border-color: #1d4ed8 !important;
   }
 }
 
 .plusIcon {
   font-size: 18px;
   font-weight: 300;
-  line-height: 1;
+  display: flex;
+  align-items: center;
 }
 
 .uploadButton {
-  background-color: #437EF7 !important;
+  background-color: #437ef7 !important;
   color: #fff !important;
   text-transform: none !important;
   font-weight: 500 !important;
@@ -63,7 +65,7 @@
   align-items: center !important;
   gap: 8px !important;
   font-weight: 600 !important;
-
+  height: 40px !important;
   &:hover {
     background-color: #1d4ed8 !important;
   }
@@ -72,6 +74,8 @@
 .uploadIcon {
   font-size: 8px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
 }
 
 .scnList {
@@ -91,6 +95,6 @@
 .scnListLabel {
   margin-top: 32px;
   font-weight: 600;
-  color: #272D37;
+  color: #272d37;
   font-size: 20px;
 }

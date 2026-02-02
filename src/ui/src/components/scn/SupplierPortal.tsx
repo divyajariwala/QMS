@@ -12,6 +12,7 @@ import scnUploadIcon from "../../assets/icons/scnUploadIcon.svg";
 import SCNTabs from "./SCNTabs";
 import SCNFilter, { FilterOptions } from "@components/scn/SCNFilter";
 import { UploadSCNModal } from "./UploadSCNModal";
+import { useNavigate } from "react-router-dom";
 
 // Types
 export interface SCNStats {
@@ -48,7 +49,7 @@ const SupplierPortal: React.FC = () => {
   const breadcrumbItems = [{ label: "Home", to: "/" }, { label: "SCN" }];
   // Modal state
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-
+  const navigate = useNavigate();
   // Mock stats data
   const [stats] = useState<SCNStats>({
     total: 231,
@@ -180,9 +181,8 @@ const SupplierPortal: React.FC = () => {
   };
 
   // Handlers
-  const handleAddManually = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    console.log("Add SCN Manually clicked");
+  const handleAddEmailDocument = (event: MouseEvent<HTMLButtonElement>) => {
+    navigate("/scn/add-email-document");
   };
 
   const handleUploadSCN = () => {
@@ -304,7 +304,7 @@ const SupplierPortal: React.FC = () => {
           className={styles.headerSection}
         >
           <Box>
-            <h1 className={styles.pageTitle}>Supplier Portal</h1>
+            <h1 className={styles.pageTitle}>SCN</h1>
             <p className={styles.pageSubtitle}>
               Submit and track Supplier Change Notifications (SCNs)
             </p>
@@ -313,7 +313,7 @@ const SupplierPortal: React.FC = () => {
             <Button
               variant="outlined"
               className={styles.addManuallyButton}
-              onClick={handleAddManually}
+              onClick={handleAddEmailDocument}
             >
               <span className={styles.plusIcon}>
                 <img src={EmailIcon} />
