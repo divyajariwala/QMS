@@ -6,6 +6,7 @@ import CalendarIcon from "../../assets/icons/calendarLight.svg";
 import AdverseEvents from "../../assets/icons/adverseEvent.svg";
 import ProductComplaints from "../../assets/icons/productComplaint.svg";
 import OverdueIcon from "../../assets/icons/overdue.svg";
+import RightIcon from "../../assets/icons/rightDark.svg";
 
 interface SCNItem {
   id: string;
@@ -125,14 +126,16 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
           <span className={styles.infoLabel}>Notification Date Date</span>
           <Box className={styles.dateValue}>
             <img src={CalendarIcon} alt="Calendar" />
-            <span>{scn.notificationDate}</span>
+            <span className={styles.infoValue}>{scn.notificationDate}</span>
           </Box>
         </Box>
         <Box className={styles.infoItem}>
           <span className={styles.infoLabel}>Planned Implementation Date</span>
           <Box className={styles.dateValue}>
             <img src={CalendarIcon} alt="Calendar" />
-            <span>{scn.plannedImplementationDate}</span>
+            <span className={styles.infoValue}>
+              {scn.plannedImplementationDate}
+            </span>
           </Box>
         </Box>
         <Box className={styles.infoItem}>
@@ -176,7 +179,8 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
               handleSeeDetailsClick();
             }}
           >
-            See details <span className={styles.arrowIcon}>›</span>
+            See details
+            <img src={RightIcon} alt=">" />
           </a>
         </Stack>
       )}

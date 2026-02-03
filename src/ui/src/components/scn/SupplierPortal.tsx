@@ -13,6 +13,7 @@ import SCNTabs from "./SCNTabs";
 import SCNFilter, { FilterOptions } from "@components/scn/SCNFilter";
 import { UploadSCNModal } from "./UploadSCNModal";
 import { useNavigate } from "react-router-dom";
+import SCNInternalReview from "./SCNInternalReview";
 
 // Types
 export interface SCNStats {
@@ -342,70 +343,78 @@ const SupplierPortal: React.FC = () => {
 
       <SCNTabs activeTab={activeSCNTab} setActiveTab={setActiveSCNTab} />
       {/* Combined Stats and Quick Links Card */}
-      <SCNStatsQuickLinks stats={stats} />
 
-      <div className={styles.scnListLabel}>
-        SCN List ({searchActive ? searchResults?.length || 0 : scnItems.length})
-      </div>
-      {/* Filter Section */}
-      <SCNFilter
-        scnNumber={scnNumber}
-        setSCNNumber={setSCNNumber}
-        setSearchResults={setSearchResults}
-        setSearchActive={setSearchActive}
-        setPagination={setSearchPagination}
-        doSearch={doSearch}
-        filters={currentFilters}
-        setFilters={setCurrentFilters}
-        handleInputChange={handleInputChange}
-        handleSearchClick={handleSearchClick}
-      />
+      {/* Supplier portal tab */}
+      {activeSCNTab === "supplier_portal" && (
+        <div>
+          <SCNStatsQuickLinks stats={stats} />
+          <div className={styles.scnListLabel}>
+            SCN List (
+            {searchActive ? searchResults?.length || 0 : scnItems.length})
+          </div>
+          {/* Filter Section */}
+          <SCNFilter
+            scnNumber={scnNumber}
+            setSCNNumber={setSCNNumber}
+            setSearchResults={setSearchResults}
+            setSearchActive={setSearchActive}
+            setPagination={setSearchPagination}
+            doSearch={doSearch}
+            filters={currentFilters}
+            setFilters={setCurrentFilters}
+            handleInputChange={handleInputChange}
+            handleSearchClick={handleSearchClick}
+          />
 
-      {/* SCN List */}
-      <Box className={styles.scnList}>
-        {searchActive ? (
-          searchResults && searchResults.length === 0 ? (
-            <p className={styles.noResults}>
-              No SCNs found matching "{scnNumber}".
-            </p>
-          ) : (
-            searchResults?.map((scn) => (
-              <SCNResultCard
-                key={scn.id}
-                scn={scn}
-                onSeeDetails={handleSeeDetails}
-              />
-            ))
-          )
-        ) : scnItems.length === 0 ? (
-          <p className={styles.noResults}>No SCNs found.</p>
-        ) : (
-          scnItems.map((scn) => (
-            <SCNResultCard
-              key={scn.id}
-              scn={scn}
-              onSeeDetails={handleSeeDetails}
-            />
-          ))
-        )}
-      </Box>
+          {/* SCN List */}
+          <Box className={styles.scnList}>
+            {searchActive ? (
+              searchResults && searchResults.length === 0 ? (
+                <p className={styles.noResults}>
+                  No SCNs found matching "{scnNumber}".
+                </p>
+              ) : (
+                searchResults?.map((scn) => (
+                  <SCNResultCard
+                    key={scn.id}
+                    scn={scn}
+                    onSeeDetails={handleSeeDetails}
+                  />
+                ))
+              )
+            ) : scnItems.length === 0 ? (
+              <p className={styles.noResults}>No SCNs found.</p>
+            ) : (
+              scnItems.map((scn) => (
+                <SCNResultCard
+                  key={scn.id}
+                  scn={scn}
+                  onSeeDetails={handleSeeDetails}
+                />
+              ))
+            )}
+          </Box>
 
-      {/* Pagination */}
-      {searchActive
-        ? searchResults &&
-          searchResults.length > 0 && (
-            <PaginationComponent
-              pagination={searchPagination}
-              onPageChange={handleSearchPageChange}
-            />
-          )
-        : scnItems.length > 0 && (
-            <PaginationComponent
-              pagination={pagination}
-              onPageChange={handlePageChange}
-            />
-          )}
+          {/* Pagination */}
+          {searchActive
+            ? searchResults &&
+              searchResults.length > 0 && (
+                <PaginationComponent
+                  pagination={searchPagination}
+                  onPageChange={handleSearchPageChange}
+                />
+              )
+            : scnItems.length > 0 && (
+                <PaginationComponent
+                  pagination={pagination}
+                  onPageChange={handlePageChange}
+                />
+              )}
+        </div>
+      )}
 
+      {/* Internal review tab */}
+      {activeSCNTab === "internal_review" && <SCNInternalReview />}
       {/* Upload SCN Modal */}
       <UploadSCNModal
         open={uploadModalOpen}

@@ -1,24 +1,8 @@
 import React from "react";
 import { Box, Stack } from "@mui/material";
 import styles from "./SCNStatsQuickLinks.module.scss";
-// import TotalSCNIcon from "../../assets/icons/totalSCNIcon.svg";
 import OpenSCNsIcon from "../../assets/icons/openSCNs.svg";
 import SCNsSummaryIcon from "../../assets/icons/summarySCNs.svg";
-
-const GridIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect x="3" y="3" width="7" height="7" rx="1.5" fill="#6366F1" />
-    <rect x="3" y="14" width="7" height="7" rx="1.5" fill="#6366F1" />
-    <rect x="14" y="3" width="7" height="7" rx="1.5" fill="#6366F1" />
-    <rect x="14" y="14" width="7" height="7" rx="1.5" fill="#6366F1" />
-  </svg>
-);
 
 interface SCNStats {
   total: number;
@@ -48,8 +32,6 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
         {/* Header: Icon + Total SCNs */}
         <Box className={styles.statsHeader}>
           <Box className={styles.iconWrapper}>
-            {/* <GridIcon /> */}
-            {/* <img src={TotalSCNIcon} /> */}
             <img src={SCNsSummaryIcon} />
           </Box>
           <Box className={styles.totalContent}>
@@ -102,7 +84,7 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
               <span className={styles.statLabel}>In Review</span>
               <span className={styles.statValue}>{stats.inReview}</span>
             </Box>
-            <Box className={styles.statRow}>
+            <Box className={styles.statRowLast}>
               <span className={`${styles.dot} ${styles.redDot}`} />
               <span className={styles.statLabel}>Supplier Action Required</span>
               <span className={styles.statValue}>
@@ -116,15 +98,21 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
       {/* Quick Links Card */}
       <Box className={styles.quickLinksCard}>
         <span className={styles.quickLinksTitle}>Quick links</span>
-        <ul className={styles.quickLinksList}>
+        <Box className={styles.statsColumn}>
           {quickLinks.map((link, index) => (
-            <li key={index}>
+            <Box
+              className={
+                quickLinks.length - 1 === index
+                  ? styles.statRowLast
+                  : styles.statRow
+              }
+            >
               <a href={link.href} className={styles.quickLink}>
                 {link.label}
               </a>
-            </li>
+            </Box>
           ))}
-        </ul>
+        </Box>
       </Box>
     </Box>
   );

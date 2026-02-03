@@ -1,7 +1,7 @@
 .card {
   background-color: #fff;
   border: 1px solid #e5e7eb;
-  padding: 20px 24px;
+  padding: 16px 20px;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: box-shadow 0.2s ease;
@@ -22,7 +22,6 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: block;
-  margin-bottom: 4px;
   line-height: 24px;
 }
 
@@ -85,14 +84,14 @@
   font-size: 13px;
   color: #e2341d;
   background-color: #fff2f0;
-  padding: 6px 12px;
+  padding: 3px 6px;
   border-radius: 6px;
   font-weight: 500;
 }
 
 .infoRow {
   display: flex;
-  gap: 32px;
+  gap: 64px;
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
@@ -105,13 +104,13 @@
 }
 
 .infoLabel {
-  font-size: 12px;
+  font-size: 13px;
   color: #5f6d7e;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .infoValue {
-  font-size: 12px;
+  font-size: 15px;
   color: #272d37;
   font-weight: 600;
 }
@@ -148,7 +147,6 @@
 
 .summaryRow {
   margin-top: 8px;
-  padding-top: 12px;
 }
 
 .summarySection {
@@ -185,7 +183,7 @@
 
 .summaryText {
   font-size: 14px;
-  color: #6b7280;
+  color: #5f6d7e;
   margin: 0;
   line-height: 1.6;
   overflow: hidden;
@@ -201,7 +199,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   white-space: nowrap;
   font-weight: 600;
   flex-shrink: 0;

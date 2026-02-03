@@ -11,15 +11,15 @@
 // ==================
 .statsCard {
   background-color: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #eaebf0;
   border-radius: 12px;
-  padding: 20px 24px;
+  padding: 16px 20px;
   flex: 1;
+  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.04);
 }
 
 .statsHeader {
   display: flex;
-  align-items: center;
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -38,20 +38,21 @@
 .totalContent {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
 .totalLabel {
-  font-size: 12px;
-  color: #5F6D7E;
+  font-size: 14px;
+  color: #5f6d7e;
   font-weight: 500;
-  line-height: 2.3;
+  line-height: 20px;
 }
 
 .totalValue {
   font-size: 28px;
   font-weight: 600;
-  color: #111827;
-  line-height: 1.2;
+  color: #272d37;
+  line-height: 42px;
 }
 
 // Stats Grid
@@ -74,7 +75,15 @@
   gap: 8px;
   padding-bottom: 7px;
   padding-top: 4px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #eaebf0;
+}
+
+.statRowLast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 7px;
+  padding-top: 4px;
 }
 
 .dot {
@@ -84,32 +93,20 @@
   flex-shrink: 0;
 }
 
-.blueDot {
-  background-color: #3b82f6;
-}
-
-.orangeDot {
-  background-color: #f97316;
-}
-
 .redDot {
-  background-color: #ef4444;
+  background-color: #e0301e;
 }
 
 .yellowDot {
-  background-color: #eab308;
+  background-color: #ffb600;
 }
 
 .greenDot {
-  background-color: #22c55e;
-}
-
-.grayDot {
-  background-color: #6b7280;
+  background-color: #4eb523;
 }
 
 .statLabel {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #111827;
   min-width: 227px;
@@ -129,37 +126,21 @@
   background-color: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 20px 24px;
-  flex: 1; 
+  padding: 16px 20px;
+  flex: 1;
 }
 
 .quickLinksTitle {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  color: #111827;
+  color: #000000;
   display: block;
   margin-bottom: 24px;
 }
 
-.quickLinksList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.quickLinksList li {
-    // flex: 1 1 0;  
-    min-height: 40px;  
-    display: flex;
-    align-items: center;
-  }
-
 .quickLink {
   font-size: 14px;
-  color: #2563eb;
+  color: #0089eb;
   text-decoration: none;
   font-weight: 400;
   display: block;
