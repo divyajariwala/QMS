@@ -26,7 +26,7 @@
   display: grid;
   grid-template-columns: 408px 1fr;
   gap: 16px;
-  margin-top: 8px;
+  margin-top: 24px;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -145,13 +145,38 @@
   color: #272d37;
   font-weight: 600;
   font-size: 20px;
+  // margin-top: 5px;
 }
 
 .supplier {
   font-size: 15px;
   color: #696969;
-  margin: 4px 0;
+  margin: 12px 0;
 }
+
+.classificationStatus {
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  width: fit-content;
+  height: 22px;
+}
+
+.statusHigh {
+  color: #e2341d;
+  background-color: #fff2f0;
+}
+
+.statusMedium {
+  color: #eea23e;
+  background-color: #fff8eb;
+}
+
+.statusLow {
+  color: #2d8a39;
+  background-color: #f0faf0;
+}
+
 .progressText {
   display: flex;
   justify-content: space-between;
@@ -163,6 +188,7 @@
 .progressNumber {
   font-size: 16px;
   color: #474747;
+  font-weight: 600;
 }
 
 .progress {
@@ -199,6 +225,9 @@
   border-radius: 8px;
   background: #fff;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .filterButton {
@@ -218,4 +247,16 @@
 .filterButton:focus {
   outline: none;
   background: #faf9f9;
+}
+
+.mailContentHader {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.appButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
 }

@@ -1,12 +1,23 @@
 import React, { useState } from "react";
-import { Box, Stack, Button, Chip } from "@mui/material";
+import { Box, Stack, Button } from "@mui/material";
 import styles from "./SCNInternalReview.module.scss";
 import filterIcon from "../../assets/icons/filter.svg";
 import SearchIcon from "../../assets/icons/search.svg";
-import AdverseEventIcon from "../../assets/icons/adverseEvent.svg";
+import ButtonGroup from "./ButtonGroup";
+import SCNFormFields from "./SCNForm";
+import AppButton from "@components/common/AppButton";
+import InfoIcon from "../../assets/icons/information.svg";
+import CheckIcon from "../../assets/icons/circle-checkmark.svg";
+import CircleDeleteIcon from "../../assets/icons/circle-delete.svg";
+import UndoIcon from "../../assets/icons/undo.svg";
+import ChangeSCNOutputModal from "./ChangeSCNOutputModal";
 
 const SCNInternalReview: React.FC = () => {
   const [selected, setSelected] = useState<number>(0);
+  const [selectedTab, setSelectedTab] = useState("Review");
+  const [isEditing, setIsEditing] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const queueItems = [
     {
       id: "SCN-INT-000234",
@@ -56,6 +67,48 @@ const SCNInternalReview: React.FC = () => {
       scnStatus: "IN-REVIEW",
     },
   ];
+
+  const [scnDetail] = useState({
+    id: "1",
+    status: "SUPPLIER ACTION REQUIRED" as const,
+    scnNumber: "SCN-000231",
+    changeClassification: "Lorem ipsum",
+    supplierRef: "SCN-12345",
+    supplierName: "Supplier XYZ",
+    notificationDate: "Jan 04 2026",
+    plannedImplementationDate: "Dec 23 2025",
+    changeType: "Adverse Event" as const,
+    changeTitleSummary:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
+    overdueDays: 5,
+    changeTitle: "SCN-12345",
+    currentState:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    proposedState:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    justification:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    temporaryChange: "No",
+    supplierSitesAffected: "Low",
+    supplierSitesAffected2: "Manufacturing",
+    supplierContactInfo: "quality@xyz.com",
+    changeTimingPlannedDate: "Dec 23 2025",
+    firstAffectedLotBatch: "Input text",
+    materialComponentNumber: "Component A",
+  });
+
+  const getClassificationClass = (status: string) => {
+    switch (status) {
+      case "Low":
+        return styles.statusLow;
+      case "Medium":
+        return styles.statusMedium;
+      case "High":
+        return styles.statusHigh;
+      default:
+        return "";
+    }
+  };
 
   return (
     <Box component="main" className={styles.container}>
@@ -115,21 +168,27 @@ const SCNInternalReview: React.FC = () => {
                   >
                     <span className={styles.scnStatus}>{item.scnStatus}</span>
 
-                    <Stack direction="row" justifyContent="space-between">
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      marginTop={0.5}
+                    >
                       <span className={styles.scnId}>{item.id}</span>
-                      <Chip
-                        label={item.status}
-                        size="small"
-                        className={
-                          item.status === "High" ? styles.high : styles.medium
-                        }
-                      />
+
+                      <span
+                        className={`${styles.classificationStatus} ${getClassificationClass(item.status)}`}
+                      >
+                        {item.status}
+                      </span>
                     </Stack>
 
                     <p className={styles.supplier}>{item.supplier}</p>
                     <div className={styles.progressText}>
                       <span className={styles.textLabel}>Completeness</span>
-                      <span className={styles.progressNumber}>{item.progress}%</span>
+                      <span className={styles.progressNumber}>
+                        {item.progress}%
+                      </span>
                     </div>
                     <div className={styles.progress}>
                       <div
@@ -138,7 +197,7 @@ const SCNInternalReview: React.FC = () => {
                       />
                     </div>
 
-                    <p className={styles.desc}>{item.desc}</p>
+                    <span className={styles.desc}>{item.desc}</span>
                   </Box>
                 ))}
               </Stack>
@@ -146,7 +205,69 @@ const SCNInternalReview: React.FC = () => {
           </Box>
 
           {/* right – Mail Content */}
-          <Box className={styles.mailContent}></Box>
+          <Box className={styles.mailContent}>
+            <span className={styles.scnStatus}>New</span>
+            <Box className={styles.mailContentHader}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                marginTop={0.5}
+                gap={2}
+              >
+                <span className={styles.scnId}>SCN-INT-000234</span>
+                <span
+                  className={`${styles.classificationStatus} ${getClassificationClass("High")}`}
+                >
+                  High
+                </span>
+              </Stack>
+              <Stack direction="row" gap={1.5}>
+                <AppButton variant="ghost">
+                  <span className={styles.appButton}>
+                    <img src={InfoIcon} alt="" />
+                    Request info
+                  </span>
+                </AppButton>
+
+                <AppButton variant="outlined" onClick={() => setOpen(true)}>
+                  <span className={styles.appButton}>
+                    <img src={UndoIcon} alt="" />
+                    Change SCN Output
+                  </span>
+                </AppButton>
+
+                <AppButton variant="outlined">
+                  <span className={styles.appButton}>
+                    <img src={CircleDeleteIcon} alt="" />
+                    Reject
+                  </span>
+                </AppButton>
+
+                <AppButton variant="primary">
+                  <span className={styles.appButton}>
+                    <img src={CheckIcon} alt="" />
+                    Approve
+                  </span>
+                </AppButton>
+              </Stack>
+            </Box>
+            <ButtonGroup selected={selectedTab} onSelect={setSelectedTab} />
+            <SCNFormFields
+              formData={scnDetail}
+              isEditing={isEditing}
+              onEditClick={() => setIsEditing(true)}
+              // onInputChange={handleInputChange}
+            />
+            <ChangeSCNOutputModal
+              open={open}
+              onClose={() => setOpen(false)}
+              onDone={(value) => {
+                console.log("Selected Output:", value);
+              }}
+              defaultValue="SCN"
+            />
+          </Box>
         </Box>
       </Stack>
     </Box>

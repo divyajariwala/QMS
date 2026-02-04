@@ -1,0 +1,46 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.note {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.toggleGroup {
+  display: flex;
+  background-color: #f3f4f6;
+  border-radius: 8px;
+  padding: 4px;
+  width: fit-content;
+}
+
+.toggleBtn {
+  min-width: 120px;
+  border-radius: 6px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  color: #6b7280 !important;
+  background-color: transparent !important;
+}
+
+.active {
+  background-color: #ffffff !important;
+  color: #2563eb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
