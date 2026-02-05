@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Stack, Button } from "@mui/material";
 import styles from "./SCNInternalReview.module.scss";
 import filterIcon from "../../assets/icons/filter.svg";
@@ -11,12 +11,16 @@ import CheckIcon from "../../assets/icons/circle-checkmark.svg";
 import CircleDeleteIcon from "../../assets/icons/circle-delete.svg";
 import UndoIcon from "../../assets/icons/undo.svg";
 import ChangeSCNOutputModal from "./ChangeSCNOutputModal";
+import ChangeNotificationModal from "./ChangeNotificationModal";
+import RightIcon from "../../assets/icons/rightBlue.svg";
+import { fetchScnDetails, fetchScnList } from "src/services/scn";
 
 const SCNInternalReview: React.FC = () => {
   const [selected, setSelected] = useState<number>(0);
   const [selectedTab, setSelectedTab] = useState("Review");
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openPreview, setOpenPreview] = useState(false);
 
   const queueItems = [
     {
@@ -96,6 +100,39 @@ const SCNInternalReview: React.FC = () => {
     firstAffectedLotBatch: "Input text",
     materialComponentNumber: "Component A",
   });
+  const [scns, setScns] = useState([]);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    loadList();
+  }, [offset]);
+
+  const loadList = async () => {
+    const res = await fetchScnList(50, offset);
+    console.log(res, "res@@");
+    // setScns(res?.data?.items);
+    // setTotal(res?.data?.count);
+  };
+
+  const handleSelectScn = async (item: any) => {
+    // if (!item?.email_id) {
+    //   setScnDetails(MOCK_SCN_DETAIL);
+    //   return;
+    // }
+
+    try {
+      const res: any = await fetchScnDetails(item.email_id);
+
+      // if (res?.data) {
+      //   setScnDetails(res.data);
+      // } else {
+      //   setScnDetails(MOCK_SCN_DETAIL);
+      // }
+    } catch (error) {
+      console.warn("SCN detail API failed → using mock");
+    }
+  };
 
   const getClassificationClass = (status: string) => {
     switch (status) {
@@ -206,62 +243,139 @@ const SCNInternalReview: React.FC = () => {
 
           {/* right – Mail Content */}
           <Box className={styles.mailContent}>
-            <span className={styles.scnStatus}>New</span>
-            <Box className={styles.mailContentHader}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                marginTop={0.5}
-                gap={2}
-              >
-                <span className={styles.scnId}>SCN-INT-000234</span>
-                <span
-                  className={`${styles.classificationStatus} ${getClassificationClass("High")}`}
+            <Box>
+              <span className={styles.scnStatus}>New</span>
+              <Box className={styles.mailContentHader}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  marginTop={0.5}
+                  gap={2}
                 >
-                  High
-                </span>
-              </Stack>
-              <Stack direction="row" gap={1.5}>
-                <AppButton variant="ghost">
-                  <span className={styles.appButton}>
-                    <img src={InfoIcon} alt="" />
-                    Request info
+                  <span className={styles.scnId}>SCN-INT-000234</span>
+                  <span
+                    className={`${styles.classificationStatus} ${getClassificationClass("High")}`}
+                  >
+                    High
                   </span>
-                </AppButton>
+                </Stack>
+                <Stack direction="row" gap={1.5}>
+                  <AppButton variant="ghost">
+                    <span className={styles.appButton}>
+                      <img src={InfoIcon} alt="" />
+                      Request info
+                    </span>
+                  </AppButton>
 
-                <AppButton variant="outlined" onClick={() => setOpen(true)}>
-                  <span className={styles.appButton}>
-                    <img src={UndoIcon} alt="" />
-                    Change SCN Output
-                  </span>
-                </AppButton>
+                  <AppButton variant="outlined" onClick={() => setOpen(true)}>
+                    <span className={styles.appButton}>
+                      <img src={UndoIcon} alt="" />
+                      Change SCN Output
+                    </span>
+                  </AppButton>
 
-                <AppButton variant="outlined">
-                  <span className={styles.appButton}>
-                    <img src={CircleDeleteIcon} alt="" />
-                    Reject
-                  </span>
-                </AppButton>
+                  <AppButton variant="outlined">
+                    <span className={styles.appButton}>
+                      <img src={CircleDeleteIcon} alt="" />
+                      Reject
+                    </span>
+                  </AppButton>
 
-                <AppButton variant="primary">
-                  <span className={styles.appButton}>
-                    <img src={CheckIcon} alt="" />
-                    Approve
-                  </span>
-                </AppButton>
-              </Stack>
+                  <AppButton variant="primary">
+                    <span className={styles.appButton}>
+                      <img src={CheckIcon} alt="" />
+                      Approve
+                    </span>
+                  </AppButton>
+                </Stack>
+              </Box>
+            </Box>
+            <Box className={styles.detailText}>
+              <span>Supplier XYZ</span>
+              <span>Supplier SCN: SCN-12345</span>
+              <span>Submitted 2026-01-10</span>
+              <span>Owner: Unassigned</span>
             </Box>
             <ButtonGroup selected={selectedTab} onSelect={setSelectedTab} />
+            <Box>
+              <Box className={styles.divider}></Box>
+              <Box className={styles.docxMain}>
+                <section className={styles.section}>
+                  <p>
+                    <b>Reason for Change:</b> End-of-life replacement of legacy
+                    equipment/material.
+                  </p>
+                </section>
+
+                {/* Affected Items */}
+                <section className={styles.section}>
+                  <h3>Affected Items</h3>
+                  <div className={styles.tableMain}>
+                    <div className={styles.tableTitle}>Affected Items</div>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Type</th>
+                          <th>Identifier</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Service</td>
+                          <td>SRV-6803</td>
+                          <td>Release testing support</td>
+                        </tr>
+                        <tr>
+                          <td>Service</td>
+                          <td>SRV-1313</td>
+                          <td>Incoming inspection service</td>
+                        </tr>
+                        <tr>
+                          <td>Material</td>
+                          <td>MAT-524871</td>
+                          <td>Polymer resin, lot controlled</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                {/* Impact Assessment */}
+                <section className={styles.section}>
+                  <h3>Impact Assessment</h3>
+                  <p>
+                    <b>Regulatory Impact Likelihood:</b> High
+                  </p>
+                </section>
+              </Box>
+              <AppButton
+                className={styles.previewButton}
+                variant="outlined"
+                onClick={() => setOpen(true)}
+              >
+                <span className={styles.previewIcon}>
+                  Preview
+                  <img src={RightIcon} alt=">" />
+                </span>
+              </AppButton>
+            </Box>
             <SCNFormFields
               formData={scnDetail}
               isEditing={isEditing}
               onEditClick={() => setIsEditing(true)}
               // onInputChange={handleInputChange}
             />
-            <ChangeSCNOutputModal
+
+            <ChangeNotificationModal
               open={open}
               onClose={() => setOpen(false)}
+            />
+
+            <ChangeSCNOutputModal
+              open={openPreview}
+              onClose={() => setOpenPreview(false)}
               onDone={(value) => {
                 console.log("Selected Output:", value);
               }}
