@@ -670,3 +670,45 @@ export interface AdverseEventFilterProps {
   setPagination: (val: PaginationObj) => void;
   doSearch: (id: string, page?: number) => Promise<void>;
 }
+
+export interface ScnListItem {
+  email_id: string;
+  scn_reference_number: string;
+  supplier_name: string;
+  change_classification_supplier: string;
+  planned_implementation_date: string;
+  notification_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ScnListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    limit: number;
+    offset: number;
+    count: number;
+    items: ScnListItem[];
+  };
+  timestamp: string;
+}
+
+export interface ScnDetailsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    email_id: string;
+    scn_extracted_fields: Record<string, any>;
+    raw_email: {
+      download_url: string;
+    };
+    attachments: {
+      attachment_id: string;
+      filename: string;
+      status: string;
+      download_url: string;
+    }[];
+  };
+  timestamp: string;
+}

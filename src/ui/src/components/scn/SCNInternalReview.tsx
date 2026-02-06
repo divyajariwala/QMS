@@ -14,6 +14,7 @@ import ChangeSCNOutputModal from "./ChangeSCNOutputModal";
 import ChangeNotificationModal from "./ChangeNotificationModal";
 import RightIcon from "../../assets/icons/rightBlue.svg";
 import { fetchScnDetails, fetchScnList } from "src/services/scn";
+import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
 
 const SCNInternalReview: React.FC = () => {
   const [selected, setSelected] = useState<number>(0);
@@ -153,6 +154,7 @@ const SCNInternalReview: React.FC = () => {
         {/* Content */}
         <Box className={styles.contentWrapper}>
           {/* left – Mail List */}
+          {/* <ScnListSkeleton /> */}
           <Box className={styles.mailList}>
             <Stack
               direction="row"
@@ -242,6 +244,7 @@ const SCNInternalReview: React.FC = () => {
           </Box>
 
           {/* right – Mail Content */}
+          {/* <ScnDetailsSkeleton /> */}
           <Box className={styles.mailContent}>
             <Box>
               <span className={styles.scnStatus}>New</span>
@@ -261,21 +264,21 @@ const SCNInternalReview: React.FC = () => {
                   </span>
                 </Stack>
                 <Stack direction="row" gap={1.5}>
-                  <AppButton variant="ghost">
+                  <AppButton variant="outlined">
                     <span className={styles.appButton}>
                       <img src={InfoIcon} alt="" />
                       Request info
                     </span>
                   </AppButton>
 
-                  <AppButton variant="outlined" onClick={() => setOpen(true)}>
+                  <AppButton variant="primary" onClick={() => setOpen(true)}>
                     <span className={styles.appButton}>
                       <img src={UndoIcon} alt="" />
                       Change SCN Output
                     </span>
                   </AppButton>
 
-                  <AppButton variant="outlined">
+                  {/* <AppButton variant="outlined">
                     <span className={styles.appButton}>
                       <img src={CircleDeleteIcon} alt="" />
                       Reject
@@ -287,7 +290,7 @@ const SCNInternalReview: React.FC = () => {
                       <img src={CheckIcon} alt="" />
                       Approve
                     </span>
-                  </AppButton>
+                  </AppButton> */}
                 </Stack>
               </Box>
             </Box>
@@ -361,6 +364,7 @@ const SCNInternalReview: React.FC = () => {
                 </span>
               </AppButton>
             </Box>
+            {/* <SCNFormSkeleton /> */}
             <SCNFormFields
               formData={scnDetail}
               isEditing={isEditing}

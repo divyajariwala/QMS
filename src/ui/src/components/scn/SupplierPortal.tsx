@@ -310,8 +310,23 @@ const SupplierPortal: React.FC = () => {
               Submit and track Supplier Change Notifications (SCNs)
             </p>
           </Box>
-          <Stack direction="row" spacing={2} className={styles.actions}>
-            <Button
+        </Stack>
+      </Stack>
+
+      <SCNTabs activeTab={activeSCNTab} setActiveTab={setActiveSCNTab} />
+
+      {/* Supplier portal tab */}
+      {activeSCNTab === "supplier_portal" && (
+        <div>
+          <Stack
+            direction="row"
+            alignItems="flex-start"
+            justifyContent="space-between"
+            marginTop={3}
+          >
+            <h1 className={styles.pageSummaryTitle}>SCN Summary</h1>
+            <Stack direction="row" spacing={2} className={styles.actions}>
+              {/* <Button
               variant="outlined"
               className={styles.addManuallyButton}
               onClick={handleAddEmailDocument}
@@ -320,33 +335,25 @@ const SupplierPortal: React.FC = () => {
                 <img src={EmailIcon} />
               </span>
               Add Email Document
-            </Button>
-            <Button
-              variant="contained"
-              className={styles.uploadButton}
-              onClick={handleUploadSCN}
-            >
-              <span className={styles.uploadIcon}>
-                <img src={scnUploadIcon} />
-              </span>
-              Upload SCN
-            </Button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              accept=".pdf"
-            />
+            </Button> */}
+              <Button
+                variant="contained"
+                className={styles.uploadButton}
+                onClick={handleUploadSCN}
+              >
+                <span className={styles.uploadIcon}>
+                  <img src={scnUploadIcon} />
+                </span>
+                Upload SCN
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                accept=".pdf"
+              />
+            </Stack>
           </Stack>
-        </Stack>
-      </Stack>
-
-      <SCNTabs activeTab={activeSCNTab} setActiveTab={setActiveSCNTab} />
-      {/* Combined Stats and Quick Links Card */}
-
-      {/* Supplier portal tab */}
-      {activeSCNTab === "supplier_portal" && (
-        <div>
           <SCNStatsQuickLinks stats={stats} />
           <div className={styles.scnListLabel}>
             SCN List (

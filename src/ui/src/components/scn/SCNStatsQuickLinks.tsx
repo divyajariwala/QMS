@@ -35,7 +35,7 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
             <img src={SCNsSummaryIcon} />
           </Box>
           <Box className={styles.totalContent}>
-            <span className={styles.totalLabel}>SCNs Summary</span>
+            <span className={styles.totalLabel}>Total SCNs</span>
             <span className={styles.totalValue}>{stats.total}</span>
           </Box>
         </Box>
@@ -79,18 +79,18 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
               <span className={styles.statLabel}>Pending Review</span>
               <span className={styles.statValue}>{stats.pendingReview}</span>
             </Box>
-            <Box className={styles.statRow}>
+            <Box className={styles.statRowLast}>
               <span className={`${styles.dot} ${styles.greenDot}`} />
               <span className={styles.statLabel}>In Review</span>
               <span className={styles.statValue}>{stats.inReview}</span>
             </Box>
-            <Box className={styles.statRowLast}>
+            {/* <Box className={styles.statRowLast}>
               <span className={`${styles.dot} ${styles.redDot}`} />
               <span className={styles.statLabel}>Supplier Action Required</span>
               <span className={styles.statValue}>
                 {stats.supplierActionRequired}
               </span>
-            </Box>
+            </Box> */}
           </Box>
         </Box>
       </Box>
