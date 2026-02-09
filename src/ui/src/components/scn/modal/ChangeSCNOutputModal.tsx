@@ -28,16 +28,19 @@ const ChangeSCNOutputModal: React.FC<ChangeSCNOutputModalProps> = ({
       open={open}
       onClose={onClose}
       title="Change SCN Output"
-      width={520}
+      width={592}
       actions={[
         {
           label: "Cancel",
           variant: "outlined",
           onClick: onClose,
+          classes: styles.actionButton,
         },
         {
           label: "Done",
+          variant: "primary",
           onClick: handleDone,
+          classes: styles.actionButton,
         },
       ]}
     >
@@ -49,9 +52,7 @@ const ChangeSCNOutputModal: React.FC<ChangeSCNOutputModalProps> = ({
         </Typography>
 
         <Box className={styles.section}>
-          <Typography className={styles.label}>
-            SCN Predicted Output
-          </Typography>
+          <Typography className={styles.label}>SCN Predicted Output</Typography>
 
           <Box className={styles.toggleGroup}>
             <Button

@@ -1,0 +1,60 @@
+@use "../../styles/mixins" as *;
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #5f6d7e;
+  margin-bottom: 8px;
+}
+
+.selectedBox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  background: #f2f3f6;
+  color: #272d37;
+  border-radius: 4px;
+  padding: 4px 4px 4px 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: #6f7682;
+  margin-left: 6px;
+  cursor: pointer;
+}
+.closeIcon {
+  width: 12px;
+  height: 12px;
+}
+
+.fieldsGrid {
+  display: flex;
+  gap: 32px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #474747;
+}

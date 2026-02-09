@@ -10,11 +10,12 @@ import InfoIcon from "../../assets/icons/information.svg";
 import CheckIcon from "../../assets/icons/circle-checkmark.svg";
 import CircleDeleteIcon from "../../assets/icons/circle-delete.svg";
 import UndoIcon from "../../assets/icons/undo.svg";
-import ChangeSCNOutputModal from "./ChangeSCNOutputModal";
-import ChangeNotificationModal from "./ChangeNotificationModal";
+import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
+import ChangeNotificationModal from "./modal/ChangeNotificationModal";
 import RightIcon from "../../assets/icons/rightBlue.svg";
 import { fetchScnDetails, fetchScnList } from "src/services/scn";
 import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
+import RequestInfoModal from "./modal/RequestInfoModal";
 
 const SCNInternalReview: React.FC = () => {
   const [selected, setSelected] = useState<number>(0);
@@ -22,12 +23,13 @@ const SCNInternalReview: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false);
   const [openPreview, setOpenPreview] = useState(false);
+  const [openRequestInfo, setOpenRequestInfo] = useState(false);
 
   const queueItems = [
     {
       id: "SCN-INT-000234",
       supplier: "Supplier ABC",
-      status: "High",
+      status: "Minor",
       progress: 90,
       desc: "3 Raw material change",
       scnStatus: "New",
@@ -35,7 +37,7 @@ const SCNInternalReview: React.FC = () => {
     {
       id: "SCN-INT-000240",
       supplier: "Supplier ABC",
-      status: "Medium",
+      status: "Moderate",
       progress: 82,
       desc: "Packing and labeling changes",
       scnStatus: "New",
@@ -43,7 +45,7 @@ const SCNInternalReview: React.FC = () => {
     {
       id: "SCN-INT-000510",
       supplier: "Supplier ABC",
-      status: "Low",
+      status: "Major",
       progress: 72,
       desc: "Packing and labeling changes",
       scnStatus: "Needs Triage",
@@ -51,14 +53,14 @@ const SCNInternalReview: React.FC = () => {
     {
       id: "SCN-INT-000234",
       supplier: "Supplier ABC",
-      status: "High",
+      status: "Minor",
       progress: 90,
       desc: "3 Raw material change",
     },
     {
       id: "SCN-INT-000240",
       supplier: "Supplier ABC",
-      status: "Medium",
+      status: "Moderate",
       progress: 82,
       desc: "Packing and labeling changes",
       scnStatus: "Needs Triage",
@@ -66,7 +68,7 @@ const SCNInternalReview: React.FC = () => {
     {
       id: "SCN-INT-000510",
       supplier: "Supplier ABC",
-      status: "Low",
+      status: "Major",
       progress: 72,
       desc: "Packing and labeling changes",
       scnStatus: "IN-REVIEW",
@@ -137,11 +139,11 @@ const SCNInternalReview: React.FC = () => {
 
   const getClassificationClass = (status: string) => {
     switch (status) {
-      case "Low":
+      case "Minor":
         return styles.statusLow;
-      case "Medium":
+      case "Moderate":
         return styles.statusMedium;
-      case "High":
+      case "Major":
         return styles.statusHigh;
       default:
         return "";
@@ -235,8 +237,8 @@ const SCNInternalReview: React.FC = () => {
                         style={{ width: `${item.progress}%` }}
                       />
                     </div>
-
                     <span className={styles.desc}>{item.desc}</span>
+                    <div className={styles.textTag}>Manufacturing Change</div>
                   </Box>
                 ))}
               </Stack>
@@ -258,20 +260,43 @@ const SCNInternalReview: React.FC = () => {
                 >
                   <span className={styles.scnId}>SCN-INT-000234</span>
                   <span
-                    className={`${styles.classificationStatus} ${getClassificationClass("High")}`}
+                    className={`${styles.classificationStatus} ${getClassificationClass("Minor")}`}
                   >
-                    High
+                    Minor
                   </span>
                 </Stack>
-                <Stack direction="row" gap={1.5}>
-                  <AppButton variant="outlined">
+              </Box>
+            </Box>
+            <Box className={styles.detailText}>
+              <span>Supplier XYZ</span>
+              <span>Supplier SCN: SCN-12345</span>
+              <span>Submitted 2026-01-10</span>
+              <span>Owner: Unassigned</span>
+            </Box>
+            <ButtonGroup selected={selectedTab} onSelect={setSelectedTab} />
+            {selectedTab === "Review" && (
+              <Box>
+                <Stack
+                  direction="row"
+                  gap={1.5}
+                  justifyContent="flex-end"
+                  marginBottom={3}
+                  marginTop={1}
+                >
+                  <AppButton
+                    variant="outlined"
+                    onClick={() => setOpenRequestInfo(true)}
+                  >
                     <span className={styles.appButton}>
                       <img src={InfoIcon} alt="" />
                       Request info
                     </span>
                   </AppButton>
 
-                  <AppButton variant="primary" onClick={() => setOpen(true)}>
+                  <AppButton
+                    variant="primary"
+                    onClick={() => setOpenPreview(true)}
+                  >
                     <span className={styles.appButton}>
                       <img src={UndoIcon} alt="" />
                       Change SCN Output
@@ -292,78 +317,100 @@ const SCNInternalReview: React.FC = () => {
                     </span>
                   </AppButton> */}
                 </Stack>
-              </Box>
-            </Box>
-            <Box className={styles.detailText}>
-              <span>Supplier XYZ</span>
-              <span>Supplier SCN: SCN-12345</span>
-              <span>Submitted 2026-01-10</span>
-              <span>Owner: Unassigned</span>
-            </Box>
-            <ButtonGroup selected={selectedTab} onSelect={setSelectedTab} />
-            <Box>
-              <Box className={styles.divider}></Box>
-              <Box className={styles.docxMain}>
-                <section className={styles.section}>
-                  <p>
-                    <b>Reason for Change:</b> End-of-life replacement of legacy
-                    equipment/material.
-                  </p>
-                </section>
+                <Box className={styles.docxMain}>
+                  <section className={styles.section}>
+                    <p>
+                      <b>Reason for Change:</b> End-of-life replacement of
+                      legacy equipment/material.
+                    </p>
+                  </section>
 
-                {/* Affected Items */}
-                <section className={styles.section}>
-                  <h3>Affected Items</h3>
-                  <div className={styles.tableMain}>
-                    <div className={styles.tableTitle}>Affected Items</div>
-                    <table className={styles.table}>
-                      <thead>
-                        <tr>
-                          <th>Type</th>
-                          <th>Identifier</th>
-                          <th>Description</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>Service</td>
-                          <td>SRV-6803</td>
-                          <td>Release testing support</td>
-                        </tr>
-                        <tr>
-                          <td>Service</td>
-                          <td>SRV-1313</td>
-                          <td>Incoming inspection service</td>
-                        </tr>
-                        <tr>
-                          <td>Material</td>
-                          <td>MAT-524871</td>
-                          <td>Polymer resin, lot controlled</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
+                  {/* Affected Items */}
+                  <section className={styles.section}>
+                    <h3>Affected Items</h3>
+                    <div className={styles.tableMain}>
+                      <div className={styles.tableTitle}>Affected Items</div>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Type</th>
+                            <th>Identifier</th>
+                            <th>Description</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Service</td>
+                            <td>SRV-6803</td>
+                            <td>Release testing support</td>
+                          </tr>
+                          <tr>
+                            <td>Service</td>
+                            <td>SRV-1313</td>
+                            <td>Incoming inspection service</td>
+                          </tr>
+                          <tr>
+                            <td>Material</td>
+                            <td>MAT-524871</td>
+                            <td>Polymer resin, lot controlled</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
 
-                {/* Impact Assessment */}
-                <section className={styles.section}>
-                  <h3>Impact Assessment</h3>
-                  <p>
-                    <b>Regulatory Impact Likelihood:</b> High
-                  </p>
-                </section>
+                  {/* Impact Assessment */}
+                  <section className={styles.section}>
+                    <h3>Impact Assessment</h3>
+                    <p>
+                      <b>Regulatory Impact Likelihood:</b> High
+                    </p>
+                  </section>
+                </Box>
+                <AppButton
+                  className={styles.previewButton}
+                  variant="outlined"
+                  onClick={() => setOpen(true)}
+                >
+                  <span className={styles.previewIcon}>
+                    Preview
+                    <img src={RightIcon} alt=">" />
+                  </span>
+                </AppButton>
               </Box>
-              <AppButton
-                className={styles.previewButton}
-                variant="outlined"
-                onClick={() => setOpen(true)}
-              >
-                <span className={styles.previewIcon}>
-                  Preview
-                  <img src={RightIcon} alt=">" />
-                </span>
-              </AppButton>
-            </Box>
+            )}
+            {selectedTab === "Impact Assessment" && (
+              <Box>
+                <Stack
+                  direction="row"
+                  gap={1.5}
+                  justifyContent="flex-end"
+                  marginBottom={3}
+                  marginTop={1}
+                >
+                  <AppButton variant="outlined">
+                    <span className={styles.appButton}>
+                      <img src={UndoIcon} alt="" />
+                      Change SCN Output
+                    </span>
+                  </AppButton>
+
+                  <AppButton variant="outlined">
+                    <span className={styles.appButton}>
+                      <img src={CircleDeleteIcon} alt="" />
+                      Reject
+                    </span>
+                  </AppButton>
+
+                  <AppButton variant="primary">
+                    <span className={styles.appButton}>
+                      <img src={CheckIcon} alt="" />
+                      Approve
+                    </span>
+                  </AppButton>
+                </Stack>
+              </Box>
+            )}
             {/* <SCNFormSkeleton /> */}
             <SCNFormFields
               formData={scnDetail}
@@ -385,6 +432,49 @@ const SCNInternalReview: React.FC = () => {
               }}
               defaultValue="SCN"
             />
+            <RequestInfoModal
+              open={openRequestInfo}
+              onClose={() => setOpenRequestInfo(false)}
+              onSubmit={(fields, comment) => {
+                console.log("Requested fields:", fields);
+                console.log("Comment:", comment);
+              }}
+              allFields={[
+                "Supplier Name",
+                "SCN Title",
+                "Supplier Site(s) Affected",
+                "Supplier Contact Information",
+                "Material / Component Number",
+                "Proposed State",
+                "Supplier Change Classification",
+                "Planned Implementation Date",
+                "First Affected Lot / Batch",
+                "Document Upload",
+              ]}
+              initialSelected={["Supplier Name", "SCN Title"]}
+            />
+            <Box className={styles.divider} marginTop={3} />
+
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              {isEditing && (
+                <>
+                  <AppButton
+                    variant="outlined"
+                    // onClick={handleCancelClick}
+                    className={styles.actionButton}
+                  >
+                    Cancel
+                  </AppButton>
+                  <AppButton
+                    variant="primary"
+                    // onClick={handleSaveClick}
+                    className={styles.actionButton}
+                  >
+                    Save
+                  </AppButton>
+                </>
+              )}
+            </Stack>
           </Box>
         </Box>
       </Stack>

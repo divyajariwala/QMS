@@ -43,9 +43,9 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
       case "SUPPLIER ACTION REQUIRED":
         return styles.statusRed;
       case "PENDING REVIEW":
-        return styles.statusBlue;
+        return styles.statusYellow;
       case "IN REVIEW":
-        return styles.statusOrange;
+        return styles.statusGreen;
       default:
         return "";
     }
@@ -53,11 +53,11 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
 
   const getClassificationClass = () => {
     switch (scn.changeClassification) {
-      case "Low":
+      case "Minor":
         return styles.statusLow;
-      case "Medium":
+      case "Moderate":
         return styles.statusMedium;
-      case "High":
+      case "Major":
         return styles.statusHigh;
       default:
         return "";
@@ -141,9 +141,10 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
         <Box className={styles.infoItem}>
           <span className={styles.infoLabel}>Change Type</span>
           <Box
-            className={`${styles.changeTypeTag} ${changeTypeConfig.className}`}
+            className={styles.changeTypeTag}
+            // className={`${styles.changeTypeTag} ${changeTypeConfig.className}`}
           >
-            <img src={changeTypeConfig.icon} alt={scn.changeType} />
+            {/* <img src={changeTypeConfig.icon} alt={scn.changeType} /> */}
             <span>{scn.changeType}</span>
           </Box>
         </Box>

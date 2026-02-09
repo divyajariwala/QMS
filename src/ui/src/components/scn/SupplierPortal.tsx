@@ -31,7 +31,7 @@ export interface SCNItem {
   id: string;
   status: "SUPPLIER ACTION REQUIRED" | "PENDING REVIEW" | "IN REVIEW";
   scnNumber: string;
-  changeClassification: "Low" | "Medium" | "High";
+  changeClassification: "Minor" | "Moderate" | "Major";
   supplierRef: string;
   notificationDate: string;
   plannedImplementationDate: string;
@@ -93,9 +93,9 @@ const SupplierPortal: React.FC = () => {
   const [scnItems] = useState<SCNItem[]>([
     {
       id: "1",
-      status: "SUPPLIER ACTION REQUIRED",
+      status: "IN REVIEW",
       scnNumber: "SCN-000231",
-      changeClassification: "Low",
+      changeClassification: "Moderate",
       supplierRef: "SCN-12345",
       notificationDate: "Jan 04 2026",
       plannedImplementationDate: "Jan 07 2026",
@@ -109,7 +109,7 @@ const SupplierPortal: React.FC = () => {
       id: "2",
       status: "PENDING REVIEW",
       scnNumber: "SCN-000235",
-      changeClassification: "High",
+      changeClassification: "Major",
       supplierRef: "SCN-12345",
       notificationDate: "Jan 04 2026",
       plannedImplementationDate: "Jan 07 2026",
@@ -123,7 +123,7 @@ const SupplierPortal: React.FC = () => {
       id: "3",
       status: "IN REVIEW",
       scnNumber: "SCN-000236",
-      changeClassification: "Medium",
+      changeClassification: "Minor",
       supplierRef: "SCN-12345",
       notificationDate: "Jan 04 2026",
       plannedImplementationDate: "Jan 07 2026",
@@ -137,7 +137,7 @@ const SupplierPortal: React.FC = () => {
       id: "4",
       status: "SUPPLIER ACTION REQUIRED",
       scnNumber: "SCN-000237",
-      changeClassification: "Low",
+      changeClassification: "Major",
       supplierRef: "SCN-12345",
       notificationDate: "Jan 04 2026",
       plannedImplementationDate: "Jan 07 2026",
@@ -151,7 +151,7 @@ const SupplierPortal: React.FC = () => {
       id: "5",
       status: "IN REVIEW",
       scnNumber: "SCN-000238",
-      changeClassification: "Medium",
+      changeClassification: "Moderate",
       supplierRef: "SCN-12345",
       notificationDate: "Jan 04 2026",
       plannedImplementationDate: "Jan 07 2026",

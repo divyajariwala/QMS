@@ -6,8 +6,11 @@
 
 .note {
   font-size: 14px;
-  color: #374151;
+  color: #29323a;
   line-height: 1.6;
+  strong {
+    font-weight: 600;
+  }
 }
 
 .section {
@@ -17,9 +20,9 @@
 }
 
 .label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #111827;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #5f6d7e;
 }
 
 .toggleGroup {
@@ -27,11 +30,12 @@
   background-color: #f3f4f6;
   border-radius: 8px;
   padding: 4px;
-  width: fit-content;
+  width: 325px;
 }
 
 .toggleBtn {
-  min-width: 120px;
+  min-width: 160px !important;
+  height: 40px !important;
   border-radius: 6px !important;
   text-transform: none !important;
   font-weight: 600 !important;
@@ -43,4 +47,9 @@
   background-color: #ffffff !important;
   color: #2563eb !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.actionButton {
+  width: 137px;
+  height: 46px;
 }

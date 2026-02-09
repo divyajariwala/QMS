@@ -1,6 +1,6 @@
 import React from "react";
 import { Dialog, DialogContent, IconButton } from "@mui/material";
-import CloseIcon from "../../assets/icons/close.svg";
+import CloseIcon from "../../../assets/icons/close.svg";
 import styles from "./ChangeNotificationModal.module.scss";
 
 interface Props {

@@ -29,12 +29,12 @@
   color: #e0301e;
 }
 
-.statusOrange {
-  color: #fd6412;
+.statusYellow {
+  color: #ffb600;
 }
 
-.statusBlue {
-  color: #6b2cda;
+.statusGreen {
+  color: #4eb523;
 }
 
 .classificationStatus {
@@ -91,7 +91,7 @@
 
 .infoRow {
   display: flex;
-  gap: 64px;
+  gap: 20px 64px;
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
@@ -128,11 +128,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   padding: 4px 10px;
   border-radius: 6px;
   font-weight: 500;
   width: fit-content;
+  color: #574efa;
+  background-color: #ecebff;
 }
 
 .changeTypeOrange {

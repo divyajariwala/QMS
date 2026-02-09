@@ -9,15 +9,23 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import CloseIcon from "../../assets/icons/CloseVector.svg";
 import styles from "./CommonModal.module.scss";
+import AppButton from "./AppButton";
 
 interface ModalAction {
   label: string;
   onClick: () => void;
-  variant?: "text" | "outlined" | "contained";
-  color?: "primary" | "secondary" | "error";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "outlined"
+    | "danger"
+    | "success"
+    | "ghost";
+  color?: string;
   disabled?: boolean;
+  classes?: string;
 }
 
 interface CommonModalProps {
@@ -60,15 +68,14 @@ const CommonModal: React.FC<CommonModalProps> = ({
       {title && (
         <>
           <DialogTitle className={styles.dialogTitle}>
-            <Typography>{title}</Typography>
-
+            <span>{title}</span>
             {showCloseIcon && (
               <IconButton
                 className={styles.closeIcon}
                 onClick={onClose}
                 size="small"
               >
-                <CloseIcon />
+                <img src={CloseIcon} alt="X" />
               </IconButton>
             )}
           </DialogTitle>
@@ -82,15 +89,15 @@ const CommonModal: React.FC<CommonModalProps> = ({
       {actions && actions.length > 0 && (
         <DialogActions className={styles.actions}>
           {actions.map((action, index) => (
-            <Button
+            <AppButton
               key={index}
-              variant={action.variant || "contained"}
-              color={action.color || "primary"}
+              variant={action.variant || "primary"}
               disabled={action.disabled}
               onClick={action.onClick}
+              className={action.classes}
             >
               {action.label}
-            </Button>
+            </AppButton>
           ))}
         </DialogActions>
       )}
