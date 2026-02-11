@@ -1,0 +1,29 @@
+.hadding {
+  color: #29323a;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.label {
+  color: #5f6d7e;
+  font-size: 14px;
+  span {
+    color: #e53935;
+  }
+}
+
+.textarea {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #dae0e6;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 14px;
+  color: #252525;
+  margin-top: 10px;
+
+  &:focus {
+    outline: none;
+    border-color: #b1b4b8;
+  }
+}

@@ -16,6 +16,7 @@ import RightIcon from "../../assets/icons/rightBlue.svg";
 import { fetchScnDetails, fetchScnList } from "src/services/scn";
 import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
 import RequestInfoModal from "./modal/RequestInfoModal";
+import SCNInternalReviewImpactTab from "./SCNInternalReviewImpactTab";
 
 const SCNInternalReview: React.FC = () => {
   const [selected, setSelected] = useState<number>(0);
@@ -302,20 +303,6 @@ const SCNInternalReview: React.FC = () => {
                       Change SCN Output
                     </span>
                   </AppButton>
-
-                  {/* <AppButton variant="outlined">
-                    <span className={styles.appButton}>
-                      <img src={CircleDeleteIcon} alt="" />
-                      Reject
-                    </span>
-                  </AppButton>
-
-                  <AppButton variant="primary">
-                    <span className={styles.appButton}>
-                      <img src={CheckIcon} alt="" />
-                      Approve
-                    </span>
-                  </AppButton> */}
                 </Stack>
                 <Box className={styles.docxMain}>
                   <section className={styles.section}>
@@ -377,48 +364,20 @@ const SCNInternalReview: React.FC = () => {
                     <img src={RightIcon} alt=">" />
                   </span>
                 </AppButton>
+                {/* <SCNFormSkeleton /> */}
+                <SCNFormFields
+                  formData={scnDetail}
+                  isEditing={isEditing}
+                  onEditClick={() => setIsEditing(true)}
+                  // onInputChange={handleInputChange}
+                />
               </Box>
             )}
             {selectedTab === "Impact Assessment" && (
               <Box>
-                <Stack
-                  direction="row"
-                  gap={1.5}
-                  justifyContent="flex-end"
-                  marginBottom={3}
-                  marginTop={1}
-                >
-                  <AppButton variant="outlined">
-                    <span className={styles.appButton}>
-                      <img src={UndoIcon} alt="" />
-                      Change SCN Output
-                    </span>
-                  </AppButton>
-
-                  <AppButton variant="outlined">
-                    <span className={styles.appButton}>
-                      <img src={CircleDeleteIcon} alt="" />
-                      Reject
-                    </span>
-                  </AppButton>
-
-                  <AppButton variant="primary">
-                    <span className={styles.appButton}>
-                      <img src={CheckIcon} alt="" />
-                      Approve
-                    </span>
-                  </AppButton>
-                </Stack>
+                <SCNInternalReviewImpactTab />
               </Box>
             )}
-            {/* <SCNFormSkeleton /> */}
-            <SCNFormFields
-              formData={scnDetail}
-              isEditing={isEditing}
-              onEditClick={() => setIsEditing(true)}
-              // onInputChange={handleInputChange}
-            />
-
             <ChangeNotificationModal
               open={open}
               onClose={() => setOpen(false)}

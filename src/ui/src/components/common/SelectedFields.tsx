@@ -5,9 +5,11 @@ import closeIcon from "../../assets/icons/close.svg";
 interface SelectedFieldsProps {
   fields: string[];
   selected: string[];
-  onSelect: (field: string) => void;
-  onRemove: (field: string) => void;
+  onSelect?: (field: string) => void;
+  onRemove?: (field: string) => void;
   className?: string;
+  label?: string;
+  disabled?: boolean;
 }
 
 const SelectedFields: React.FC<SelectedFieldsProps> = ({
@@ -16,6 +18,8 @@ const SelectedFields: React.FC<SelectedFieldsProps> = ({
   onSelect,
   onRemove,
   className = "",
+  label = "Selected fields",
+  disabled = false,
 }) => {
   // Split fields for two columns
   const mid = Math.ceil(fields.length / 2);
@@ -24,15 +28,16 @@ const SelectedFields: React.FC<SelectedFieldsProps> = ({
 
   return (
     <div className={className}>
-      <div className={styles.label}>Selected fields</div>
+      <div className={styles.label}>{label}</div>
       <div className={styles.selectedBox}>
         {selected.map((field) => (
           <span key={field} className={styles.tag}>
             {field}
             <button
               className={styles.removeBtn}
-              onClick={() => onRemove(field)}
+              onClick={() => onRemove && onRemove(field)}
               aria-label={`Remove ${field}`}
+              disabled={disabled}
             >
               <img src={closeIcon} alt="X" className={styles.closeIcon} />
             </button>
@@ -46,7 +51,8 @@ const SelectedFields: React.FC<SelectedFieldsProps> = ({
               <input
                 type="checkbox"
                 checked={selected.includes(field)}
-                onChange={() => onSelect(field)}
+                onChange={() => onSelect && onSelect(field)}
+                disabled={disabled}
               />
               {field}
             </label>
@@ -58,7 +64,8 @@ const SelectedFields: React.FC<SelectedFieldsProps> = ({
               <input
                 type="checkbox"
                 checked={selected.includes(field)}
-                onChange={() => onSelect(field)}
+                onChange={() => onSelect && onSelect(field)}
+                disabled={disabled}
               />
               {field}
             </label>
