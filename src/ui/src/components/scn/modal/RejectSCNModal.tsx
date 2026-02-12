@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import CommonModal from "@components/common/CommonModal";
-import AppButton from "@components/common/AppButton";
 import { Box } from "@mui/material";
 import styles from "./RejectSCNModal.module.scss";
 
@@ -33,8 +32,21 @@ const RejectSCNModal: React.FC<RejectSCNModalProps> = ({
       open={open}
       onClose={onClose}
       title="Reject"
-      width={500}
-      actions={[]}
+      width={700}
+      actions={[
+        {
+          label: "Cancel",
+          variant: "outlined",
+          onClick: onClose,
+          classes: styles.actionButton,
+        },
+        {
+          label: "Submit",
+          variant: "primary",
+          onClick: handleSubmit,
+          classes: styles.actionButton,
+        },
+      ]}
     >
       <Box>
         <Box mb={2}>
@@ -42,7 +54,7 @@ const RejectSCNModal: React.FC<RejectSCNModalProps> = ({
             Please share reason for rejection
           </span>
         </Box>
-        <Box mb={3}>
+        <Box mb={1}>
           <span className={styles.label}>
             Comment <span>*</span>
           </span>
@@ -59,22 +71,6 @@ const RejectSCNModal: React.FC<RejectSCNModalProps> = ({
               Comment is required
             </div>
           )}
-        </Box>
-        <Box display="flex" justifyContent="center" gap={2} mt={4}>
-          <AppButton
-            variant="outlined"
-            // style={{ minWidth: 137, height: 46 }}
-            onClick={onClose}
-          >
-            Cancel
-          </AppButton>
-          <AppButton
-            variant="primary"
-            // style={{ minWidth: 137, height: 46 }}
-            onClick={handleSubmit}
-          >
-            Submit
-          </AppButton>
         </Box>
       </Box>
     </CommonModal>

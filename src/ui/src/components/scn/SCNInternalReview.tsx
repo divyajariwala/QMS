@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Box, Stack, Button } from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
+import { Box, Stack, Button, Menu } from "@mui/material";
 import styles from "./SCNInternalReview.module.scss";
 import filterIcon from "../../assets/icons/filter.svg";
 import SearchIcon from "../../assets/icons/search.svg";
@@ -10,6 +10,7 @@ import InfoIcon from "../../assets/icons/information.svg";
 import CheckIcon from "../../assets/icons/circle-checkmark.svg";
 import CircleDeleteIcon from "../../assets/icons/circle-delete.svg";
 import UndoIcon from "../../assets/icons/undo.svg";
+import CalendarIcon from "../../assets/icons/calendar.svg";
 import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
 import ChangeNotificationModal from "./modal/ChangeNotificationModal";
 import RightIcon from "../../assets/icons/rightBlue.svg";
@@ -17,6 +18,15 @@ import { fetchScnDetails, fetchScnList } from "src/services/scn";
 import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
 import RequestInfoModal from "./modal/RequestInfoModal";
 import SCNInternalReviewImpactTab from "./SCNInternalReviewImpactTab";
+import FormInput from "@components/common/FormInput";
+import SCNInternalReviewAuditTab from "./SCNInternalReviewAuditTab";
+
+type FilterState = {
+  supplier: string;
+  plannedDate: string | null;
+  daysRange: string;
+  classification: string;
+};
 
 const SCNInternalReview: React.FC = () => {
   const [selected, setSelected] = useState<number>(0);
@@ -25,6 +35,25 @@ const SCNInternalReview: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [openPreview, setOpenPreview] = useState(false);
   const [openRequestInfo, setOpenRequestInfo] = useState(false);
+
+  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
+  const filterMenuOpen = Boolean(filterAnchorEl);
+
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+  };
+  const defaultFilters: FilterState = {
+    supplier: "",
+    plannedDate: null,
+    daysRange: "",
+    classification: "",
+  };
+
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [appliedFilters, setAppliedFilters] =
+    useState<FilterState>(defaultFilters);
 
   const queueItems = [
     {
@@ -151,6 +180,69 @@ const SCNInternalReview: React.FC = () => {
     }
   };
 
+  const handleFilterChange = <K extends keyof FilterState>(
+    key: K,
+    value: FilterState[K],
+  ) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  // const handleApplyFilters = () => {
+  //   setAppliedFilters(filters);
+  //   setFilterAnchorEl(null);
+  // };
+
+  // const handleClearFilters = () => {
+  //   setFilters(defaultFilters);
+  //   setAppliedFilters(defaultFilters);
+  //   setFilterAnchorEl(null);
+  // };
+
+  const filteredQueueItems = useMemo(() => {
+    return queueItems.filter((item) => {
+      if (
+        appliedFilters.supplier &&
+        item.supplier !== appliedFilters.supplier
+      ) {
+        return false;
+      }
+
+      if (
+        appliedFilters.classification &&
+        item.status !== appliedFilters.classification
+      ) {
+        return false;
+      }
+
+      if (appliedFilters.daysRange) {
+        const days = Number(item.progress); // example mapping
+        const [min, max] = appliedFilters.daysRange.split("-");
+
+        if (max) {
+          if (days < Number(min) || days > Number(max)) return false;
+        } else {
+          if (days < Number(min)) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [queueItems, appliedFilters]);
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(filters);
+    handleFilterClose();
+  };
+
+  const handleClearFilters = () => {
+    setFilters(defaultFilters);
+    setAppliedFilters(defaultFilters);
+    handleFilterClose();
+  };
+
   return (
     <Box component="main" className={styles.container}>
       <Stack gap={2}>
@@ -170,11 +262,138 @@ const SCNInternalReview: React.FC = () => {
                 size="small"
                 variant="outlined"
                 className={styles.filterButton}
+                onClick={(event) => setFilterAnchorEl(event.currentTarget)}
               >
                 Filter
                 <img src={filterIcon} alt="filter" />
               </Button>
             </Stack>
+            {/* Filter Dropdown */}
+            {filterMenuOpen && (
+              <Menu
+                anchorEl={filterAnchorEl}
+                open={filterMenuOpen}
+                onClose={handleFilterClose}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+                PaperProps={{
+                  className: styles.filterPopover,
+                }}
+              >
+                <div className={styles.filterContent}>
+                  {/* Supplier */}
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Supplier</label>
+                    <div className={styles.selectWrapper}>
+                      <select
+                        value={filters.supplier}
+                        onChange={(e) =>
+                          handleFilterChange("supplier", e.target.value)
+                        }
+                        className={styles.selectInput}
+                      >
+                        <option value="">Supplier 1</option>
+                        {["Supplier ABC", "Supplier XYZ"].map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <span className={styles.selectArrow} />
+                    </div>
+                  </div>
+
+                  {/* Planned Date */}
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>
+                      Planned Implementation Date
+                    </label>
+                    <div className={styles.dateWrapper}>
+                      <input
+                        type={filters.plannedDate ? "date" : "text"}
+                        value={filters.plannedDate || ""}
+                        onChange={(e) =>
+                          handleFilterChange("plannedDate", e.target.value)
+                        }
+                        onFocus={(e) => (e.target.type = "date")}
+                        onBlur={(e) => {
+                          if (!e.target.value) e.target.type = "text";
+                        }}
+                        className={`${styles.inputField} ${styles.dateInput}`}
+                        placeholder="Jan 04 2026"
+                      />
+                      <img
+                        src={CalendarIcon}
+                        alt="calendar"
+                        className={styles.calendarIcon}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Days Since Notification */}
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>
+                      Days Since Notification
+                    </label>
+                    <div className={styles.selectWrapper}>
+                      <select
+                        value={filters.daysRange}
+                        onChange={(e) =>
+                          handleFilterChange("daysRange", e.target.value)
+                        }
+                        className={styles.selectInput}
+                      >
+                        <option value="">Input text</option>
+                        <option value="0-30">0–30</option>
+                        <option value="31-60">31–60</option>
+                        <option value="61-90">61–90</option>
+                        <option value="90">90+</option>
+                      </select>
+                      <span className={styles.selectArrow} />
+                    </div>
+                  </div>
+
+                  {/* Classification */}
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>
+                      Change Classification
+                    </label>
+                    <div className={styles.selectWrapper}>
+                      <select
+                        value={filters.classification}
+                        onChange={(e) =>
+                          handleFilterChange("classification", e.target.value)
+                        }
+                        className={styles.selectInput}
+                      >
+                        <option value="">Classification 1</option>
+                        <option value="Minor">Minor</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Major">Major</option>
+                      </select>
+                      <span className={styles.selectArrow} />
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className={styles.buttonRow}>
+                    <button
+                      className={styles.clearButton}
+                      onClick={handleClearFilters}
+                    >
+                      Clear
+                    </button>
+
+                    <button
+                      className={styles.applyButton}
+                      onClick={handleApplyFilters}
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              </Menu>
+            )}
 
             <Box className={styles.mailListSub}>
               <div className={styles.searchBar}>
@@ -200,7 +419,7 @@ const SCNInternalReview: React.FC = () => {
               </div>
 
               <Stack className={styles.queueList}>
-                {queueItems.map((item, index) => (
+                {filteredQueueItems.map((item, index) => (
                   <Box
                     key={item.id}
                     className={`${styles.queueCard} ${
@@ -371,6 +590,7 @@ const SCNInternalReview: React.FC = () => {
                   onEditClick={() => setIsEditing(true)}
                   // onInputChange={handleInputChange}
                 />
+                <Box className={styles.divider} marginTop={3} />
               </Box>
             )}
             {selectedTab === "Impact Assessment" && (
@@ -378,6 +598,8 @@ const SCNInternalReview: React.FC = () => {
                 <SCNInternalReviewImpactTab />
               </Box>
             )}
+
+            {selectedTab === "Audit" && <SCNInternalReviewAuditTab />}
             <ChangeNotificationModal
               open={open}
               onClose={() => setOpen(false)}
@@ -412,7 +634,6 @@ const SCNInternalReview: React.FC = () => {
               ]}
               initialSelected={["Supplier Name", "SCN Title"]}
             />
-            <Box className={styles.divider} marginTop={3} />
 
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               {isEditing && (

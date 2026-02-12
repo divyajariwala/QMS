@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CommonModal from "@components/common/CommonModal";
-import AppButton from "@components/common/AppButton";
 import { Box } from "@mui/material";
+import styles from "./ApproveModal.module.scss";
 
 interface ApproveModalProps {
   open: boolean;
@@ -9,6 +9,7 @@ interface ApproveModalProps {
   onDone: (changeControlRequired: string, recordId: string) => void;
   defaultChangeControl?: string;
   defaultRecordId?: string;
+  recordIdOptions?: string[];
 }
 
 const ApproveModal: React.FC<ApproveModalProps> = ({
@@ -17,86 +18,103 @@ const ApproveModal: React.FC<ApproveModalProps> = ({
   onDone,
   defaultChangeControl = "Yes",
   defaultRecordId = "",
+  recordIdOptions = [
+    "CC-23451",
+    "CC-23452",
+    "CC-23453",
+    "CC-23454",
+    "CC-23455",
+  ],
 }) => {
   const [changeControlRequired, setChangeControlRequired] =
     useState<string>(defaultChangeControl);
-  const [recordId, setRecordId] = useState<string>(defaultRecordId);
+  const [recordId, setRecordId] = useState<string>(
+    defaultRecordId || recordIdOptions[0],
+  );
 
   const handleDone = () => {
     onDone(changeControlRequired, recordId);
     onClose();
   };
 
+  useEffect(() => {
+    if (changeControlRequired === "No") {
+      setRecordId("");
+    }
+  }, [changeControlRequired]);
+
   return (
     <CommonModal
       open={open}
       onClose={onClose}
       title="Approve"
-      width={500}
-      actions={[]}
+      width={592}
+      actions={[
+        {
+          label: "Cancel",
+          variant: "outlined",
+          onClick: onClose,
+          classes: styles.actionButton,
+        },
+        {
+          label: "Done",
+          variant: "primary",
+          onClick: handleDone,
+          classes: styles.actionButton,
+        },
+      ]}
     >
-      <Box sx={{ p: 2 }}>
+      <Box>
         <Box mb={3}>
           <Box mb={2}>
-            <span style={{ fontWeight: 500, fontSize: 15 }}>
-              Change Control Required?
-            </span>
+            <span className={styles.radioLabel}>Change Control Required?</span>
           </Box>
           <Box display="flex" gap={3}>
-            {["No", "Yes"].map((option) => (
-              <label
-                key={option}
-                style={{ display: "flex", alignItems: "center", gap: 6 }}
-              >
-                <input
-                  type="radio"
-                  name="changeControl"
-                  value={option}
-                  checked={changeControlRequired === option}
-                  onChange={() => setChangeControlRequired(option)}
-                  style={{ accentColor: "#3b82f6", width: 16, height: 16 }}
-                />
-                {option}
-              </label>
-            ))}
+            {/* NO Radio */}
+            <label className={styles.radioOption}>
+              <input
+                type="radio"
+                name="changeControl"
+                value="No"
+                checked={changeControlRequired === "No"}
+                onChange={(e) => setChangeControlRequired(e.target.value)}
+                className={styles.radioInput}
+              />
+              No
+            </label>
+            {/* YES Radio */}
+            <label className={styles.radioOption}>
+              <input
+                type="radio"
+                name="changeControl"
+                value="Yes"
+                checked={changeControlRequired === "Yes"}
+                onChange={(e) => setChangeControlRequired(e.target.value)}
+                className={styles.radioInput}
+              />
+              Yes
+            </label>
           </Box>
         </Box>
-        <Box mb={3}>
+        <Box>
           <Box mb={1}>
-            <span style={{ fontWeight: 500, fontSize: 15 }}>
-              Select Record ID Number
-            </span>
+            <span className={styles.radioLabel}>Select Record ID Number</span>
           </Box>
-          <input
-            type="text"
-            value={recordId}
-            onChange={(e) => setRecordId(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              border: "1px solid #ddd",
-              borderRadius: 6,
-              fontSize: 15,
-              backgroundColor: "#f9fafb",
-              outline: "none",
-            }}
-          />
-        </Box>
-        <Box display="flex" justifyContent="center" gap={2} mt={4}>
-          <AppButton
-            variant="outlined"
-            style={{ minWidth: 137, height: 46 }}
-            onClick={onClose}
-          >
-            Cancel
-          </AppButton>
-          <AppButton
-            variant="primary"
-            style={{ minWidth: 137, height: 46 }}
-            onClick={handleDone}
-          >
-            Done
-          </AppButton>
+          <div className={styles.selectWrapper}>
+            <select
+              value={recordId}
+              onChange={(e) => setRecordId(e.target.value)}
+              disabled={changeControlRequired === "No"}
+              className={styles.selectInput}
+            >
+              {recordIdOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            <span className={styles.selectArrow} />
+          </div>
         </Box>
       </Box>
     </CommonModal>

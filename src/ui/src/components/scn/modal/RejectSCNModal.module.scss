@@ -1,6 +1,6 @@
 .hadding {
   color: #29323a;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -14,7 +14,7 @@
 
 .textarea {
   width: 100%;
-  min-height: 120px;
+  min-height: 189px;
   border: 1px solid #dae0e6;
   border-radius: 4px;
   padding: 8px;
@@ -26,4 +26,10 @@
     outline: none;
     border-color: #b1b4b8;
   }
+}
+
+.actionButton {
+  width: 137px;
+  height: 46px;
+  margin-bottom: 25px;
 }
