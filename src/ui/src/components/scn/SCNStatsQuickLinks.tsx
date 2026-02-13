@@ -75,13 +75,17 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
           {/* Left Column */}
           <Box className={styles.statsColumn}>
             <Box className={styles.statRow}>
-              <span className={`${styles.dot} ${styles.yellowDot}`} />
-              <span className={styles.statLabel}>Pending Review</span>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <span className={`${styles.dot} ${styles.yellowDot}`} />
+                <span className={styles.statLabel}>Pending Review</span>
+              </Stack>
               <span className={styles.statValue}>{stats.pendingReview}</span>
             </Box>
             <Box className={styles.statRowLast}>
-              <span className={`${styles.dot} ${styles.greenDot}`} />
-              <span className={styles.statLabel}>In Review</span>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <span className={`${styles.dot} ${styles.greenDot}`} />
+                <span className={styles.statLabel}>In Review</span>
+              </Stack>
               <span className={styles.statValue}>{stats.inReview}</span>
             </Box>
             {/* <Box className={styles.statRowLast}>

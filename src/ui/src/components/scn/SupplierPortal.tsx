@@ -327,15 +327,15 @@ const SupplierPortal: React.FC = () => {
             <h1 className={styles.pageSummaryTitle}>SCN Summary</h1>
             <Stack direction="row" spacing={2} className={styles.actions}>
               {/* <Button
-              variant="outlined"
-              className={styles.addManuallyButton}
-              onClick={handleAddEmailDocument}
-            >
-              <span className={styles.plusIcon}>
-                <img src={EmailIcon} />
-              </span>
-              Add Email Document
-            </Button> */}
+                variant="outlined"
+                className={styles.addManuallyButton}
+                onClick={handleAddEmailDocument}
+              >
+                <span className={styles.plusIcon}>
+                  <img src={EmailIcon} />
+                </span>
+                Add Email Document
+              </Button> */}
               <Button
                 variant="contained"
                 className={styles.uploadButton}

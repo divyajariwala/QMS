@@ -590,7 +590,7 @@ const SCNInternalReview: React.FC = () => {
                   onEditClick={() => setIsEditing(true)}
                   // onInputChange={handleInputChange}
                 />
-                <Box className={styles.divider} marginTop={3} />
+                {isEditing && <Box className={styles.divider} marginTop={3} />}
               </Box>
             )}
             {selectedTab === "Impact Assessment" && (

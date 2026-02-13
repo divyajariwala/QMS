@@ -78,12 +78,14 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             value={formData.supplierRef}
             onChange={(val) => onInputChange("supplierRef", val)}
             disabled
+            className={styles.IdentificationInput}
           />
           <FormInput
             label="SCN Title"
             value={formData.changeTitle}
             onChange={(val) => onInputChange("changeTitle", val)}
             disabled
+            className={styles.IdentificationInput}
           />
         </Stack>
 
@@ -93,16 +95,43 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             value={formData.supplierName}
             onChange={(val) => onInputChange("supplierName", val)}
             disabled
+            className={styles.IdentificationInput}
           />
-          <FormInput
-            label="Planned Implementation Date"
-            value={formData.plannedImplementationDate}
-            onChange={(val) => onInputChange("plannedImplementationDate", val)}
-            disabled={!isEditing}
-            type="date"
-            placeholder="Input text"
-            className={styles.inputLabel}
-          />
+          {isUpload && (
+            <FormInput
+              label="Planned Implementation Date"
+              value={formData.plannedImplementationDate}
+              onChange={(val) =>
+                onInputChange("plannedImplementationDate", val)
+              }
+              disabled={!isEditing}
+              type="date"
+              placeholder="Input text"
+              className={styles.inputLabel}
+            />
+          )}
+          {!isUpload && (
+            <Box className={styles.formGroup}>
+              <label className={styles.formLabel}>Temporary Change</label>
+              <div className={styles.radioGroup}>
+                {["No", "Yes"].map((option) => (
+                  <label key={option} className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="temporaryChange"
+                      value={option}
+                      checked={formData.temporaryChange === option}
+                      onChange={(e) =>
+                        onInputChange("temporaryChange", e.target.value)
+                      }
+                      disabled={!isEditing}
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </Box>
+          )}
         </Stack>
       </Box>
 
@@ -123,7 +152,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
       {/* Proposed State Section */}
       <Box>
         <FormInput
-          label="Proposed State Description"
+          label="Proposed State"
           value={formData.proposedState}
           onChange={(val) => onInputChange("proposedState", val)}
           disabled={!isEditing}
@@ -149,26 +178,28 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
       {/* Temporary Change and Supplier Sites Section */}
       <Box>
         <Stack direction="row" spacing={4} className={styles.formRow}>
-          <Box className={styles.formGroup}>
-            <label className={styles.formLabel}>Temporary Change</label>
-            <div className={styles.radioGroup}>
-              {["No", "Yes"].map((option) => (
-                <label key={option} className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="temporaryChange"
-                    value={option}
-                    checked={formData.temporaryChange === option}
-                    onChange={(e) =>
-                      onInputChange("temporaryChange", e.target.value)
-                    }
-                    disabled={!isEditing}
-                  />
-                  {option}
-                </label>
-              ))}
-            </div>
-          </Box>
+          {isUpload && (
+            <Box className={styles.formGroup}>
+              <label className={styles.formLabel}>Temporary Change</label>
+              <div className={styles.radioGroup}>
+                {["No", "Yes"].map((option) => (
+                  <label key={option} className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="temporaryChange"
+                      value={option}
+                      checked={formData.temporaryChange === option}
+                      onChange={(e) =>
+                        onInputChange("temporaryChange", e.target.value)
+                      }
+                      disabled={!isEditing}
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </Box>
+          )}
           <Box className={styles.formGroup}>
             <label className={styles.formLabel}>
               Supplier Site(s) Affected
@@ -177,7 +208,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               {["Manufacturing", "Testing"].map((site) => (
                 <label key={site} className={styles.radioLabel}>
                   <input
-                    type="radio"
+                    type="checkbox"
                     name="siteAffectedType"
                     value={site}
                     checked={formData.supplierSitesAffected2 === site}
@@ -191,27 +222,51 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               ))}
             </div>
           </Box>
+          {!isUpload && (
+            <Box className={styles.formGroup}>
+              <label className={styles.formLabel}>
+                Supplier Change Classification
+              </label>
+              <div className={styles.checkboxGroup}>
+                {["Minor", "Moderate", "Major"].map((level) => (
+                  <label key={level} className={styles.checkboxLabel}>
+                    <input
+                      type="radio"
+                      checked={formData.supplierSitesAffected === level}
+                      onChange={() =>
+                        onInputChange("supplierSitesAffected", level)
+                      }
+                      disabled={!isEditing}
+                    />
+                    {level}
+                  </label>
+                ))}
+              </div>
+            </Box>
+          )}
         </Stack>
 
-        <Stack direction="row" spacing={4} className={styles.formRow}>
-          <Box className={styles.formGroup}>
-            <label className={styles.formLabel}>Impact Level</label>
-            <div className={styles.checkboxGroup}>
-              {["Low", "Medium", "High"].map((level) => (
-                <label key={level} className={styles.checkboxLabel}>
-                  <input
-                    type="radio"
-                    checked={formData.supplierSitesAffected === level}
-                    onChange={() =>
-                      onInputChange("supplierSitesAffected", level)
-                    }
-                    disabled={!isEditing}
-                  />
-                  {level}
-                </label>
-              ))}
-            </div>
-          </Box>
+        <Stack direction="row" spacing={4}>
+          {isUpload && (
+            <Box className={styles.formGroup}>
+              <label className={styles.formLabel}>Impact Level</label>
+              <div className={styles.checkboxGroup}>
+                {["Minor", "Moderate", "Major"].map((level) => (
+                  <label key={level} className={styles.checkboxLabel}>
+                    <input
+                      type="radio"
+                      checked={formData.supplierSitesAffected === level}
+                      onChange={() =>
+                        onInputChange("supplierSitesAffected", level)
+                      }
+                      disabled={!isEditing}
+                    />
+                    {level}
+                  </label>
+                ))}
+              </div>
+            </Box>
+          )}
           <FormInput
             label="Supplier Contact Information"
             value={formData.supplierContactInfo}
@@ -220,25 +275,34 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             type="email"
             className={styles.inputLabel}
           />
+          {!isUpload && (
+            <FormInput
+              label="Notification Date"
+              value={formData.notificationDate}
+              onChange={(val) => onInputChange("notificationDate", val)}
+              disabled={!isEditing}
+              type="date"
+              className={styles.inputLabel}
+            />
+          )}
         </Stack>
-
-        <Stack direction="row" spacing={4} className={styles.formRow}>
-          <FormInput
-            label="Notification Date"
-            value={formData.notificationDate}
-            onChange={(val) => onInputChange("notificationDate", val)}
-            disabled={!isEditing}
-            type="date"
-            className={styles.inputLabel}
-          />
-          <div style={{ width: "50%" }}></div>
-        </Stack>
+        {isUpload && (
+          <Stack direction="row" spacing={4} className={styles.formRow}>
+            <FormInput
+              label="Notification Date"
+              value={formData.notificationDate}
+              onChange={(val) => onInputChange("notificationDate", val)}
+              disabled={!isEditing}
+              type="date"
+              className={styles.inputLabel}
+            />
+            <div style={{ width: "50%" }}></div>
+          </Stack>
+        )}
       </Box>
 
-      <Box className={styles.divider} />
-
       {/* Change Timing */}
-      <Box>
+      <Box className={styles.sectionTiming} pt={2}>
         <h2 className={styles.sectionTitle}>Change Timing</h2>
         <Stack direction="row" spacing={4} className={styles.formRow}>
           <FormInput
@@ -249,30 +313,60 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             type="date"
             className={styles.inputLabel}
           />
+
+          <div style={{ width: "50%" }}></div>
+        </Stack>
+      </Box>
+
+      {/* Materials Impacted */}
+      <Box
+        sx={{
+          borderBottom: "1px solid #e5e7eb",
+        }}
+      >
+        <h2 className={styles.sectionTitle}>Materials / Products Impacted</h2>
+
+        {!isUpload && (
+          <Stack direction="row" spacing={4} className={styles.formRow}>
+            <FormInput
+              label="Material Number"
+              value={formData.materialComponentNumber}
+              onChange={(val) => onInputChange("materialComponentNumber", val)}
+              disabled={!isEditing}
+              placeholder="Input text"
+              className={styles.inputLabel}
+            />
+            <FormInput
+              label="Component Number"
+              value={formData.materialComponentNumber}
+              onChange={(val) => onInputChange("materialComponentNumber", val)}
+              disabled={!isEditing}
+              placeholder="Input text"
+              className={styles.inputLabel}
+            />
+          </Stack>
+        )}
+        <Stack direction="row" spacing={4} className={styles.formRow}>
+          {isUpload && (
+            <FormInput
+              label="Material / Component Number"
+              value={formData.materialComponentNumber}
+              onChange={(val) => onInputChange("materialComponentNumber", val)}
+              disabled={!isEditing}
+              placeholder="Input text"
+              className={styles.inputLabel}
+            />
+          )}
           <FormInput
             label="First Affected Lot / Batch"
-            value={formData.firstAffectedLotBatch}
-            onChange={(val) => onInputChange("firstAffectedLotBatch", val)}
+            value={formData.materialComponentNumber}
+            onChange={(val) => onInputChange("materialComponentNumber", val)}
             disabled={!isEditing}
             placeholder="Input text"
             className={styles.inputLabel}
           />
+          {!isUpload && <div style={{ width: "50%" }}></div>}
         </Stack>
-      </Box>
-
-      <Box className={styles.divider} />
-
-      {/* Materials Impacted */}
-      <Box>
-        <h2 className={styles.sectionTitle}>Materials / Products Impacted</h2>
-        <FormInput
-          label="Material / Component Number"
-          value={formData.materialComponentNumber}
-          onChange={(val) => onInputChange("materialComponentNumber", val)}
-          disabled={!isEditing}
-          placeholder="Input text"
-          className={styles.inputLabel}
-        />
       </Box>
 
       {/* Documentation */}
@@ -317,7 +411,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
           </Box>
         )}
         <div className={styles.fileUploadInfo}>
-          <p>Files uploaded</p>
+          <p>1 file uploaded</p>
           <div className={styles.fileList}>
             {[
               { name: "Supplier file 1.pdf", size: "3.67 MB" },
