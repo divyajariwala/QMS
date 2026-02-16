@@ -1,11 +1,17 @@
 import { apiRequest } from "src/api/apiClient";
 import { ScnDetailsResponse, ScnListResponse } from "src/types";
 
+// Accepts optional URLSearchParams for filters
 export async function fetchScnList(
   limit = 50,
   offset = 0,
+  params?: URLSearchParams,
 ): Promise<ScnListResponse> {
-  return apiRequest<ScnListResponse>(`scn?limit=${limit}&offset=${offset}`, {
+  let query = `limit=${limit}&offset=${offset}`;
+  if (params) {
+    query = params.toString();
+  }
+  return apiRequest<ScnListResponse>(`dev/scnList?${query}`, {
     method: "GET",
     token: true,
   });

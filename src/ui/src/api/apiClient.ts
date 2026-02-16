@@ -15,25 +15,19 @@ interface ApiRequestOptions<TBody = unknown> {
 
 export async function apiRequest<TResponse, TBody = unknown>(
   endpoint: string,
-  options: ApiRequestOptions<TBody> = {}
+  options: ApiRequestOptions<TBody> = {},
 ): Promise<TResponse> {
-  const {
-    method = "GET",
-    body,
-    token,
-    headers = {},
-  } = options;
+  const { method = "GET", body, token, headers = {} } = options;
 
   const finalHeaders = new Headers(headers);
 
   if (token) {
-      const accessToken = window.sessionStorage.access_token 
+    const accessToken = window.sessionStorage.access_token;
     finalHeaders.set("Authorization", `Bearer ${accessToken}`);
   }
 
   // Set JSON header only when body is JSON
-  const isJsonBody =
-    body && !(body instanceof FormData) && method !== "GET";
+  const isJsonBody = body && !(body instanceof FormData) && method !== "GET";
 
   if (isJsonBody && !finalHeaders.has("Content-Type")) {
     finalHeaders.set("Content-Type", "application/json");

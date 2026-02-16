@@ -15,6 +15,7 @@ import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
 import ChangeNotificationModal from "./modal/ChangeNotificationModal";
 import RightIcon from "../../assets/icons/rightBlue.svg";
 import { fetchScnDetails, fetchScnList } from "src/services/scn";
+import ScnListSkeleton from "./skeleton/ScnListSkeleton";
 import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
 import RequestInfoModal from "./modal/RequestInfoModal";
 import SCNInternalReviewImpactTab from "./SCNInternalReviewImpactTab";
@@ -55,55 +56,14 @@ const SCNInternalReview: React.FC = () => {
   const [appliedFilters, setAppliedFilters] =
     useState<FilterState>(defaultFilters);
 
-  const queueItems = [
-    {
-      id: "SCN-INT-000234",
-      supplier: "Supplier ABC",
-      status: "Minor",
-      progress: 90,
-      desc: "3 Raw material change",
-      scnStatus: "New",
-    },
-    {
-      id: "SCN-INT-000240",
-      supplier: "Supplier ABC",
-      status: "Moderate",
-      progress: 82,
-      desc: "Packing and labeling changes",
-      scnStatus: "New",
-    },
-    {
-      id: "SCN-INT-000510",
-      supplier: "Supplier ABC",
-      status: "Major",
-      progress: 72,
-      desc: "Packing and labeling changes",
-      scnStatus: "Needs Triage",
-    },
-    {
-      id: "SCN-INT-000234",
-      supplier: "Supplier ABC",
-      status: "Minor",
-      progress: 90,
-      desc: "3 Raw material change",
-    },
-    {
-      id: "SCN-INT-000240",
-      supplier: "Supplier ABC",
-      status: "Moderate",
-      progress: 82,
-      desc: "Packing and labeling changes",
-      scnStatus: "Needs Triage",
-    },
-    {
-      id: "SCN-INT-000510",
-      supplier: "Supplier ABC",
-      status: "Major",
-      progress: 72,
-      desc: "Packing and labeling changes",
-      scnStatus: "IN-REVIEW",
-    },
-  ];
+  // Loading and error state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // SCN list state
+  const [scns, setScns] = useState<any[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const [scnDetail] = useState({
     id: "1",
@@ -133,20 +93,42 @@ const SCNInternalReview: React.FC = () => {
     firstAffectedLotBatch: "Input text",
     materialComponentNumber: "Component A",
   });
-  const [scns, setScns] = useState([]);
-  const [offset, setOffset] = useState(0);
-  const [total, setTotal] = useState(0);
 
+  // Fetch SCN list with filters
   useEffect(() => {
-    loadList();
-  }, [offset]);
+    const loadList = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Build query params from filters
+        const params = new URLSearchParams();
+        params.append("limit", "50");
+        params.append("offset", String(offset));
+        if (appliedFilters.supplier)
+          params.append("supplier_name", appliedFilters.supplier);
+        if (appliedFilters.classification)
+          params.append(
+            "change_classification_supplier",
+            appliedFilters.classification,
+          );
+        if (appliedFilters.plannedDate)
+          params.append(
+            "planned_implementation_date",
+            appliedFilters.plannedDate,
+          );
+        // Add more filters as needed
 
-  const loadList = async () => {
-    const res = await fetchScnList(50, offset);
-    console.log(res, "res@@");
-    // setScns(res?.data?.items);
-    // setTotal(res?.data?.count);
-  };
+        const res = await fetchScnList(50, offset, params);
+        setScns(res?.data?.items || []);
+        setTotal(res?.data?.count || 0);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch SCN list");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadList();
+  }, [offset, appliedFilters]);
 
   const handleSelectScn = async (item: any) => {
     // if (!item?.email_id) {
@@ -190,47 +172,19 @@ const SCNInternalReview: React.FC = () => {
     }));
   };
 
-  // const handleApplyFilters = () => {
-  //   setAppliedFilters(filters);
-  //   setFilterAnchorEl(null);
-  // };
-
-  // const handleClearFilters = () => {
-  //   setFilters(defaultFilters);
-  //   setAppliedFilters(defaultFilters);
-  //   setFilterAnchorEl(null);
-  // };
-
-  const filteredQueueItems = useMemo(() => {
-    return queueItems.filter((item) => {
-      if (
-        appliedFilters.supplier &&
-        item.supplier !== appliedFilters.supplier
-      ) {
-        return false;
-      }
-
-      if (
-        appliedFilters.classification &&
-        item.status !== appliedFilters.classification
-      ) {
-        return false;
-      }
-
-      if (appliedFilters.daysRange) {
-        const days = Number(item.progress); // example mapping
-        const [min, max] = appliedFilters.daysRange.split("-");
-
-        if (max) {
-          if (days < Number(min) || days > Number(max)) return false;
-        } else {
-          if (days < Number(min)) return false;
-        }
-      }
-
-      return true;
-    });
-  }, [queueItems, appliedFilters]);
+  // Map API data to UI queue items
+  const queueItems = useMemo(() => {
+    return scns.map((item) => ({
+      scn_reference_number: item.scn_reference_number,
+      supplier_name: item.supplier_name,
+      change_classification_supplier: item.change_classification_supplier,
+      completion_score: item.completion_score || 0,
+      status: item.status,
+      email_id: item.email_id,
+      notification_date: item.notification_date,
+      planned_implementation_date: item.planned_implementation_date,
+    }));
+  }, [scns]);
 
   const handleApplyFilters = () => {
     setAppliedFilters(filters);
@@ -248,8 +202,7 @@ const SCNInternalReview: React.FC = () => {
       <Stack gap={2}>
         {/* Content */}
         <Box className={styles.contentWrapper}>
-          {/* left – Mail List */}
-          {/* <ScnListSkeleton /> */}
+          {/* left – Queue List */}
           <Box className={styles.mailList}>
             <Stack
               direction="row"
@@ -418,50 +371,57 @@ const SCNInternalReview: React.FC = () => {
                 </form>
               </div>
 
-              <Stack className={styles.queueList}>
-                {filteredQueueItems.map((item, index) => (
-                  <Box
-                    key={item.id}
-                    className={`${styles.queueCard} ${
-                      selected === index ? styles.active : ""
-                    }`}
-                    onClick={() => setSelected(index)}
-                  >
-                    <span className={styles.scnStatus}>{item.scnStatus}</span>
-
-                    <Stack
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      marginTop={0.5}
+              {loading ? (
+                <ScnListSkeleton count={6} />
+              ) : error ? (
+                <div className={styles.errorMsg}>{error}</div>
+              ) : (
+                <Stack className={styles.queueList}>
+                  {queueItems.map((item, index) => (
+                    <Box
+                      key={item.scn_reference_number}
+                      className={`${styles.queueCard} ${selected === index ? styles.active : ""}`}
+                      onClick={() => setSelected(index)}
                     >
-                      <span className={styles.scnId}>{item.id}</span>
+                      <span className={styles.scnStatus}>{item.status}</span>
 
-                      <span
-                        className={`${styles.classificationStatus} ${getClassificationClass(item.status)}`}
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        marginTop={0.5}
                       >
-                        {item.status}
-                      </span>
-                    </Stack>
+                        <span className={styles.scnId}>
+                          {item.scn_reference_number}
+                        </span>
 
-                    <p className={styles.supplier}>{item.supplier}</p>
-                    <div className={styles.progressText}>
-                      <span className={styles.textLabel}>Completeness</span>
-                      <span className={styles.progressNumber}>
-                        {item.progress}%
-                      </span>
-                    </div>
-                    <div className={styles.progress}>
-                      <div
-                        className={styles.progressFill}
-                        style={{ width: `${item.progress}%` }}
-                      />
-                    </div>
-                    <span className={styles.desc}>{item.desc}</span>
-                    <div className={styles.textTag}>Manufacturing Change</div>
-                  </Box>
-                ))}
-              </Stack>
+                        <span
+                          className={`${styles.classificationStatus} ${getClassificationClass(item.status)}`}
+                        >
+                          {item.status}
+                        </span>
+                      </Stack>
+
+                      <p className={styles.supplier}>{item.supplier_name}</p>
+                      <div className={styles.progressText}>
+                        <span className={styles.textLabel}>Completeness</span>
+                        <span className={styles.progressNumber}>
+                          {item.completion_score}%
+                        </span>
+                      </div>
+                      <div className={styles.progress}>
+                        <div
+                          className={styles.progressFill}
+                          style={{ width: `${item.completion_score}%` }}
+                        />
+                      </div>
+                      <div className={styles.textTag}>
+                        {item.change_classification_supplier}
+                      </div>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
             </Box>
           </Box>
 
@@ -588,7 +548,7 @@ const SCNInternalReview: React.FC = () => {
                   formData={scnDetail}
                   isEditing={isEditing}
                   onEditClick={() => setIsEditing(true)}
-                  // onInputChange={handleInputChange}
+                  onInputChange={() => {}}
                 />
                 {isEditing && <Box className={styles.divider} marginTop={3} />}
               </Box>
