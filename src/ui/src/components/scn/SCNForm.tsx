@@ -222,7 +222,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               ))}
             </div>
           </Box>
-          {!isUpload && (
+          {/* {!isUpload && (
             <Box className={styles.formGroup}>
               <label className={styles.formLabel}>
                 Supplier Change Classification
@@ -243,7 +243,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
                 ))}
               </div>
             </Box>
-          )}
+          )} */}
         </Stack>
 
         <Stack direction="row" spacing={4}>
@@ -330,16 +330,16 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
           <Stack direction="row" spacing={4} className={styles.formRow}>
             <FormInput
               label="Material Number"
-              value={formData.materialComponentNumber}
-              onChange={(val) => onInputChange("materialComponentNumber", val)}
+              value={formData.materialNumber ?? ""}
+              onChange={(val) => onInputChange("materialNumber", val)}
               disabled={!isEditing}
               placeholder="Input text"
               className={styles.inputLabel}
             />
             <FormInput
               label="Component Number"
-              value={formData.materialComponentNumber}
-              onChange={(val) => onInputChange("materialComponentNumber", val)}
+              value={formData.componentNumber ?? ""}
+              onChange={(val) => onInputChange("componentNumber", val)}
               disabled={!isEditing}
               placeholder="Input text"
               className={styles.inputLabel}
@@ -350,7 +350,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
           {isUpload && (
             <FormInput
               label="Material / Component Number"
-              value={formData.materialComponentNumber}
+              value={formData.materialComponentNumber ?? ""}
               onChange={(val) => onInputChange("materialComponentNumber", val)}
               disabled={!isEditing}
               placeholder="Input text"
@@ -359,8 +359,8 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
           )}
           <FormInput
             label="First Affected Lot / Batch"
-            value={formData.materialComponentNumber}
-            onChange={(val) => onInputChange("materialComponentNumber", val)}
+            value={formData.firstAffectedLotBatch ?? ""}
+            onChange={(val) => onInputChange("firstAffectedLotBatch", val)}
             disabled={!isEditing}
             placeholder="Input text"
             className={styles.inputLabel}
@@ -411,25 +411,28 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
           </Box>
         )}
         <div className={styles.fileUploadInfo}>
-          <p>1 file uploaded</p>
+          <p>{formData?.attachments?.length || 0} file(s) uploaded</p>
           <div className={styles.fileList}>
-            {[
-              { name: "Supplier file 1.pdf", size: "3.67 MB" },
-              { name: "Supplier file 2.pdf", size: "5.67 MB" },
-            ].map((file, idx) => (
+            {formData?.attachments?.map((file: any, idx: number) => (
               <div key={idx} className={styles.fileItem}>
                 <div className={styles.fileDetails}>
                   <span className={styles.fileIcon}>
                     <img src={documentTextIcon} alt="document" />
                   </span>
                   <span className={styles.fileInfo}>
-                    <span className={styles.fileName}>{file.name}</span>
-                    <span className={styles.fileSize}>{file.size}</span>
+                    <span className={styles.fileName}>{file.filename}</span>
                   </span>
                 </div>
-                <a href="#" className={styles.viewLink}>
-                  View
-                </a>
+                {file.download_url && (
+                  <a
+                    href={file.download_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.viewLink}
+                  >
+                    View
+                  </a>
+                )}
               </div>
             ))}
           </div>

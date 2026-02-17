@@ -39,6 +39,9 @@ export interface SCNItem {
   changeTitleSummary: string;
   overdueDays?: number;
   changeTitle?: string;
+  firstAffectedLotBatch: string;
+  materialNumber: string;
+  componentNumber: string;
 }
 
 type SCNTabStatus = "all" | "under_review" | "processed" | "info_requested";
@@ -104,6 +107,9 @@ const SupplierPortal: React.FC = () => {
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
       overdueDays: 5,
       changeTitle: "Lorem ipsum dolor",
+      firstAffectedLotBatch: "Batch-001",
+      materialNumber: "MAT-123",
+      componentNumber: "COMP-456",
     },
     {
       id: "2",
@@ -118,6 +124,9 @@ const SupplierPortal: React.FC = () => {
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
       overdueDays: 5,
       changeTitle: "Lorem ipsum dolor",
+      firstAffectedLotBatch: "Batch-001",
+      materialNumber: "MAT-123",
+      componentNumber: "COMP-456",
     },
     {
       id: "3",
@@ -132,6 +141,9 @@ const SupplierPortal: React.FC = () => {
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
       overdueDays: 5,
       changeTitle: "Lorem ipsum dolor",
+      firstAffectedLotBatch: "Batch-001",
+      materialNumber: "MAT-123",
+      componentNumber: "COMP-456",
     },
     {
       id: "4",
@@ -146,6 +158,9 @@ const SupplierPortal: React.FC = () => {
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
       overdueDays: 5,
       changeTitle: "Lorem ipsum dolor",
+      firstAffectedLotBatch: "Batch-001",
+      materialNumber: "MAT-123",
+      componentNumber: "COMP-456",
     },
     {
       id: "5",
@@ -160,6 +175,9 @@ const SupplierPortal: React.FC = () => {
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
       overdueDays: 5,
       changeTitle: "Lorem ipsum dolor",
+      firstAffectedLotBatch: "Batch-001",
+      materialNumber: "MAT-123",
+      componentNumber: "COMP-456",
     },
   ]);
 
