@@ -12,6 +12,8 @@ import styles from "./UploadSCN.module.scss";
 import Frame from "../../assets/icons/Frame.svg";
 import UploadIcon from "../../assets/icons/scnUploadIcon.svg";
 import UploadDoneIcon from "../../assets/icons/greenTickDone.svg";
+import { fetchScnDetails, uploadScn } from "src/services/scn";
+import { mapScnDetailsToForm } from "src/utils/mapScnDetails";
 
 interface UploadSCNModalProps {
   open: boolean;
@@ -62,7 +64,7 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-
+  const [scnDetail, setScnDetail] = useState<unknown>(null);
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const navigate = useNavigate();
 
@@ -82,8 +84,9 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
     }, UPLOAD_PROGRESS_INTERVAL);
   };
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     setUploadError(null);
+
     const fileExt = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
 
     if (!UPLOAD_ACCEPTED_FORMATS.includes(fileExt)) {
@@ -92,12 +95,44 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
       return;
     }
 
-    setSelectedFile(file);
-    setUploadProgress(0);
-    setUploading(true);
-    setUploadSuccess(false);
-    simulateUpload();
+    try {
+      setSelectedFile(file);
+      setUploading(true);
+      setUploadSuccess(false);
+      setUploadProgress(10);
+
+      const response = await uploadScn(file);
+
+      // if (!response) {
+      //   throw new Error(response.message);
+      // }
+
+      setUploadProgress(100);
+      setUploadSuccess(true);
+    } catch (error: any) {
+      setUploadError(error.message || "Upload failed");
+      setSelectedFile(null);
+    } finally {
+      setUploading(false);
+    }
   };
+
+  // const handleFile = (file: File) => {
+  //   setUploadError(null);
+  //   const fileExt = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+
+  //   if (!UPLOAD_ACCEPTED_FORMATS.includes(fileExt)) {
+  //     setUploadError("Only PDF, CSV, or XLSX files are accepted.");
+  //     setSelectedFile(null);
+  //     return;
+  //   }
+
+  //   setSelectedFile(file);
+  //   setUploadProgress(0);
+  //   setUploading(true);
+  //   setUploadSuccess(false);
+  //   simulateUpload();
+  // };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,11 +145,31 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
     if (file) handleFile(file);
   };
 
-  const handleDone = () => {
-    navigate("/scn/upload-details", {
-      state: { ...mockExtractedData, file: selectedFile?.name },
-    });
-    handleClose();
+  const handleDone = async () => {
+    try {
+      const email_id = "123e4567-e89b-12d3-a456-426614171234";
+      // setDetailLoading(true);
+      const res: any = await fetchScnDetails(email_id);
+      console.log(res, "testtestres");
+      if (res?.data) {
+        const mapped = mapScnDetailsToForm(res.data);
+        setScnDetail(mapped);
+        navigate("/scn/upload-details", {
+          state: { ...mapped, file: selectedFile?.name },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch SCN details", error);
+    } finally {
+      // navigate("/scn/upload-details", {
+      //   state: { scnDetail, file: selectedFile?.name },
+      // });
+    }
+
+    // navigate("/scn/upload-details", {
+    //   state: { ...mockExtractedData, file: selectedFile?.name },
+    // });
+    // handleClose();
   };
 
   const handleClose = () => {

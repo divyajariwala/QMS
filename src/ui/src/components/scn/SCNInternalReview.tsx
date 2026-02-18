@@ -62,6 +62,7 @@ const SCNInternalReview: React.FC = () => {
 
   // Loading and error state
   const [loading, setLoading] = useState(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true); // Control initial synchronized skeleton
   const [error, setError] = useState<string | null>(null);
 
   // SCN list state
@@ -99,8 +100,13 @@ const SCNInternalReview: React.FC = () => {
         const res = await fetchScnList(50, offset, params);
         setScns(res?.data?.items || []);
         setTotal(res?.data?.count || 0);
+
+        if (!res?.data?.items?.length) {
+          setIsFirstLoad(false);
+        }
       } catch (err: any) {
         setError(err.message || "Failed to fetch SCN list");
+        setIsFirstLoad(false);
       } finally {
         setLoading(false);
       }
@@ -122,6 +128,7 @@ const SCNInternalReview: React.FC = () => {
       console.error("Failed to fetch SCN details", error);
     } finally {
       setDetailLoading(false);
+      setIsFirstLoad(false);
     }
   };
   const handleSaveClick = async () => {
@@ -401,7 +408,7 @@ const SCNInternalReview: React.FC = () => {
                 </form>
               </div>
 
-              {loading ? (
+              {loading || isFirstLoad ? (
                 <ScnListSkeleton count={6} />
               ) : error ? (
                 <div className={styles.errorMsg}>{error}</div>
@@ -434,11 +441,11 @@ const SCNInternalReview: React.FC = () => {
                           {item.scn_reference_number}
                         </span>
 
-                        <span
+                        {/* <span
                           className={`${styles.classificationStatus} ${getClassificationClass(item.status)}`}
                         >
                           {item.status}
-                        </span>
+                        </span> */}
                       </Stack>
 
                       <p className={styles.supplier}>{item.supplier_name}</p>
@@ -467,7 +474,7 @@ const SCNInternalReview: React.FC = () => {
           {/* right – Mail Content */}
 
           <Box className={styles.mailContent}>
-            {detailLoading ? (
+            {detailLoading || isFirstLoad ? (
               <>
                 <ScnDetailsSkeleton />
                 <SCNFormSkeleton />
@@ -484,19 +491,21 @@ const SCNInternalReview: React.FC = () => {
                       marginTop={0.5}
                       gap={2}
                     >
-                      <span className={styles.scnId}>SCN-INT-000234</span>
-                      <span
+                      <span className={styles.scnId}>
+                        {scnDetail?.supplierRef}
+                      </span>
+                      {/* <span
                         className={`${styles.classificationStatus} ${getClassificationClass("Minor")}`}
                       >
                         Minor
-                      </span>
+                      </span> */}
                     </Stack>
                   </Box>
                 </Box>
                 <Box className={styles.detailText}>
-                  <span>Supplier XYZ</span>
-                  <span>Supplier SCN: SCN-12345</span>
-                  <span>Submitted 2026-01-10</span>
+                  <span>{scnDetail?.supplierName}</span>
+                  <span>Supplier SCN: {scnDetail?.supplierRef}</span>
+                  <span>Submitted {scnDetail?.submittedDate}</span>
                   <span>Owner: Unassigned</span>
                 </Box>
                 <ButtonGroup selected={selectedTab} onSelect={setSelectedTab} />

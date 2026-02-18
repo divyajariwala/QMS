@@ -109,6 +109,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               placeholder="Input text"
               className={styles.inputLabel}
             />
+            
           )}
           {!isUpload && (
             <Box className={styles.formGroup}>
@@ -247,7 +248,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
         </Stack>
 
         <Stack direction="row" spacing={4}>
-          {isUpload && (
+          {/* {isUpload && (
             <Box className={styles.formGroup}>
               <label className={styles.formLabel}>Impact Level</label>
               <div className={styles.checkboxGroup}>
@@ -266,7 +267,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
                 ))}
               </div>
             </Box>
-          )}
+          )} */}
           <FormInput
             label="Supplier Contact Information"
             value={formData.supplierContactInfo}
@@ -285,9 +286,10 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               className={styles.inputLabel}
             />
           )}
+          {isUpload && <div style={{ width: "50%" }}></div>}
         </Stack>
         {isUpload && (
-          <Stack direction="row" spacing={4} className={styles.formRow}>
+          <Stack direction="row" spacing={4} mt={2} className={styles.formRow}>
             <FormInput
               label="Notification Date"
               value={formData.notificationDate}

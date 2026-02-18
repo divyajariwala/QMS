@@ -42,3 +42,14 @@ export const editScn = async (emailId: string, formData: any, file?: File) => {
     token: true,
   });
 };
+
+export const uploadScn = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return apiRequest("/scn/upload", {
+    method: "POST",
+    body: formData,
+    token: true,
+  });
+};
