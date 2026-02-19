@@ -11,6 +11,8 @@ interface FormInputProps {
   multiline?: boolean;
   rows?: number;
   className?: string;
+  required?: boolean;
+  error?: boolean;
 }
 
 const FormInput: React.FC<FormInputProps> = ({
@@ -23,13 +25,18 @@ const FormInput: React.FC<FormInputProps> = ({
   multiline = false,
   rows = 4,
   className = "",
+  required = false,
+  error = false,
 }) => {
   return (
     <div className={`${styles.formGroup} ${className}`}>
-      <label className={styles.formLabel}>{label}</label>
+      <label className={styles.formLabel}>
+        {label}
+        {required && <span className={styles.required}>*</span>}
+      </label>
       {multiline ? (
         <textarea
-          className={styles.formTextarea}
+          className={`${styles.formTextarea} ${error ? styles.error : ""}`}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           disabled={disabled}
@@ -39,7 +46,7 @@ const FormInput: React.FC<FormInputProps> = ({
       ) : (
         <input
           type={type}
-          className={styles.formInput}
+          className={`${styles.formInput} ${error ? styles.error : ""}`}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           disabled={disabled}

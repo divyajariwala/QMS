@@ -5,6 +5,7 @@ import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import styles from "./SCNEditDetails.module.scss";
 import SCNResultCard from "./SCNResultCard";
 import SCNFormFields from "./SCNForm";
+import RiskIcon from "../../assets/icons/Lead Icon.svg";
 
 interface SCNItem {
   id: string;
@@ -23,6 +24,9 @@ interface SCNItem {
 const SCNEditDetails: React.FC = () => {
   const { scnId } = useParams<{ scnId: string }>();
   const [isEditing, setIsEditing] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, boolean>
+  >({});
 
   // Mock data - Replace with API call based on scnId
   const [scnDetail] = useState({
@@ -63,12 +67,38 @@ const SCNEditDetails: React.FC = () => {
   ];
 
   const handleSaveClick = () => {
+    const errors: Record<string, boolean> = {};
+    let hasError = false;
+
+    const requiredFields = [
+      "proposedState",
+      "supplierContactInfo",
+      "changeTimingPlannedDate",
+      "firstAffectedLotBatch",
+    ];
+
+    requiredFields.push("materialNumber", "componentNumber");
+
+    requiredFields.forEach((field) => {
+      if (!formData[field as keyof typeof formData]) {
+        errors[field] = true;
+        hasError = true;
+      }
+    });
+
+    if (hasError) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setValidationErrors({});
     // API call to save formData would go here
     setIsEditing(false);
   };
 
   const handleCancelClick = () => {
     setFormData({ ...scnDetail });
+    setValidationErrors({});
     setIsEditing(false);
   };
 
@@ -98,9 +128,15 @@ const SCNEditDetails: React.FC = () => {
         {/* Overview Section */}
         <Box className={styles.overviewSection}>
           <h2 className={styles.sectionTitle}>Overview</h2>
-          <p className={styles.sectionContent}>
-            {scnDetail.changeTitleSummary}
+          <p className={styles.validationMessage}>
+            {Object.keys(validationErrors).length > 0 && (
+              <>
+                <img src={RiskIcon} alt="Risk Icon" />
+                Please provide all required fields.
+              </>
+            )}
           </p>
+          {/* <p className={styles.sectionContent}>please fill filde</p> */}
         </Box>
 
         <Box className={styles.divider} />
@@ -110,6 +146,7 @@ const SCNEditDetails: React.FC = () => {
           isEditing={isEditing}
           onEditClick={() => setIsEditing(true)}
           onInputChange={handleInputChange}
+          validationErrors={validationErrors}
         />
         {/* Action Buttons */}
         <Stack direction="row" spacing={2} className={styles.actionButtons}>

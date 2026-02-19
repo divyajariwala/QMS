@@ -109,13 +109,12 @@
   font-size: 16px;
   font-weight: 700;
   margin: 0 0 16px 0;
-  color: #000000;
+  color: #29323a;
 }
 
 .sectionContent {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.6;
-  color: #4b5563;
   margin: 0;
 }
 
@@ -188,4 +187,11 @@
   &:hover {
     background-color: #1d4ed8 !important;
   }
+}
+
+.validationMessage {
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  gap: 16px;
 }

@@ -5,6 +5,7 @@ import editIcon from "../../assets/icons/editLight.svg";
 import documentTextIcon from "../../assets/icons/documentext.svg";
 import styles from "./SCNForm.module.scss";
 import Frame from "../../assets/icons/Frame.svg";
+import RiskIcon from "../../assets/icons/Lead Icon.svg";
 
 interface SCNFormFieldsProps {
   formData: any;
@@ -12,6 +13,7 @@ interface SCNFormFieldsProps {
   onEditClick?: () => void;
   onInputChange: (field: string, value: any) => void;
   isUpload?: boolean;
+  validationErrors?: Record<string, boolean>;
 }
 
 const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
@@ -20,6 +22,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
   onEditClick,
   onInputChange,
   isUpload = false,
+  validationErrors = {},
 }) => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,6 +56,15 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
     <Box className={styles.section}>
       {/* SCN Identification Section */}
       <Box>
+        {!isUpload && (
+          <h2 className={styles.sectionTitleforReview}>Extracted info</h2>
+        )}
+        {!isUpload && Object.keys(validationErrors).length > 0 && (
+          <span className={styles.validationMessage}>
+            <img src={RiskIcon} alt="" />
+            Review required on {Object.keys(validationErrors).length} field(s)
+          </span>
+        )}
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -79,6 +91,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             onChange={(val) => onInputChange("supplierRef", val)}
             disabled
             className={styles.IdentificationInput}
+            required
           />
           <FormInput
             label="SCN Title"
@@ -86,6 +99,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             onChange={(val) => onInputChange("changeTitle", val)}
             disabled
             className={styles.IdentificationInput}
+            required
           />
         </Stack>
 
@@ -96,6 +110,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             onChange={(val) => onInputChange("supplierName", val)}
             disabled
             className={styles.IdentificationInput}
+            required
           />
           {isUpload && (
             <FormInput
@@ -109,7 +124,6 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               placeholder="Input text"
               className={styles.inputLabel}
             />
-            
           )}
           {!isUpload && (
             <Box className={styles.formGroup}>
@@ -160,6 +174,8 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
           multiline
           rows={4}
           className={styles.inputLabel}
+          required
+          error={validationErrors.proposedState}
         />
       </Box>
 
@@ -273,8 +289,10 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             value={formData.supplierContactInfo}
             onChange={(val) => onInputChange("supplierContactInfo", val)}
             disabled={!isEditing}
-            type="email"
+            type="text"
             className={styles.inputLabel}
+            required
+            error={validationErrors.supplierContactInfo}
           />
           {!isUpload && (
             <FormInput
@@ -314,6 +332,8 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             disabled={!isEditing}
             type="date"
             className={styles.inputLabel}
+            required
+            error={validationErrors.changeTimingPlannedDate}
           />
 
           <div style={{ width: "50%" }}></div>
@@ -337,6 +357,8 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               disabled={!isEditing}
               placeholder="Input text"
               className={styles.inputLabel}
+              required
+              error={validationErrors.materialNumber}
             />
             <FormInput
               label="Component Number"
@@ -345,6 +367,8 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               disabled={!isEditing}
               placeholder="Input text"
               className={styles.inputLabel}
+              required
+              error={validationErrors.componentNumber}
             />
           </Stack>
         )}
@@ -366,6 +390,8 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             disabled={!isEditing}
             placeholder="Input text"
             className={styles.inputLabel}
+            required
+            error={validationErrors.firstAffectedLotBatch}
           />
           {!isUpload && <div style={{ width: "50%" }}></div>}
         </Stack>

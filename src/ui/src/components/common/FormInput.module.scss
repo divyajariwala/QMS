@@ -68,3 +68,18 @@
     color: #6b7280;
   }
 }
+
+.required {
+  color: #c52a1a;
+  margin-left: 2px;
+  font-size: 14px;
+}
+
+.error {
+  border-color: #c52a1a !important;
+
+  &:focus {
+    border-color: #c52a1a !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+  }
+}

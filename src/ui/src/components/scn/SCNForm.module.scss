@@ -55,6 +55,11 @@
   font-weight: 600 !important;
 }
 
+.inputLabel textarea {
+  color: #272d37 !important;
+  font-size: 15px !important;
+}
+
 .IdentificationInput {
   input {
     color: #272d37 !important;
@@ -234,5 +239,30 @@
 
   &:hover {
     background-color: #1d4ed8 !important;
+  }
+}
+
+.sectionTitleforReview {
+  color: #000000;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.validationMessage {
+  background-color: #fff2f0;
+  color: #e0301e;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 20px;
+  font-weight: 500;
+
+  img {
+    width: 12px;
+    height: 12px;
   }
 }

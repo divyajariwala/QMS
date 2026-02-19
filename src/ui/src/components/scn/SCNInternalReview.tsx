@@ -131,8 +131,40 @@ const SCNInternalReview: React.FC = () => {
       setIsFirstLoad(false);
     }
   };
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, boolean>
+  >({});
+
   const handleSaveClick = async () => {
     if (!selectedEmailId || !scnDetail) return;
+
+    const errors: Record<string, boolean> = {};
+    let hasError = false;
+
+    // Required fields to validate
+    const requiredFields = [
+      "proposedState",
+      "supplierContactInfo",
+      "changeTimingPlannedDate",
+      "firstAffectedLotBatch",
+      "materialNumber",
+      "componentNumber",
+    ];
+
+    requiredFields.forEach((field) => {
+      if (!scnDetail[field as keyof typeof scnDetail]) {
+        errors[field] = true;
+        hasError = true;
+      }
+    });
+
+    if (hasError) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setValidationErrors({});
+
     try {
       const apiFields = mapScnFormToApi(scnDetail);
       const res = await editScn(selectedEmailId, apiFields);
@@ -147,6 +179,7 @@ const SCNInternalReview: React.FC = () => {
 
   const handleCancelClick = async () => {
     if (!selectedEmailId) return;
+    setValidationErrors({});
     setIsEditing(false);
     await handleSelectScn({ email_id: selectedEmailId });
   };
@@ -524,6 +557,16 @@ const SCNInternalReview: React.FC = () => {
                       >
                         <span className={styles.appButton}>
                           <img src={InfoIcon} alt="" />
+                          Impact Review
+                        </span>
+                      </AppButton>
+
+                      <AppButton
+                        variant="outlined"
+                        onClick={() => setOpenRequestInfo(true)}
+                      >
+                        <span className={styles.appButton}>
+                          <img src={InfoIcon} alt="" />
                           Request info
                         </span>
                       </AppButton>
@@ -608,6 +651,7 @@ const SCNInternalReview: React.FC = () => {
                         onEditClick={() => setIsEditing(true)}
                         onInputChange={handleInputChange}
                         isUpload={false}
+                        validationErrors={validationErrors}
                       />
                     )}
                     {isEditing && (

@@ -267,7 +267,7 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
         )}
 
         {/* PHASE 3: UPLOAD COMPLETE STATE */}
-        {uploadSuccess && (
+        {!uploadSuccess && (
           <Box className={styles.processWrapper}>
             <Box className={styles.iconCircleGreen}>
               <img

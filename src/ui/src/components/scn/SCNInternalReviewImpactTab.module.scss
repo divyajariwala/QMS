@@ -161,9 +161,10 @@
   padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 14px;
-  background-color: #f9fafb;
   outline: none;
+  color: #272d37;
+  font-size: 15px;
+  font-weight: 600;
 
   &:focus {
     border-color: #3b82f6;
@@ -176,12 +177,10 @@
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 14px;
-  background-color: #f9fafb;
   resize: vertical;
   outline: none;
-  font-family: inherit;
-
+  color: #272d37;
+  font-size: 15px;
   &:focus {
     border-color: #3b82f6;
     background-color: #fff;
