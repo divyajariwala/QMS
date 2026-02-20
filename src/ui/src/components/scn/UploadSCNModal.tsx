@@ -14,6 +14,7 @@ import UploadIcon from "../../assets/icons/scnUploadIcon.svg";
 import UploadDoneIcon from "../../assets/icons/greenTickDone.svg";
 import { fetchScnDetails, uploadScn } from "src/services/scn";
 import { mapScnDetailsToForm } from "src/utils/mapScnDetails";
+import Loader from "@components/Loader";
 
 interface UploadSCNModalProps {
   open: boolean;
@@ -64,9 +65,10 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [scnDetail, setScnDetail] = useState<unknown>(null);
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [emailId, setEmailId] = useState<any>(null);
   const navigate = useNavigate();
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const simulateUpload = () => {
     if (progressRef.current) clearInterval(progressRef.current);
@@ -102,11 +104,7 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
       setUploadProgress(10);
 
       const response = await uploadScn(file);
-
-      // if (!response) {
-      //   throw new Error(response.message);
-      // }
-
+      setEmailId(response);
       setUploadProgress(100);
       setUploadSuccess(true);
     } catch (error: any) {
@@ -116,23 +114,6 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
       setUploading(false);
     }
   };
-
-  // const handleFile = (file: File) => {
-  //   setUploadError(null);
-  //   const fileExt = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
-
-  //   if (!UPLOAD_ACCEPTED_FORMATS.includes(fileExt)) {
-  //     setUploadError("Only PDF, CSV, or XLSX files are accepted.");
-  //     setSelectedFile(null);
-  //     return;
-  //   }
-
-  //   setSelectedFile(file);
-  //   setUploadProgress(0);
-  //   setUploading(true);
-  //   setUploadSuccess(false);
-  //   simulateUpload();
-  // };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -147,29 +128,22 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
 
   const handleDone = async () => {
     try {
-      const email_id = "123e4567-e89b-12d3-a456-426614171234";
-      // setDetailLoading(true);
+      const email_id = emailId?.data?.email_id;
+      setDetailLoading(true);
       const res: any = await fetchScnDetails(email_id);
-      console.log(res, "testtestres");
-      if (res?.data) {
-        const mapped = mapScnDetailsToForm(res.data);
-        setScnDetail(mapped);
-        navigate("/scn/upload-details", {
-          state: { ...mapped, file: selectedFile?.name },
-        });
-      }
-    } catch (error) {
-      console.error("Failed to fetch SCN details", error);
-    } finally {
-      // navigate("/scn/upload-details", {
-      //   state: { scnDetail, file: selectedFile?.name },
-      // });
-    }
 
-    // navigate("/scn/upload-details", {
-    //   state: { ...mockExtractedData, file: selectedFile?.name },
-    // });
-    // handleClose();
+      if (res?.success) {
+        const mapped = mapScnDetailsToForm(res.data);
+        navigate("/scn/upload-details", {
+          state: { ...mapped, email_id, file: selectedFile?.name },
+        });
+        setDetailLoading(false);
+      }
+    } catch (error: any) {
+      setUploadError(error?.message || "Failed to fetch SCN details");
+      setDetailLoading(false);
+      console.error("Failed to fetch SCN details", error);
+    }
   };
 
   const handleClose = () => {
@@ -267,7 +241,7 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
         )}
 
         {/* PHASE 3: UPLOAD COMPLETE STATE */}
-        {!uploadSuccess && (
+        {uploadSuccess && (
           <Box className={styles.processWrapper}>
             <Box className={styles.iconCircleGreen}>
               <img
@@ -289,7 +263,7 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
               onClick={handleDone}
               className={styles.doneButton}
             >
-              Done
+              {detailLoading ? <Loader /> : "Done"}
             </Button>
           </Box>
         )}

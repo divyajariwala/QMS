@@ -705,7 +705,7 @@ const SCNInternalReview: React.FC = () => {
             />
 
             <Stack direction="row" spacing={2} justifyContent="flex-end">
-              {isEditing && (
+              {isEditing && selectedTab === "Review" && (
                 <>
                   <AppButton
                     variant="outlined"

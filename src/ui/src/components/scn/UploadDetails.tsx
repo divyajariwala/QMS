@@ -4,6 +4,8 @@ import { Box, Button, Stack } from "@mui/material";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import SCNFormFields from "./SCNForm";
 import styles from "./UploadDetails.module.scss";
+import { editScn } from "src/services/scn";
+import { mapScnFormToApi } from "src/utils/mapScnFormToApi";
 
 interface SCNItem {
   id: string;
@@ -23,7 +25,9 @@ const UploadDetails: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   // Use uploaded/extracted data as initial form values
-  const initialData = location.state || {};
+  const locationState = (location.state as any) || {};
+  const emailId: string = locationState.email_id || "";
+  const initialData = locationState;
   // Allow editing by default after upload
   const [isEditing, setIsEditing] = useState(true);
   const [formData, setFormData] = useState({ ...initialData });
@@ -35,10 +39,17 @@ const UploadDetails: React.FC = () => {
     { label: "Upload SCN" },
   ];
 
-  const handleSaveClick = () => {
-    // API call to save formData would go here
-    setIsEditing(false);
-    navigate(`/scn/supplier/1`);
+  const handleSaveClick = async () => {
+    try {
+      const apiFields = mapScnFormToApi(formData);
+      const res = await editScn(emailId, apiFields);
+      if (res?.success) {
+        setIsEditing(false);
+        navigate(`/scn/supplier/1`);
+      }
+    } catch (err) {
+      console.error("Save failed:", err);
+    }
   };
 
   const handleCancelClick = () => {

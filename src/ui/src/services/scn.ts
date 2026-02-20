@@ -24,7 +24,7 @@ export async function fetchScnDetails(
     `dev/scnExtractedDetails?email_id=${emailId}`,
     {
       method: "GET",
-      token: true,
+      token: false,
     },
   );
 }
@@ -36,7 +36,7 @@ export const editScn = async (emailId: string, formData: any, file?: File) => {
   if (file) {
     multipart.append("files", file);
   }
-  return apiRequest<any>(`dev/scn/edit?email_id=${emailId}`, {
+  return apiRequest<any>("dev/scnEdit", {
     method: "POST",
     body: multipart,
     token: true,
@@ -47,7 +47,7 @@ export const uploadScn = async (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  return apiRequest("/scn/upload", {
+  return apiRequest("dev/scnUpload", {
     method: "POST",
     body: formData,
     token: true,
