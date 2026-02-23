@@ -69,6 +69,7 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
   const [emailId, setEmailId] = useState<any>(null);
   const navigate = useNavigate();
   const [detailLoading, setDetailLoading] = useState(false);
+  const [processingDone, setProcessingDone] = useState(false);
 
   const simulateUpload = () => {
     if (progressRef.current) clearInterval(progressRef.current);
@@ -107,6 +108,7 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
       setEmailId(response);
       setUploadProgress(100);
       setUploadSuccess(true);
+      setTimeout(() => setProcessingDone(true), 80000);
     } catch (error: any) {
       setUploadError(error.message || "Upload failed");
       setSelectedFile(null);
@@ -258,13 +260,22 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
               1 file uploaded successfully
             </Typography>
 
-            <Button
-              variant="contained"
-              onClick={handleDone}
-              className={styles.doneButton}
-            >
-              {detailLoading ? <Loader /> : "Done"}
-            </Button>
+            {!processingDone ? (
+              <>
+                <div className={styles.loader}></div>
+                <Typography className={styles.statusSubtitle}>
+                  Please wait for the file to be processed
+                </Typography>
+              </>
+            ) : (
+              <Button
+                variant="contained"
+                onClick={handleDone}
+                className={styles.doneButton}
+              >
+                {detailLoading ? <Loader /> : "Done"}
+              </Button>
+            )}
           </Box>
         )}
 

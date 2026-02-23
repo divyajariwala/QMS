@@ -38,7 +38,12 @@
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #fff;
-  height: fit-content;
+  position: sticky;
+  top: 0px;
+  max-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .mailHeader {
@@ -112,6 +117,17 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
 }
 
 .queueList {

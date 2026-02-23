@@ -1,114 +1,153 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Stack, Button } from "@mui/material";
+import {
+  Box,
+  Stack,
+  Button,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import styles from "./SCNEditDetails.module.scss";
 import SCNResultCard from "./SCNResultCard";
 import SCNFormFields from "./SCNForm";
 import RiskIcon from "../../assets/icons/Lead Icon.svg";
-
-interface SCNItem {
-  id: string;
-  status: "SUPPLIER ACTION REQUIRED" | "PENDING REVIEW" | "IN REVIEW";
-  scnNumber: string;
-  changeClassification: string;
-  supplierRef: string;
-  notificationDate: string;
-  plannedImplementationDate: string;
-  changeType: "Adverse Event" | "Product Complaint";
-  changeTitleSummary: string;
-  overdueDays?: number;
-  changeTitle?: string;
-}
+import { fetchScnDetails, editScn } from "src/services/scn";
+import { mapScnDetailsToForm } from "src/utils/mapScnDetails";
+import { mapScnFormToApi } from "src/utils/mapScnFormToApi";
+import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
 
 const SCNEditDetails: React.FC = () => {
   const { scnId } = useParams<{ scnId: string }>();
+
   const [isEditing, setIsEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState<
     Record<string, boolean>
   >({});
 
-  // Mock data - Replace with API call based on scnId
-  const [scnDetail] = useState({
-    id: scnId || "1",
-    status: "SUPPLIER ACTION REQUIRED" as const,
-    scnNumber: "SCN-000231",
-    changeClassification: "Lorem ipsum",
-    supplierRef: "SCN-12345",
-    supplierName: "Supplier XYZ",
-    notificationDate: "Jan 04 2026",
-    plannedImplementationDate: "Dec 23 2025",
-    changeType: "Adverse Event" as const,
-    changeTitleSummary:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-    overdueDays: 5,
-    changeTitle: "SCN-12345",
-    currentState:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    proposedState:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    justification:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    temporaryChange: "No",
-    supplierSitesAffected: "Low",
-    supplierSitesAffected2: "Manufacturing",
-    supplierContactInfo: "quality@xyz.com",
-    changeTimingPlannedDate: "Dec 23 2025",
-    firstAffectedLotBatch: "Input text",
-    materialComponentNumber: "Component A",
-  });
+  // API-driven state (replaces mock data)
+  const [formData, setFormData] = useState<any>(null);
+  const [originalData, setOriginalData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Files selected in the upload section — sent along with the edit API call
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
-  const [formData, setFormData] = useState({ ...scnDetail });
+  // ── Fetch SCN details on mount / when scnId changes ──────────────────────
+  const loadDetails = async () => {
+    if (!scnId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res: any = await fetchScnDetails(scnId);
+      if (res?.data) {
+        const mapped = mapScnDetailsToForm(res.data);
+        setFormData(mapped);
+        setOriginalData(mapped);
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to load SCN details.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    loadDetails();
+  }, [scnId]);
+
+  // ── Breadcrumb
   const breadcrumbItems = [
     { label: "Home", to: "/" },
     { label: "SCN", to: "/scn/supplier" },
-    { label: scnDetail.scnNumber },
+    { label: formData?.supplierRef || "Details" },
   ];
 
-  const handleSaveClick = () => {
-    const errors: Record<string, boolean> = {};
-    let hasError = false;
+  // ── Save
+  const handleSaveClick = async () => {
+    if (isSubmitting || !scnId || !formData) return;
 
+    // Validate required fields
+    const errors: Record<string, boolean> = {};
     const requiredFields = [
       "proposedState",
       "supplierContactInfo",
       "changeTimingPlannedDate",
       "firstAffectedLotBatch",
+      "materialNumber",
+      "componentNumber",
     ];
-
-    requiredFields.push("materialNumber", "componentNumber");
-
     requiredFields.forEach((field) => {
       if (!formData[field as keyof typeof formData]) {
         errors[field] = true;
-        hasError = true;
       }
     });
-
-    if (hasError) {
+    if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
     }
-
     setValidationErrors({});
-    // API call to save formData would go here
-    setIsEditing(false);
+
+    setIsSubmitting(true);
+    try {
+      const apiFields = mapScnFormToApi(formData);
+      // Pass any locally-selected files so they are uploaded alongside the edit
+      const res = await editScn(
+        scnId,
+        apiFields,
+        pendingFiles.length > 0 ? pendingFiles : undefined,
+      );
+      if (res?.success) {
+        setIsEditing(false);
+        setPendingFiles([]);
+        // Refresh to show saved values
+        await loadDetails();
+      }
+    } catch (err) {
+      console.error("Save failed:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancelClick = () => {
-    setFormData({ ...scnDetail });
+    setFormData({ ...originalData });
     setValidationErrors({});
+    setPendingFiles([]);
     setIsEditing(false);
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [field]: value,
     }));
   };
 
+  // ── Render helpers ────────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <Box component="main" className={styles.container}>
+        <Stack direction="column" gap={2}>
+          <CommonBreadcrumbs items={breadcrumbItems} />
+          <SCNFormSkeleton />
+        </Stack>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box component="main" className={styles.container}>
+        <Stack direction="column" gap={2}>
+          <CommonBreadcrumbs items={breadcrumbItems} />
+          <Typography color="error">{error}</Typography>
+        </Stack>
+      </Box>
+    );
+  }
+  console.log(formData, "formData@@");
   return (
     <Box component="main" className={styles.container}>
       <Stack direction="column" gap={2}>
@@ -120,34 +159,58 @@ const SCNEditDetails: React.FC = () => {
           justifyContent="space-between"
           alignItems="flex-start"
         >
-          <SCNResultCard scn={scnDetail} isEditingCard />
+          {formData && (
+            <SCNResultCard
+              scn={{
+                id: scnId || "",
+                status: formData.status || "",
+                scnNumber: formData.supplierRef || "",
+                changeClassification:
+                  formData.changeClassificationSupplier || "",
+                supplierRef: formData.supplierRef || "",
+                notificationDate: formData.notificationDate || "",
+                plannedImplementationDate:
+                  formData.changeTimingPlannedDate || "",
+                changeType: "Adverse Event",
+                changeTitleSummary: formData.changeTitle || "",
+                changeTitle: formData.changeTitle || "",
+              }}
+              isEditingCard
+            />
+          )}
         </Stack>
 
+        {Object.keys(validationErrors).length > 0 && (
+          <>
+            <Box className={styles.divider} />
+            {/* Overview Section */}
+            <Box className={styles.overviewSection}>
+              <h2 className={styles.sectionTitle}>Overview</h2>
+              <p className={styles.validationMessage}>
+                <>
+                  <img src={RiskIcon} alt="Risk Icon" />
+                  Please provide all required fields.
+                </>
+              </p>
+            </Box>
+          </>
+        )}
+
         <Box className={styles.divider} />
 
-        {/* Overview Section */}
-        <Box className={styles.overviewSection}>
-          <h2 className={styles.sectionTitle}>Overview</h2>
-          <p className={styles.validationMessage}>
-            {Object.keys(validationErrors).length > 0 && (
-              <>
-                <img src={RiskIcon} alt="Risk Icon" />
-                Please provide all required fields.
-              </>
-            )}
-          </p>
-          {/* <p className={styles.sectionContent}>please fill filde</p> */}
-        </Box>
+        {/* Form */}
+        {formData && (
+          <SCNFormFields
+            formData={formData}
+            isEditing={isEditing}
+            onEditClick={() => setIsEditing(true)}
+            onInputChange={handleInputChange}
+            validationErrors={validationErrors}
+            showUploadSection={isEditing}
+            onFilesChange={setPendingFiles}
+          />
+        )}
 
-        <Box className={styles.divider} />
-
-        <SCNFormFields
-          formData={formData}
-          isEditing={isEditing}
-          onEditClick={() => setIsEditing(true)}
-          onInputChange={handleInputChange}
-          validationErrors={validationErrors}
-        />
         {/* Action Buttons */}
         <Stack direction="row" spacing={2} className={styles.actionButtons}>
           {isEditing && (
@@ -155,6 +218,7 @@ const SCNEditDetails: React.FC = () => {
               <Button
                 variant="outlined"
                 onClick={handleCancelClick}
+                disabled={isSubmitting}
                 className={styles.cancelButton}
               >
                 Cancel
@@ -162,9 +226,15 @@ const SCNEditDetails: React.FC = () => {
               <Button
                 variant="contained"
                 onClick={handleSaveClick}
+                disabled={isSubmitting}
                 className={styles.submitButton}
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={16} sx={{ color: "white" }} />
+                  ) : undefined
+                }
               >
-                Submit
+                {isSubmitting ? "Submitting…" : "Submit"}
               </Button>
             </>
           )}

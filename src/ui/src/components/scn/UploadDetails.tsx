@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Box, Button, Stack } from "@mui/material";
+import { Box, Button, Stack, CircularProgress } from "@mui/material";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import SCNFormFields from "./SCNForm";
 import styles from "./UploadDetails.module.scss";
@@ -32,6 +32,8 @@ const UploadDetails: React.FC = () => {
   const [isEditing, setIsEditing] = useState(true);
   const [formData, setFormData] = useState({ ...initialData });
   const [originalData] = useState({ ...initialData });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   const breadcrumbItems = [
     { label: "Home", to: "/" },
@@ -40,20 +42,30 @@ const UploadDetails: React.FC = () => {
   ];
 
   const handleSaveClick = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const apiFields = mapScnFormToApi(formData);
-      const res = await editScn(emailId, apiFields);
+      const res = await editScn(
+        emailId,
+        apiFields,
+        pendingFiles.length > 0 ? pendingFiles : undefined,
+      );
       if (res?.success) {
         setIsEditing(false);
-        navigate(`/scn/supplier/1`);
+        setPendingFiles([]);
+        navigate(`/scn/supplier/${formData.email_id}`);
       }
     } catch (err) {
       console.error("Save failed:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleCancelClick = () => {
     setFormData({ ...originalData });
+    setPendingFiles([]);
     setIsEditing(true); // Stay editable after upload
   };
 
@@ -73,6 +85,7 @@ const UploadDetails: React.FC = () => {
           onEditClick={() => setIsEditing(true)}
           onInputChange={handleInputChange}
           isUpload
+          onFilesChange={setPendingFiles}
         />
       </Box>
 
@@ -89,9 +102,15 @@ const UploadDetails: React.FC = () => {
             <Button
               variant="contained"
               onClick={handleSaveClick}
+              disabled={isSubmitting}
               className={styles.submitButton}
+              startIcon={
+                isSubmitting ? (
+                  <CircularProgress size={16} sx={{ color: "white" }} />
+                ) : undefined
+              }
             >
-              Submit
+              {isSubmitting ? "Submitting…" : "Submit"}
             </Button>
           </>
         )}

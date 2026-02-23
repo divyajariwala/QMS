@@ -2,6 +2,7 @@ export const mapScnDetailsToForm = (apiData: any) => {
   const fields = apiData?.scn_extracted_fields || {};
 
   return {
+    status: fields?.status || "",
     supplierRef: fields.scn_reference_number || "",
     changeTitle: fields.scn_title_summary || "",
     supplierName: fields.supplier_name || "",
@@ -31,7 +32,8 @@ export const mapScnDetailsToForm = (apiData: any) => {
     componentNumber: fields.component_number || "",
     materialComponentNumber:
       fields.material_number || fields.component_number || "",
-
+    changeClassificationSupplier: fields.change_classification_supplier || "",
+    createdAt: fields.created_at || "",
     attachments: apiData?.attachments || [],
   };
 };

@@ -1,5 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Box, Stack, Button, Menu } from "@mui/material";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Box, Stack, Button, Menu, CircularProgress } from "@mui/material";
 import styles from "./SCNInternalReview.module.scss";
 import filterIcon from "../../assets/icons/filter.svg";
 import SearchIcon from "../../assets/icons/search.svg";
@@ -7,14 +13,14 @@ import ButtonGroup from "./ButtonGroup";
 import SCNFormFields from "./SCNForm";
 import AppButton from "@components/common/AppButton";
 import InfoIcon from "../../assets/icons/information.svg";
+import AiSummaryIcon from "../../assets/icons/aiSummary.svg";
 import UndoIcon from "../../assets/icons/undo.svg";
 import CalendarIcon from "../../assets/icons/calendar.svg";
 import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
 import ChangeNotificationModal from "./modal/ChangeNotificationModal";
 import RightIcon from "../../assets/icons/rightBlue.svg";
-import { fetchScnDetails, fetchScnList } from "src/services/scn";
+import { fetchScnDetails, fetchScnList, editScn } from "src/services/scn";
 import { mapScnDetailsToForm } from "src/utils/mapScnDetails";
-import { editScn } from "src/services/scn";
 import { mapScnFormToApi } from "src/utils/mapScnFormToApi";
 import ScnListSkeleton from "./skeleton/ScnListSkeleton";
 import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
@@ -29,6 +35,8 @@ type FilterState = {
   daysRange: string;
   classification: string;
 };
+
+const LIMIT = 10;
 
 const SCNInternalReview: React.FC = () => {
   const [selected, setSelected] = useState<number>(0);
@@ -67,8 +75,10 @@ const SCNInternalReview: React.FC = () => {
 
   // SCN list state
   const [scns, setScns] = useState<any[]>([]);
-  const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const [scnDetail, setScnDetail] = useState<any>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -78,11 +88,12 @@ const SCNInternalReview: React.FC = () => {
     const loadList = async () => {
       setLoading(true);
       setError(null);
+      setScns([]);
+      setHasMore(true);
       try {
-        // Build query params from filters
         const params = new URLSearchParams();
-        params.append("limit", "50");
-        params.append("offset", String(offset));
+        params.append("limit", String(LIMIT));
+        params.append("offset", "0");
         if (appliedFilters.supplier)
           params.append("supplier_name", appliedFilters.supplier);
         if (appliedFilters.classification)
@@ -95,13 +106,13 @@ const SCNInternalReview: React.FC = () => {
             "planned_implementation_date",
             appliedFilters.plannedDate,
           );
-        // Add more filters as needed
-
-        const res = await fetchScnList(50, offset, params);
-        setScns(res?.data?.items || []);
-        setTotal(res?.data?.count || 0);
-
-        if (!res?.data?.items?.length) {
+        const res = await fetchScnList(LIMIT, 0, params);
+        const items = res?.data?.items || [];
+        const count = res?.data?.count || 0;
+        setScns(items);
+        setTotal(count);
+        setHasMore(items.length >= LIMIT && items.length < count);
+        if (!items.length) {
           setIsFirstLoad(false);
         }
       } catch (err: any) {
@@ -112,7 +123,51 @@ const SCNInternalReview: React.FC = () => {
       }
     };
     loadList();
-  }, [offset, appliedFilters]);
+  }, [appliedFilters]);
+
+  const loadMore = useCallback(async () => {
+    if (isFetchingMore || !hasMore) return;
+    setIsFetchingMore(true);
+    try {
+      const newOffset = scns.length;
+      const params = new URLSearchParams();
+      params.append("limit", String(LIMIT));
+      params.append("offset", String(newOffset));
+      if (appliedFilters.supplier)
+        params.append("supplier_name", appliedFilters.supplier);
+      if (appliedFilters.classification)
+        params.append(
+          "change_classification_supplier",
+          appliedFilters.classification,
+        );
+      if (appliedFilters.plannedDate)
+        params.append(
+          "planned_implementation_date",
+          appliedFilters.plannedDate,
+        );
+      const res = await fetchScnList(LIMIT, newOffset, params);
+      const items = res?.data?.items || [];
+      setScns((prev) => [...prev, ...items]);
+      setHasMore(items.length >= LIMIT && newOffset + items.length < total);
+    } catch (err: any) {
+      console.error("Load more failed:", err);
+    } finally {
+      setIsFetchingMore(false);
+    }
+  }, [isFetchingMore, hasMore, scns.length, appliedFilters, total]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [loadMore]);
 
   const handleSelectScn = async (item: any) => {
     if (!item?.email_id) return;
@@ -268,7 +323,7 @@ const SCNInternalReview: React.FC = () => {
               alignItems="center"
               className={styles.mailHeader}
             >
-              <span className={styles.mailHeaderTitle}>Queue (6)</span>
+              <span className={styles.mailHeaderTitle}>Queue ({total})</span>
               <Button
                 size="small"
                 variant="outlined"
@@ -501,6 +556,27 @@ const SCNInternalReview: React.FC = () => {
                   ))}
                 </Stack>
               )}
+              {/* Infinite scroll sentinel */}
+              {!loading && !error && hasMore && (
+                <div ref={sentinelRef} style={{ height: 1 }} />
+              )}
+              {isFetchingMore && (
+                <Box display="flex" justifyContent="center" py={2}>
+                  <CircularProgress size={20} sx={{ color: "#437ef7" }} />
+                </Box>
+              )}
+              {!loading && !isFetchingMore && !hasMore && scns.length > 0 && (
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    color: "#9ca3af",
+                    fontSize: "12px",
+                    py: 1.5,
+                  }}
+                >
+                  All items loaded
+                </Box>
+              )}
             </Box>
           </Box>
 
@@ -515,7 +591,7 @@ const SCNInternalReview: React.FC = () => {
             ) : (
               <>
                 <Box>
-                  <span className={styles.scnStatus}>New</span>
+                  <span className={styles.scnStatus}>{scnDetail?.status}</span>
                   <Box className={styles.mailContentHader}>
                     <Stack
                       direction="row"
@@ -538,8 +614,8 @@ const SCNInternalReview: React.FC = () => {
                 <Box className={styles.detailText}>
                   <span>{scnDetail?.supplierName}</span>
                   <span>Supplier SCN: {scnDetail?.supplierRef}</span>
-                  <span>Submitted {scnDetail?.submittedDate}</span>
-                  <span>Owner: Unassigned</span>
+                  <span>Submitted: {scnDetail?.createdAt?.split("T")[0]}</span>
+                  {/* <span>Owner: Unassigned</span> */}
                 </Box>
                 <ButtonGroup selected={selectedTab} onSelect={setSelectedTab} />
                 {selectedTab === "Review" && (
@@ -556,7 +632,7 @@ const SCNInternalReview: React.FC = () => {
                         onClick={() => setOpenRequestInfo(true)}
                       >
                         <span className={styles.appButton}>
-                          <img src={InfoIcon} alt="" />
+                          <img src={AiSummaryIcon} alt="" />
                           Impact Review
                         </span>
                       </AppButton>
@@ -581,7 +657,7 @@ const SCNInternalReview: React.FC = () => {
                         </span>
                       </AppButton>
                     </Stack>
-                    <Box className={styles.docxMain}>
+                    {/* <Box className={styles.docxMain}>
                       <section className={styles.section}>
                         <p>
                           <b>Reason for Change:</b> End-of-life replacement of
@@ -589,7 +665,6 @@ const SCNInternalReview: React.FC = () => {
                         </p>
                       </section>
 
-                      {/* Affected Items */}
                       <section className={styles.section}>
                         <h3>Affected Items</h3>
                         <div className={styles.tableMain}>
@@ -625,7 +700,7 @@ const SCNInternalReview: React.FC = () => {
                         </div>
                       </section>
 
-                      {/* Impact Assessment */}
+                
                       <section className={styles.section}>
                         <h3>Impact Assessment</h3>
                         <p>
@@ -642,7 +717,7 @@ const SCNInternalReview: React.FC = () => {
                         Preview
                         <img src={RightIcon} alt=">" />
                       </span>
-                    </AppButton>
+                    </AppButton> */}
                     {/* <SCNFormSkeleton /> */}
                     {scnDetail && (
                       <SCNFormFields

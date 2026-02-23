@@ -1,5 +1,11 @@
 import React, { useRef, useState } from "react";
-import { Box, Stack, Button, Typography } from "@mui/material";
+import {
+  Box,
+  Stack,
+  Button,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import FormInput from "@components/common/FormInput";
 import editIcon from "../../assets/icons/editLight.svg";
 import documentTextIcon from "../../assets/icons/documentext.svg";
@@ -13,6 +19,12 @@ interface SCNFormFieldsProps {
   onEditClick?: () => void;
   onInputChange: (field: string, value: any) => void;
   isUpload?: boolean;
+  /** Show the drag-and-drop upload area regardless of isUpload layout mode.
+   *  Defaults to the value of isUpload for backwards compatibility. */
+  showUploadSection?: boolean;
+  /** Called whenever the locally-selected file list changes so parents can
+   *  include the files when calling the save / edit API. */
+  onFilesChange?: (files: File[]) => void;
   validationErrors?: Record<string, boolean>;
 }
 
@@ -22,34 +34,48 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
   onEditClick,
   onInputChange,
   isUpload = false,
+  showUploadSection,
+  onFilesChange,
   validationErrors = {},
 }) => {
+  // showUploadSection defaults to isUpload so existing callers are unaffected
+  const shouldShowUpload = showUploadSection ?? isUpload;
   const [uploading, setUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const addFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const newFiles = Array.from(files);
+    setUploading(true);
+    // Simulate async upload processing
+    setTimeout(() => {
+      setUploadedFiles((prev) => {
+        const next = [...prev, ...newFiles];
+        onFilesChange?.(next);
+        return next;
+      });
+      setUploading(false);
+      // Reset input so same file can be selected again
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }, 1200);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploading(true);
-      // Simulate upload
-      setTimeout(() => {
-        setUploading(false);
-        // You can add logic to update formData or show uploaded file info here
-      }, 1500);
-    }
+    addFiles(e.target.files);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      setUploading(true);
-      // Simulate upload
-      setTimeout(() => {
-        setUploading(false);
-        // You can add logic to update formData or show uploaded file info here
-      }, 1500);
-    }
+    addFiles(e.dataTransfer.files);
+  };
+
+  const handleRemoveUploadedFile = (index: number) => {
+    setUploadedFiles((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      onFilesChange?.(next);
+      return next;
+    });
   };
 
   return (
@@ -401,7 +427,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
       <Box>
         <h2 className={styles.sectionTitle}>Documentation & Attachments</h2>
 
-        {isUpload && (
+        {shouldShowUpload && (
           <Box className={styles.contentWrapper}>
             <Box
               className={styles.uploadArea}
@@ -410,28 +436,36 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               onDragOver={(e) => e.preventDefault()}
             >
               <Box>
-                <img src={Frame} alt="Upload" />
+                {uploading ? (
+                  <CircularProgress size={36} sx={{ color: "#437ef7" }} />
+                ) : (
+                  <img src={Frame} alt="Upload" />
+                )}
               </Box>
 
               <Typography className={styles.uploadText}>
-                Click or drag file to this area to upload
+                {uploading
+                  ? "Uploading file, please wait…"
+                  : "Click or drag file to this area to upload"}
               </Typography>
 
-              <Button
-                variant="contained"
-                disabled={uploading}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fileInputRef.current?.click();
-                }}
-                className={styles.browseButton}
-              >
-                Browse Files
-              </Button>
+              {!uploading && (
+                <Button
+                  variant="contained"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className={styles.browseButton}
+                >
+                  Browse Files
+                </Button>
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept=".pdf,.csv,.xlsx"
+                multiple
                 hidden
                 onChange={handleFileChange}
               />
@@ -439,10 +473,16 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
           </Box>
         )}
         <div className={styles.fileUploadInfo}>
-          <p>{formData?.attachments?.length || 0} file(s) uploaded</p>
+          {(formData?.attachments?.length || 0) + uploadedFiles.length > 0 && (
+            <p>
+              {(formData?.attachments?.length || 0) + uploadedFiles.length}{" "}
+              file(s) uploaded
+            </p>
+          )}
           <div className={styles.fileList}>
+            {/* Server-side attachments (read-only with View link) */}
             {formData?.attachments?.map((file: any, idx: number) => (
-              <div key={idx} className={styles.fileItem}>
+              <div key={`server-${idx}`} className={styles.fileItem}>
                 <div className={styles.fileDetails}>
                   <span className={styles.fileIcon}>
                     <img src={documentTextIcon} alt="document" />
@@ -461,6 +501,31 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
                     View
                   </a>
                 )}
+              </div>
+            ))}
+
+            {/* Locally uploaded files (with remove button) */}
+            {uploadedFiles.map((file, idx) => (
+              <div key={`local-${idx}`} className={styles.fileItem}>
+                <div className={styles.fileDetails}>
+                  <span className={styles.fileIcon}>
+                    <img src={documentTextIcon} alt="document" />
+                  </span>
+                  <span className={styles.fileInfo}>
+                    <span className={styles.fileName}>{file.name}</span>
+                    <span className={styles.fileSize}>
+                      {(file.size / 1024).toFixed(1)} KB
+                    </span>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className={styles.removeFileBtn}
+                  onClick={() => handleRemoveUploadedFile(idx)}
+                  title="Remove file"
+                >
+                  ✕
+                </button>
               </div>
             ))}
           </div>

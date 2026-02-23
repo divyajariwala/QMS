@@ -29,12 +29,16 @@ export async function fetchScnDetails(
   );
 }
 
-export const editScn = async (emailId: string, formData: any, file?: File) => {
+export const editScn = async (
+  emailId: string,
+  formData: any,
+  files?: File[],
+) => {
   const multipart = new FormData();
   multipart.append("email_id", emailId);
   multipart.append("fields", JSON.stringify(formData));
-  if (file) {
-    multipart.append("files", file);
+  if (files && files.length > 0) {
+    files.forEach((file) => multipart.append("files", file));
   }
   return apiRequest<any>("dev/scnEdit", {
     method: "POST",
