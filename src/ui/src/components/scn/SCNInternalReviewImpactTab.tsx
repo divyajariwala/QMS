@@ -31,26 +31,19 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
   classificationData,
 }) => {
   const [selected, setSelected] = useState<"SCN" | "NON_SCN">("SCN");
-  const [changeControlRequired, setChangeControlRequired] = useState("Yes");
-  const [recordId, setRecordId] = useState("CC-23451");
-  const [changeType, setChangeType] = useState("SCN-12345");
-  const [scnClassification, setScnClassification] = useState("Minor");
+  const [changeControlRequired, setChangeControlRequired] = useState("");
+  const [recordId, setRecordId] = useState("");
+  const [changeType, setChangeType] = useState("");
+  const [scnClassification, setScnClassification] = useState("");
   const [openPreview, setOpenPreview] = useState(false);
-  const [actionsRequired, setActionsRequired] = useState(
-    "Please provide Planned Implementation Date.",
-  );
+  const [actionsRequired, setActionsRequired] = useState("");
   const [openApprove, setOpenApprove] = useState(false);
   const [openReject, setOpenReject] = useState(false);
-  const [assignedTo, setAssignedTo] = useState<string[]>([
-    "Quality Team",
-    "Manufacturing Team",
-  ]);
+  const [assignedTo, setAssignedTo] = useState<string[]>([]);
   const [editMode, setEditMode] = useState(false);
-  const [aiSummary, setAiSummary] = useState<string>(
-    "Pinnacle Laboratories is implementing a controlled change to replace end-of-life legacy equipment/material. The change is managed under their quality system and requires customer review.",
-  );
-  const [riskLevel, setRiskLevel] = useState<string>("High");
-  const [predictedOutput, setPredictedOutput] = useState<string>("SCN");
+  const [aiSummary, setAiSummary] = useState<string>("");
+  const [riskLevel, setRiskLevel] = useState<string>("");
+  const [predictedOutput, setPredictedOutput] = useState<string>("");
 
   // Populate from API data whenever classificationData changes
   useEffect(() => {
@@ -61,17 +54,17 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
       setPredictedOutput(classificationData.final_classification);
       setSelected(cls === "SCN" ? "SCN" : "NON_SCN");
     }
-    // if (classificationData.change_control_required != null) {
-    //   // API returns "NO" / "YES"
-    //   const val = classificationData.change_control_required.toUpperCase();
-    //   setChangeControlRequired(val === "NO" ? "No" : "Yes");
-    // }
+    if (classificationData.change_control_required != null) {
+      // API returns "NO" / "YES"
+      const val = classificationData.change_control_required.toUpperCase();
+      setChangeControlRequired(val === "NO" ? "No" : "Yes");
+    }
     // if (classificationData.cc_record_id != null) {
     //   setRecordId(classificationData.cc_record_id || "");
     // }
-    // if (classificationData.change_classification_supplier) {
-    //   setChangeType(classificationData.change_classification_supplier);
-    // }
+    if (classificationData.change_classification_supplier) {
+      setChangeType(classificationData.change_classification_supplier);
+    }
     if (classificationData.final_risk_level) {
       setRiskLevel(classificationData.final_risk_level);
       const risk = classificationData.final_risk_level;

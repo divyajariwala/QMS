@@ -542,6 +542,7 @@ const SCNInternalReview: React.FC = () => {
                       onClick={() => {
                         setSelected(index);
                         handleSelectScn(item);
+                        setSelectedTab("Review");
                       }}
                     >
                       <span className={styles.scnStatus}>{item.status}</span>
