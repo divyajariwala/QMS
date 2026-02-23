@@ -255,16 +255,43 @@ const SCNInternalReview: React.FC = () => {
     setImpactReviewLoading(true);
     try {
       await scnClassify(selectedEmailId);
-      const res = await scnClassificationResults(selectedEmailId);
-      const data: ImpactClassificationData = res?.data ?? res ?? {};
-      setImpactClassificationData(data);
       setSelectedTab("Impact Assessment");
+      const res = await scnClassificationResults(selectedEmailId);
+      if (res?.success === false) {
+        setImpactClassificationData(null);
+      } else {
+        const data: ImpactClassificationData = res?.data ?? res ?? {};
+        setImpactClassificationData(data);
+      }
     } catch (err) {
       console.error("Impact Review failed:", err);
+      setImpactClassificationData(null);
     } finally {
       setImpactReviewLoading(false);
     }
   };
+
+  const handleTabSelect = async (tab: string) => {
+    setSelectedTab(tab);
+    if (tab === "Impact Assessment" && selectedEmailId) {
+      setImpactReviewLoading(true);
+      try {
+        const res = await scnClassificationResults(selectedEmailId);
+        if (res?.success === false) {
+          setImpactClassificationData(null);
+        } else {
+          const data: ImpactClassificationData = res?.data ?? res ?? {};
+          setImpactClassificationData(data);
+        }
+      } catch (err) {
+        console.error("Failed to load Impact Assessment data:", err);
+        setImpactClassificationData(null);
+      } finally {
+        setImpactReviewLoading(false);
+      }
+    }
+  };
+
   const handleInputChange = (field: string, value: any) => {
     setScnDetail((prev: any) => ({
       ...prev,
@@ -645,7 +672,10 @@ const SCNInternalReview: React.FC = () => {
                   <span>Submitted: {scnDetail?.createdAt?.split("T")[0]}</span>
                   {/* <span>Owner: Unassigned</span> */}
                 </Box>
-                <ButtonGroup selected={selectedTab} onSelect={setSelectedTab} />
+                <ButtonGroup
+                  selected={selectedTab}
+                  onSelect={handleTabSelect}
+                />
                 {selectedTab === "Review" && (
                   <Box>
                     <Stack
@@ -774,6 +804,7 @@ const SCNInternalReview: React.FC = () => {
                   <Box>
                     <SCNInternalReviewImpactTab
                       classificationData={impactClassificationData}
+                      isLoading={impactReviewLoading}
                     />
                   </Box>
                 )}
