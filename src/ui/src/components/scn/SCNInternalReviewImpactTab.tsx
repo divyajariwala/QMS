@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./SCNInternalReviewImpactTab.module.scss";
 import UndoIcon from "../../assets/icons/undoBlack.svg";
 import { Box, Stack, Typography } from "@mui/material";
@@ -12,7 +12,24 @@ import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
 import ApproveModal from "./modal/ApproveModal";
 import RejectSCNModal from "./modal/RejectSCNModal";
 
-const SCNInternalReviewImpactTab: React.FC = () => {
+export interface ImpactClassificationData {
+  change_control_required?: string | null;
+  cc_record_id?: string | null;
+  final_classification?: string | null;
+  change_classification_supplier?: string | null;
+  final_risk_level?: string | null;
+  final_assigned_team?: string | null;
+  action_required?: string | null;
+  ai_summary?: string | null;
+}
+
+interface Props {
+  classificationData?: ImpactClassificationData | null;
+}
+
+const SCNInternalReviewImpactTab: React.FC<Props> = ({
+  classificationData,
+}) => {
   const [selected, setSelected] = useState<"SCN" | "NON_SCN">("SCN");
   const [changeControlRequired, setChangeControlRequired] = useState("Yes");
   const [recordId, setRecordId] = useState("CC-23451");
@@ -29,6 +46,58 @@ const SCNInternalReviewImpactTab: React.FC = () => {
     "Manufacturing Team",
   ]);
   const [editMode, setEditMode] = useState(false);
+  const [aiSummary, setAiSummary] = useState<string>(
+    "Pinnacle Laboratories is implementing a controlled change to replace end-of-life legacy equipment/material. The change is managed under their quality system and requires customer review.",
+  );
+  const [riskLevel, setRiskLevel] = useState<string>("High");
+  const [predictedOutput, setPredictedOutput] = useState<string>("SCN");
+
+  // Populate from API data whenever classificationData changes
+  useEffect(() => {
+    if (!classificationData) return;
+
+    if (classificationData.final_classification) {
+      const cls = classificationData.final_classification.toUpperCase();
+      setPredictedOutput(classificationData.final_classification);
+      setSelected(cls === "SCN" ? "SCN" : "NON_SCN");
+    }
+    // if (classificationData.change_control_required != null) {
+    //   // API returns "NO" / "YES"
+    //   const val = classificationData.change_control_required.toUpperCase();
+    //   setChangeControlRequired(val === "NO" ? "No" : "Yes");
+    // }
+    // if (classificationData.cc_record_id != null) {
+    //   setRecordId(classificationData.cc_record_id || "");
+    // }
+    // if (classificationData.change_classification_supplier) {
+    //   setChangeType(classificationData.change_classification_supplier);
+    // }
+    if (classificationData.final_risk_level) {
+      setRiskLevel(classificationData.final_risk_level);
+      const risk = classificationData.final_risk_level;
+      // Map risk level to Minor/Moderate/Major classification label
+      if (["minor", "low"].includes(risk.toLowerCase())) {
+        setScnClassification("Minor");
+      } else if (["moderate", "medium"].includes(risk.toLowerCase())) {
+        setScnClassification("Moderate");
+      } else {
+        setScnClassification("Major");
+      }
+    }
+    if (classificationData.final_assigned_team) {
+      const teams = classificationData.final_assigned_team
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      setAssignedTo(teams);
+    }
+    if (classificationData.action_required != null) {
+      setActionsRequired(classificationData.action_required || "");
+    }
+    if (classificationData.ai_summary) {
+      setAiSummary(classificationData.ai_summary);
+    }
+  }, [classificationData]);
 
   const allTeams = [
     "Quality Team",
@@ -103,13 +172,9 @@ const SCNInternalReviewImpactTab: React.FC = () => {
           <Typography variant="h6">AI Summary</Typography>
         </div>
 
-        <Typography className={styles.summaryText}>
-          Pinnacle Laboratories is implementing a controlled change to replace
-          end-of-life legacy equipment/material. The change is managed under
-          their quality system and requires customer review.
-        </Typography>
+        <Typography className={styles.summaryText}>{aiSummary}</Typography>
 
-        <div className={styles.affectedItems}>
+        {/* <div className={styles.affectedItems}>
           <Typography className={styles.title}>Affected Items</Typography>
           <Typography className={styles.itemRow}>
             <strong>Services:</strong> Release Testing Support, Incoming
@@ -118,17 +183,17 @@ const SCNInternalReviewImpactTab: React.FC = () => {
           <Typography className={styles.itemRow}>
             <strong>Material:</strong> Polymer Resin (lot-controlled)
           </Typography>
-        </div>
+        </div> */}
 
         <div className={styles.chipsContainer}>
           <div className={styles.chip}>
-            Predicted Output: <strong>SCN</strong>
+            Predicted Output: <strong>{predictedOutput}</strong>
           </div>
           <div className={styles.chip}>
-            Risk Level: <strong>High</strong>
+            Risk Level: <strong>{riskLevel}</strong>
           </div>
           <div className={styles.chip}>
-            Assigned To: <strong>Quality Team, Manufacturing Team</strong>
+            Assigned To: <strong>{assignedTo.join(", ")}</strong>
           </div>
         </div>
       </div>
@@ -318,7 +383,7 @@ const SCNInternalReviewImpactTab: React.FC = () => {
           </Stack>
 
           <SelectedFields
-            fields={allTeams}
+            fields={assignedTo ? assignedTo : allTeams}
             selected={assignedTo}
             onSelect={editMode && selected === "SCN" ? handleSelect : undefined}
             onRemove={editMode && selected === "SCN" ? handleRemove : undefined}

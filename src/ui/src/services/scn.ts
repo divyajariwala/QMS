@@ -57,3 +57,17 @@ export const uploadScn = async (file: File) => {
     token: true,
   });
 };
+
+export const scnClassify = async (emailId: string) => {
+  return apiRequest<any>(`dev/scnClassify?email_id=${emailId}`, {
+    method: "POST",
+    token: false,
+  });
+};
+
+export const scnClassificationResults = async (emailId: string) => {
+  return apiRequest<any>(`dev/scnClassificationResults?email_id=${emailId}`, {
+    method: "GET",
+    token: false,
+  });
+};

@@ -34,13 +34,15 @@ const SCNEditDetails: React.FC = () => {
   // Files selected in the upload section — sent along with the edit API call
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
-  // ── Fetch SCN details on mount / when scnId changes ──────────────────────
+  // ── Fetch SCN details on mount / when scnId changes
   const loadDetails = async () => {
     if (!scnId) return;
     setLoading(true);
     setError(null);
     try {
-      const res: any = await fetchScnDetails(scnId);
+      const res: any = await fetchScnDetails(
+        scnId?.length > 3 ? scnId : "74cd5b44-2f57-47ed-91a9-f98161aab9e9",
+      );
       if (res?.data) {
         const mapped = mapScnDetailsToForm(res.data);
         setFormData(mapped);
@@ -125,7 +127,7 @@ const SCNEditDetails: React.FC = () => {
     }));
   };
 
-  // ── Render helpers ────────────────────────────────────────────────────────
+  // ── Render helpers
   if (loading) {
     return (
       <Box component="main" className={styles.container}>

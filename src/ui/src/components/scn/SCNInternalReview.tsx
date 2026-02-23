@@ -19,13 +19,21 @@ import CalendarIcon from "../../assets/icons/calendar.svg";
 import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
 import ChangeNotificationModal from "./modal/ChangeNotificationModal";
 import RightIcon from "../../assets/icons/rightBlue.svg";
-import { fetchScnDetails, fetchScnList, editScn } from "src/services/scn";
+import {
+  fetchScnDetails,
+  fetchScnList,
+  editScn,
+  scnClassify,
+  scnClassificationResults,
+} from "src/services/scn";
 import { mapScnDetailsToForm } from "src/utils/mapScnDetails";
 import { mapScnFormToApi } from "src/utils/mapScnFormToApi";
 import ScnListSkeleton from "./skeleton/ScnListSkeleton";
 import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
 import RequestInfoModal from "./modal/RequestInfoModal";
-import SCNInternalReviewImpactTab from "./SCNInternalReviewImpactTab";
+import SCNInternalReviewImpactTab, {
+  ImpactClassificationData,
+} from "./SCNInternalReviewImpactTab";
 import SCNInternalReviewAuditTab from "./SCNInternalReviewAuditTab";
 import ScnDetailsSkeleton from "./skeleton/ScnDetailsSkeleton";
 
@@ -82,6 +90,9 @@ const SCNInternalReview: React.FC = () => {
 
   const [scnDetail, setScnDetail] = useState<any>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [impactReviewLoading, setImpactReviewLoading] = useState(false);
+  const [impactClassificationData, setImpactClassificationData] =
+    useState<ImpactClassificationData | null>(null);
 
   // Fetch SCN list with filters
   useEffect(() => {
@@ -237,6 +248,22 @@ const SCNInternalReview: React.FC = () => {
     setValidationErrors({});
     setIsEditing(false);
     await handleSelectScn({ email_id: selectedEmailId });
+  };
+
+  const handleImpactReview = async () => {
+    if (!selectedEmailId) return;
+    setImpactReviewLoading(true);
+    try {
+      await scnClassify(selectedEmailId);
+      const res = await scnClassificationResults(selectedEmailId);
+      const data: ImpactClassificationData = res?.data ?? res ?? {};
+      setImpactClassificationData(data);
+      setSelectedTab("Impact Assessment");
+    } catch (err) {
+      console.error("Impact Review failed:", err);
+    } finally {
+      setImpactReviewLoading(false);
+    }
   };
   const handleInputChange = (field: string, value: any) => {
     setScnDetail((prev: any) => ({
@@ -629,10 +656,18 @@ const SCNInternalReview: React.FC = () => {
                     >
                       <AppButton
                         variant="outlined"
-                        onClick={() => setOpenRequestInfo(true)}
+                        onClick={handleImpactReview}
+                        disabled={impactReviewLoading}
                       >
                         <span className={styles.appButton}>
-                          <img src={AiSummaryIcon} alt="" />
+                          {impactReviewLoading ? (
+                            <CircularProgress
+                              size={14}
+                              sx={{ color: "inherit" }}
+                            />
+                          ) : (
+                            <img src={AiSummaryIcon} alt="" />
+                          )}
                           Impact Review
                         </span>
                       </AppButton>
@@ -736,7 +771,9 @@ const SCNInternalReview: React.FC = () => {
                 )}
                 {selectedTab === "Impact Assessment" && (
                   <Box>
-                    <SCNInternalReviewImpactTab />
+                    <SCNInternalReviewImpactTab
+                      classificationData={impactClassificationData}
+                    />
                   </Box>
                 )}
 
