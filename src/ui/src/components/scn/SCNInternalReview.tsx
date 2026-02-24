@@ -5,7 +5,14 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Box, Stack, Button, Menu, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Stack,
+  Button,
+  Menu,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
 import styles from "./SCNInternalReview.module.scss";
 import filterIcon from "../../assets/icons/filter.svg";
 import SearchIcon from "../../assets/icons/search.svg";
@@ -91,6 +98,7 @@ const SCNInternalReview: React.FC = () => {
   const [scnDetail, setScnDetail] = useState<any>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [impactReviewLoading, setImpactReviewLoading] = useState(false);
+  const [isClassifying, setIsClassifying] = useState(false);
   const [impactClassificationData, setImpactClassificationData] =
     useState<ImpactClassificationData | null>(null);
 
@@ -256,6 +264,10 @@ const SCNInternalReview: React.FC = () => {
     try {
       await scnClassify(selectedEmailId);
       setSelectedTab("Impact Assessment");
+      setIsClassifying(true);
+      setImpactReviewLoading(false);
+      await new Promise<void>((resolve) => setTimeout(resolve, 35000));
+
       const res = await scnClassificationResults(selectedEmailId);
       if (res?.success === false) {
         setImpactClassificationData(null);
@@ -267,6 +279,7 @@ const SCNInternalReview: React.FC = () => {
       console.error("Impact Review failed:", err);
       setImpactClassificationData(null);
     } finally {
+      setIsClassifying(false);
       setImpactReviewLoading(false);
     }
   };
@@ -785,6 +798,7 @@ const SCNInternalReview: React.FC = () => {
                       </span>
                     </AppButton> */}
                     {/* <SCNFormSkeleton /> */}
+
                     {scnDetail && (
                       <SCNFormFields
                         formData={scnDetail}
@@ -802,10 +816,19 @@ const SCNInternalReview: React.FC = () => {
                 )}
                 {selectedTab === "Impact Assessment" && (
                   <Box>
-                    <SCNInternalReviewImpactTab
-                      classificationData={impactClassificationData}
-                      isLoading={impactReviewLoading}
-                    />
+                    {isClassifying ? (
+                      <Box className={styles.classifyingContainer}>
+                        <div className={styles.loader}></div>
+                        <Typography className={styles.statusSubtitle}>
+                          Please wait for the file to be processed
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <SCNInternalReviewImpactTab
+                        classificationData={impactClassificationData}
+                        isLoading={impactReviewLoading}
+                      />
+                    )}
                   </Box>
                 )}
 
