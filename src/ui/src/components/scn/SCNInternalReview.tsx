@@ -736,7 +736,7 @@ const SCNInternalReview: React.FC = () => {
                         </span>
                       </AppButton>
                     </Stack>
-                    {/* <Box className={styles.docxMain}>
+                    <Box className={styles.docxMain}>
                       <section className={styles.section}>
                         <p>
                           <b>Reason for Change:</b> End-of-life replacement of
@@ -779,7 +779,6 @@ const SCNInternalReview: React.FC = () => {
                         </div>
                       </section>
 
-                
                       <section className={styles.section}>
                         <h3>Impact Assessment</h3>
                         <p>
@@ -796,7 +795,7 @@ const SCNInternalReview: React.FC = () => {
                         Preview
                         <img src={RightIcon} alt=">" />
                       </span>
-                    </AppButton> */}
+                    </AppButton>
                     {/* <SCNFormSkeleton /> */}
 
                     {scnDetail && (
@@ -827,12 +826,17 @@ const SCNInternalReview: React.FC = () => {
                       <SCNInternalReviewImpactTab
                         classificationData={impactClassificationData}
                         isLoading={impactReviewLoading}
+                        emailId={selectedEmailId ?? undefined}
                       />
                     )}
                   </Box>
                 )}
 
-                {selectedTab === "Audit" && <SCNInternalReviewAuditTab />}
+                {selectedTab === "Audit" && (
+                  <SCNInternalReviewAuditTab
+                    scnId={scnDetail?.supplierRef ?? null}
+                  />
+                )}
               </>
             )}
 

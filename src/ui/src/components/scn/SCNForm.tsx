@@ -265,7 +265,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               ))}
             </div>
           </Box>
-          {/* {!isUpload && (
+          {!isUpload && (
             <Box className={styles.formGroup}>
               <label className={styles.formLabel}>
                 Supplier Change Classification
@@ -286,7 +286,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
                 ))}
               </div>
             </Box>
-          )} */}
+          )}
         </Stack>
 
         <Stack direction="row" spacing={4}>

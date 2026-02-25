@@ -712,3 +712,77 @@ export interface ScnDetailsResponse {
   };
   timestamp: string;
 }
+
+export interface ScnFinalItem {
+  email_id: string;
+  scn_reference_number: string;
+  supplier_name: string;
+  notification_date: string;
+  planned_implementation_date: string;
+  status: string;
+  final_classification: string;
+  final_risk_level: string;
+  updated_at: string;
+}
+
+export interface ScnFinalSummary {
+  total: number;
+  approved: number;
+  rejected: number;
+  pending_review: number;
+  in_review: number;
+}
+
+export interface ScnFinalListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    count: number;
+    items: ScnFinalItem[];
+    filters: {
+      limit: number;
+      offset: number;
+      q: string | null;
+    };
+    summary: ScnFinalSummary;
+  };
+  timestamp: string;
+}
+export interface ScnEditClassifyPayload {
+  change_classification_supplier?: string;
+  change_control_required?: "yes" | "no";
+  action_required?: string;
+  final_risk_level?: string;
+  final_assigned_team?: string;
+}
+
+export interface ScnEditClassifyResponse {
+  success: boolean;
+  message: string;
+  data: {
+    email_id: string;
+    updated_fields: string[];
+  };
+  timestamp: string;
+}
+
+export interface ScnAuditItem {
+  id: number;
+  scn_id: string;
+  changed_field: string;
+  old_value: string | null;
+  new_value: string | null;
+  changed_by: string;
+  created_at: string;
+}
+
+export interface ScnQmsAuditResponse {
+  success: boolean;
+  message: string;
+  data: {
+    scn_id: string;
+    count: number;
+    items: ScnAuditItem[];
+  };
+  timestamp: string;
+}

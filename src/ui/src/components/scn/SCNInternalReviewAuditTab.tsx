@@ -1,7 +1,15 @@
-import React from "react";
-import { Box, Stack, Avatar, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  CircularProgress,
+  Stack,
+  Avatar,
+  Typography,
+} from "@mui/material";
 import botIcon from "../../assets/icons/botIcon.svg";
 import styles from "./SCNInternalReviewAuditTab.module.scss";
+import { fetchScnQmsAudit } from "src/services/scn";
+import { ScnAuditItem } from "src/types";
 
 // --- Types ---
 interface User {
@@ -19,61 +27,74 @@ interface TimelineEvent {
   user?: User;
 }
 
-// --- Sample Data ---
-const timelineData: TimelineEvent[] = [
-  {
-    id: 1,
-    type: "approved",
-    timestamp: "JAN 10, 11:50 AM",
-    title: "SCN-INT-000234 Approved",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.",
-  },
-  {
-    id: 2,
-    type: "rejected",
-    timestamp: "JAN 20, 12:20 AM",
-    title: "SCN-INT-000234 Info requested",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.",
-  },
-  {
-    id: 3,
-    type: "review",
-    timestamp: "JAN 2, 11:50 AM",
-    title: "SCN-INT-000234 Under review",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.",
-  },
-  {
-    id: 4,
-    type: "edited",
-    timestamp: "JAN 1, 10:15 AM",
-    title: "SCN-INT-000234 record edited", // Note: Display logic might reconstruct this
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.",
-    user: {
-      name: "Earl Johnson",
-      email: "carolskoney@mail.com",
-      avatar: "/avatar.png",
-    },
-  },
-  {
-    id: 5,
-    type: "created", // Assumed from context of "Created"
-    timestamp: "Dec 29, 09:15 PM",
-    title: "SCN-INT-000234 record", // "Created SCN-INT-000234 record"
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.",
-    user: {
-      name: "Earl Johnson",
-      email: "carolskoney@mail.com",
-      avatar: "/avatar.png",
-    },
-  },
-];
+// --- Helpers ---
 
-// --- Components ---
+/**
+ * Formats an ISO date string to a human-readable label.
+ * e.g. "2026-02-25T14:20:00Z" → "Feb 25, 2026"
+ */
+function formatDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function humanizeField(field: string): string {
+  return field.replace(/_/g, " ");
+}
+
+function deriveType(item: ScnAuditItem): TimelineEvent["type"] {
+  const field = item.changed_field?.toLowerCase() ?? "";
+  const newVal = (item.new_value ?? "").toLowerCase();
+
+  if (newVal === "approved") return "approved";
+  if (newVal === "rejected") return "rejected";
+  if (field === "classification" && item.old_value === null) return "created";
+  if (field.includes("review")) return "review";
+  return "edited";
+}
+
+function buildDescription(item: ScnAuditItem): string {
+  const date = formatDate(item.created_at);
+  const field = humanizeField(item.changed_field);
+  const by = item.changed_by ?? "System";
+
+  if (item.old_value === null) {
+    return `${by} initiated the ${field} for ${item.scn_id} on ${date}.`;
+  }
+  return `${by} changed the ${field} from ${item.old_value} to ${item.new_value ?? "—"} on ${date}.`;
+}
+
+function mapAuditItemToEvent(item: ScnAuditItem): TimelineEvent {
+  const type = deriveType(item);
+  const date = formatDate(item.created_at);
+  const field = humanizeField(item.changed_field);
+
+  const isUserAction = type === "edited" || type === "created";
+
+  return {
+    id: item.id,
+    type,
+    timestamp: date.toUpperCase(),
+    title: `${item.scn_id} – ${field}`,
+    description: buildDescription(item),
+    // Show user avatar card for edit/create events where we have an email
+    user: isUserAction
+      ? {
+          name: item.changed_by,
+          email: item.changed_by,
+        }
+      : undefined,
+  };
+}
+
+// --- Sub-Components (preserved exactly) ---
 
 const TimelineItem = ({
   item,
@@ -84,16 +105,8 @@ const TimelineItem = ({
 }) => {
   const { type, timestamp, title, description, user } = item;
 
-  // Render logic for different content types
   const renderContentHeader = () => {
     if (user) {
-      const isCreate = type === "created";
-      const actionText = isCreate ? "Created" : "has edited the file";
-      const objectText = title
-        .replace(" record edited", "")
-        .replace(" record", "");
-      const fullObjectText = `SCN-INT-000234 record`;
-
       return (
         <React.Fragment>
           <Box className={styles.headerRow}>
@@ -113,7 +126,7 @@ const TimelineItem = ({
                   {type === "created" ? "Created" : "has edited the file"}
                 </span>
                 <span className={styles.recordName}>
-                  {type === "created" ? title : "SCN-INT-000234 record"}
+                  {type === "created" ? title : `${title}`}
                 </span>
               </Typography>
               <span className={styles.userEmail}>{user.email}</span>
@@ -159,17 +172,94 @@ const ActivityTimeline = ({ data }: { data: TimelineEvent[] }) => {
         <TimelineItem
           key={item.id}
           item={item}
-          isLast={index === data.length}
+          isLast={index === data.length - 1}
         />
       ))}
     </Box>
   );
 };
 
-const SCNInternalReviewAuditTab = () => {
+// --- Main Component ---
+
+interface SCNInternalReviewAuditTabProps {
+  /** SCN reference number, e.g. "SCN-1234" */
+  scnId?: string | null;
+}
+
+const SCNInternalReviewAuditTab: React.FC<SCNInternalReviewAuditTabProps> = ({
+  scnId,
+}) => {
+  const [events, setEvents] = useState<TimelineEvent[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!scnId) {
+      setEvents([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetchScnQmsAudit(scnId);
+        if (cancelled) return;
+
+        if (res?.success && res.data?.items?.length > 0) {
+          setEvents(res.data.items.map(mapAuditItemToEvent));
+        } else {
+          setEvents([]);
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err?.message ?? "Failed to load audit history.");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [scnId]);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" py={6}>
+        <CircularProgress size={28} sx={{ color: "#437ef7" }} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box py={6} textAlign="center">
+        <Typography sx={{ color: "#d32f2f", fontSize: 14 }}>{error}</Typography>
+      </Box>
+    );
+  }
+
+  if (!scnId || events.length === 0) {
+    return (
+      <Box py={6} textAlign="center">
+        <Typography sx={{ color: "#6b7280", fontSize: 14 }}>
+          {scnId
+            ? `No audit history is available for ${scnId}.`
+            : "No SCN selected."}
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box>
-      <ActivityTimeline data={timelineData} />
+      <ActivityTimeline data={events} />
     </Box>
   );
 };

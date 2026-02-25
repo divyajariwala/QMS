@@ -1,5 +1,12 @@
 import { apiRequest } from "src/api/apiClient";
-import { ScnDetailsResponse, ScnListResponse } from "src/types";
+import {
+  ScnDetailsResponse,
+  ScnListResponse,
+  ScnFinalListResponse,
+  ScnEditClassifyPayload,
+  ScnEditClassifyResponse,
+  ScnQmsAuditResponse,
+} from "src/types";
 
 // Accepts optional URLSearchParams for filters
 export async function fetchScnList(
@@ -71,3 +78,48 @@ export const scnClassificationResults = async (emailId: string) => {
     token: false,
   });
 };
+
+export const scnEditClassify = async (
+  emailId: string,
+  payload: ScnEditClassifyPayload,
+): Promise<ScnEditClassifyResponse> => {
+  return apiRequest<ScnEditClassifyResponse>(
+    `dev/scnEditClassify?email_id=${emailId}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+      token: false,
+    },
+  );
+};
+
+export async function fetchScnQmsAudit(
+  scnId: string,
+): Promise<ScnQmsAuditResponse> {
+  return apiRequest<ScnQmsAuditResponse>(
+    `dev/scnQmsAudit?scn_id=${encodeURIComponent(scnId)}`,
+    {
+      method: "GET",
+      token: false,
+    },
+  );
+}
+
+export async function fetchScnSupplierList(
+  limit = 50,
+  offset = 0,
+  q = "",
+): Promise<ScnFinalListResponse> {
+  const params = new URLSearchParams();
+  params.set("limit", String(limit));
+  params.set("offset", String(offset));
+  if (q) params.set("q", q);
+  return apiRequest<ScnFinalListResponse>(
+    `dev/scnFinalGet?${params.toString()}`,
+    {
+      method: "GET",
+      token: true,
+    },
+  );
+}

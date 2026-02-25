@@ -1,19 +1,18 @@
-import React, { useState, MouseEvent, useRef } from "react";
-import { Box, Stack, Button, Typography } from "@mui/material";
-import PlusIcon from "../../assets/icons/plus.svg";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Box, Stack, Button, Skeleton, Alert } from "@mui/material";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
-import SCNStatusTabs from "@components/scn/SCNStatusTabs";
-import SCNResultCard from "@components/scn/SCNResultCard";
 import PaginationComponent from "@components/pagination/PaginationComponent";
 import styles from "./SupplierPortal.module.scss";
 import SCNStatsQuickLinks from "./SCNStatsQuickLinks";
-import EmailIcon from "../../assets/icons/email.svg";
 import scnUploadIcon from "../../assets/icons/scnUploadIcon.svg";
 import SCNTabs from "./SCNTabs";
 import SCNFilter, { FilterOptions } from "@components/scn/SCNFilter";
 import { UploadSCNModal } from "./UploadSCNModal";
-import { useNavigate } from "react-router-dom";
 import SCNInternalReview from "./SCNInternalReview";
+import SCNResultCard from "./SCNResultCard";
+import { fetchScnSupplierList } from "src/services/scn";
+import { ScnFinalItem, ScnFinalSummary } from "src/types";
+import SupplierCardSkeleton from "./skeleton/SupplierCardSkeleton";
 
 // Types
 export interface SCNStats {
@@ -27,61 +26,74 @@ export interface SCNStats {
   SCNsSummary: number;
 }
 
-export interface SCNItem {
-  id: string;
-  status: "SUPPLIER ACTION REQUIRED" | "PENDING REVIEW" | "IN REVIEW";
-  scnNumber: string;
-  changeClassification: "Minor" | "Moderate" | "Major";
-  supplierRef: string;
-  notificationDate: string;
-  plannedImplementationDate: string;
-  changeType: "Adverse Event" | "Product Complaint";
-  changeTitleSummary: string;
-  overdueDays?: number;
-  changeTitle?: string;
-  firstAffectedLotBatch: string;
-  materialNumber: string;
-  componentNumber: string;
-}
-
-type SCNTabStatus = "all" | "under_review" | "processed" | "info_requested";
 type SCNTab = "supplier_portal" | "internal_review";
 
-const SupplierPortal: React.FC = () => {
-  // Breadcrumb items
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const breadcrumbItems = [{ label: "Home", to: "/" }, { label: "SCN" }];
-  // Modal state
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const navigate = useNavigate();
-  // Mock stats data
-  const [stats] = useState<SCNStats>({
-    total: 231,
-    pendingReview: 100,
-    inReview: 121,
-    supplierActionRequired: 10,
-    openSCNs: 10,
-    approved: 80,
-    rejected: 42,
-    SCNsSummary: 122,
-  });
+const PAGE_SIZE = 50;
 
-  // Tab state
-  // const [activeTab, setActiveTab] = useState<SCNTabStatus>("all");
-  const [activeSCNTab, setActiveSCNTab] = useState<SCNTab>("supplier_portal");
-  const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scnNumber, setSCNNumber] = useState<string>("");
-  const [searchPageNumber, setSearchPageNumber] = useState<number>(1);
-  const [searchActive, setSearchActive] = useState<boolean>(false);
-  const [searchResults, setSearchResults] = useState<SCNItem[] | null>(null);
-  const [searchPagination, setSearchPagination] = useState({
-    current_page: 1,
-    total_pages: 0,
-    total_items: 0,
-    items_per_page: 15,
-    has_next: false,
-    has_previous: false,
+// ─── Adapter: ScnFinalItem → SCNResultCard's expected shape ──────────────────
+// SCNResultCard expects: id, status, scnNumber, changeClassification,
+// supplierRef, notificationDate, plannedImplementationDate, changeType,
+// changeTitleSummary, changeTitle, overdueDays
+
+function toCardItem(item: ScnFinalItem) {
+  // Normalize status to match SCNResultCard's accepted union values
+  const rawStatus = (item.status || "").replace(/_/g, " ").toUpperCase();
+  let status: "SUPPLIER ACTION REQUIRED" | "PENDING REVIEW" | "IN REVIEW" =
+    "PENDING REVIEW";
+  if (rawStatus === "IN REVIEW" || rawStatus === "IN_REVIEW") {
+    status = "IN REVIEW";
+  } else if (rawStatus === "APPROVED" || rawStatus === "REJECTED") {
+    // Show approved/rejected as-is — map them to a neutral status in the card
+    status = "PENDING REVIEW";
+  }
+
+  return {
+    id: item.email_id,
+    status,
+    scnNumber: item.scn_reference_number || "—",
+    changeClassification: item.final_risk_level || "—", // HIGH / MEDIUM / LOW → maps to Major/Moderate/Minor styling
+    supplierRef: item.supplier_name || "—",
+    notificationDate: formatDate(item.notification_date),
+    plannedImplementationDate: formatDate(item.planned_implementation_date),
+    changeType: "Adverse Event" as const, // placeholder — not in scnFinalGet response
+    changeTitleSummary: item.final_classification || "—",
+    changeTitle: item.final_classification || "—",
+  };
+}
+
+function formatDate(raw: string | null | undefined): string {
+  if (!raw) return "—";
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return raw;
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
+}
+
+// Main Component
+
+const SupplierPortal: React.FC = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const breadcrumbItems = [{ label: "Home", to: "/" }, { label: "SCN" }];
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [activeSCNTab, setActiveSCNTab] = useState<SCNTab>("supplier_portal");
+
+  // API data
+  const [items, setItems] = useState<ScnFinalItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [summary, setSummary] = useState<ScnFinalSummary | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Search / filter
+  const [scnNumber, setSCNNumber] = useState("");
+  const [searchActive, setSearchActive] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
     all: true,
     approved: true,
@@ -92,222 +104,113 @@ const SupplierPortal: React.FC = () => {
     openScns: true,
   });
 
-  // Mock SCN data
-  const [scnItems] = useState<SCNItem[]>([
-    {
-      id: "1",
-      status: "IN REVIEW",
-      scnNumber: "SCN-000231",
-      changeClassification: "Moderate",
-      supplierRef: "SCN-12345",
-      notificationDate: "Jan 04 2026",
-      plannedImplementationDate: "Jan 07 2026",
-      changeType: "Adverse Event",
-      changeTitleSummary:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-      overdueDays: 5,
-      changeTitle: "Lorem ipsum dolor",
-      firstAffectedLotBatch: "Batch-001",
-      materialNumber: "MAT-123",
-      componentNumber: "COMP-456",
-    },
-    {
-      id: "2",
-      status: "PENDING REVIEW",
-      scnNumber: "SCN-000235",
-      changeClassification: "Major",
-      supplierRef: "SCN-12345",
-      notificationDate: "Jan 04 2026",
-      plannedImplementationDate: "Jan 07 2026",
-      changeType: "Product Complaint",
-      changeTitleSummary:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-      overdueDays: 5,
-      changeTitle: "Lorem ipsum dolor",
-      firstAffectedLotBatch: "Batch-001",
-      materialNumber: "MAT-123",
-      componentNumber: "COMP-456",
-    },
-    {
-      id: "3",
-      status: "IN REVIEW",
-      scnNumber: "SCN-000236",
-      changeClassification: "Minor",
-      supplierRef: "SCN-12345",
-      notificationDate: "Jan 04 2026",
-      plannedImplementationDate: "Jan 07 2026",
-      changeType: "Product Complaint",
-      changeTitleSummary:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-      overdueDays: 5,
-      changeTitle: "Lorem ipsum dolor",
-      firstAffectedLotBatch: "Batch-001",
-      materialNumber: "MAT-123",
-      componentNumber: "COMP-456",
-    },
-    {
-      id: "4",
-      status: "SUPPLIER ACTION REQUIRED",
-      scnNumber: "SCN-000237",
-      changeClassification: "Major",
-      supplierRef: "SCN-12345",
-      notificationDate: "Jan 04 2026",
-      plannedImplementationDate: "Jan 07 2026",
-      changeType: "Adverse Event",
-      changeTitleSummary:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-      overdueDays: 5,
-      changeTitle: "Lorem ipsum dolor",
-      firstAffectedLotBatch: "Batch-001",
-      materialNumber: "MAT-123",
-      componentNumber: "COMP-456",
-    },
-    {
-      id: "5",
-      status: "IN REVIEW",
-      scnNumber: "SCN-000238",
-      changeClassification: "Moderate",
-      supplierRef: "SCN-12345",
-      notificationDate: "Jan 04 2026",
-      plannedImplementationDate: "Jan 07 2026",
-      changeType: "Adverse Event",
-      changeTitleSummary:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-      overdueDays: 5,
-      changeTitle: "Lorem ipsum dolor",
-      firstAffectedLotBatch: "Batch-001",
-      materialNumber: "MAT-123",
-      componentNumber: "COMP-456",
-    },
-  ]);
+  // Derived pagination object for PaginationComponent
 
-  // Pagination mock
-  const [pagination] = useState({
-    current_page: 1,
-    total_pages: 5,
-    total_items: 231,
-    items_per_page: 15,
-    has_next: true,
-    has_previous: false,
-  });
-
-  // Tab counts
-  const tabCounts = {
-    all: 231,
-    under_review: 100,
-    processed: 121,
-    info_requested: 10,
+  const pagination = {
+    current_page: currentPage,
+    total_pages: Math.max(1, Math.ceil(totalCount / PAGE_SIZE)),
+    total_items: totalCount,
+    items_per_page: PAGE_SIZE,
+    has_next: currentPage < Math.ceil(totalCount / PAGE_SIZE),
+    has_previous: currentPage > 1,
   };
+
+  // Stats derived from API summary
+
+  const stats: SCNStats = {
+    total: summary?.total ?? 0,
+    pendingReview: summary?.pending_review ?? 0,
+    inReview: summary?.in_review ?? 0,
+    supplierActionRequired: 0,
+    openSCNs: (summary?.pending_review ?? 0) + (summary?.in_review ?? 0),
+    approved: summary?.approved ?? 0,
+    rejected: summary?.rejected ?? 0,
+    SCNsSummary: summary?.total ?? 0,
+  };
+
+  // API fetch
+
+  const loadData = useCallback(async (page: number, q: string) => {
+    setLoading(true);
+    setError(null);
+    const offset = (page - 1) * PAGE_SIZE;
+    try {
+      const res = await fetchScnSupplierList(PAGE_SIZE, offset, q.trim());
+      if (res.success) {
+        setItems(res.data.items ?? []);
+        setTotalCount(res.data.count ?? 0);
+        setSummary(res.data.summary ?? null);
+      } else {
+        setError(res.message || "Failed to fetch SCN list.");
+        setItems([]);
+        setTotalCount(0);
+      }
+    } catch (err: any) {
+      setError(
+        err?.message || "An unexpected error occurred. Please try again.",
+      );
+      setItems([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial load & page/tab changes
+  useEffect(() => {
+    if (activeSCNTab === "supplier_portal") {
+      loadData(currentPage, scnNumber);
+    }
+  }, [currentPage, activeSCNTab]);
 
   // Handlers
-  const handleAddEmailDocument = (event: MouseEvent<HTMLButtonElement>) => {
-    navigate("/scn/add-email-document");
-  };
-
-  const handleUploadSCN = () => {
-    setUploadModalOpen(true);
-  };
-
-  const handleCloseUploadModal = () => {
-    setUploadModalOpen(false);
-  };
+  const handleUploadSCN = () => setUploadModalOpen(true);
+  const handleCloseUploadModal = () => setUploadModalOpen(false);
 
   const handlePageChange = (newPage: number) => {
-    setPageNumber(newPage);
-  };
-
-  const handleSearchPageChange = (newPage: number) => {
-    setSearchPageNumber(newPage);
-    if (scnNumber.trim() !== "") doSearch(scnNumber, newPage, currentFilters);
-  };
-
-  const handleSeeDetails = (scnId: string) => {
-    console.log("See details for:", scnId);
+    setCurrentPage(newPage);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSCNNumber(val);
+    setSearchActive(val.trim() !== "");
 
-    if (val.trim() === "") {
-      setSearchActive(false);
-      setSearchResults(null);
-      setSearchPagination({
-        current_page: 1,
-        total_pages: 0,
-        total_items: 0,
-        items_per_page: 15,
-        has_next: false,
-        has_previous: false,
-      });
-    } else {
-      setSearchActive(true);
-      doSearch(val, 1, currentFilters);
-    }
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setCurrentPage(1);
+      loadData(1, val);
+    }, 350);
   };
 
   const handleSearchClick = () => {
-    if (scnNumber.trim() !== "") {
-      setSearchActive(true);
-      doSearch(scnNumber, 1, currentFilters);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    setCurrentPage(1);
+    loadData(1, scnNumber);
+  };
+
+  // Clear search from SCNFilter's internal clear
+  const handleSetSearchActive = (active: boolean) => {
+    setSearchActive(active);
+    if (!active) {
+      setSCNNumber("");
+      setCurrentPage(1);
+      loadData(1, "");
     }
   };
 
-  // Search function - filters SCN items by number and status filters
+  const handleSetSCNNumber = (val: string) => {
+    setSCNNumber(val);
+  };
+
+  // doSearch shim — required by SCNFilter prop signature
   const doSearch = async (
     number: string,
     page: number = 1,
-    filters?: FilterOptions,
+    _filters?: FilterOptions,
   ) => {
-    const formattedNumber = number.trim();
-
-    // Always filter, even if search box is empty
-    try {
-      const activeFilters = filters || currentFilters;
-      if (filters) setCurrentFilters(filters);
-
-      let filtered = scnItems;
-
-      // Filter by SCN number if provided
-      if (formattedNumber) {
-        filtered = filtered.filter((item) =>
-          item.scnNumber.toLowerCase().includes(formattedNumber.toLowerCase()),
-        );
-      }
-
-      // Apply status filters - only filter if 'all' is false (meaning specific statuses selected)
-      if (activeFilters.all === false) {
-        filtered = filtered.filter((item) => {
-          if (activeFilters.pendingReview && item.status === "PENDING REVIEW")
-            return true;
-          if (
-            activeFilters.supplierActionRequired &&
-            item.status === "SUPPLIER ACTION REQUIRED"
-          )
-            return true;
-          if (activeFilters.inReview && item.status === "IN REVIEW")
-            return true;
-          return false;
-        });
-      }
-
-      setSearchResults(filtered);
-
-      const itemsPerPage = 15;
-      const totalItems = filtered.length;
-      const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-      setSearchPagination({
-        current_page: page,
-        total_pages: totalPages,
-        total_items: totalItems,
-        items_per_page: itemsPerPage,
-        has_next: page < totalPages,
-        has_previous: page > 1,
-      });
-    } catch (err) {
-      console.error("Search error:", err);
-    }
+    setCurrentPage(page);
+    loadData(page, number);
   };
 
   return (
@@ -372,18 +275,36 @@ const SupplierPortal: React.FC = () => {
               />
             </Stack>
           </Stack>
-          <SCNStatsQuickLinks stats={stats} />
+
+          {/* Stats – skeleton on first load, real data once summary arrives */}
+          {loading && !summary ? (
+            <Box sx={{ display: "flex", gap: 2, mt: 2, mb: 2 }}>
+              {[1, 2, 3].map((i) => (
+                <Skeleton
+                  key={i}
+                  variant="rounded"
+                  width="33%"
+                  height={100}
+                  sx={{ borderRadius: "10px" }}
+                />
+              ))}
+            </Box>
+          ) : (
+            <SCNStatsQuickLinks stats={stats} />
+          )}
+
+          {/* SCN List label */}
           <div className={styles.scnListLabel}>
-            SCN List (
-            {searchActive ? searchResults?.length || 0 : scnItems.length})
+            {loading ? "SCN List (…)" : `SCN List (${totalCount})`}
           </div>
+
           {/* Filter Section */}
           <SCNFilter
             scnNumber={scnNumber}
-            setSCNNumber={setSCNNumber}
-            setSearchResults={setSearchResults}
-            setSearchActive={setSearchActive}
-            setPagination={setSearchPagination}
+            setSCNNumber={handleSetSCNNumber}
+            setSearchResults={() => {}}
+            setSearchActive={handleSetSearchActive}
+            setPagination={() => {}}
             doSearch={doSearch}
             filters={currentFilters}
             setFilters={setCurrentFilters}
@@ -391,55 +312,57 @@ const SupplierPortal: React.FC = () => {
             handleSearchClick={handleSearchClick}
           />
 
+          {/* Error state */}
+          {error && !loading && (
+            <Alert
+              severity="error"
+              sx={{ mt: 2 }}
+              action={
+                <Button
+                  size="small"
+                  onClick={() => loadData(currentPage, scnNumber)}
+                >
+                  Retry
+                </Button>
+              }
+            >
+              {error}
+            </Alert>
+          )}
+
           {/* SCN List */}
           <Box className={styles.scnList}>
-            {searchActive ? (
-              searchResults && searchResults.length === 0 ? (
-                <p className={styles.noResults}>
-                  No SCNs found matching "{scnNumber}".
-                </p>
-              ) : (
-                searchResults?.map((scn) => (
-                  <SCNResultCard
-                    key={scn.id}
-                    scn={scn}
-                    onSeeDetails={handleSeeDetails}
-                  />
-                ))
-              )
-            ) : scnItems.length === 0 ? (
-              <p className={styles.noResults}>No SCNs found.</p>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <SupplierCardSkeleton key={i} />
+              ))
+            ) : !error && items.length === 0 ? (
+              <p className={styles.noResults}>
+                {searchActive
+                  ? `No SCNs found matching "${scnNumber}".`
+                  : "No SCNs found."}
+              </p>
             ) : (
-              scnItems.map((scn) => (
-                <SCNResultCard
-                  key={scn.id}
-                  scn={scn}
-                  onSeeDetails={handleSeeDetails}
-                />
+              !error &&
+              items.map((item) => (
+                <SCNResultCard key={item.email_id} scn={toCardItem(item)} />
               ))
             )}
           </Box>
 
           {/* Pagination */}
-          {searchActive
-            ? searchResults &&
-              searchResults.length > 0 && (
-                <PaginationComponent
-                  pagination={searchPagination}
-                  onPageChange={handleSearchPageChange}
-                />
-              )
-            : scnItems.length > 0 && (
-                <PaginationComponent
-                  pagination={pagination}
-                  onPageChange={handlePageChange}
-                />
-              )}
+          {!loading && !error && totalCount > PAGE_SIZE && (
+            <PaginationComponent
+              pagination={pagination}
+              onPageChange={handlePageChange}
+            />
+          )}
         </div>
       )}
 
       {/* Internal review tab */}
       {activeSCNTab === "internal_review" && <SCNInternalReview />}
+
       {/* Upload SCN Modal */}
       <UploadSCNModal
         open={uploadModalOpen}

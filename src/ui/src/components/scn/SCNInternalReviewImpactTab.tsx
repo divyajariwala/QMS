@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./SCNInternalReviewImpactTab.module.scss";
 import UndoIcon from "../../assets/icons/undoBlack.svg";
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, CircularProgress, Stack, Typography } from "@mui/material";
 import AppButton from "@components/common/AppButton";
 import CircleDeleteIcon from "../../assets/icons/circle-delete.svg";
 import AISummaryIcon from "../../assets/icons/aiSummary.svg";
@@ -12,6 +12,7 @@ import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
 import ApproveModal from "./modal/ApproveModal";
 import RejectSCNModal from "./modal/RejectSCNModal";
 import SCNImpactTabSkeleton from "./skeleton/SCNImpactTabSkeleton";
+import { scnEditClassify } from "src/services/scn";
 
 export interface ImpactClassificationData {
   change_control_required?: string | null;
@@ -27,11 +28,14 @@ export interface ImpactClassificationData {
 interface Props {
   classificationData?: ImpactClassificationData | null;
   isLoading?: boolean;
+  /** The email_id of the currently selected SCN record, required for the save API call */
+  emailId?: string;
 }
 
 const SCNInternalReviewImpactTab: React.FC<Props> = ({
   classificationData,
   isLoading,
+  emailId,
 }) => {
   const [selected, setSelected] = useState<"SCN" | "NON_SCN">("SCN");
   const [changeControlRequired, setChangeControlRequired] = useState("");
@@ -47,6 +51,8 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
   const [aiSummary, setAiSummary] = useState<string>("");
   const [riskLevel, setRiskLevel] = useState<string>("");
   const [predictedOutput, setPredictedOutput] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Populate from API data whenever classificationData changes
   useEffect(() => {
@@ -123,9 +129,47 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
   const isFieldsDisabled =
     selected === "NON_SCN" || (selected === "SCN" && !editMode);
 
-  const handleEdit = () => setEditMode(true);
-  const handleSave = () => setEditMode(false);
-  const handleCancel = () => setEditMode(false);
+  const handleEdit = () => {
+    setSaveError(null);
+    setEditMode(true);
+  };
+
+  /** Build the payload from current state and call the scnEditClassify PUT API */
+  const handleSave = async () => {
+    if (!emailId) {
+      setSaveError("No SCN record selected.");
+      return;
+    }
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      const payload = {
+        change_classification_supplier: changeType || undefined,
+        change_control_required: changeControlRequired
+          ? (changeControlRequired.toLowerCase() as "yes" | "no")
+          : undefined,
+        action_required: actionsRequired || undefined,
+        final_risk_level: riskLevel || undefined,
+        final_assigned_team:
+          assignedTo.length > 0 ? assignedTo.join(", ") : undefined,
+      };
+      const res = await scnEditClassify(emailId, payload);
+      if (res?.success) {
+        setEditMode(false);
+      } else {
+        setSaveError(res?.message || "Failed to save changes.");
+      }
+    } catch (err: any) {
+      setSaveError(err?.message || "An error occurred while saving.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setSaveError(null);
+    setEditMode(false);
+  };
 
   return (
     <>
@@ -318,8 +362,9 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                   type="text"
                   className={styles.textInput}
                   value={recordId}
-                  onChange={(e) => setRecordId(e.target.value)}
-                  disabled={isFieldsDisabled}
+                  readOnly
+                  disabled
+                  style={{ opacity: 0.5, cursor: "not-allowed" }}
                 />
               </Box>
             </Stack>
@@ -427,10 +472,18 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
               marginTop={4}
               marginBottom={4}
             >
+              {saveError && (
+                <Typography
+                  sx={{ color: "#d32f2f", fontSize: 13, alignSelf: "center" }}
+                >
+                  {saveError}
+                </Typography>
+              )}
               <AppButton
                 variant="outlined"
                 className={styles.cancelBtn}
                 onClick={handleCancel}
+                disabled={isSaving}
               >
                 Cancel
               </AppButton>
@@ -438,8 +491,18 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                 variant="primary"
                 className={styles.saveBtn}
                 onClick={handleSave}
+                disabled={isSaving}
               >
-                Save
+                {isSaving ? (
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <CircularProgress size={14} sx={{ color: "inherit" }} />
+                    Saving…
+                  </span>
+                ) : (
+                  "Save"
+                )}
               </AppButton>
             </Stack>
           )}
