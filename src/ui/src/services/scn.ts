@@ -6,6 +6,9 @@ import {
   ScnEditClassifyPayload,
   ScnEditClassifyResponse,
   ScnQmsAuditResponse,
+  ScnApproveRejectRequest,
+  ScnApproveRejectResponse,
+  ToggleClassificationResponse,
 } from "src/types";
 
 // Accepts optional URLSearchParams for filters
@@ -123,3 +126,31 @@ export async function fetchScnSupplierList(
     },
   );
 }
+
+export const scnApproveReject = async (
+  emailId: string,
+  payload: ScnApproveRejectRequest,
+): Promise<ScnApproveRejectResponse> => {
+  return apiRequest<ScnApproveRejectResponse>(
+    `dev/scnApproveReject?email_id=${encodeURIComponent(emailId)}`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+      token: false,
+    },
+  );
+};
+
+export const toggleClassification = async (
+  emailId: string,
+  newClassification: "SCN" | "NON_SCN",
+): Promise<ToggleClassificationResponse> => {
+  return apiRequest<ToggleClassificationResponse>(
+    `dev/toggleClassification?email_id=${encodeURIComponent(emailId)}&new_classification=${newClassification}`,
+    {
+      method: "POST",
+      token: true,
+    },
+  );
+};

@@ -510,20 +510,22 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
           <ChangeSCNOutputModal
             open={openPreview}
             onClose={() => setOpenPreview(false)}
-            onDone={(value) => {
-              console.log("Selected Output:", value);
+            emailId={emailId}
+            onDone={(newClassification) => {
+              setSelected(newClassification);
+              setPredictedOutput(newClassification);
             }}
-            defaultValue="SCN"
+            defaultValue={selected}
           />
 
           <ApproveModal
             open={openApprove}
             onClose={() => setOpenApprove(false)}
-            onDone={(changeControl, recordId) => {
+            emailId={emailId}
+            onDone={(changeControl, ccRecordId) => {
               setChangeControlRequired(changeControl);
-              setRecordId(recordId);
+              setRecordId(ccRecordId);
               setOpenApprove(false);
-              // You can add further logic here (e.g., API call, notification)
             }}
             defaultChangeControl={changeControlRequired}
             defaultRecordId={recordId}
@@ -532,10 +534,9 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
           <RejectSCNModal
             open={openReject}
             onClose={() => setOpenReject(false)}
+            emailId={emailId}
             onSubmit={(comment) => {
               setOpenReject(false);
-              // You can add further logic here (e.g., API call, notification)
-              console.log("Rejected with comment:", comment);
             }}
           />
         </>

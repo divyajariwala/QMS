@@ -786,3 +786,38 @@ export interface ScnQmsAuditResponse {
   };
   timestamp: string;
 }
+
+export interface ScnApproveRequest {
+  action: "APPROVE";
+  change_control_required: "yes" | "no";
+}
+
+export interface ScnRejectRequest {
+  action: "REJECT";
+  reason_for_reject: string;
+}
+
+export type ScnApproveRejectRequest = ScnApproveRequest | ScnRejectRequest;
+
+export interface ScnApproveRejectResponse {
+  success: boolean;
+  message: string;
+  data: {
+    email_id: string;
+    action: "APPROVED" | "REJECTED";
+    change_control_required?: string;
+    cc_record_id?: string;
+    note?: string | null;
+    reason_for_reject?: string;
+  };
+  timestamp: string;
+}
+
+export interface ToggleClassificationResponse {
+  email_id: string;
+  old_classification?: string;
+  new_classification?: string;
+  changed: boolean;
+  risk_analysis_triggered?: boolean;
+  message?: string;
+}

@@ -1,13 +1,15 @@
-import React, { useState } from "react";
-import { Box, Typography, Button } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Box, CircularProgress, Typography, Button } from "@mui/material";
 import CommonModal from "@components/common/CommonModal";
 import styles from "./ChangeSCNOutputModal.module.scss";
+import { toggleClassification } from "src/services/scn";
 
 interface ChangeSCNOutputModalProps {
   open: boolean;
   onClose: () => void;
-  onDone: (value: "SCN" | "NON_SCN") => void;
+  onDone: (newClassification: "SCN" | "NON_SCN") => void;
   defaultValue?: "SCN" | "NON_SCN";
+  emailId?: string;
 }
 
 const ChangeSCNOutputModal: React.FC<ChangeSCNOutputModalProps> = ({
@@ -15,12 +17,39 @@ const ChangeSCNOutputModal: React.FC<ChangeSCNOutputModalProps> = ({
   onClose,
   onDone,
   defaultValue = "SCN",
+  emailId,
 }) => {
   const [selected, setSelected] = useState<"SCN" | "NON_SCN">(defaultValue);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleDone = () => {
-    onDone(selected);
-    onClose();
+  useEffect(() => {
+    if (open) {
+      setSelected(defaultValue);
+      setError(null);
+    }
+  }, [open, defaultValue]);
+
+  const handleDone = async () => {
+    if (!emailId) {
+      setError("No SCN record selected.");
+      return;
+    }
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const res = await toggleClassification(emailId, selected);
+      const newClassification: "SCN" | "NON_SCN" =
+        res?.new_classification === "SCN" ? "SCN" : "NON_SCN";
+      onDone(newClassification);
+      onClose();
+    } catch (err: any) {
+      setError(
+        err?.message || "Failed to change SCN output. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -34,12 +63,14 @@ const ChangeSCNOutputModal: React.FC<ChangeSCNOutputModalProps> = ({
           label: "Cancel",
           variant: "outlined",
           onClick: onClose,
+          disabled: isSubmitting,
           classes: styles.actionButton,
         },
         {
           label: "Done",
           variant: "primary",
           onClick: handleDone,
+          disabled: isSubmitting,
           classes: styles.actionButton,
         },
       ]}
@@ -60,6 +91,7 @@ const ChangeSCNOutputModal: React.FC<ChangeSCNOutputModalProps> = ({
                 selected === "SCN" ? styles.active : ""
               }`}
               onClick={() => setSelected("SCN")}
+              disabled={isSubmitting}
             >
               SCN
             </Button>
@@ -69,11 +101,24 @@ const ChangeSCNOutputModal: React.FC<ChangeSCNOutputModalProps> = ({
                 selected === "NON_SCN" ? styles.active : ""
               }`}
               onClick={() => setSelected("NON_SCN")}
+              disabled={isSubmitting}
             >
               Non SCN
             </Button>
           </Box>
         </Box>
+
+        {isSubmitting && (
+          <Box display="flex" alignItems="center" gap={1} mt={2}>
+            <CircularProgress size={16} />
+            <Typography fontSize={13}>Updating…</Typography>
+          </Box>
+        )}
+        {error && (
+          <Typography sx={{ color: "#d32f2f", fontSize: 13, mt: 1 }}>
+            {error}
+          </Typography>
+        )}
       </Box>
     </CommonModal>
   );
