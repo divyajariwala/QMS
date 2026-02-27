@@ -101,6 +101,7 @@ const SCNInternalReview: React.FC = () => {
   const [isClassifying, setIsClassifying] = useState(false);
   const [impactClassificationData, setImpactClassificationData] =
     useState<ImpactClassificationData | null>(null);
+  const [latestPdfUrl, setLatestPdfUrl] = useState<string | null>(null);
 
   // Fetch SCN list with filters
   useEffect(() => {
@@ -197,6 +198,16 @@ const SCNInternalReview: React.FC = () => {
       if (res?.data) {
         const mapped = mapScnDetailsToForm(res.data);
         setScnDetail(mapped);
+
+        const attachments: any[] = res.data.attachments || [];
+        const doneWithUrl = attachments.filter(
+          (a) => a.status === "DONE" && !!a.download_url,
+        );
+        const latestAttachment = doneWithUrl.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        )[0];
+        setLatestPdfUrl(latestAttachment?.download_url ?? null);
       }
     } catch (error) {
       console.error("Failed to fetch SCN details", error);
@@ -736,7 +747,7 @@ const SCNInternalReview: React.FC = () => {
                         </span>
                       </AppButton>
                     </Stack>
-                    <Box className={styles.docxMain}>
+                    {/* <Box className={styles.docxMain}>
                       <section className={styles.section}>
                         <p>
                           <b>Reason for Change:</b> End-of-life replacement of
@@ -785,7 +796,7 @@ const SCNInternalReview: React.FC = () => {
                           <b>Regulatory Impact Likelihood:</b> High
                         </p>
                       </section>
-                    </Box>
+                    </Box> */}
                     <AppButton
                       className={styles.previewButton}
                       variant="outlined"
@@ -843,6 +854,7 @@ const SCNInternalReview: React.FC = () => {
             <ChangeNotificationModal
               open={open}
               onClose={() => setOpen(false)}
+              pdfUrl={latestPdfUrl}
             />
 
             <ChangeSCNOutputModal

@@ -1,29 +1,65 @@
-import React from "react";
-import { Dialog, DialogContent, IconButton } from "@mui/material";
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  IconButton,
+  CircularProgress,
+  Box,
+} from "@mui/material";
 import CloseIcon from "../../../assets/icons/close.svg";
 import styles from "./ChangeNotificationModal.module.scss";
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  pdfUrl?: string | null;
 }
 
-const ChangeNotificationModal: React.FC<Props> = ({ open, onClose }) => {
+const ChangeNotificationModal: React.FC<Props> = ({
+  open,
+  onClose,
+  pdfUrl,
+}) => {
+  const [iframeLoading, setIframeLoading] = useState(true);
+
+  const handleClose = () => {
+    setIframeLoading(true);
+    onClose();
+  };
+
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       maxWidth="md"
       fullWidth
       PaperProps={{ className: styles.paper }}
     >
-      <IconButton className={styles.close} onClick={onClose}>
+      <IconButton className={styles.close} onClick={handleClose}>
         <img src={CloseIcon} alt="X" />
       </IconButton>
 
       <DialogContent className={styles.content}>
-        {/* Top Header */}
-        <div className={styles.topHeader}>
+        {pdfUrl ? (
+          <Box className={styles.pdfContainer}>
+            {iframeLoading && (
+              <Box className={styles.pdfLoader}>
+                <CircularProgress size={36} sx={{ color: "#437ef7" }} />
+              </Box>
+            )}
+            <iframe
+              src={pdfUrl}
+              title="PDF Preview"
+              className={styles.pdfIframe}
+              onLoad={() => setIframeLoading(false)}
+              style={{ display: iframeLoading ? "none" : "block" }}
+            />
+          </Box>
+        ) : (
+          <Box className={styles.pdfNoUrl}>No PDF available for preview.</Box>
+        )}
+
+        {/* <div className={styles.topHeader}>
           <div>
             <div className={styles.company}>Pinnacle Laboratories</div>
             <div className={styles.department}>
@@ -32,7 +68,7 @@ const ChangeNotificationModal: React.FC<Props> = ({ open, onClose }) => {
           </div>
         </div>
         <div className={styles.title}>Change Notification</div>
-        {/* Meta Info */}
+    
         <div className={styles.meta}>
           <div>
             <b>Notice ID:</b> SCN-DOC-000001
@@ -48,7 +84,6 @@ const ChangeNotificationModal: React.FC<Props> = ({ open, onClose }) => {
           </div>
         </div>
 
-        {/* Change Summary */}
         <section className={styles.section}>
           <h3>Change Summary</h3>
 
@@ -69,7 +104,7 @@ const ChangeNotificationModal: React.FC<Props> = ({ open, onClose }) => {
           </p>
         </section>
 
-        {/* Affected Items */}
+    
         <section className={styles.section}>
           <h3>Affected Items</h3>
           <div className={styles.tableMain}>
@@ -103,7 +138,6 @@ const ChangeNotificationModal: React.FC<Props> = ({ open, onClose }) => {
           </div>
         </section>
 
-        {/* Impact Assessment */}
         <section className={styles.section}>
           <h3>Impact Assessment</h3>
           <p>
@@ -130,7 +164,7 @@ const ChangeNotificationModal: React.FC<Props> = ({ open, onClose }) => {
             post-change supply.
           </p>
           <h3>Attachments</h3>
-        </section>
+        </section> */}
       </DialogContent>
     </Dialog>
   );
