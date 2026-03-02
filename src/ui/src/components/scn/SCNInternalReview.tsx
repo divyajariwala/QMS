@@ -860,10 +860,15 @@ const SCNInternalReview: React.FC = () => {
             <ChangeSCNOutputModal
               open={openPreview}
               onClose={() => setOpenPreview(false)}
+              emailId={selectedEmailId ?? undefined}
               onDone={(value) => {
                 console.log("Selected Output:", value);
               }}
-              defaultValue="SCN"
+              defaultValue={
+                (impactClassificationData?.final_classification as
+                  | "SCN"
+                  | "NON_SCN") || "SCN"
+              }
             />
             <RequestInfoModal
               open={openRequestInfo}

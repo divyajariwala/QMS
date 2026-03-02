@@ -302,9 +302,16 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
               justifyContent="space-between"
               alignItems="center"
             >
-              <Typography variant="h6" className={styles.sectionTitle}>
-                Assessment Summary
-              </Typography>
+              <Stack direction="row" alignItems="center" gap={1.5}>
+                <Typography variant="h6" className={styles.sectionTitle}>
+                  Assessment Summary
+                </Typography>
+                {selected === "SCN" ? (
+                  <span className={styles.statusBadgeActive}>● Active</span>
+                ) : (
+                  <span className={styles.statusBadgeLocked}>● Locked</span>
+                )}
+              </Stack>
               {!editMode && selected === "SCN" && (
                 <AppButton
                   variant="primary"
@@ -317,10 +324,19 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                 </AppButton>
               )}
             </Stack>
-            <Typography className={styles.sectionSubtitle}>
-              The Assessment Summary is enabled when the Predicted Output is set
-              to SCN
-            </Typography>
+            {selected === "NON_SCN" ? (
+              <div className={styles.lockedBanner}>
+                <span className={styles.lockedBannerIcon}>ⓘ</span>
+                Set <strong>Predicted Output</strong> to{" "}
+                <strong>SCN</strong> to enable this section and edit assessment
+                details.
+              </div>
+            ) : (
+              <Typography className={styles.sectionSubtitle}>
+                Assessment fields below are editable. Click{" "}
+                <strong>Edit</strong> to make changes.
+              </Typography>
+            )}
 
             <Typography
               variant="subtitle1"

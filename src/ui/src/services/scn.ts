@@ -147,10 +147,11 @@ export const toggleClassification = async (
   newClassification: "SCN" | "NON_SCN",
 ): Promise<ToggleClassificationResponse> => {
   return apiRequest<ToggleClassificationResponse>(
-    `dev/toggleClassification?email_id=${encodeURIComponent(emailId)}&new_classification=${newClassification}`,
+    `dev/scnClassificationToggle?email_id=${encodeURIComponent(emailId)}&new_classification=${newClassification}`,
     {
       method: "POST",
       token: true,
     },
   );
 };
+
