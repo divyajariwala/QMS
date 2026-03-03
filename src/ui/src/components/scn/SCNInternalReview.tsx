@@ -58,7 +58,7 @@ const SCNInternalReview: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState("Review");
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false);
-  const [openPreview, setOpenPreview] = useState(false);
+  // const [openPreview, setOpenPreview] = useState(false);
   const [openRequestInfo, setOpenRequestInfo] = useState(false);
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
 
@@ -295,24 +295,30 @@ const SCNInternalReview: React.FC = () => {
     }
   };
 
+  /** Fetches the latest impact classification data for the selected SCN */
+  const loadImpactData = useCallback(async () => {
+    if (!selectedEmailId) return;
+    setImpactReviewLoading(true);
+    try {
+      const res = await scnClassificationResults(selectedEmailId);
+      if (res?.success === false) {
+        setImpactClassificationData(null);
+      } else {
+        const data: ImpactClassificationData = res?.data ?? res ?? {};
+        setImpactClassificationData(data);
+      }
+    } catch (err) {
+      console.error("Failed to load Impact Assessment data:", err);
+      setImpactClassificationData(null);
+    } finally {
+      setImpactReviewLoading(false);
+    }
+  }, [selectedEmailId]);
+
   const handleTabSelect = async (tab: string) => {
     setSelectedTab(tab);
     if (tab === "Impact Assessment" && selectedEmailId) {
-      setImpactReviewLoading(true);
-      try {
-        const res = await scnClassificationResults(selectedEmailId);
-        if (res?.success === false) {
-          setImpactClassificationData(null);
-        } else {
-          const data: ImpactClassificationData = res?.data ?? res ?? {};
-          setImpactClassificationData(data);
-        }
-      } catch (err) {
-        console.error("Failed to load Impact Assessment data:", err);
-        setImpactClassificationData(null);
-      } finally {
-        setImpactReviewLoading(false);
-      }
+      await loadImpactData();
     }
   };
 
@@ -737,7 +743,7 @@ const SCNInternalReview: React.FC = () => {
                         </span>
                       </AppButton>
 
-                      <AppButton
+                      {/* <AppButton
                         variant="primary"
                         onClick={() => setOpenPreview(true)}
                       >
@@ -745,7 +751,7 @@ const SCNInternalReview: React.FC = () => {
                           <img src={UndoIcon} alt="" />
                           Change SCN Output
                         </span>
-                      </AppButton>
+                      </AppButton> */}
                     </Stack>
                     {/* <Box className={styles.docxMain}>
                       <section className={styles.section}>
@@ -838,6 +844,7 @@ const SCNInternalReview: React.FC = () => {
                         classificationData={impactClassificationData}
                         isLoading={impactReviewLoading}
                         emailId={selectedEmailId ?? undefined}
+                        onRefresh={loadImpactData}
                       />
                     )}
                   </Box>
@@ -857,7 +864,7 @@ const SCNInternalReview: React.FC = () => {
               pdfUrl={latestPdfUrl}
             />
 
-            <ChangeSCNOutputModal
+            {/* <ChangeSCNOutputModal
               open={openPreview}
               onClose={() => setOpenPreview(false)}
               emailId={selectedEmailId ?? undefined}
@@ -869,7 +876,7 @@ const SCNInternalReview: React.FC = () => {
                   | "SCN"
                   | "NON_SCN") || "SCN"
               }
-            />
+            /> */}
             <RequestInfoModal
               open={openRequestInfo}
               onClose={() => setOpenRequestInfo(false)}

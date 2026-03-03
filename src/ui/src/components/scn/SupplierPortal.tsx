@@ -30,6 +30,25 @@ type SCNTab = "supplier_portal" | "internal_review";
 
 const PAGE_SIZE = 50;
 
+function filtersToApiParam(f: FilterOptions): string | undefined {
+  if (f.all) return undefined;
+  const mapping: { key: keyof FilterOptions; apiVal: string }[] = [
+    { key: "approved", apiVal: "approved" },
+    { key: "rejected", apiVal: "rejected" },
+    { key: "inReview", apiVal: "in_review" },
+    { key: "pendingReview", apiVal: "pending_review" },
+  ];
+
+  const selected = mapping
+    .filter(({ key }) => f[key])
+    .map(({ apiVal }) => apiVal);
+
+  if (selected.length === 0 || selected.length === mapping.length)
+    return undefined;
+
+  return selected.join(",");
+}
+
 // ─── Adapter: ScnFinalItem → SCNResultCard's expected shape ──────────────────
 // SCNResultCard expects: id, status, scnNumber, changeClassification,
 // supplierRef, notificationDate, plannedImplementationDate, changeType,
@@ -55,7 +74,7 @@ function toCardItem(item: ScnFinalItem) {
     supplierRef: item.supplier_name || "—",
     notificationDate: formatDate(item.notification_date),
     plannedImplementationDate: formatDate(item.planned_implementation_date),
-    changeType: "Adverse Event" as const, // placeholder — not in scnFinalGet response
+    changeType: item?.change_classification_supplier,
     changeTitleSummary: item.final_classification || "—",
     changeTitle: item.final_classification || "—",
   };
@@ -95,13 +114,13 @@ const SupplierPortal: React.FC = () => {
   const [scnNumber, setSCNNumber] = useState("");
   const [searchActive, setSearchActive] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
-    all: true,
-    approved: true,
-    rejected: true,
-    pendingReview: true,
-    supplierActionRequired: true,
-    inReview: true,
-    openScns: true,
+    all: false,
+    approved: false,
+    rejected: false,
+    pendingReview: false,
+    supplierActionRequired: false,
+    inReview: false,
+    openScns: false,
   });
 
   // Derived pagination object for PaginationComponent
@@ -130,38 +149,47 @@ const SupplierPortal: React.FC = () => {
 
   // API fetch
 
-  const loadData = useCallback(async (page: number, q: string) => {
-    setLoading(true);
-    setError(null);
-    const offset = (page - 1) * PAGE_SIZE;
-    try {
-      const res = await fetchScnSupplierList(PAGE_SIZE, offset, q.trim());
-      if (res.success) {
-        setItems(res.data.items ?? []);
-        setTotalCount(res.data.count ?? 0);
-        setSummary(res.data.summary ?? null);
-      } else {
-        setError(res.message || "Failed to fetch SCN list.");
+  const loadData = useCallback(
+    async (page: number, q: string, filters?: FilterOptions) => {
+      setLoading(true);
+      setError(null);
+      const offset = (page - 1) * PAGE_SIZE;
+      const filterParam = filters ? filtersToApiParam(filters) : undefined;
+      try {
+        const res = await fetchScnSupplierList(
+          PAGE_SIZE,
+          offset,
+          q.trim(),
+          filterParam,
+        );
+        if (res.success) {
+          setItems(res.data.items ?? []);
+          setTotalCount(res.data.count ?? 0);
+          setSummary(res.data.summary ?? null);
+        } else {
+          setError(res.message || "Failed to fetch SCN list.");
+          setItems([]);
+          setTotalCount(0);
+        }
+      } catch (err: any) {
+        setError(
+          err?.message || "An unexpected error occurred. Please try again.",
+        );
         setItems([]);
         setTotalCount(0);
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      setError(
-        err?.message || "An unexpected error occurred. Please try again.",
-      );
-      setItems([]);
-      setTotalCount(0);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
-  // Initial load & page/tab changes
+  // Initial load & page/tab/filter changes
   useEffect(() => {
     if (activeSCNTab === "supplier_portal") {
-      loadData(currentPage, scnNumber);
+      loadData(currentPage, scnNumber, currentFilters);
     }
-  }, [currentPage, activeSCNTab]);
+  }, [currentPage, activeSCNTab, currentFilters]);
 
   // Handlers
   const handleUploadSCN = () => setUploadModalOpen(true);
@@ -179,14 +207,14 @@ const SupplierPortal: React.FC = () => {
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     searchTimerRef.current = setTimeout(() => {
       setCurrentPage(1);
-      loadData(1, val);
+      loadData(1, val, currentFilters);
     }, 350);
   };
 
   const handleSearchClick = () => {
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     setCurrentPage(1);
-    loadData(1, scnNumber);
+    loadData(1, scnNumber, currentFilters);
   };
 
   // Clear search from SCNFilter's internal clear
@@ -195,7 +223,7 @@ const SupplierPortal: React.FC = () => {
     if (!active) {
       setSCNNumber("");
       setCurrentPage(1);
-      loadData(1, "");
+      loadData(1, "", currentFilters);
     }
   };
 
@@ -204,13 +232,14 @@ const SupplierPortal: React.FC = () => {
   };
 
   // doSearch shim — required by SCNFilter prop signature
+  // filters param comes from SCNFilter when user clicks Apply
   const doSearch = async (
     number: string,
     page: number = 1,
-    _filters?: FilterOptions,
+    filters?: FilterOptions,
   ) => {
     setCurrentPage(page);
-    loadData(page, number);
+    loadData(page, number, filters ?? currentFilters);
   };
 
   return (
@@ -329,7 +358,6 @@ const SupplierPortal: React.FC = () => {
               {error}
             </Alert>
           )}
-
           {/* SCN List */}
           <Box className={styles.scnList}>
             {loading ? (

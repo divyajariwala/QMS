@@ -723,6 +723,7 @@ export interface ScnFinalItem {
   final_classification: string;
   final_risk_level: string;
   updated_at: string;
+  change_classification_supplier: string;
 }
 
 export interface ScnFinalSummary {

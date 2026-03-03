@@ -40,9 +40,7 @@ const SCNEditDetails: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res: any = await fetchScnDetails(
-        scnId?.length > 3 ? scnId : "74cd5b44-2f57-47ed-91a9-f98161aab9e9",
-      );
+      const res: any = await fetchScnDetails(scnId);
       if (res?.data) {
         const mapped = mapScnDetailsToForm(res.data);
         setFormData(mapped);
@@ -173,7 +171,7 @@ const SCNEditDetails: React.FC = () => {
                 notificationDate: formData.notificationDate || "",
                 plannedImplementationDate:
                   formData.changeTimingPlannedDate || "",
-                changeType: "Adverse Event",
+                changeType: formData.changeType || "",
                 changeTitleSummary: formData.changeTitle || "",
                 changeTitle: formData.changeTitle || "",
               }}

@@ -12,11 +12,9 @@ export const mapScnDetailsToForm = (apiData: any) => {
     proposedState: fields.proposed_state_long_text || "",
     justification: fields.justification_long_text || "",
 
-    supplierSitesAffected2: fields.supplier_sites_affected?.includes(
-      "Manufacturing",
-    )
-      ? "Manufacturing"
-      : "Testing",
+    supplierSitesAffected2: Array.isArray(fields.supplier_sites_affected)
+      ? fields.supplier_sites_affected.join(", ")
+      : fields.supplier_sites_affected || "",
 
     supplierSitesAffected: "",
 
@@ -35,5 +33,6 @@ export const mapScnDetailsToForm = (apiData: any) => {
     changeClassificationSupplier: fields.change_classification_supplier || "",
     createdAt: fields.created_at || "",
     attachments: apiData?.attachments || [],
+    changeType: fields.change_classification_supplier || "",
   };
 };

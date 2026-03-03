@@ -47,14 +47,22 @@ interface SCNFilterProps {
 }
 
 const DEFAULT_FILTERS: FilterOptions = {
-  all: true,
-  approved: true,
-  rejected: true,
-  pendingReview: true,
-  supplierActionRequired: true,
-  inReview: true,
-  openScns: true,
+  all: false,
+  approved: false,
+  rejected: false,
+  pendingReview: false,
+  supplierActionRequired: false,
+  inReview: false,
+  openScns: false,
 };
+
+// The 4 filter options the API actually supports
+const FILTER_OPTIONS: { key: keyof FilterOptions; label: string }[] = [
+  { key: "approved", label: "Approved" },
+  { key: "rejected", label: "Rejected" },
+  { key: "inReview", label: "In Review" },
+  { key: "pendingReview", label: "Pending Review" },
+];
 
 const SCNFilter = ({
   scnNumber,
@@ -119,32 +127,27 @@ const SCNFilter = ({
   };
 
   const handleFilterChange = (key: keyof FilterOptions) => {
+    if (key === "all") {
+      // Toggle all → check/uncheck every real filter
+      setTempFilters((prev) => {
+        const next = !prev.all;
+        return {
+          all: next,
+          approved: next,
+          rejected: next,
+          pendingReview: next,
+          supplierActionRequired: next,
+          inReview: next,
+          openScns: next,
+        };
+      });
+      return;
+    }
     setTempFilters((prev) => {
-      // Select / Deselect ALL
-      if (key === "all") {
-        const value = !prev.all;
-        const newFilters = Object.keys(prev).reduce((acc, k) => {
-          acc[k as keyof FilterOptions] = value;
-          return acc;
-        }, {} as FilterOptions);
-        return newFilters;
-      }
-
-      const updated = {
-        ...prev,
-        [key]: !prev[key],
-      };
-
-      // Auto sync "All"
-      const allChecked = Object.entries(updated)
-        .filter(([k]) => k !== "all")
-        .every(([, v]) => v);
-
-      const result = {
-        ...updated,
-        all: allChecked,
-      };
-      return result;
+      const updated = { ...prev, [key]: !prev[key] };
+      // Auto-sync "all" based on whether all real options are checked
+      const allChecked = FILTER_OPTIONS.every(({ key: k }) => updated[k]);
+      return { ...updated, all: allChecked };
     });
   };
 
@@ -206,29 +209,38 @@ const SCNFilter = ({
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         PaperProps={{ sx: { mt: 1, minWidth: 300, p: 2 } }}
       >
-        <h4 style={{ marginBottom: 8 }}>SCN Type</h4>
+        <h4 style={{ marginBottom: 8 }}>Filter by Status</h4>
 
         <FormGroup>
-          {(Object.keys(tempFilters) as (keyof FilterOptions)[]).map((key) => {
-            const label = key
-              .replace(/([A-Z])/g, " $1")
-              .replace(/^./, (str) => str.toUpperCase())
-              .trim();
-
-            return (
-              <FormControlLabel
-                key={key}
-                label={label}
-                control={
-                  <Checkbox
-                    size="small"
-                    checked={tempFilters[key]}
-                    onChange={() => handleFilterChange(key)}
-                  />
+          {/* "All" convenience toggle */}
+          <FormControlLabel
+            label="All"
+            control={
+              <Checkbox
+                size="small"
+                checked={FILTER_OPTIONS.every(({ key }) => tempFilters[key])}
+                indeterminate={
+                  FILTER_OPTIONS.some(({ key }) => tempFilters[key]) &&
+                  !FILTER_OPTIONS.every(({ key }) => tempFilters[key])
                 }
+                onChange={() => handleFilterChange("all")}
               />
-            );
-          })}
+            }
+          />
+          {/* Only the 4 real API-filterable statuses */}
+          {FILTER_OPTIONS.map(({ key, label }) => (
+            <FormControlLabel
+              key={key}
+              label={label}
+              control={
+                <Checkbox
+                  size="small"
+                  checked={tempFilters[key]}
+                  onChange={() => handleFilterChange(key)}
+                />
+              }
+            />
+          ))}
         </FormGroup>
 
         <div className={styles.filterActions}>

@@ -243,29 +243,15 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
               </div>
             </Box>
           )}
-          <Box className={styles.formGroup}>
-            <label className={styles.formLabel}>
-              Supplier Site(s) Affected
-            </label>
-            <div className={styles.radioGroup}>
-              {["Manufacturing", "Testing"].map((site) => (
-                <label key={site} className={styles.radioLabel}>
-                  <input
-                    type="checkbox"
-                    name="siteAffectedType"
-                    value={site}
-                    checked={formData.supplierSitesAffected2 === site}
-                    onChange={(e) =>
-                      onInputChange("supplierSitesAffected2", e.target.value)
-                    }
-                    disabled={!isEditing}
-                  />
-                  {site}
-                </label>
-              ))}
-            </div>
-          </Box>
-          {!isUpload && (
+          <FormInput
+            label="Supplier Site(s) Affected"
+            value={formData.supplierSitesAffected2 ?? ""}
+            onChange={(val) => onInputChange("supplierSitesAffected2", val)}
+            disabled={!isEditing}
+            placeholder="e.g. Manufacturing, Testing"
+            className={styles.inputLabel}
+          />
+          {/* {!isUpload && (
             <Box className={styles.formGroup}>
               <label className={styles.formLabel}>
                 Supplier Change Classification
@@ -286,7 +272,7 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
                 ))}
               </div>
             </Box>
-          )}
+          )} */}
         </Stack>
 
         <Stack direction="row" spacing={4}>

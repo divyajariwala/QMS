@@ -16,7 +16,7 @@ interface SCNItem {
   supplierRef: string;
   notificationDate: string;
   plannedImplementationDate: string;
-  changeType: "Adverse Event" | "Product Complaint";
+  changeType: string;
   changeTitleSummary: string;
   overdueDays?: number;
   changeTitle?: string;

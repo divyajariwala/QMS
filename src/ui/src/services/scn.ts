@@ -89,8 +89,8 @@ export const scnEditClassify = async (
   return apiRequest<ScnEditClassifyResponse>(
     `dev/scnEditClassify?email_id=${emailId}`,
     {
-      method: "PUT",
-      body: JSON.stringify(payload),
+      method: "POST",
+      body: payload,
       headers: { "Content-Type": "application/json" },
       token: false,
     },
@@ -113,11 +113,13 @@ export async function fetchScnSupplierList(
   limit = 50,
   offset = 0,
   q = "",
+  filter?: string,
 ): Promise<ScnFinalListResponse> {
   const params = new URLSearchParams();
   params.set("limit", String(limit));
   params.set("offset", String(offset));
   if (q) params.set("q", q);
+  if (filter) params.set("filter", filter);
   return apiRequest<ScnFinalListResponse>(
     `dev/scnFinalGet?${params.toString()}`,
     {
@@ -135,7 +137,7 @@ export const scnApproveReject = async (
     `dev/scnApproveReject?email_id=${encodeURIComponent(emailId)}`,
     {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: payload,
       headers: { "Content-Type": "application/json" },
       token: false,
     },
@@ -154,4 +156,3 @@ export const toggleClassification = async (
     },
   );
 };
-

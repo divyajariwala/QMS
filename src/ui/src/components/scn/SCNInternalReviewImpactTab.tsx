@@ -30,12 +30,15 @@ interface Props {
   isLoading?: boolean;
   /** The email_id of the currently selected SCN record, required for the save API call */
   emailId?: string;
+  /** Called after a successful toggle so the parent can re-fetch the latest impact data */
+  onRefresh?: () => Promise<void>;
 }
 
 const SCNInternalReviewImpactTab: React.FC<Props> = ({
   classificationData,
   isLoading,
   emailId,
+  onRefresh,
 }) => {
   const [selected, setSelected] = useState<"SCN" | "NON_SCN">("SCN");
   const [changeControlRequired, setChangeControlRequired] = useState("");
@@ -327,9 +330,8 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
             {selected === "NON_SCN" ? (
               <div className={styles.lockedBanner}>
                 <span className={styles.lockedBannerIcon}>ⓘ</span>
-                Set <strong>Predicted Output</strong> to{" "}
-                <strong>SCN</strong> to enable this section and edit assessment
-                details.
+                Set <strong>Predicted Output</strong> to <strong>SCN</strong> to
+                enable this section and edit assessment details.
               </div>
             ) : (
               <Typography className={styles.sectionSubtitle}>
@@ -440,7 +442,6 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                 <Typography className={styles.inputLabel}>
                   Action(s) Required
                 </Typography>
-                <AISuggestedBadge />
               </Stack>
               <textarea
                 className={styles.textArea}
@@ -530,6 +531,8 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
             onDone={(newClassification) => {
               setSelected(newClassification);
               setPredictedOutput(newClassification);
+              // Re-fetch the latest impact assessment data from the API
+              onRefresh?.();
             }}
             defaultValue={selected}
           />

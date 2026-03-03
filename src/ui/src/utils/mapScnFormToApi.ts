@@ -36,7 +36,7 @@ export const mapScnFormToApi = (formData: any) => {
     payload.supplier_contact_information = formData.supplierContactInfo;
 
   if (formData.supplierSitesAffected2)
-    payload.supplier_sites_affected = [formData.supplierSitesAffected2];
+    payload.supplier_sites_affected = formData.supplierSitesAffected2.trim();
 
   return payload;
 };
