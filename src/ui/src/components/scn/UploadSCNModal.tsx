@@ -26,35 +26,6 @@ const UPLOAD_ACCEPTED_FORMATS = [".pdf", ".csv", ".xlsx"];
 const UPLOAD_PROGRESS_INTERVAL = 200;
 const UPLOAD_PROGRESS_STEP = 5;
 
-const mockExtractedData = {
-  id: "1",
-  status: "SUPPLIER ACTION REQUIRED" as const,
-  scnNumber: "SCN-000231",
-  changeClassification: "Lorem ipsum",
-  supplierRef: "SCN-12345",
-  supplierName: "Supplier XYZ",
-  notificationDate: "Jan 04 2026",
-  plannedImplementationDate: "Dec 23 2025",
-  changeType: "Adverse Event" as const,
-  changeTitleSummary:
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-  overdueDays: 5,
-  changeTitle: "SCN-12345",
-  currentState:
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  proposedState:
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  justification:
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  temporaryChange: "No",
-  supplierSitesAffected: "Low",
-  supplierSitesAffected2: "Manufacturing",
-  supplierContactInfo: "quality@xyz.com",
-  changeTimingPlannedDate: "Dec 23 2025",
-  firstAffectedLotBatch: "Input text",
-  materialComponentNumber: "Component A",
-};
-
 export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
   open,
   onClose,
@@ -73,14 +44,13 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
 
   const simulateUpload = () => {
     if (progressRef.current) clearInterval(progressRef.current);
+    setUploadProgress(0);
 
     progressRef.current = setInterval(() => {
       setUploadProgress((prev) => {
-        if (prev + UPLOAD_PROGRESS_STEP >= 100) {
+        if (prev >= 90) {
           clearInterval(progressRef.current!);
-          setUploading(false);
-          setUploadSuccess(true);
-          return 100;
+          return 90;
         }
         return prev + UPLOAD_PROGRESS_STEP;
       });
@@ -102,14 +72,17 @@ export const UploadSCNModal: React.FC<UploadSCNModalProps> = ({
       setSelectedFile(file);
       setUploading(true);
       setUploadSuccess(false);
-      setUploadProgress(10);
+      simulateUpload();
 
       const response = await uploadScn(file);
       setEmailId(response);
+      if (progressRef.current) clearInterval(progressRef.current);
       setUploadProgress(100);
       setUploadSuccess(true);
       setTimeout(() => setProcessingDone(true), 80000);
     } catch (error: any) {
+      if (progressRef.current) clearInterval(progressRef.current);
+      setUploadProgress(0);
       setUploadError(error.message || "Upload failed");
       setSelectedFile(null);
     } finally {

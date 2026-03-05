@@ -95,6 +95,10 @@ const SCNInternalReview: React.FC = () => {
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // Filter options from API
+  const [supplierNames, setSupplierNames] = useState<string[]>([]);
+  const [classificationList, setClassificationList] = useState<string[]>([]);
+
   const [scnDetail, setScnDetail] = useState<any>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [impactReviewLoading, setImpactReviewLoading] = useState(false);
@@ -103,7 +107,7 @@ const SCNInternalReview: React.FC = () => {
     useState<ImpactClassificationData | null>(null);
   const [latestPdfUrl, setLatestPdfUrl] = useState<string | null>(null);
 
-  // Fetch SCN list with filters
+  // Fetch SCN list with filters + search
   useEffect(() => {
     const loadList = async () => {
       setLoading(true);
@@ -126,12 +130,20 @@ const SCNInternalReview: React.FC = () => {
             "planned_implementation_date",
             appliedFilters.plannedDate,
           );
+        if (appliedSearch) params.append("q", appliedSearch);
         const res = await fetchScnList(LIMIT, 0, params);
         const items = res?.data?.items || [];
         const count = res?.data?.count || 0;
         setScns(items);
         setTotal(count);
         setHasMore(items.length >= LIMIT && items.length < count);
+        // Populate filter dropdown options from the response
+        if (res?.data?.supplier_names) {
+          setSupplierNames(res.data.supplier_names);
+        }
+        if (res?.data?.change_classification_supplier_list) {
+          setClassificationList(res.data.change_classification_supplier_list);
+        }
         if (!items.length) {
           setIsFirstLoad(false);
         }
@@ -143,7 +155,7 @@ const SCNInternalReview: React.FC = () => {
       }
     };
     loadList();
-  }, [appliedFilters]);
+  }, [appliedFilters, appliedSearch]);
 
   const loadMore = useCallback(async () => {
     if (isFetchingMore || !hasMore) return;
@@ -165,6 +177,7 @@ const SCNInternalReview: React.FC = () => {
           "planned_implementation_date",
           appliedFilters.plannedDate,
         );
+      if (appliedSearch) params.append("q", appliedSearch);
       const res = await fetchScnList(LIMIT, newOffset, params);
       const items = res?.data?.items || [];
       setScns((prev) => [...prev, ...items]);
@@ -174,7 +187,14 @@ const SCNInternalReview: React.FC = () => {
     } finally {
       setIsFetchingMore(false);
     }
-  }, [isFetchingMore, hasMore, scns.length, appliedFilters, total]);
+  }, [
+    isFetchingMore,
+    hasMore,
+    scns.length,
+    appliedFilters,
+    appliedSearch,
+    total,
+  ]);
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -353,7 +373,7 @@ const SCNInternalReview: React.FC = () => {
   };
 
   const queueItems = useMemo(() => {
-    const mapped = scns.map((item) => ({
+    return scns.map((item) => ({
       scn_reference_number: item.scn_reference_number,
       supplier_name: item.supplier_name,
       change_classification_supplier: item.change_classification_supplier,
@@ -363,17 +383,7 @@ const SCNInternalReview: React.FC = () => {
       notification_date: item.notification_date,
       planned_implementation_date: item.planned_implementation_date,
     }));
-
-    if (!appliedSearch) return mapped;
-
-    return mapped.filter(
-      (item) =>
-        item.scn_reference_number
-          ?.toLowerCase()
-          .includes(appliedSearch.toLowerCase()) ||
-        item.supplier_name?.toLowerCase().includes(appliedSearch.toLowerCase()),
-    );
-  }, [scns, appliedSearch]);
+  }, [scns]);
 
   const handleApplyFilters = () => {
     setAppliedFilters(filters);
@@ -442,8 +452,8 @@ const SCNInternalReview: React.FC = () => {
                         }
                         className={styles.selectInput}
                       >
-                        <option value="">Supplier 1</option>
-                        {["Supplier ABC", "Supplier XYZ"].map((option) => (
+                        <option value="">All Suppliers</option>
+                        {supplierNames.map((option) => (
                           <option key={option} value={option}>
                             {option}
                           </option>
@@ -454,7 +464,7 @@ const SCNInternalReview: React.FC = () => {
                   </div>
 
                   {/* Planned Date */}
-                  <div className={styles.fieldGroup}>
+                  {/* <div className={styles.fieldGroup}>
                     <label className={styles.label}>
                       Planned Implementation Date
                     </label>
@@ -478,10 +488,10 @@ const SCNInternalReview: React.FC = () => {
                         className={styles.calendarIcon}
                       />
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Days Since Notification */}
-                  <div className={styles.fieldGroup}>
+                  {/* <div className={styles.fieldGroup}>
                     <label className={styles.label}>
                       Days Since Notification
                     </label>
@@ -501,7 +511,7 @@ const SCNInternalReview: React.FC = () => {
                       </select>
                       <span className={styles.selectArrow} />
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Classification */}
                   <div className={styles.fieldGroup}>
@@ -516,10 +526,12 @@ const SCNInternalReview: React.FC = () => {
                         }
                         className={styles.selectInput}
                       >
-                        <option value="">Classification 1</option>
-                        <option value="Minor">Minor</option>
-                        <option value="Moderate">Moderate</option>
-                        <option value="Major">Major</option>
+                        <option value="">All Classifications</option>
+                        {classificationList.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
                       </select>
                       <span className={styles.selectArrow} />
                     </div>
@@ -560,7 +572,7 @@ const SCNInternalReview: React.FC = () => {
                     className={styles.searchIcon}
                   />
                   <input
-                    type="search"
+                    type="text"
                     placeholder="Search here..."
                     aria-label="Search by SCN number"
                     className={styles.searchInput}
@@ -568,8 +580,8 @@ const SCNInternalReview: React.FC = () => {
                     onChange={(e) => {
                       const value = e.target.value;
                       setSearchValue(value);
-                      // If user clears input, reset search automatically
-                      if (value.trim() === "") {
+                      // When field is fully cleared, reset search and re-fetch
+                      if (value === "") {
                         setAppliedSearch("");
                       }
                     }}

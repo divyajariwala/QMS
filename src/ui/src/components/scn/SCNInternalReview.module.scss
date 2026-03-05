@@ -59,6 +59,7 @@
 
 .searchBar {
   @include SearchBar;
+  flex: 0;
 }
 
 .inputWrapper {
@@ -104,6 +105,7 @@
   width: 114px;
   height: 36px;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .searchButton:hover,
@@ -620,6 +622,13 @@
 }
 
 .statusSubtitle {
+  font-size: 15px !important;
+  color: #5f6d7e !important;
+  font-weight: 500 !important;
+  text-align: center;
+}
+
+.noDataMsg {
   font-size: 15px !important;
   color: #5f6d7e !important;
   font-weight: 500 !important;

@@ -84,7 +84,6 @@ const SCNFilter = ({
 
   const filterMenuOpen = Boolean(filterAnchorEl);
 
-  // Sync tempFilters with filters prop when menu is opened
   useEffect(() => {
     if (filterMenuOpen) {
       setTempFilters(filters);
@@ -92,28 +91,7 @@ const SCNFilter = ({
   }, [filterMenuOpen, filters]);
 
   const handleInputChange_Local = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setSCNNumber(val);
-
-    if (val.trim() === "") {
-      setSearchActive(false);
-      setError(null);
-      setSearchResults(null);
-      setPagination({
-        current_page: 1,
-        total_pages: 0,
-        total_items: 0,
-        items_per_page: 15,
-        has_next: false,
-        has_previous: false,
-      });
-    } else {
-      setSearchActive(true);
-      // Use tempFilters if filter menu is open, otherwise use current filters
-      doSearch(val, 1, filters).catch(() => {
-        setError("Failed to load the required SCN. Please try again.");
-      });
-    }
+    handleInputChange(e);
   };
 
   const handleFilterOpen_Menu = (
@@ -155,11 +133,6 @@ const SCNFilter = ({
     setFilters(tempFilters);
     setFilterAnchorEl(null);
     setError(null);
-    setSearchActive(true);
-
-    doSearch(scnNumber, 1, tempFilters).catch(() => {
-      setError("Failed to apply filters. Please try again.");
-    });
   };
 
   const handleClearFilters = () => {
@@ -172,7 +145,10 @@ const SCNFilter = ({
         <div className={styles.searchBar}>
           <form
             className={styles.inputWrapper}
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearchClick();
+            }}
           >
             <img src={SearchIcon} alt="Search" className={styles.searchIcon} />
             <input

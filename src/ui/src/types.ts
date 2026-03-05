@@ -678,7 +678,9 @@ export interface ScnListItem {
   change_classification_supplier: string;
   planned_implementation_date: string;
   notification_date: string;
-  created_at: string;
+  completion_score: number;
+  status: string;
+  created_at?: string;
   updated_at: string;
 }
 
@@ -690,6 +692,13 @@ export interface ScnListResponse {
     offset: number;
     count: number;
     items: ScnListItem[];
+    filters: {
+      limit: number;
+      offset: number;
+      q: string | null;
+    };
+    supplier_names: string[];
+    change_classification_supplier_list: string[];
   };
   timestamp: string;
 }

@@ -10,7 +10,12 @@ import RightIcon from "../../assets/icons/rightDark.svg";
 
 interface SCNItem {
   id: string;
-  status: "SUPPLIER ACTION REQUIRED" | "PENDING REVIEW" | "IN REVIEW";
+  status:
+    | "SUPPLIER ACTION REQUIRED"
+    | "PENDING REVIEW"
+    | "IN REVIEW"
+    | "APPROVED"
+    | "REJECTED";
   scnNumber: string;
   changeClassification: string;
   supplierRef: string;
@@ -46,8 +51,30 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
         return styles.statusYellow;
       case "IN REVIEW":
         return styles.statusGreen;
+      case "APPROVED":
+        return styles.statusApproved;
+      case "REJECTED":
+        return styles.statusRejected;
       default:
         return "";
+    }
+  };
+
+  // Returns a human-friendly label for the status badge
+  const getStatusLabel = () => {
+    switch (scn.status) {
+      case "SUPPLIER ACTION REQUIRED":
+        return "Supplier Action Required";
+      case "PENDING REVIEW":
+        return "Pending Review";
+      case "IN REVIEW":
+        return "In Review";
+      case "APPROVED":
+        return "Approved";
+      case "REJECTED":
+        return "Rejected";
+      default:
+        return scn.status;
     }
   };
 
@@ -91,7 +118,7 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
       >
         <Box>
           <span className={`${styles.status} ${getStatusClass()}`}>
-            {scn.status}
+            {getStatusLabel()}
           </span>
           <h3
             className={

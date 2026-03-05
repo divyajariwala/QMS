@@ -55,22 +55,32 @@ function filtersToApiParam(f: FilterOptions): string | undefined {
 // changeTitleSummary, changeTitle, overdueDays
 
 function toCardItem(item: ScnFinalItem) {
-  // Normalize status to match SCNResultCard's accepted union values
+  // Normalize status: replace underscores with spaces, uppercase
   const rawStatus = (item.status || "").replace(/_/g, " ").toUpperCase();
-  let status: "SUPPLIER ACTION REQUIRED" | "PENDING REVIEW" | "IN REVIEW" =
-    "PENDING REVIEW";
+
+  type CardStatus =
+    | "SUPPLIER ACTION REQUIRED"
+    | "PENDING REVIEW"
+    | "IN REVIEW"
+    | "APPROVED"
+    | "REJECTED";
+
+  let status: CardStatus = "PENDING REVIEW";
   if (rawStatus === "IN REVIEW" || rawStatus === "IN_REVIEW") {
     status = "IN REVIEW";
-  } else if (rawStatus === "APPROVED" || rawStatus === "REJECTED") {
-    // Show approved/rejected as-is — map them to a neutral status in the card
-    status = "PENDING REVIEW";
+  } else if (rawStatus === "APPROVED") {
+    status = "APPROVED";
+  } else if (rawStatus === "REJECTED") {
+    status = "REJECTED";
+  } else if (rawStatus === "SUPPLIER ACTION REQUIRED") {
+    status = "SUPPLIER ACTION REQUIRED";
   }
 
   return {
     id: item.email_id,
     status,
     scnNumber: item.scn_reference_number || "—",
-    changeClassification: item.final_risk_level || "—", // HIGH / MEDIUM / LOW → maps to Major/Moderate/Minor styling
+    changeClassification: item.final_risk_level || "—",
     supplierRef: item.supplier_name || "—",
     notificationDate: formatDate(item.notification_date),
     plannedImplementationDate: formatDate(item.planned_implementation_date),
@@ -95,7 +105,6 @@ function formatDate(raw: string | null | undefined): string {
 
 const SupplierPortal: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const breadcrumbItems = [{ label: "Home", to: "/" }, { label: "SCN" }];
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [activeSCNTab, setActiveSCNTab] = useState<SCNTab>("supplier_portal");
@@ -203,16 +212,13 @@ const SupplierPortal: React.FC = () => {
     const val = e.target.value;
     setSCNNumber(val);
     setSearchActive(val.trim() !== "");
-
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    searchTimerRef.current = setTimeout(() => {
+    if (val.trim() === "") {
       setCurrentPage(1);
-      loadData(1, val, currentFilters);
-    }, 350);
+      loadData(1, "", currentFilters);
+    }
   };
 
   const handleSearchClick = () => {
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     setCurrentPage(1);
     loadData(1, scnNumber, currentFilters);
   };
