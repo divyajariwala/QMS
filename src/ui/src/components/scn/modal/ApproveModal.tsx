@@ -108,32 +108,20 @@ const ApproveModal: React.FC<ApproveModalProps> = ({
             <span className={styles.radioLabel}>Change Control Required?</span>
           </Box>
           <Box display="flex" gap={3}>
-            {/* NO Radio */}
-            <label className={styles.radioOption}>
-              <input
-                type="radio"
-                name="changeControl"
-                value="No"
-                checked={changeControlRequired === "No"}
-                onChange={(e) => setChangeControlRequired(e.target.value)}
-                className={styles.radioInput}
-                disabled={isSubmitting}
-              />
-              No
-            </label>
-            {/* YES Radio */}
-            <label className={styles.radioOption}>
-              <input
-                type="radio"
-                name="changeControl"
-                value="Yes"
-                checked={changeControlRequired === "Yes"}
-                onChange={(e) => setChangeControlRequired(e.target.value)}
-                className={styles.radioInput}
-                disabled={isSubmitting}
-              />
-              Yes
-            </label>
+            {["No", "Yes"].map((option) => (
+              <label key={option} className={styles.radioOption}>
+                <input
+                  type="radio"
+                  name="approveChangeControl"
+                  value={option}
+                  checked={changeControlRequired === option}
+                  onChange={(e) => setChangeControlRequired(e.target.value)}
+                  className={styles.radioInput}
+                  disabled={isSubmitting}
+                />
+                {option}
+              </label>
+            ))}
           </Box>
         </Box>
         <Box>

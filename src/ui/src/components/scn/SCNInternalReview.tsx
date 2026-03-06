@@ -385,12 +385,24 @@ const SCNInternalReview: React.FC = () => {
     }));
   }, [scns]);
 
+
+  const resetDetailPanel = () => {
+    setSelectedEmailId(null);
+    setScnDetail(null);
+    setImpactClassificationData(null);
+    setSelected(0);
+    setSelectedTab("Review");
+    setIsFirstLoad(true);
+  };
+
   const handleApplyFilters = () => {
+    resetDetailPanel();
     setAppliedFilters(filters);
     handleFilterClose();
   };
 
   const handleClearFilters = () => {
+    resetDetailPanel();
     setFilters(defaultFilters);
     setAppliedFilters(defaultFilters);
     handleFilterClose();
@@ -398,9 +410,8 @@ const SCNInternalReview: React.FC = () => {
 
   useEffect(() => {
     if (scns.length > 0 && !selectedEmailId) {
-      const firstItem = scns[0];
       setSelected(0);
-      handleSelectScn(firstItem);
+      handleSelectScn(scns[0]);
     }
   }, [scns]);
 
@@ -563,6 +574,7 @@ const SCNInternalReview: React.FC = () => {
                   className={styles.inputWrapper}
                   onSubmit={(e) => {
                     e.preventDefault();
+                    resetDetailPanel();
                     setAppliedSearch(searchValue.trim());
                   }}
                 >
@@ -582,6 +594,7 @@ const SCNInternalReview: React.FC = () => {
                       setSearchValue(value);
                       // When field is fully cleared, reset search and re-fetch
                       if (value === "") {
+                        resetDetailPanel();
                         setAppliedSearch("");
                       }
                     }}
