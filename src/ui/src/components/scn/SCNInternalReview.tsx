@@ -905,23 +905,8 @@ const SCNInternalReview: React.FC = () => {
             <RequestInfoModal
               open={openRequestInfo}
               onClose={() => setOpenRequestInfo(false)}
-              onSubmit={(fields, comment) => {
-                console.log("Requested fields:", fields);
-                console.log("Comment:", comment);
-              }}
-              allFields={[
-                "Supplier Name",
-                "SCN Title",
-                "Supplier Site(s) Affected",
-                "Supplier Contact Information",
-                "Material / Component Number",
-                "Proposed State",
-                "Supplier Change Classification",
-                "Planned Implementation Date",
-                "First Affected Lot / Batch",
-                "Document Upload",
-              ]}
-              initialSelected={["Supplier Name", "SCN Title"]}
+              emailId={selectedEmailId ?? undefined}
+              onDone={() => setOpenRequestInfo(false)}
             />
 
             <Stack direction="row" spacing={2} justifyContent="flex-end">

@@ -807,7 +807,16 @@ export interface ScnRejectRequest {
   reason_for_reject: string;
 }
 
-export type ScnApproveRejectRequest = ScnApproveRequest | ScnRejectRequest;
+export interface ScnRequestInfoRequest {
+  action: "REQUEST_INFO";
+  fields: string;
+  comment: string;
+}
+
+export type ScnApproveRejectRequest =
+  | ScnApproveRequest
+  | ScnRejectRequest
+  | ScnRequestInfoRequest;
 
 export interface ScnApproveRejectResponse {
   success: boolean;
