@@ -1,0 +1,106 @@
+.paper {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.close {
+  position: absolute !important;
+  top: 16px;
+  right: 16px;
+  color: #6b7280;
+}
+
+.content {
+  padding: 32px !important;
+  font-family: inherit;
+  color: #1f2937;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+  color: #111827;
+}
+
+.sourcesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sourceItem {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.keyValueBox {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.parsedKey {
+  font-size: 13px;
+  font-weight: 700;
+  color: #437ef7;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.parsedValue {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin-top: 8px;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  font-size: 13px;
+}
+
+.dataTable th {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dataTable td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+  vertical-align: top;
+}
+
+.dataTable tr:last-child td {
+  border-bottom: none;
+}
+
+.emptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  color: #64748b;
+  font-size: 15px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+}

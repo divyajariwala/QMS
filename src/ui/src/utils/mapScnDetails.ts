@@ -34,5 +34,6 @@ export const mapScnDetailsToForm = (apiData: any) => {
     createdAt: fields.created_at || "",
     attachments: apiData?.attachments || [],
     changeType: fields.change_classification_supplier || "",
+    extractedFieldSources: apiData?.scn_extracted_field_sources || {},
   };
 };
