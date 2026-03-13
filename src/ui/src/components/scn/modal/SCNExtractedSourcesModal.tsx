@@ -5,31 +5,45 @@ import {
   IconButton,
   Box,
   Typography,
+  Stack,
 } from "@mui/material";
 import CloseIcon from "../../../assets/icons/close.svg";
 import styles from "./SCNExtractedSourcesModal.module.scss";
+import Gauge from "@components/common/GaugeChart";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  sources?: Record<string, string>;
+  sources?: any;
 }
 
 const formatKey = (key: string) => {
   return key.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-const renderExtractedValue = (value: string, originalKey: string) => {
+const renderExtractedValue = (
+  value: string,
+  originalKey: string,
+  confidence?: number,
+) => {
   const lines = value
     .split("\n")
     .map((l) => l.trim())
     .filter(Boolean);
 
-  const renderFallbackKey = () => (
-    <Typography className={styles.parsedKey}>
-      {formatKey(originalKey)}
-    </Typography>
+  const renderFieldHeader = (label: string, score?: number) => (
+    <Box className={styles.fieldHeader}>
+      <Typography className={styles.parsedKey}>{label}</Typography>
+      {score !== undefined && (
+        <Box className={styles.miniGaugeWrapper}>
+          <Gauge value={score} size={80} />
+        </Box>
+      )}
+    </Box>
   );
+
+  const renderFallbackKey = () =>
+    renderFieldHeader(formatKey(originalKey), confidence);
 
   // 1. Table format (multiple lines, all contain |)
   if (lines.length > 0 && lines.every((l) => l.includes("|"))) {
@@ -70,9 +84,7 @@ const renderExtractedValue = (value: string, originalKey: string) => {
     const extractedKey = parts[0].trim();
     return (
       <Box className={styles.keyValueBox}>
-        <Typography className={styles.parsedKey}>
-          {cleanKey(extractedKey)}
-        </Typography>
+        {renderFieldHeader(cleanKey(extractedKey), confidence)}
         <Typography className={styles.parsedValue}>
           {parts.slice(1).join("|").trim()}
         </Typography>
@@ -86,9 +98,7 @@ const renderExtractedValue = (value: string, originalKey: string) => {
     const extractedKey = parts[0].trim();
     return (
       <Box className={styles.keyValueBox}>
-        <Typography className={styles.parsedKey}>
-          {cleanKey(extractedKey)}
-        </Typography>
+        {renderFieldHeader(cleanKey(extractedKey), confidence)}
         <Box className={styles.parsedValue}>
           {parts[1]?.trim() && <div>{parts.slice(1).join("|").trim()}</div>}
           {lines.slice(1).map((line, idx) => (
@@ -107,7 +117,7 @@ const renderExtractedValue = (value: string, originalKey: string) => {
       const valPart = lines[0].substring(colonIdx + 1).trim();
       return (
         <Box className={styles.keyValueBox}>
-          <Typography className={styles.parsedKey}>{extractedKey}</Typography>
+          {renderFieldHeader(extractedKey, confidence)}
           <Typography className={styles.parsedValue}>{valPart}</Typography>
         </Box>
       );
@@ -133,6 +143,8 @@ const SCNExtractedSourcesModal: React.FC<Props> = ({
   sources,
 }) => {
   const hasSources = sources && Object.keys(sources).length > 0;
+  const confidenceMap = sources?.field_confidence_map || {};
+  const overallConfidence = sources?.confidence_score ?? 0;
 
   return (
     <Dialog
@@ -149,6 +161,33 @@ const SCNExtractedSourcesModal: React.FC<Props> = ({
       <DialogContent className={styles.content}>
         <div className={styles.title}>Extracted Field Sources</div>
 
+        <Box className={styles.gaugeContainer}>
+          <Gauge value={overallConfidence} />
+          <Box className={styles.statContainer}>
+            <Box className={styles.statRow}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <span className={`${styles.dot} ${styles.greenDot}`} />
+                <span className={styles.statLabel}>Good</span>
+              </Stack>
+              <span className={styles.statValue}>0.7 - 1.0</span>
+            </Box>
+            <Box className={styles.statRow}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <span className={`${styles.dot} ${styles.yellowDot}`} />
+                <span className={styles.statLabel}>Medium</span>
+              </Stack>
+              <span className={styles.statValue}>0.4 - 0.7</span>
+            </Box>
+            <Box className={styles.statRowLast}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <span className={`${styles.dot} ${styles.redDot}`} />
+                <span className={styles.statLabel}>Poor</span>
+              </Stack>
+              <span className={styles.statValue}>0.0 - 0.4</span>
+            </Box>
+          </Box>
+        </Box>
+
         <Box className={styles.sourcesList}>
           {hasSources ? (
             Object.entries(sources).map(([key, value]) => {
@@ -162,9 +201,10 @@ const SCNExtractedSourcesModal: React.FC<Props> = ({
               ) {
                 return null;
               }
+              const fieldConfidence = confidenceMap[key];
               return (
                 <Box key={key} className={styles.sourceItem}>
-                  {renderExtractedValue(value, key)}
+                  {renderExtractedValue(value, key, fieldConfidence)}
                 </Box>
               );
             })

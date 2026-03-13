@@ -104,3 +104,72 @@
   border-radius: 8px;
   border: 1px dashed #cbd5e1;
 }
+
+.statRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 7px;
+  padding-top: 4px;
+  border-bottom: 1px solid #eaebf0;
+  color: #000;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.statRowLast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 7px;
+  padding-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.redDot {
+  background-color: #e0301e;
+}
+
+.yellowDot {
+  background-color: #ffb600;
+}
+
+.greenDot {
+  background-color: #068620;
+}
+
+.gaugeContainer {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+  margin-bottom: 20px;
+}
+
+.statContainer {
+  width: 300px;
+  gap: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.miniGaugeWrapper {
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+}

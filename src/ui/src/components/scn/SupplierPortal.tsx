@@ -13,6 +13,7 @@ import SCNResultCard from "./SCNResultCard";
 import { fetchScnSupplierList } from "src/services/scn";
 import { ScnFinalItem, ScnFinalSummary } from "src/types";
 import SupplierCardSkeleton from "./skeleton/SupplierCardSkeleton";
+import SCNStatsSkeleton from "./skeleton/SCNStatsSkeleton";
 
 // Types
 export interface SCNStats {
@@ -313,17 +314,7 @@ const SupplierPortal: React.FC = () => {
 
           {/* Stats – skeleton on first load, real data once summary arrives */}
           {loading && !summary ? (
-            <Box sx={{ display: "flex", gap: 2, mt: 2, mb: 2 }}>
-              {[1, 2, 3].map((i) => (
-                <Skeleton
-                  key={i}
-                  variant="rounded"
-                  width="33%"
-                  height={100}
-                  sx={{ borderRadius: "10px" }}
-                />
-              ))}
-            </Box>
+            <SCNStatsSkeleton />
           ) : (
             <SCNStatsQuickLinks stats={stats} />
           )}

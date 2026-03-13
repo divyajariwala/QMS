@@ -1,0 +1,54 @@
+@use "../../styles/mixins" as *;
+
+.gauge {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gaugeSvg {
+  width: 100%;
+}
+
+.gaugeBg {
+  fill: none;
+  stroke: #f1f1f1;
+}
+
+.gaugeProgress {
+  fill: none;
+  transition:
+    stroke-dashoffset 0.8s ease,
+    stroke 0.3s;
+}
+
+.gaugeValue {
+  position: absolute;
+  top: 65%;
+  left: 50%;
+  transform: translate(-50%, -40%);
+  font-size: calc(var(--gauge-size) * (32 / 200));
+  font-weight: 600;
+  color: #1e293b;
+  font-family: inherit;
+}
+
+.gaugeLabels {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: calc(var(--gauge-size) * (13 / 200));
+  color: #64748b;
+  font-weight: 500;
+  margin-top: calc(var(--gauge-size) * (2 / 200));
+  padding: 0 calc(var(--gauge-size) * (4 / 200));
+}
+
+.labelPoor {
+  transform: translateX(0);
+}
+
+.labelGood {
+  transform: translateX(0);
+}
