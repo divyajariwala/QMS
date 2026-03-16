@@ -699,6 +699,8 @@ export interface ScnListResponse {
     };
     supplier_names: string[];
     change_classification_supplier_list: string[];
+    risk_level_summary?: any;
+    classification_summary?: any;
   };
   timestamp: string;
 }

@@ -43,6 +43,7 @@ import SCNInternalReviewImpactTab, {
 } from "./SCNInternalReviewImpactTab";
 import SCNInternalReviewAuditTab from "./SCNInternalReviewAuditTab";
 import ScnDetailsSkeleton from "./skeleton/ScnDetailsSkeleton";
+import DashboardExample from "@components/scn/InternalReviewStatsComponents";
 
 type FilterState = {
   supplier: string;
@@ -91,6 +92,8 @@ const SCNInternalReview: React.FC = () => {
   // SCN list state
   const [scns, setScns] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
+  const [riskLevelSummary, setRiskLevelSummary] = useState<any>(null);
+  const [classificationSummary, setClassificationSummary] = useState<any>(null);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -136,6 +139,8 @@ const SCNInternalReview: React.FC = () => {
         const count = res?.data?.count || 0;
         setScns(items);
         setTotal(count);
+        setRiskLevelSummary(res?.data?.risk_level_summary || null);
+        setClassificationSummary(res?.data?.classification_summary || null);
         setHasMore(items.length >= LIMIT && items.length < count);
         // Populate filter dropdown options from the response
         if (res?.data?.supplier_names) {
@@ -385,7 +390,6 @@ const SCNInternalReview: React.FC = () => {
     }));
   }, [scns]);
 
-
   const resetDetailPanel = () => {
     setSelectedEmailId(null);
     setScnDetail(null);
@@ -417,6 +421,12 @@ const SCNInternalReview: React.FC = () => {
 
   return (
     <Box component="main" className={styles.container}>
+      <DashboardExample
+        total={total}
+        riskLevelSummary={riskLevelSummary}
+        classificationSummary={classificationSummary}
+      />
+
       <Stack gap={2}>
         {/* Content */}
         <Box className={styles.contentWrapper}>
