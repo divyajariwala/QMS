@@ -1,254 +1,401 @@
-import React, { useState, MouseEvent, useRef } from "react";
-import { Box, Stack, Button } from "@mui/material";
-import PlusIcon from "../../assets/icons/plus.svg";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Box, Stack, Button, Skeleton, Alert } from "@mui/material";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
-import SCNStatusTabs from "@components/scn/SCNStatusTabs";
-import SCNResultCard from "@components/scn/SCNResultCard";
 import PaginationComponent from "@components/pagination/PaginationComponent";
 import styles from "./SupplierPortal.module.scss";
 import SCNStatsQuickLinks from "./SCNStatsQuickLinks";
-import scnPlusIcon from "../../assets/icons/scnPlus.svg"
-import scnUploadIcon from "../../assets/icons/scnUploadIcon.svg"
+import scnUploadIcon from "../../assets/icons/scnUploadIcon.svg";
+import SCNTabs from "./SCNTabs";
+import SCNFilter, { FilterOptions } from "@components/scn/SCNFilter";
+import { UploadSCNModal } from "./UploadSCNModal";
+import SCNInternalReview from "./SCNInternalReview";
+import SCNResultCard from "./SCNResultCard";
+import { fetchScnSupplierList } from "src/services/scn";
+import { ScnFinalItem, ScnFinalSummary } from "src/types";
+import SupplierCardSkeleton from "./skeleton/SupplierCardSkeleton";
+import SCNStatsSkeleton from "./skeleton/SCNStatsSkeleton";
 
 // Types
 export interface SCNStats {
-    total: number;
-    pendingReview: number;
-    inReview: number;
-    supplierActionRequired: number;
-    openSCNs: number;
-    approved: number;
-    rejected: number;
+  total: number;
+  pendingReview: number;
+  inReview: number;
+  supplierActionRequired: number;
+  openSCNs: number;
+  approved: number;
+  rejected: number;
+  SCNsSummary: number;
 }
 
-export interface SCNItem {
-    id: string;
-    status: "SUPPLIER ACTION REQUIRED" | "PENDING REVIEW" | "IN REVIEW";
-    scnNumber: string;
-    changeClassification: string;
-    supplierRef: string;
-    notificationDate: string;
-    plannedImplementationDate: string;
-    changeType: "Adverse Event" | "Product Complaint";
-    changeTitleSummary: string;
-    overdueDays?: number;
+type SCNTab = "supplier_portal" | "internal_review";
+
+const PAGE_SIZE = 50;
+
+function filtersToApiParam(f: FilterOptions): string | undefined {
+  if (f.all) return undefined;
+  const mapping: { key: keyof FilterOptions; apiVal: string }[] = [
+    { key: "approved", apiVal: "approved" },
+    { key: "rejected", apiVal: "rejected" },
+    { key: "inReview", apiVal: "in_review" },
+    { key: "pendingReview", apiVal: "pending_review" },
+  ];
+
+  const selected = mapping
+    .filter(({ key }) => f[key])
+    .map(({ apiVal }) => apiVal);
+
+  if (selected.length === 0 || selected.length === mapping.length)
+    return undefined;
+
+  return selected.join(",");
 }
 
-type SCNTabStatus = "all" | "under_review" | "processed" | "info_requested";
+// ─── Adapter: ScnFinalItem → SCNResultCard's expected shape ──────────────────
+// SCNResultCard expects: id, status, scnNumber, changeClassification,
+// supplierRef, notificationDate, plannedImplementationDate, changeType,
+// changeTitleSummary, changeTitle, overdueDays
+
+function toCardItem(item: ScnFinalItem) {
+  // Normalize status: replace underscores with spaces, uppercase
+  const rawStatus = (item.status || "").replace(/_/g, " ").toUpperCase();
+
+  type CardStatus =
+    | "SUPPLIER ACTION REQUIRED"
+    | "PENDING REVIEW"
+    | "IN REVIEW"
+    | "APPROVED"
+    | "REJECTED";
+
+  let status: CardStatus = "PENDING REVIEW";
+  if (rawStatus === "IN REVIEW" || rawStatus === "IN_REVIEW") {
+    status = "IN REVIEW";
+  } else if (rawStatus === "APPROVED") {
+    status = "APPROVED";
+  } else if (rawStatus === "REJECTED") {
+    status = "REJECTED";
+  } else if (rawStatus === "SUPPLIER ACTION REQUIRED") {
+    status = "SUPPLIER ACTION REQUIRED";
+  }
+
+  return {
+    id: item.email_id,
+    status,
+    scnNumber: item.scn_reference_number || "—",
+    changeClassification: item.final_risk_level || "—",
+    supplierRef: item.supplier_name || "—",
+    notificationDate: formatDate(item.notification_date),
+    plannedImplementationDate: formatDate(item.planned_implementation_date),
+    changeType: item?.change_classification_supplier,
+    changeTitleSummary: item.final_classification || "—",
+    changeTitle: item.final_classification || "—",
+  };
+}
+
+function formatDate(raw: string | null | undefined): string {
+  if (!raw) return "—";
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return raw;
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+// Main Component
 
 const SupplierPortal: React.FC = () => {
-    // Breadcrumb items
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const breadcrumbItems = [
-        { label: "Home", to: "/" },
-        { label: "Supplier Portal" },
-    ];
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const breadcrumbItems = [{ label: "Home", to: "/" }, { label: "SCN" }];
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [activeSCNTab, setActiveSCNTab] = useState<SCNTab>("supplier_portal");
 
-    // Mock stats data
-    const [stats] = useState<SCNStats>({
-        total: 231,
-        pendingReview: 100,
-        inReview: 121,
-        supplierActionRequired: 10,
-        openSCNs: 10,
-        approved: 21,
-        rejected: 14,
-    });
+  // API data
+  const [items, setItems] = useState<ScnFinalItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [summary, setSummary] = useState<ScnFinalSummary | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    // Tab state
-    const [activeTab, setActiveTab] = useState<SCNTabStatus>("all");
-    const [pageNumber, setPageNumber] = useState<number>(1);
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
 
-    // Mock SCN data
-    const [scnItems] = useState<SCNItem[]>([
-        {
-            id: "1",
-            status: "SUPPLIER ACTION REQUIRED",
-            scnNumber: "SCN-000231",
-            changeClassification: "Lorem ipsum",
-            supplierRef: "SCN-12345",
-            notificationDate: "Jan 04 2026",
-            plannedImplementationDate: "Jan 07 2026",
-            changeType: "Adverse Event",
-            changeTitleSummary:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-            overdueDays: 5,
-        },
-        {
-            id: "2",
-            status: "PENDING REVIEW",
-            scnNumber: "SCN-000235",
-            changeClassification: "Lorem ipsum",
-            supplierRef: "SCN-12345",
-            notificationDate: "Jan 04 2026",
-            plannedImplementationDate: "Jan 07 2026",
-            changeType: "Product Complaint",
-            changeTitleSummary:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-            overdueDays: 5,
-        },
-        {
-            id: "3",
-            status: "IN REVIEW",
-            scnNumber: "SCN-000236",
-            changeClassification: "Lorem ipsum",
-            supplierRef: "SCN-12345",
-            notificationDate: "Jan 04 2026",
-            plannedImplementationDate: "Jan 07 2026",
-            changeType: "Product Complaint",
-            changeTitleSummary:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-            overdueDays: 5,
-        },
-        {
-            id: "4",
-            status: "SUPPLIER ACTION REQUIRED",
-            scnNumber: "SCN-000237",
-            changeClassification: "Lorem ipsum",
-            supplierRef: "SCN-12345",
-            notificationDate: "Jan 04 2026",
-            plannedImplementationDate: "Jan 07 2026",
-            changeType: "Adverse Event",
-            changeTitleSummary:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-            overdueDays: 5,
-        },
-        {
-            id: "5",
-            status: "IN REVIEW",
-            scnNumber: "SCN-000238",
-            changeClassification: "Lorem ipsum",
-            supplierRef: "SCN-12345",
-            notificationDate: "Jan 04 2026",
-            plannedImplementationDate: "Jan 07 2026",
-            changeType: "Adverse Event",
-            changeTitleSummary:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud",
-            overdueDays: 5,
-        },
-    ]);
+  // Search / filter
+  const [scnNumber, setSCNNumber] = useState("");
+  const [searchActive, setSearchActive] = useState(false);
+  const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
+    all: false,
+    approved: false,
+    rejected: false,
+    pendingReview: false,
+    supplierActionRequired: false,
+    inReview: false,
+    openScns: false,
+  });
 
-    // Pagination mock
-    const [pagination] = useState({
-        current_page: 1,
-        total_pages: 5,
-        total_items: 231,
-        items_per_page: 15,
-        has_next: true,
-        has_previous: false,
-    });
+  // Derived pagination object for PaginationComponent
 
-    // Tab counts
-    const tabCounts = {
-        all: 231,
-        under_review: 100,
-        processed: 121,
-        info_requested: 10,
-    };
+  const pagination = {
+    current_page: currentPage,
+    total_pages: Math.max(1, Math.ceil(totalCount / PAGE_SIZE)),
+    total_items: totalCount,
+    items_per_page: PAGE_SIZE,
+    has_next: currentPage < Math.ceil(totalCount / PAGE_SIZE),
+    has_previous: currentPage > 1,
+  };
 
-    // Handlers
-    const handleAddManually = (event: MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-        console.log("Add SCN Manually clicked");
-    };
+  // Stats derived from API summary
 
-    const handleUploadSCN = () => {
-        console.log("Upload SCN clicked");
-    };
+  const stats: SCNStats = {
+    total: summary?.total ?? 0,
+    pendingReview: summary?.pending_review ?? 0,
+    inReview: summary?.in_review ?? 0,
+    supplierActionRequired: 0,
+    openSCNs: (summary?.pending_review ?? 0) + (summary?.in_review ?? 0),
+    approved: summary?.approved ?? 0,
+    rejected: summary?.rejected ?? 0,
+    SCNsSummary: summary?.total ?? 0,
+  };
 
-    const handlePageChange = (newPage: number) => {
-        setPageNumber(newPage);
-    };
+  // API fetch
 
-    const handleSeeDetails = (scnId: string) => {
-        console.log("See details for:", scnId);
-    };
+  const loadData = useCallback(
+    async (page: number, q: string, filters?: FilterOptions) => {
+      setLoading(true);
+      setError(null);
+      const offset = (page - 1) * PAGE_SIZE;
+      const filterParam = filters ? filtersToApiParam(filters) : undefined;
+      try {
+        const res = await fetchScnSupplierList(
+          PAGE_SIZE,
+          offset,
+          q.trim(),
+          filterParam,
+        );
+        if (res.success) {
+          setItems(res.data.items ?? []);
+          setTotalCount(res.data.count ?? 0);
+          setSummary(res.data.summary ?? null);
+        } else {
+          setError(res.message || "Failed to fetch SCN list.");
+          setItems([]);
+          setTotalCount(0);
+        }
+      } catch (err: any) {
+        setError(
+          err?.message || "An unexpected error occurred. Please try again.",
+        );
+        setItems([]);
+        setTotalCount(0);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
-    return (
-        <Box component="main" className={styles.supplierPortal}>
-            <Stack direction="column" gap={1}>
-                <CommonBreadcrumbs items={breadcrumbItems} />
+  // Initial load & page/tab/filter changes
+  useEffect(() => {
+    if (activeSCNTab === "supplier_portal") {
+      loadData(currentPage, scnNumber, currentFilters);
+    }
+  }, [currentPage, activeSCNTab, currentFilters]);
 
-                {/* Header Section */}
-                <Stack
-                    direction="row"
-                    alignItems="flex-start"
-                    justifyContent="space-between"
-                    className={styles.headerSection}
-                >
-                    <Box>
-                        <h1 className={styles.pageTitle}>Supplier Portal</h1>
-                        <p className={styles.pageSubtitle}>
-                            Submit and track Supplier Change Notifications (SCNs)
-                        </p>
-                    </Box>
-                    <Stack direction="row" spacing={2} className={styles.actions}>
-                        <Button
-                            variant="outlined"
-                            className={styles.addManuallyButton}
-                            onClick={handleAddManually}
-                        >
-                            <span className={styles.plusIcon}>
-                                <img src={scnPlusIcon} />
-                            </span>
-                            Add SCN Manually
-                        </Button>
-                        <Button
-                            variant="contained"
-                            className={styles.uploadButton}
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            <span className={styles.uploadIcon}>
-                                <img src={scnUploadIcon} />
-                            </span>
-                            Upload SCN
-                        </Button>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleUploadSCN}
-                            style={{ display: "none" }}
-                            accept=".pdf"
-                        />
-                    </Stack>
-                </Stack>
+  // Handlers
+  const handleUploadSCN = () => setUploadModalOpen(true);
+  const handleCloseUploadModal = () => setUploadModalOpen(false);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSCNNumber(val);
+    setSearchActive(val.trim() !== "");
+    if (val.trim() === "") {
+      setCurrentPage(1);
+      loadData(1, "", currentFilters);
+    }
+  };
+
+  const handleSearchClick = () => {
+    setCurrentPage(1);
+    loadData(1, scnNumber, currentFilters);
+  };
+
+  // Clear search from SCNFilter's internal clear
+  const handleSetSearchActive = (active: boolean) => {
+    setSearchActive(active);
+    if (!active) {
+      setSCNNumber("");
+      setCurrentPage(1);
+      loadData(1, "", currentFilters);
+    }
+  };
+
+  const handleSetSCNNumber = (val: string) => {
+    setSCNNumber(val);
+  };
+
+  // doSearch shim — required by SCNFilter prop signature
+  // filters param comes from SCNFilter when user clicks Apply
+  const doSearch = async (
+    number: string,
+    page: number = 1,
+    filters?: FilterOptions,
+  ) => {
+    setCurrentPage(page);
+    loadData(page, number, filters ?? currentFilters);
+  };
+
+  return (
+    <Box component="main" className={styles.supplierPortal}>
+      <Stack direction="column" gap={1}>
+        <CommonBreadcrumbs items={breadcrumbItems} />
+
+        {/* Header Section */}
+        <Stack
+          direction="row"
+          alignItems="flex-start"
+          justifyContent="space-between"
+          className={styles.headerSection}
+        >
+          <Box>
+            <h1 className={styles.pageTitle}>SCN</h1>
+            <p className={styles.pageSubtitle}>
+              Submit and track Supplier Change Notifications (SCNs)
+            </p>
+          </Box>
+        </Stack>
+      </Stack>
+
+      <SCNTabs activeTab={activeSCNTab} setActiveTab={setActiveSCNTab} />
+
+      {/* Supplier portal tab */}
+      {activeSCNTab === "supplier_portal" && (
+        <div>
+          <Stack
+            direction="row"
+            alignItems="flex-start"
+            justifyContent="space-between"
+            marginTop={3}
+          >
+            <h1 className={styles.pageSummaryTitle}>SCN Summary</h1>
+            <Stack direction="row" spacing={2} className={styles.actions}>
+              {/* <Button
+                variant="outlined"
+                className={styles.addManuallyButton}
+                onClick={handleAddEmailDocument}
+              >
+                <span className={styles.plusIcon}>
+                  <img src={EmailIcon} />
+                </span>
+                Add Email Document
+              </Button> */}
+              <Button
+                variant="contained"
+                className={styles.uploadButton}
+                onClick={handleUploadSCN}
+              >
+                <span className={styles.uploadIcon}>
+                  <img src={scnUploadIcon} />
+                </span>
+                Upload SCN
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                accept=".pdf"
+              />
             </Stack>
+          </Stack>
 
-            {/* Combined Stats and Quick Links Card */}
+          {/* Stats – skeleton on first load, real data once summary arrives */}
+          {loading && !summary ? (
+            <SCNStatsSkeleton />
+          ) : (
             <SCNStatsQuickLinks stats={stats} />
+          )}
 
-            {/* Tabs Section */}
-            <SCNStatusTabs
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                counts={tabCounts}
-                setPageNumber={setPageNumber}
-            />
+          {/* SCN List label */}
+          <div className={styles.scnListLabel}>
+            {loading ? "SCN List (…)" : `SCN List (${totalCount})`}
+          </div>
 
-            {/* SCN List */}
-            <Box className={styles.scnList}>
-                {scnItems.length === 0 ? (
-                    <p className={styles.noResults}>No SCNs found.</p>
-                ) : (
-                    scnItems.map((scn) => (
-                        <SCNResultCard
-                            key={scn.id}
-                            scn={scn}
-                            onSeeDetails={handleSeeDetails}
-                        />
-                    ))
-                )}
-            </Box>
+          {/* Filter Section */}
+          <SCNFilter
+            scnNumber={scnNumber}
+            setSCNNumber={handleSetSCNNumber}
+            setSearchResults={() => {}}
+            setSearchActive={handleSetSearchActive}
+            setPagination={() => {}}
+            doSearch={doSearch}
+            filters={currentFilters}
+            setFilters={setCurrentFilters}
+            handleInputChange={handleInputChange}
+            handleSearchClick={handleSearchClick}
+          />
 
-            {/* Pagination */}
-            {scnItems.length > 0 && (
-                <PaginationComponent
-                    pagination={pagination}
-                    onPageChange={handlePageChange}
-                />
+          {/* Error state */}
+          {error && !loading && (
+            <Alert
+              severity="error"
+              sx={{ mt: 2 }}
+              action={
+                <Button
+                  size="small"
+                  onClick={() => loadData(currentPage, scnNumber)}
+                >
+                  Retry
+                </Button>
+              }
+            >
+              {error}
+            </Alert>
+          )}
+          {/* SCN List */}
+          <Box className={styles.scnList}>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <SupplierCardSkeleton key={i} />
+              ))
+            ) : !error && items.length === 0 ? (
+              <p className={styles.noResults}>
+                {searchActive
+                  ? `No SCNs found matching "${scnNumber}".`
+                  : "No SCNs found."}
+              </p>
+            ) : (
+              !error &&
+              items.map((item) => (
+                <SCNResultCard key={item.email_id} scn={toCardItem(item)} />
+              ))
             )}
-        </Box>
-    );
+          </Box>
+
+          {/* Pagination */}
+          {!loading && !error && totalCount > PAGE_SIZE && (
+            <PaginationComponent
+              pagination={pagination}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Internal review tab */}
+      {activeSCNTab === "internal_review" && <SCNInternalReview />}
+
+      {/* Upload SCN Modal */}
+      <UploadSCNModal
+        open={uploadModalOpen}
+        onClose={handleCloseUploadModal}
+        fileInputRef={fileInputRef}
+      />
+    </Box>
+  );
 };
 
 export default SupplierPortal;

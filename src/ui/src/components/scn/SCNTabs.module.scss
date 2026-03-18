@@ -1,0 +1,59 @@
+.tabsContainer {
+  margin-top: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabsList {
+  display: flex;
+  gap: 0; // Remove gap since tabs will fill space
+}
+
+.tab {
+  flex: 1; // Each tab takes equal width
+  display: flex;
+  align-items: center;
+  justify-content: center; // Center content within tab
+  gap: 8px;
+  padding: 12px 0;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 16px;
+
+  &:hover {
+    .tabLabel {
+      color: #374151;
+    }
+  }
+}
+
+.activeTab {
+  border-bottom-color: #437ef7;
+
+  .tabLabel {
+    color: #437ef7;
+    font-weight: 600;
+  }
+  &:hover {
+    .tabLabel {
+      color: #437ef7;
+    }
+  }
+}
+
+.nonActiveTab {
+  border-bottom-color: transparent;
+
+  .tabLabel {
+    font-weight: 500;
+  }
+}
+
+.tabLabel {
+  font-size: 16px;
+  font-weight: 500;
+  color: #5f6d7e;
+  text-transform: capitalize;
+}

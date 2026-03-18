@@ -1,17 +1,16 @@
-import React from 'react';
-import { Breadcrumbs, Link, Box, Typography } from '@mui/material';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { Link as RouterLink } from 'react-router-dom';
-import { CommonBreadcrumbsProps } from 'src/types';
-import styles from './CommonBreadcrumbs.module.scss';
-
+import React from "react";
+import { Breadcrumbs, Link, Box, Typography } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
+import { CommonBreadcrumbsProps } from "src/types";
+import styles from "./CommonBreadcrumbs.module.scss";
+import RightIcon from "../../assets/icons/right.svg";
 const CommonBreadcrumbs: React.FC<CommonBreadcrumbsProps> = ({
   items,
-  ariaLabel = 'breadcrumb',
+  ariaLabel = "breadcrumb",
 }) => {
   return (
     <Breadcrumbs
-      separator={<NavigateNextIcon fontSize="small" />}
+      separator={<img src={RightIcon} alt=">" />}
       aria-label={ariaLabel}
       className={styles.breadcrumbs}
     >

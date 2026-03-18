@@ -1,0 +1,636 @@
+@use "../../styles/mixins" as *;
+
+.container {
+  width: 100%;
+}
+
+.createSCNButton {
+  background-color: #437ef7 !important;
+  color: #fff !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  padding: 8px 20px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-weight: 600 !important;
+  height: 40px !important;
+  &:hover {
+    background-color: #1d4ed8 !important;
+  }
+}
+
+.contentWrapper {
+  display: grid;
+  grid-template-columns: 408px 1fr;
+  gap: 16px;
+  margin-top: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* left */
+.mailList {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  position: sticky;
+  top: 0px;
+  max-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mailHeader {
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 6px 8px;
+  .mailHeaderTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #474747;
+  }
+}
+
+.searchBar {
+  @include SearchBar;
+  flex: 0;
+}
+
+.inputWrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 18px;
+  width: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: #919ba7;
+  opacity: 0.9;
+}
+
+.searchInput {
+  @include SearchBox;
+}
+
+.searchButton {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  border: 1px solid #dae0e6;
+  border-radius: 5px;
+  background: transparent;
+  font-size: 14px;
+  color: #272d37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 114px;
+  height: 36px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.searchButton:hover,
+.searchButton:focus {
+  outline: none;
+  background: #faf9f9;
+}
+
+.mailListSub {
+  padding: 20px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
+}
+
+.queueList {
+  gap: 12px;
+}
+
+.scnStatus {
+  color: #4b20ab;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.queueCard {
+  border: 1px solid #eaebf0;
+  border-radius: 6px;
+  padding: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background: #f9fafb;
+  }
+}
+
+.active {
+  background: #f3f9ff;
+  &:hover {
+    background: #f3f9ff;
+  }
+}
+
+.scnId {
+  color: #272d37;
+  font-weight: 600;
+  font-size: 20px;
+  // margin-top: 5px;
+}
+
+.supplier {
+  font-size: 15px;
+  color: #696969;
+  margin: 12px 0;
+}
+
+.classificationStatus {
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  width: fit-content;
+  height: 22px;
+}
+
+.statusHigh {
+  color: #e2341d;
+  background-color: #fff2f0;
+}
+
+.statusMedium {
+  color: #eea23e;
+  background-color: #fff8eb;
+}
+
+.statusLow {
+  color: #2d8a39;
+  background-color: #f0faf0;
+}
+
+.progressText {
+  display: flex;
+  justify-content: space-between;
+}
+.textLabel {
+  color: #818181;
+  font-size: 12px;
+}
+.progressNumber {
+  font-size: 16px;
+  color: #474747;
+  font-weight: 600;
+}
+
+.progress {
+  height: 6px;
+  background: #dddddd;
+  border-radius: 4px;
+  margin: 6px 0;
+}
+
+.progressFill {
+  height: 100%;
+  background: #0089eb;
+  border-radius: 4px 0 0 4px;
+}
+
+.desc {
+  font-size: 13px;
+  color: #374151;
+}
+
+.high {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+.medium {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+/* right */
+.mailContent {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filterButton {
+  border: 1px solid #dae0e6 !important;
+  border-radius: 5px !important;
+  background: #fff !important;
+  font-size: 14px !important;
+  color: #437ef7 !important;
+  gap: 8px;
+  width: 81px;
+  height: 36px;
+  font-weight: 600 !important;
+  text-transform: capitalize !important;
+}
+
+.filterButton:hover,
+.filterButton:focus {
+  outline: none;
+  background: #faf9f9;
+}
+
+.mailContentHader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.appButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.detailText {
+  font-size: 14px;
+  color: #3b3b3b;
+  display: flex;
+  gap: 15px;
+  font-weight: 400;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: #e5e7eb;
+}
+
+.section {
+  margin-bottom: 10px;
+  margin-top: 2px;
+  color: #000;
+  h3 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 4px 0;
+    b {
+      font-weight: 800;
+    }
+  }
+}
+
+.tableMain {
+  padding: 0 20px;
+}
+
+.tableTitle {
+  background: #1f4d7a;
+  color: #fff;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    background: #d6e1f4;
+    text-align: left;
+    padding: 6px 8px;
+    font-weight: 800;
+    border: 1px solid #cfd8e3;
+    font-size: 13px;
+  }
+
+  td {
+    border: 1px solid #cfd8e3;
+    padding: 6px 8px;
+    vertical-align: top;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  tr td:first-child {
+    width: 20%;
+  }
+
+  tr td:nth-child(2) {
+    width: 25%;
+  }
+}
+
+.previewIcon {
+  color: #437ef7;
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.docxMain {
+  padding: 0 40px;
+}
+
+.previewButton {
+  width: 100%;
+  border-radius: 0 0 4px 4px !important;
+  margin-bottom: 20px;
+}
+
+.actionButton {
+  width: 86px;
+  height: 36px;
+}
+
+.textTag {
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  width: fit-content;
+  background-color: #ecebff;
+  color: #574efa;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.filterFildeLabel {
+  font-weight: 500;
+  font-size: 14px;
+  color: #5f6d7e;
+}
+
+.selectArrow {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  transform: translateY(-50%);
+  background: url('data:image/svg+xml;utf8,<svg fill="none" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M4 6L8 10L12 6" stroke="%239ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+    no-repeat center/contain;
+}
+
+.selectWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.selectInput {
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #ffffff;
+  color: #101828;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+  transition: border-color 0.2s;
+  cursor: pointer;
+
+  &:focus {
+    border-color: #437ef7;
+    box-shadow:
+      0px 0px 0px 4px #f4ebff,
+      0px 1px 2px rgba(16, 24, 40, 0.05);
+  }
+
+  &:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+}
+
+.inputLabel label {
+  text-transform: capitalize;
+  color: #5f6d7e !important;
+  font-weight: 500;
+}
+
+.filterPopover {
+  padding: 20px !important;
+  width: 320px;
+  border-radius: 12px !important;
+  box-shadow:
+    0px 12px 16px -4px rgba(16, 24, 40, 0.08),
+    0px 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
+  border: 1px solid #eaecf0 !important;
+}
+
+.filterContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #344054;
+}
+
+.selectWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.selectArrow {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  transform: translateY(-50%);
+  background: url('data:image/svg+xml;utf8,<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 7.5L10 12.5L15 7.5" stroke="%23667085" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+    no-repeat center/contain;
+}
+
+.dateWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.inputField {
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #ffffff;
+  color: #101828;
+  outline: none;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+
+  &:focus {
+    border-color: #437ef7;
+    box-shadow:
+      0px 0px 0px 4px #f4ebff,
+      0px 1px 2px rgba(16, 24, 40, 0.05);
+  }
+}
+
+.dateInput {
+  padding-right: 36px; /* Space for icon */
+  font-family: inherit;
+  width: 100%; /* Ensure full width */
+
+  &::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 36px; /* Cover the icon area */
+    height: 100%;
+    cursor: pointer;
+    z-index: 1; /* Place above the custom icon for clicking */
+  }
+}
+
+.calendarIcon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.buttonRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.clearButton {
+  flex: 1;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #d0d5dd;
+  background: #ffffff;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #d0d5dd;
+  }
+}
+
+.applyButton {
+  flex: 1;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #437ef7;
+  background: #437ef7;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0px 1px 2px rgba(16, 24, 40, 0.05);
+
+  &:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+  }
+}
+
+.classifyingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 80px 40px;
+}
+
+.loader {
+  width: 400px;
+  max-width: 100%;
+  height: 20px;
+  border-radius: 20px;
+  background:
+    repeating-linear-gradient(135deg, #437ef7 0 10px, #99b5ec 0 20px) 0 / 0%
+      no-repeat,
+    repeating-linear-gradient(135deg, #ddd 0 10px, #eee 0 20px) 0 / 100%;
+  animation: loaderFill 2s infinite;
+}
+
+@keyframes loaderFill {
+  100% {
+    background-size: 100%;
+  }
+}
+
+.statusSubtitle {
+  font-size: 15px !important;
+  color: #5f6d7e !important;
+  font-weight: 500 !important;
+  text-align: center;
+}
+
+.noDataMsg {
+  font-size: 15px !important;
+  color: #5f6d7e !important;
+  font-weight: 500 !important;
+  text-align: center;
+}

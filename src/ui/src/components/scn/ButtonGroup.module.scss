@@ -1,0 +1,50 @@
+.buttonGroup {
+  display: inline-flex;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.button {
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 16px;
+  border: 1px solid #dae0e6;
+  border-left: none;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #272d37;
+  user-select: none;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+  &:first-child {
+    border-left: 1px solid #dae0e6;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+  }
+  &:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+
+  &:hover,
+  &:focus {
+    background-color: #d4d4d4;
+
+    outline: none;
+  }
+}
+
+.selected {
+  background-color: #efeff1;
+  border-color: #dae0e6;
+
+  &:hover,
+  &:focus {
+    background-color: #efeff1;
+  }
+}

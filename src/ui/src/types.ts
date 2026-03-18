@@ -670,3 +670,175 @@ export interface AdverseEventFilterProps {
   setPagination: (val: PaginationObj) => void;
   doSearch: (id: string, page?: number) => Promise<void>;
 }
+
+export interface ScnListItem {
+  email_id: string;
+  scn_reference_number: string;
+  supplier_name: string;
+  change_classification_supplier: string;
+  planned_implementation_date: string;
+  notification_date: string;
+  completion_score: number;
+  status: string;
+  created_at?: string;
+  updated_at: string;
+}
+
+export interface ScnListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    limit: number;
+    offset: number;
+    count: number;
+    items: ScnListItem[];
+    filters: {
+      limit: number;
+      offset: number;
+      q: string | null;
+    };
+    supplier_names: string[];
+    change_classification_supplier_list: string[];
+    risk_level_summary?: any;
+    classification_summary?: any;
+  };
+  timestamp: string;
+}
+
+export interface ScnDetailsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    email_id: string;
+    scn_extracted_fields: Record<string, any>;
+    raw_email: {
+      download_url: string;
+    };
+    attachments: {
+      attachment_id: string;
+      filename: string;
+      status: string;
+      download_url: string;
+    }[];
+  };
+  timestamp: string;
+}
+
+export interface ScnFinalItem {
+  email_id: string;
+  scn_reference_number: string;
+  supplier_name: string;
+  notification_date: string;
+  planned_implementation_date: string;
+  status: string;
+  final_classification: string;
+  final_risk_level: string;
+  updated_at: string;
+  change_classification_supplier: string;
+}
+
+export interface ScnFinalSummary {
+  total: number;
+  approved: number;
+  rejected: number;
+  pending_review: number;
+  in_review: number;
+}
+
+export interface ScnFinalListResponse {
+  success: boolean;
+  message: string;
+  data: {
+    count: number;
+    items: ScnFinalItem[];
+    filters: {
+      limit: number;
+      offset: number;
+      q: string | null;
+    };
+    summary: ScnFinalSummary;
+  };
+  timestamp: string;
+}
+export interface ScnEditClassifyPayload {
+  change_classification_supplier?: string;
+  change_control_required?: "yes" | "no";
+  action_required?: string;
+  final_risk_level?: string;
+  final_assigned_team?: string;
+}
+
+export interface ScnEditClassifyResponse {
+  success: boolean;
+  message: string;
+  data: {
+    email_id: string;
+    updated_fields: string[];
+  };
+  timestamp: string;
+}
+
+export interface ScnAuditItem {
+  id: number;
+  scn_id: string;
+  changed_field: string;
+  old_value: string | null;
+  new_value: string | null;
+  changed_by: string;
+  created_at: string;
+}
+
+export interface ScnQmsAuditResponse {
+  success: boolean;
+  message: string;
+  data: {
+    scn_id: string;
+    count: number;
+    items: ScnAuditItem[];
+  };
+  timestamp: string;
+}
+
+export interface ScnApproveRequest {
+  action: "APPROVE";
+  change_control_required: "yes" | "no";
+}
+
+export interface ScnRejectRequest {
+  action: "REJECT";
+  reason_for_reject: string;
+}
+
+export interface ScnRequestInfoRequest {
+  action: "REQUEST_INFO";
+  fields: string;
+  comment: string;
+}
+
+export type ScnApproveRejectRequest =
+  | ScnApproveRequest
+  | ScnRejectRequest
+  | ScnRequestInfoRequest;
+
+export interface ScnApproveRejectResponse {
+  success: boolean;
+  message: string;
+  data: {
+    email_id: string;
+    action: "APPROVED" | "REJECTED";
+    change_control_required?: string;
+    cc_record_id?: string;
+    note?: string | null;
+    reason_for_reject?: string;
+  };
+  timestamp: string;
+}
+
+export interface ToggleClassificationResponse {
+  email_id: string;
+  old_classification?: string;
+  new_classification?: string;
+  changed: boolean;
+  risk_analysis_triggered?: boolean;
+  message?: string;
+}

@@ -6,7 +6,8 @@
 $blue-500: #2196f3;
 $section-bg: #f9fbff;
 * {
-  font-family: "Lato", "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+  font-family:
+    "Inter", "Lato", "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
     "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif !important;
 }
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -141,7 +142,9 @@ $section-bg: #f9fbff;
   justify-content: center;
   background-color: #fff !important;
   box-shadow: 0 0 0 1px #d1d9e6 !important;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
   margin-left: 8px !important;
   overflow: visible !important;
 }

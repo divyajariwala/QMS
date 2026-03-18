@@ -1,0 +1,181 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.timelineContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background-color: $color-white;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
+.timelineItem {
+  display: flex;
+  position: relative;
+  min-height: 140px;
+  padding-bottom: 24px;
+
+  @media (max-width: 600px) {
+    padding-bottom: 20px;
+  }
+
+  &:last-child {
+    padding-bottom: 0px;
+  }
+}
+
+.timelineLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 16px;
+  position: relative;
+  min-width: 24px;
+}
+
+.timelineDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  z-index: 1;
+  flex-shrink: 0;
+  margin-top: 43px;
+
+  &.approved {
+    background-color: #4eb523;
+  }
+  &.rejected {
+    background-color: #b60102;
+  }
+  &.review {
+    background-color: #6b2cda;
+  }
+  &.edited {
+    background-color: #ffb600;
+  }
+  &.created {
+    background-color: #ffb600;
+  }
+}
+
+.timelineLine {
+  position: absolute;
+  top: 16px;
+  bottom: -40px;
+  width: 3px;
+  background-color: #e0e0e0;
+  left: 50%;
+  transform: translateX(-50%);
+
+  &.approved {
+    background-color: #d3eeda;
+  }
+  &.rejected {
+    background-color: #ffd5d5;
+  }
+  &.review {
+    background-color: #dcb4fc;
+  }
+  &.edited {
+    background-color: #ffeed6;
+  }
+  &.created {
+    background-color: #ffeed6;
+  }
+}
+
+.timelineContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-top: 40px;
+}
+
+.timestamp {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #252525 !important;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: start;
+  margin-bottom: 4px;
+  gap: 12px;
+}
+
+.userAvatar {
+  width: 30px !important;
+  height: 30px !important;
+  font-size: 12px;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #252525 !important;
+  margin-bottom: 4px;
+
+  span {
+    font-weight: 400;
+  }
+}
+
+.description {
+  font-size: 15px;
+  font-weight: 400;
+  color: #3b3b3b !important;
+  line-height: 1.5;
+  margin-bottom: 8px !important;
+  margin-left: 40px !important;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+
+  .userName {
+    font-weight: 600;
+    color: $color-black;
+    margin-right: 4px;
+  }
+
+  .actionText {
+    color: $color-dark-grey;
+    margin-right: 4px;
+  }
+
+  .recordName {
+    font-weight: 600;
+    color: $color-black;
+  }
+}
+
+.userEmail {
+  display: block;
+  font-size: 12px;
+  color: #76889c;
+  margin-bottom: 4px;
+  font-style: italic;
+}
+
+.actionIcon {
+  margin-right: 8px;
+}
+
+.botAvatar {
+  width: 30px;
+  height: 30px;
+}

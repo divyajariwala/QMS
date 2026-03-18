@@ -1,0 +1,176 @@
+@use "../../styles/mixins" as *;
+
+:root {
+  --search-height: 48px;
+  --input-radius: 8px;
+  --input-border: #e6e6f0;
+  --focus-ring: rgba(99, 70, 234, 0.14);
+  --accent-purple: #7b48ff;
+  --muted-text: #6f7682;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  margin-top: 20px;
+  border-radius: 10px;
+}
+
+.searchBar {
+  @include SearchBar;
+}
+
+.inputWrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 20px;
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--muted-text);
+  opacity: 0.9;
+}
+
+.searchInput {
+  @include SearchBox;
+}
+
+.searchButton {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  border: 1px solid #dae0e6;
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #272d37;
+  padding: 4px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 114px;
+  height: 36px;
+  margin-right: 8px;
+  font-family: inherit !important;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0px;
+}
+
+.searchButton:hover,
+.searchButton:focus {
+  outline: none;
+  background: #faf9f9;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.errorText {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  color: #d32f2f;
+  font-size: 14px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 20px;
+  width: 20px;
+  pointer-events: none;
+  color: var(--muted-text);
+  opacity: 0.9;
+}
+
+.filterButton {
+  border: 1px solid #dae0e6;
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  color: #272d37;
+  padding: 4px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 124px;
+  height: 46px;
+  font-family: inherit !important;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0px;
+  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.04);
+}
+
+.filterButton:hover,
+.filterButton:focus {
+  outline: none;
+  background: #faf9f9;
+}
+
+.filterActions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.applyButton {
+  background-color: #437ef7 !important;
+  color: #fff !important;
+  text-transform: none !important;
+  padding: 8px 20px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-weight: 600 !important;
+  width: 100%;
+  &:hover {
+    background-color: #1d4ed8 !important;
+  }
+}
+
+.cancelButton {
+  border: 1px solid #9ca3af;
+  color: #000 !important;
+  background-color: #fff !important;
+  text-transform: none !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-weight: 600 !important;
+  width: 100%;
+  &:hover {
+    background-color: #f9fafb !important;
+    border-color: #9ca3af !important;
+  }
+}

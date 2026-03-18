@@ -136,7 +136,6 @@
 import React, { useState, MouseEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import pwcLogo from "../../assets/images/pwcLogo.svg";
-import scnDropdownIcon from "../../assets/icons/sc-dropdown-icon.svg"
 import {
   Avatar,
   Badge,
@@ -195,19 +194,20 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
 
   const displayName = `${auth?.user?.profile?.given_name ?? ""} ${auth?.user?.profile?.family_name ?? ""
-    }`.trim();
+  }`.trim();
 
   const baseNavLinks = [
     { label: "Dashboard", path: "/" },
     { label: "Complaints", path: "/complaints" },
     { label: "Deviations", path: "/deviations" },
     { label: "Adverse Events", path: "/adverseEvent" },
+    { label: "SCN", path: "/scn/supplier" },
   ];
- 
+
   const [scnAnchorEl, setScnAnchorEl] = useState<null | HTMLElement>(null);
   const scnMenuOpen = Boolean(scnAnchorEl);
 
-  const handleScnTabClick = (event: MouseEvent<HTMLElement>) => { 
+  const handleScnTabClick = (event: MouseEvent<HTMLElement>) => {
     setScnAnchorEl(event.currentTarget);
   };
 
@@ -223,11 +223,11 @@ const Header: React.FC = () => {
     location.pathname === "/"
       ? 0
       : location.pathname.startsWith("/complaints") ||
-        location.pathname.startsWith("/approveComplaints")
+          location.pathname.startsWith("/approveComplaints")
         ? 1
         : location.pathname.startsWith("/deviations") ||
-          location.pathname.startsWith("/approveRca") ||
-          location.pathname.startsWith("/approveGrading")
+            location.pathname.startsWith("/approveRca") ||
+            location.pathname.startsWith("/approveGrading")
           ? 2
           : location.pathname.startsWith("/adverseEvent")
             ? 3
@@ -264,43 +264,7 @@ const Header: React.FC = () => {
                   className="qms-header-navigation-tab"
                 />
               ))}
-
-              {/* SCN Portal tab with dropdown */}
-              <Tab
-                value={4}
-                className="qms-header-navigation-tab"
-                label={
-                  <Box display="flex" alignItems="center" gap={0.5}>
-                    <span>SCN Portal</span>
-                    <span className="qms-header-navigation-tab-chevron">
-                      <img
-                        src={scnDropdownIcon}
-                        style={{
-                          transform: scnMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                          transition: 'transform 0.2s ease',
-                          width: '21px',
-                          height: '18px'
-                        }}
-                      />
-                    </span>
-                  </Box>
-                }
-                onClick={handleScnTabClick}
-              />
             </Tabs>
-
-            <Menu
-              anchorEl={scnAnchorEl}
-              open={scnMenuOpen}
-              onClose={handleScnClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-              transformOrigin={{ vertical: "top", horizontal: "center" }}
-            >
-              <MenuItem onClick={() => handleScnNavigate("/scn/supplier")}>
-                Supplier Portal
-              </MenuItem>
-              {/* Add more SCN pages here if needed */}
-            </Menu>
           </div>
 
           <div className="qms-header-container-navbar-right">

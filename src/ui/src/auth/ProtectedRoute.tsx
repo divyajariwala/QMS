@@ -31,7 +31,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (auth.isLoading) return <div>Loading...</div>;
   if (auth.error) return <div>Error: {auth.error.message}</div>;
-
+// by passing the returnTo state, we can redirect back after login
   if (auth.isAuthenticated) {
     const returnTo = location.pathname + location.search;
 

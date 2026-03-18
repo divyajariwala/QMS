@@ -31,6 +31,9 @@ import AdverseEventDetails from "@components/adverseEvent/AdverseEventDetails";
 import RCADetails from "@components/deviations/RCADetails";
 import GradingDetails from "@components/deviations/GradingDetails";
 import SupplierPortal from "@components/scn/SupplierPortal";
+import SCNEditDetails from "@components/scn/SCNEditDetails";
+import UploadDetails from "@components/scn/UploadDetails";
+import SCNAddEmailDoc from "@components/scn/SCNAddEmailDoc";
 // import Unauthorized from './components/Unauthorized';
 
 /**
@@ -151,6 +154,30 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <SupplierPortal />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/scn/supplier/:scnId"
+                    element={
+                      <ProtectedRoute>
+                        <SCNEditDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/scn/upload-details"
+                    element={
+                      <ProtectedRoute>
+                        <UploadDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/scn/add-email-document"
+                    element={
+                      <ProtectedRoute>
+                        <SCNAddEmailDoc />
                       </ProtectedRoute>
                     }
                   />
