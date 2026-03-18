@@ -43,6 +43,22 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
   const handleSeeDetailsClick = () => {
     navigate(`/scn/supplier/${scn.id}`);
   };
+  const getCardTopBorderClass = () => {
+    switch (scn.status) {
+      case "SUPPLIER ACTION REQUIRED":
+        return styles.cardBorderRed;
+      case "PENDING REVIEW":
+        return styles.cardBorderYellow;
+      case "IN REVIEW":
+        return styles.cardBorderGreen;
+      case "APPROVED":
+        return styles.cardBorderApproved;
+      case "REJECTED":
+        return styles.cardBorderRejected;
+      default:
+        return "";
+    }
+  };
   const getStatusClass = () => {
     switch (scn.status) {
       case "SUPPLIER ACTION REQUIRED":
@@ -108,7 +124,10 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
   const changeTypeConfig = getChangeTypeConfig();
 
   return (
-    <Box className={styles.card} onClick={handleSeeDetailsClick}>
+    <Box
+      className={`${styles.card} ${getCardTopBorderClass()}`}
+      onClick={handleSeeDetailsClick}
+    >
       {/* Header Row */}
       <Stack
         direction="row"
@@ -150,7 +169,7 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
           <span className={styles.infoValue}>{scn.supplierRef}</span>
         </Box>
         <Box className={styles.infoItem}>
-          <span className={styles.infoLabel}>Notification Date Date</span>
+          <span className={styles.infoLabel}>Notification Date</span>
           <Box className={styles.dateValue}>
             <img src={CalendarIcon} alt="Calendar" />
             <span className={styles.infoValue}>{scn.notificationDate}</span>
@@ -168,10 +187,9 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
         <Box className={styles.infoItem}>
           <span className={styles.infoLabel}>Change Type</span>
           <Box
-            className={styles.changeTypeTag}
-            // className={`${styles.changeTypeTag} ${changeTypeConfig.className}`}
+            className={`${styles.changeTypeTag} ${changeTypeConfig.className}`}
           >
-            {/* <img src={changeTypeConfig.icon} alt={scn.changeType} /> */}
+            <img src={changeTypeConfig.icon} alt={scn.changeType} />
             <span>{scn.changeType}</span>
           </Box>
         </Box>

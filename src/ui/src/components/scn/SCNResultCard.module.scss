@@ -1,8 +1,9 @@
 .card {
   background-color: #fff;
   border: 1px solid #e5e7eb;
+  border-top-width: 3px;
   padding: 16px 20px;
-  border-radius: 8px;
+  border-radius: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: box-shadow 0.2s ease;
   width: 100%;
@@ -12,64 +13,110 @@
   }
 }
 
+.cardBorderRed {
+  border-top-color: #e2341d;
+}
+.cardBorderYellow {
+  border-top-color: #ffb600;
+}
+.cardBorderGreen {
+  border-top-color: #4eb523;
+}
+.cardBorderApproved {
+  border-top-color: #2d8a39;
+}
+.cardBorderRejected {
+  border-top-color: #e2341d;
+}
+
 .headerRow {
   margin-bottom: 16px;
 }
 
 .status {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: block;
-  line-height: 24px;
+  display: inline-block;
+  line-height: normal;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
 }
 
 .statusRed {
-  color: #e0301e;
-}
-
-.statusYellow {
-  color: #ffb600;
-}
-
-.statusGreen {
-  color: #4eb523;
-}
-
-.statusApproved {
-  color: #2d8a39;
-}
-
-.statusRejected {
-  color: #e0301e;
-}
-
-.classificationStatus {
-  font-size: 13px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  width: fit-content;
-}
-.statusHigh {
   color: #e2341d;
   background-color: #fff2f0;
 }
 
-.statusMedium {
+.statusYellow {
   color: #eea23e;
   background-color: #fff8eb;
 }
 
-.statusLow {
+.statusGreen {
   color: #2d8a39;
   background-color: #f0faf0;
+}
+
+.statusApproved {
+  color: #2d8a39;
+  background-color: #f0faf0;
+}
+
+.statusRejected {
+  color: #e0301e;
+  background-color: #fff2f0;
+}
+
+.classificationStatus {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.statusHigh {
+  color: #e2341d;
+}
+.statusHigh::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.statusMedium {
+  color: #eea23e;
+}
+.statusMedium::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.statusLow {
+  color: #2d8a39;
+}
+.statusLow::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
 }
 
 .scnNumber {
   font-size: 16px;
   font-weight: 600;
-  color: #0089eb;
+  color: #0065f4;
   margin: 0;
   cursor: pointer;
 
@@ -112,13 +159,13 @@
 }
 
 .infoLabel {
-  font-size: 13px;
+  font-size: 14px;
   color: #5f6d7e;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .infoValue {
-  font-size: 15px;
+  font-size: 14px;
   color: #272d37;
   font-weight: 600;
 }
@@ -127,7 +174,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: #272d37;
   font-weight: 600;
 }
@@ -141,8 +188,8 @@
   border-radius: 6px;
   font-weight: 500;
   width: fit-content;
-  color: #574efa;
-  background-color: #ecebff;
+  color: #437ef7;
+  background-color: #f5faff;
 }
 
 .changeTypeOrange {

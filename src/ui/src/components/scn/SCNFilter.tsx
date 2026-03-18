@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./SCNFilter.module.scss";
 import SearchIcon from "../../assets/icons/search.svg";
 import {
@@ -8,16 +8,7 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import filterIcon from "../../assets/icons/filter.svg";
-
-interface PaginationObj {
-  current_page: number;
-  total_pages: number;
-  total_items: number;
-  items_per_page: number;
-  has_next: boolean;
-  has_previous: boolean;
-}
+import filterIcon from "../../assets/icons/filterListGray.svg";
 
 interface FilterOptions {
   all: boolean;
@@ -31,15 +22,6 @@ interface FilterOptions {
 
 interface SCNFilterProps {
   scnNumber: string;
-  setSCNNumber: (val: string) => void;
-  setSearchResults: (val: any[] | null) => void;
-  setSearchActive: (val: boolean) => void;
-  setPagination: (val: PaginationObj) => void;
-  doSearch: (
-    scnNumber: string,
-    page?: number,
-    filters?: FilterOptions,
-  ) => Promise<void>;
   filters: FilterOptions;
   setFilters: (val: FilterOptions) => void;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -66,11 +48,6 @@ const FILTER_OPTIONS: { key: keyof FilterOptions; label: string }[] = [
 
 const SCNFilter = ({
   scnNumber,
-  setSCNNumber,
-  setSearchResults,
-  setSearchActive,
-  setPagination,
-  doSearch,
   filters,
   setFilters,
   handleInputChange,
@@ -90,9 +67,25 @@ const SCNFilter = ({
     }
   }, [filterMenuOpen, filters]);
 
-  const handleInputChange_Local = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleInputChange(e);
-  };
+  const handleSearchClickRef = useRef(handleSearchClick);
+  useEffect(() => {
+    handleSearchClickRef.current = handleSearchClick;
+  }, [handleSearchClick]);
+
+  const prevScnNumber = useRef(scnNumber);
+
+  useEffect(() => {
+    if (prevScnNumber.current === scnNumber) return;
+
+    const timer = setTimeout(() => {
+      if (scnNumber.trim() !== "") {
+        handleSearchClickRef.current();
+      }
+    }, 600);
+
+    prevScnNumber.current = scnNumber;
+    return () => clearTimeout(timer);
+  }, [scnNumber]);
 
   const handleFilterOpen_Menu = (
     event: React.MouseEvent<HTMLButtonElement>,
@@ -170,7 +163,7 @@ const SCNFilter = ({
         </div>
 
         <button className={styles.filterButton} onClick={handleFilterOpen_Menu}>
-          Filters
+          Filter
           <img src={filterIcon} alt="filter" />
         </button>
       </div>

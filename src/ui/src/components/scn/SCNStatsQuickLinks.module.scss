@@ -15,25 +15,33 @@
   border: 1px solid #eaebf0;
   border-radius: 12px;
   padding: 16px 20px;
+  min-width: 250px;
   flex: 1;
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.04);
 }
 
 .statsHeader {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .iconWrapper {
-  width: 53px;
-  height: 53px;
-  background-color: #eef2ff;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  background-color: #f3e7da;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  img {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 .totalContent {
@@ -45,37 +53,91 @@
 .totalLabel {
   font-size: 14px;
   color: #5f6d7e;
-  font-weight: 500;
-  line-height: 20px;
+  font-weight: 600;
+  line-height: normal;
 }
 
 .totalValue {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 600;
   color: #272d37;
-  line-height: 42px;
+  line-height: normal;
+}
+
+// Progress Bars
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.progressRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progressLabels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progressLabel {
+  font-size: 14px;
+  color: #5e5e5e;
+  font-weight: 500;
+}
+
+.progressValue {
+  font-size: 11px;
+  color: #272d37;
+  font-weight: 600;
+}
+
+.progressBar {
+  height: 8px !important;
+  border-radius: 5px !important;
+}
+
+.progressTrack {
+  background-color: #eeeff1 !important;
+}
+
+.progressFill {
+  background-color: #ff7219 !important;
+}
+
+.progressFillYellow {
+  background-color: #ff9f00 !important;
 }
 
 // Stats Grid
 .statsGrid {
   display: flex;
   flex-direction: row;
-  gap: 48px;
-  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  justify-content: flex-start;
 }
 
-.statsColumn {
+.chartWrapper {
+  width: 70px;
+  height: 70px;
+  flex-shrink: 0;
+}
+
+.legendColumn {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
+  flex: 1;
 }
 
 .statRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  // gap: 8px;
   padding-bottom: 7px;
   padding-top: 4px;
   border-bottom: 1px solid #eaebf0;
@@ -96,61 +158,64 @@
   flex-shrink: 0;
 }
 
-.redDot {
-  background-color: #e0301e;
+.greyDot {
+  background-color: #eeeff1;
 }
 
-.yellowDot {
-  background-color: #ffb600;
-}
-
-.greenDot {
-  background-color: #4eb523;
+.orangeDot {
+  background-color: #ff7219;
 }
 
 .statLabel {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: #111827;
-  min-width: 227px;
+  color: #000000;
+  min-width: 100px;
 }
 
 .statValue {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
-  color: #111827;
-  min-width: 30px;
+  color: #000000;
 }
 
 // ==================
 // Quick Links Card
 // ==================
-.quickLinksCard {
-  background-color: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px 20px;
-  flex: 1;
+.linksColumn {
+  display: flex;
+  flex-direction: column;
 }
 
-.quickLinksTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: #000000;
-  display: block;
-  margin-bottom: 24px;
+.linkRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  // border-bottom: 1px solid #eaebf0;
+}
+
+.linkRowLast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
 }
 
 .quickLink {
-  font-size: 14px;
+  font-size: 15px;
   color: #0089eb;
   text-decoration: none;
-  font-weight: 400;
-  display: block;
+  font-weight: 500;
 
-  text-decoration: underline;
   &:hover {
     text-decoration: underline;
     color: #1d4ed8;
   }
+}
+
+.arrowIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
 }

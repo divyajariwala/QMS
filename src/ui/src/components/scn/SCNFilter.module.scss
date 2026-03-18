@@ -12,72 +12,57 @@
 .container {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 16px;
   width: 100%;
   margin-top: 20px;
-  border-radius: 10px;
+  max-width: 50%;
 }
 
 .searchBar {
-  @include SearchBar;
+  flex: 1;
 }
 
 .inputWrapper {
   position: relative;
-  flex: 1;
   display: flex;
   align-items: center;
-  height: 100%;
+  height: 46px;
+  border: 1px solid #e5e7eb;
+  border-radius: 30px;
+  background-color: #fff;
+  padding: 0 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .searchIcon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
   height: 20px;
   width: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  opacity: 0.7;
+  margin-right: 12px;
+  flex-shrink: 0;
   pointer-events: none;
-  color: var(--muted-text);
-  opacity: 0.9;
 }
 
 .searchInput {
-  @include SearchBox;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: #111827;
+  flex: 1;
+  height: 100%;
+  padding: 0;
+  font-family: inherit;
+  font-weight: 500;
+
+  &::placeholder {
+    color: #919ba7;
+  }
 }
 
 .searchButton {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  border: 1px solid #dae0e6;
-  border-radius: 5px;
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  color: #272d37;
-  padding: 4px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 114px;
-  height: 36px;
-  margin-right: 8px;
-  font-family: inherit !important;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: 0px;
-}
-
-.searchButton:hover,
-.searchButton:focus {
-  outline: none;
-  background: #faf9f9;
+  display: none;
 }
 
 input[type="search"]::-webkit-search-cancel-button {
@@ -92,44 +77,29 @@ input[type="search"]::-webkit-search-cancel-button {
   font-size: 14px;
 }
 
-.searchIcon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 20px;
-  width: 20px;
-  pointer-events: none;
-  color: var(--muted-text);
-  opacity: 0.9;
-}
-
 .filterButton {
-  border: 1px solid #dae0e6;
-  border-radius: 5px;
+  border: 1px solid #e5e7eb;
+  border-radius: 30px;
   background: #fff;
   cursor: pointer;
-  font-size: 14px;
-  color: #272d37;
-  padding: 4px 28px;
+  font-size: 15px;
+  color: #474747;
+  padding: 0 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  width: 124px;
+  gap: 12px;
   height: 46px;
-  font-family: inherit !important;
+  font-family: inherit;
   font-weight: 600;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: 0px;
-  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.04);
+  box-shadow: none;
+  white-space: nowrap;
 }
 
 .filterButton:hover,
 .filterButton:focus {
   outline: none;
-  background: #faf9f9;
+  background: #f9fafb;
 }
 
 .filterActions {

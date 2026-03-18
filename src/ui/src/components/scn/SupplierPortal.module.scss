@@ -2,6 +2,15 @@
   width: 100%;
 }
 
+.switchReviewer {
+  color: #474747;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
 .headerSection {
   margin-top: 8px;
 }
@@ -61,12 +70,12 @@
 }
 
 .uploadButton {
-  background-color: #437ef7 !important;
+  background-color: #fd5108 !important;
   color: #fff !important;
   text-transform: none !important;
   font-weight: 500 !important;
   padding: 8px 20px !important;
-  border-radius: 6px !important;
+  border-radius: 100px !important;
   font-size: 14px !important;
   display: flex !important;
   align-items: center !important;
@@ -74,7 +83,7 @@
   font-weight: 600 !important;
   height: 40px !important;
   &:hover {
-    background-color: #1d4ed8 !important;
+    background-color: #e95d2a !important;
   }
 }
 

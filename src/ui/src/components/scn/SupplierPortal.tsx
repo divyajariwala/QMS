@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Box, Stack, Button, Skeleton, Alert } from "@mui/material";
+import { Box, Stack, Button, Alert } from "@mui/material";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import PaginationComponent from "@components/pagination/PaginationComponent";
 import styles from "./SupplierPortal.module.scss";
 import SCNStatsQuickLinks from "./SCNStatsQuickLinks";
 import scnUploadIcon from "../../assets/icons/scnUploadIcon.svg";
-import SCNTabs from "./SCNTabs";
 import SCNFilter, { FilterOptions } from "@components/scn/SCNFilter";
 import { UploadSCNModal } from "./UploadSCNModal";
 import SCNInternalReview from "./SCNInternalReview";
@@ -14,6 +13,7 @@ import { fetchScnSupplierList } from "src/services/scn";
 import { ScnFinalItem, ScnFinalSummary } from "src/types";
 import SupplierCardSkeleton from "./skeleton/SupplierCardSkeleton";
 import SCNStatsSkeleton from "./skeleton/SCNStatsSkeleton";
+import TransformIcon from "../../assets/icons/transform.svg";
 
 // Types
 export interface SCNStats {
@@ -224,75 +224,43 @@ const SupplierPortal: React.FC = () => {
     loadData(1, scnNumber, currentFilters);
   };
 
-  // Clear search from SCNFilter's internal clear
-  const handleSetSearchActive = (active: boolean) => {
-    setSearchActive(active);
-    if (!active) {
-      setSCNNumber("");
-      setCurrentPage(1);
-      loadData(1, "", currentFilters);
-    }
-  };
-
-  const handleSetSCNNumber = (val: string) => {
-    setSCNNumber(val);
-  };
-
-  // doSearch shim — required by SCNFilter prop signature
-  // filters param comes from SCNFilter when user clicks Apply
-  const doSearch = async (
-    number: string,
-    page: number = 1,
-    filters?: FilterOptions,
-  ) => {
-    setCurrentPage(page);
-    loadData(page, number, filters ?? currentFilters);
-  };
-
   return (
     <Box component="main" className={styles.supplierPortal}>
       <Stack direction="column" gap={1}>
-        <CommonBreadcrumbs items={breadcrumbItems} />
-
-        {/* Header Section */}
-        <Stack
-          direction="row"
-          alignItems="flex-start"
-          justifyContent="space-between"
-          className={styles.headerSection}
-        >
-          <Box>
-            <h1 className={styles.pageTitle}>SCN</h1>
-            <p className={styles.pageSubtitle}>
-              Submit and track Supplier Change Notifications (SCNs)
-            </p>
-          </Box>
+        <Stack direction="row" justifyContent="space-between">
+          <CommonBreadcrumbs items={breadcrumbItems} />
+          <span
+            className={styles.switchReviewer}
+            onClick={() =>
+              setActiveSCNTab(
+                activeSCNTab === "supplier_portal"
+                  ? "internal_review"
+                  : "supplier_portal",
+              )
+            }
+          >
+            <img src={TransformIcon} alt="transform icon" />
+            {activeSCNTab === "supplier_portal"
+              ? "Switch to Reviewer"
+              : "Switch to Supplier"}
+          </span>
         </Stack>
-      </Stack>
-
-      <SCNTabs activeTab={activeSCNTab} setActiveTab={setActiveSCNTab} />
-
-      {/* Supplier portal tab */}
-      {activeSCNTab === "supplier_portal" && (
-        <div>
+        {/* Header Section */}
+        {activeSCNTab === "supplier_portal" ? (
           <Stack
             direction="row"
-            alignItems="flex-start"
+            alignItems="center"
             justifyContent="space-between"
-            marginTop={3}
+            className={styles.headerSection}
           >
-            <h1 className={styles.pageSummaryTitle}>SCN Summary</h1>
-            <Stack direction="row" spacing={2} className={styles.actions}>
-              {/* <Button
-                variant="outlined"
-                className={styles.addManuallyButton}
-                onClick={handleAddEmailDocument}
-              >
-                <span className={styles.plusIcon}>
-                  <img src={EmailIcon} />
-                </span>
-                Add Email Document
-              </Button> */}
+            <Box>
+              <h1 className={styles.pageTitle}>SCN Supplier</h1>
+              <p className={styles.pageSubtitle}>
+                A centralized view where users can access and respond to SCNs,
+                track submission status, and review feedback in one place
+              </p>
+            </Box>
+            <Box>
               <Button
                 variant="contained"
                 className={styles.uploadButton}
@@ -303,15 +271,29 @@ const SupplierPortal: React.FC = () => {
                 </span>
                 Upload SCN
               </Button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                accept=".pdf"
-              />
-            </Stack>
+            </Box>
           </Stack>
+        ) : (
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            className={styles.headerSection}
+          >
+            <Box>
+              <h1 className={styles.pageTitle}>SCN Reviewer</h1>
+              <p className={styles.pageSubtitle}>
+                A centralized view where reviewers can evaluate SCN submissions,
+                provide feedback, and approve or request revisions efficiently
+              </p>
+            </Box>
+          </Stack>
+        )}
+      </Stack>
 
+      {/* Supplier portal tab */}
+      {activeSCNTab === "supplier_portal" && (
+        <div>
           {/* Stats – skeleton on first load, real data once summary arrives */}
           {loading && !summary ? (
             <SCNStatsSkeleton />
@@ -319,24 +301,21 @@ const SupplierPortal: React.FC = () => {
             <SCNStatsQuickLinks stats={stats} />
           )}
 
-          {/* SCN List label */}
-          <div className={styles.scnListLabel}>
-            {loading ? "SCN List (…)" : `SCN List (${totalCount})`}
-          </div>
+          <Stack direction="row" justifyContent="space-between">
+            {/* SCN List label */}
+            <div className={styles.scnListLabel}>
+              {loading ? "SCN List (…)" : `SCN List (${totalCount})`}
+            </div>
 
-          {/* Filter Section */}
-          <SCNFilter
-            scnNumber={scnNumber}
-            setSCNNumber={handleSetSCNNumber}
-            setSearchResults={() => {}}
-            setSearchActive={handleSetSearchActive}
-            setPagination={() => {}}
-            doSearch={doSearch}
-            filters={currentFilters}
-            setFilters={setCurrentFilters}
-            handleInputChange={handleInputChange}
-            handleSearchClick={handleSearchClick}
-          />
+            {/* Filter Section */}
+            <SCNFilter
+              scnNumber={scnNumber}
+              filters={currentFilters}
+              setFilters={setCurrentFilters}
+              handleInputChange={handleInputChange}
+              handleSearchClick={handleSearchClick}
+            />
+          </Stack>
 
           {/* Error state */}
           {error && !loading && (
