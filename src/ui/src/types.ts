@@ -671,6 +671,16 @@ export interface AdverseEventFilterProps {
   doSearch: (id: string, page?: number) => Promise<void>;
 }
 
+export interface ScnVolumeTrend {
+  dates: string[];
+  counts: number[];
+}
+
+export interface AvgProcessingTime {
+  seconds: number;
+  human_readable: string;
+}
+
 export interface ScnListItem {
   email_id: string;
   scn_reference_number: string;
@@ -701,6 +711,8 @@ export interface ScnListResponse {
     change_classification_supplier_list: string[];
     risk_level_summary?: any;
     classification_summary?: any;
+    avg_processing_time?: AvgProcessingTime;
+    scn_volume_trend?: ScnVolumeTrend;
   };
   timestamp: string;
 }

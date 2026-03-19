@@ -34,8 +34,10 @@ const SCNStatsQuickLinks: React.FC<SCNStatsQuickLinksProps> = ({ stats }) => {
       <Box className={styles.statsCard}>
         <Box className={styles.statsHeader}>
           <Box className={styles.totalContent}>
-            <span className={styles.totalLabel}>Total SCNs</span>
-            <span className={styles.totalValue}>{stats.total}</span>
+            <span className={styles.totalLabel}>Reviewed SCNs</span>
+            <span className={styles.totalValue}>
+              {stats.approved + stats.rejected}
+            </span>
           </Box>
           <Box className={styles.iconWrapper}>
             <img src={SCNsSummaryIcon} alt="Total SCNs" />

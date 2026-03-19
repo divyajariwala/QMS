@@ -1,0 +1,26 @@
+.chartContainer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.customTooltip {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  p {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: #5f6d7e;
+  }
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  fill: #272d37;
+}

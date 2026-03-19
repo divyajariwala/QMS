@@ -3,7 +3,7 @@ import { ButtonGroupProps } from "src/types";
 import styles from "./ButtonGroup.module.scss";
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ onSelect, selected }) => {
-  const buttons = ["Review", "Impact Assessment", "Audit"];
+  const buttons = ["Review", "Impact Assessment"];
 
   return (
     <div className={styles.buttonGroup}>

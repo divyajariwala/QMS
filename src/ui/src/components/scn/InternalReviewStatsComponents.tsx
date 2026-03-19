@@ -4,7 +4,9 @@ import DonutChart from "../charts/DonutChart";
 import GaugeChart from "../charts/GaugeChart";
 import DialIcon from "../../assets/icons/dialIcon.svg";
 import BarChartIcon from "../../assets/icons/barChartIcon.svg";
-import ProcessingTimeIcon from "../../assets/icons/processingTimeIcon.svg";
+import PieChart from "../../assets/icons/PieChart.svg";
+import TrendChart from "../charts/TrendChart";
+import { format } from "date-fns";
 
 export interface InternalReviewStatsComponentsProps {
   total?: number;
@@ -19,11 +21,25 @@ export interface InternalReviewStatsComponentsProps {
     non_scn?: number;
     unclassified?: number;
   };
+  scnVolumeTrend?: {
+    dates: string[];
+    counts: number[];
+  };
+  avgProcessingTime?: {
+    seconds: number;
+    human_readable: string;
+  };
 }
 
 const InternalReviewStatsComponents: React.FC<
   InternalReviewStatsComponentsProps
-> = ({ total = 0, riskLevelSummary, classificationSummary }) => {
+> = ({
+  total = 0,
+  riskLevelSummary,
+  classificationSummary,
+  scnVolumeTrend,
+  avgProcessingTime,
+}) => {
   // Card 1 Data
   const riskData = riskLevelSummary || { major: 0, moderate: 0, minor: 0 };
   const card1RawData = [
@@ -51,7 +67,7 @@ const InternalReviewStatsComponents: React.FC<
     value: d.value,
     color: getColorsForRisk([d])[0],
   }));
-
+  const card1Total = card1RawData.reduce((a, b) => a + b.value, 0);
   // Card 2 Data
   const classData = classificationSummary || { scn: 0, non_scn: 0 };
   const card2RawData = [
@@ -80,6 +96,39 @@ const InternalReviewStatsComponents: React.FC<
 
   const card2Total = (classData.scn || 0) + (classData.non_scn || 0);
 
+  // Card 4 Data
+  const getDayWithSuffix = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const suffix = (day: number) => {
+      if (day > 3 && day < 21) return "th";
+      switch (day % 10) {
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
+      }
+    };
+    return `${day}${suffix(day)}/${month}`;
+  };
+
+  const trendData = scnVolumeTrend
+    ? scnVolumeTrend.dates.map((date, index) => ({
+        date,
+        count: scnVolumeTrend.counts[index],
+        displayDate: getDayWithSuffix(date),
+      }))
+    : [];
+
+  const trendTotal = scnVolumeTrend
+    ? scnVolumeTrend.counts.reduce((a, b) => a + b, 0)
+    : 0;
+
   return (
     <div
       style={{
@@ -92,7 +141,7 @@ const InternalReviewStatsComponents: React.FC<
       {/* Card 1 */}
       <DashboardStatsCard
         title="Total"
-        value={total}
+        value={card1Total}
         chartComponent={
           <DonutChart
             data={displayCard1Data}
@@ -102,7 +151,7 @@ const InternalReviewStatsComponents: React.FC<
           />
         }
         legendItems={card1Legend}
-        icon={<img src={BarChartIcon} alt="Bar Chart" />}
+        icon={<img src={PieChart} alt="Pie Chart" />}
       />
 
       {/* Card 2 */}
@@ -113,7 +162,7 @@ const InternalReviewStatsComponents: React.FC<
           <DonutChart
             data={displayCard2Data}
             colors={card2Colors}
-            innerRadius={40}
+            innerRadius={0}
             outerRadius={60}
           />
         }
@@ -122,13 +171,30 @@ const InternalReviewStatsComponents: React.FC<
       />
 
       {/* Card 3 */}
-      <DashboardStatsCard
+      {/* <DashboardStatsCard
         title="Average Time To Complete"
-        value="5.2 Min"
+        value={avgProcessingTime?.human_readable || "5.2 Min"}
         chartComponent={
-          <GaugeChart value={5.2} max={10} leftLabel="Low" rightLabel="High" />
+          <GaugeChart
+            value={avgProcessingTime ? avgProcessingTime.seconds / 3600 : 5.2}
+            max={
+              avgProcessingTime
+                ? Math.max(avgProcessingTime.seconds / 3600, 24)
+                : 10
+            }
+            leftLabel="Low"
+            rightLabel="High"
+          />
         }
-        icon={<img src={ProcessingTimeIcon} alt="Processing Time" />}
+        icon={<img src={BarChartIcon} alt="Bar Chart" />}
+      /> */}
+
+      {/* Card 4 */}
+      <DashboardStatsCard
+        title="SCN Volumes In Last 5 Days"
+        value={trendTotal}
+        chartComponent={<TrendChart data={trendData} />}
+        icon={<img src={BarChartIcon} alt="Trend Icon" />}
       />
     </div>
   );
