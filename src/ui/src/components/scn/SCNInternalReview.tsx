@@ -17,11 +17,11 @@ import styles from "./SCNInternalReview.module.scss";
 import filterIcon from "../../assets/icons/filterListGray.svg";
 import SearchIcon from "../../assets/icons/search.svg";
 import ButtonGroup from "./ButtonGroup";
-import SCNFormFields from "./SCNForm";
+import SCNReviewForm from "./SCNReviewForm";
 import AppButton from "@components/common/AppButton";
 import InfoIcon from "../../assets/icons/information.svg";
-import AiSummaryIcon from "../../assets/icons/aiSummary.svg";
 import ChangeNotificationModal from "./modal/ChangeNotificationModal";
+import SCNExtractedSourcesModal from "./modal/SCNExtractedSourcesModal";
 import RightIcon from "../../assets/icons/rightBlue.svg";
 import {
   fetchScnDetails,
@@ -33,6 +33,9 @@ import {
 import { mapScnDetailsToForm } from "src/utils/mapScnDetails";
 import { mapScnFormToApi } from "src/utils/mapScnFormToApi";
 import ScnListSkeleton from "./skeleton/ScnListSkeleton";
+import ApproveModal from "./modal/ApproveModal";
+import RejectSCNModal from "./modal/RejectSCNModal";
+import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
 import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
 import RequestInfoModal from "./modal/RequestInfoModal";
 import SCNInternalReviewImpactTab, {
@@ -44,6 +47,7 @@ import DashboardExample from "@components/scn/InternalReviewStatsComponents";
 import ProductComplaints from "../../assets/icons/productComplaint.svg";
 import AuditHistoryIcon from "../../assets/icons/revert.svg";
 import CommonModal from "@components/common/CommonModal";
+import Gauge from "@components/common/GaugeChart";
 
 type FilterState = {
   supplier: string;
@@ -56,12 +60,14 @@ const LIMIT = 10;
 
 const SCNInternalReview: React.FC = () => {
   const [selected, setSelected] = useState<number>(0);
-  const [selectedTab, setSelectedTab] = useState("Review");
+  const [selectedTab, setSelectedTab] = useState("Impact Review");
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false);
   // const [openPreview, setOpenPreview] = useState(false);
   const [openRequestInfo, setOpenRequestInfo] = useState(false);
   const [openAuditModal, setOpenAuditModal] = useState(false);
+  const [openExtractedSourcesModal, setOpenExtractedSourcesModal] =
+    useState(false);
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
 
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
@@ -126,6 +132,11 @@ const SCNInternalReview: React.FC = () => {
   const [impactClassificationData, setImpactClassificationData] =
     useState<ImpactClassificationData | null>(null);
   const [latestPdfUrl, setLatestPdfUrl] = useState<string | null>(null);
+  const [openApprove, setOpenApprove] = useState(false);
+  const [openReject, setOpenReject] = useState(false);
+  const [openPreview, setOpenPreview] = useState(false);
+  const [changeControlRequired, setChangeControlRequired] = useState("");
+  const [recordId, setRecordId] = useState("");
 
   // Fetch SCN list with filters + search
   useEffect(() => {
@@ -238,12 +249,17 @@ const SCNInternalReview: React.FC = () => {
     setSelectedEmailId(item.email_id);
     try {
       setDetailLoading(true);
-      const res: any = await fetchScnDetails(item.email_id);
-      if (res?.data) {
-        const mapped = mapScnDetailsToForm(res.data);
+      // Call both APIs in parallel
+      const [resDetail, resImpact]: any = await Promise.all([
+        fetchScnDetails(item.email_id),
+        scnClassificationResults(item.email_id),
+      ]);
+
+      if (resDetail?.data) {
+        const mapped = mapScnDetailsToForm(resDetail.data);
         setScnDetail(mapped);
 
-        const attachments: any[] = res.data.attachments || [];
+        const attachments: any[] = resDetail.data.attachments || [];
         const doneWithUrl = attachments.filter(
           (a) => a.status === "DONE" && !!a.download_url,
         );
@@ -253,8 +269,16 @@ const SCNInternalReview: React.FC = () => {
         )[0];
         setLatestPdfUrl(latestAttachment?.download_url ?? null);
       }
+
+      if (resImpact?.success !== false) {
+        const data: ImpactClassificationData =
+          resImpact?.data ?? resImpact ?? {};
+        setImpactClassificationData(data);
+      } else {
+        setImpactClassificationData(null);
+      }
     } catch (error) {
-      console.error("Failed to fetch SCN details", error);
+      console.error("Failed to fetch SCN details or impact results", error);
     } finally {
       setDetailLoading(false);
       setIsFirstLoad(false);
@@ -313,31 +337,7 @@ const SCNInternalReview: React.FC = () => {
     await handleSelectScn({ email_id: selectedEmailId });
   };
 
-  const handleImpactReview = async () => {
-    if (!selectedEmailId) return;
-    setImpactReviewLoading(true);
-    try {
-      await scnClassify(selectedEmailId);
-      setSelectedTab("Impact Assessment");
-      setIsClassifying(true);
-      setImpactReviewLoading(false);
-      await new Promise<void>((resolve) => setTimeout(resolve, 35000));
-
-      const res = await scnClassificationResults(selectedEmailId);
-      if (res?.success === false) {
-        setImpactClassificationData(null);
-      } else {
-        const data: ImpactClassificationData = res?.data ?? res ?? {};
-        setImpactClassificationData(data);
-      }
-    } catch (err) {
-      console.error("Impact Review failed:", err);
-      setImpactClassificationData(null);
-    } finally {
-      setIsClassifying(false);
-      setImpactReviewLoading(false);
-    }
-  };
+  // Removed handleImpactReview as per new flow requirements
 
   /** Fetches the latest impact classification data for the selected SCN */
   const loadImpactData = useCallback(async () => {
@@ -361,7 +361,7 @@ const SCNInternalReview: React.FC = () => {
 
   const handleTabSelect = async (tab: string) => {
     setSelectedTab(tab);
-    if (tab === "Impact Assessment" && selectedEmailId) {
+    if (tab === "Impact Review" && selectedEmailId) {
       await loadImpactData();
     }
   };
@@ -414,7 +414,7 @@ const SCNInternalReview: React.FC = () => {
     setScnDetail(null);
     setImpactClassificationData(null);
     setSelected(0);
-    setSelectedTab("Review");
+    setSelectedTab("Impact Review");
     setScnVolumeTrend(null);
     setAvgProcessingTime(null);
     setIsFirstLoad(true);
@@ -670,8 +670,9 @@ const SCNInternalReview: React.FC = () => {
                       className={`${styles.queueCard} ${selected === index ? styles.active : ""}`}
                       onClick={() => {
                         setSelected(index);
+                        setSelected(index);
                         handleSelectScn(item);
-                        setSelectedTab("Review");
+                        setSelectedTab("Impact Review");
                       }}
                     >
                       <span
@@ -751,71 +752,73 @@ const SCNInternalReview: React.FC = () => {
               </>
             ) : (
               <>
-                <Box>
-                  {/* <span className={styles.scnStatus}>{scnDetail?.status}</span> */}
-                  <Box className={styles.mailContentHader}>
-                    <Stack
-                      direction="row"
-                      justifyContent="space-between"
-                      alignItems="center"
-                      marginTop={0.5}
-                      gap={2}
-                    >
-                      <span className={styles.scnId}>
-                        {scnDetail?.supplierRef}
-                      </span>
-                      <button
-                        className={styles.auditHistory}
-                        onClick={() => setOpenAuditModal(true)}
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  justifyContent="space-between"
+                >
+                  <Stack direction="column" gap={2}>
+                    {/* <span className={styles.scnStatus}>{scnDetail?.status}</span> */}
+
+                    <Box className={styles.mailContentHader}>
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        marginTop={0.5}
+                        gap={2}
                       >
-                        <img src={AuditHistoryIcon} alt="" />
-                        Audit History
-                      </button>
-                      {/* <span
+                        <span className={styles.scnId}>
+                          {scnDetail?.supplierRef}
+                        </span>
+                        <button
+                          className={styles.auditHistory}
+                          onClick={() => setOpenAuditModal(true)}
+                        >
+                          <img src={AuditHistoryIcon} alt="" />
+                          Audit History
+                        </button>
+                        {/* <span
                         className={`${styles.classificationStatus} ${getClassificationClass("Minor")}`}
                       >
                         Minor
                       </span> */}
-                    </Stack>
+                      </Stack>
+                    </Box>
+                    <Box className={styles.detailText}>
+                      <span>{scnDetail?.supplierName}</span>
+                      <span>Supplier SCN: {scnDetail?.supplierRef}</span>
+                      <span>
+                        Submitted: {scnDetail?.createdAt?.split("T")[0]}
+                      </span>
+                    </Box>
+                  </Stack>
+
+                  <Box
+                    onClick={() => setOpenExtractedSourcesModal(true)}
+                    sx={{ cursor: "pointer" }}
+                  >
+                    <Gauge
+                      value={
+                        scnDetail?.extractedFieldSources?.confidence_score ?? 0
+                      }
+                      size={100}
+                    />
                   </Box>
-                </Box>
-                <Box className={styles.detailText}>
-                  <span>{scnDetail?.supplierName}</span>
-                  <span>Supplier SCN: {scnDetail?.supplierRef}</span>
-                  <span>Submitted: {scnDetail?.createdAt?.split("T")[0]}</span>
-                  {/* <span>Owner: Unassigned</span> */}
-                </Box>
-                <ButtonGroup
+                </Stack>
+                {/* <ButtonGroup
                   selected={selectedTab}
                   onSelect={handleTabSelect}
-                />
-                {selectedTab === "Review" && (
+                /> */}
+                {selectedTab === "Review SCN" && (
                   <Box>
-                    <Stack
+                    {/* <Stack
                       direction="row"
                       gap={1.5}
                       justifyContent="flex-end"
                       marginBottom={3}
                       marginTop={1}
                     >
-                      <AppButton
-                        variant="outlined"
-                        onClick={handleImpactReview}
-                        disabled={impactReviewLoading}
-                      >
-                        <span className={styles.appButton}>
-                          {impactReviewLoading ? (
-                            <CircularProgress
-                              size={14}
-                              sx={{ color: "inherit" }}
-                            />
-                          ) : (
-                            <img src={AiSummaryIcon} alt="" />
-                          )}
-                          Impact Review
-                        </span>
-                      </AppButton>
-
                       <AppButton
                         variant="outlined"
                         onClick={() => setOpenRequestInfo(true)}
@@ -825,87 +828,20 @@ const SCNInternalReview: React.FC = () => {
                           Request info
                         </span>
                       </AppButton>
-
-                      {/* <AppButton
-                        variant="primary"
-                        onClick={() => setOpenPreview(true)}
-                      >
-                        <span className={styles.appButton}>
-                          <img src={UndoIcon} alt="" />
-                          Change SCN Output
-                        </span>
-                      </AppButton> */}
-                    </Stack>
-                    {/* <Box className={styles.docxMain}>
-                      <section className={styles.section}>
-                        <p>
-                          <b>Reason for Change:</b> End-of-life replacement of
-                          legacy equipment/material.
-                        </p>
-                      </section>
-
-                      <section className={styles.section}>
-                        <h3>Affected Items</h3>
-                        <div className={styles.tableMain}>
-                          <div className={styles.tableTitle}>
-                            Affected Items
-                          </div>
-                          <table className={styles.table}>
-                            <thead>
-                              <tr>
-                                <th>Type</th>
-                                <th>Identifier</th>
-                                <th>Description</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>Service</td>
-                                <td>SRV-6803</td>
-                                <td>Release testing support</td>
-                              </tr>
-                              <tr>
-                                <td>Service</td>
-                                <td>SRV-1313</td>
-                                <td>Incoming inspection service</td>
-                              </tr>
-                              <tr>
-                                <td>Material</td>
-                                <td>MAT-524871</td>
-                                <td>Polymer resin, lot controlled</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </section>
-
-                      <section className={styles.section}>
-                        <h3>Impact Assessment</h3>
-                        <p>
-                          <b>Regulatory Impact Likelihood:</b> High
-                        </p>
-                      </section>
-                    </Box> */}
-                    <AppButton
-                      className={styles.previewButton}
-                      variant="outlined"
-                      onClick={() => setOpen(true)}
-                    >
-                      <span className={styles.previewIcon}>
-                        Preview
-                        <img src={RightIcon} alt=">" />
-                      </span>
-                    </AppButton>
-                    {/* <SCNFormSkeleton /> */}
-
+                    </Stack> */}
                     {scnDetail && (
-                      <SCNFormFields
+                      <SCNReviewForm
                         formData={scnDetail}
                         isEditing={isEditing}
                         onEditClick={() => setIsEditing(true)}
                         onInputChange={handleInputChange}
                         isUpload={false}
                         validationErrors={validationErrors}
+                        onBackToSummary={() => handleTabSelect("Impact Review")}
+                        onApprove={() => setOpenApprove(true)}
+                        onReject={() => setOpenReject(true)}
+                        onSave={handleSaveClick}
+                        onCancel={handleCancelClick}
                       />
                     )}
                     {isEditing && (
@@ -913,7 +849,7 @@ const SCNInternalReview: React.FC = () => {
                     )}
                   </Box>
                 )}
-                {selectedTab === "Impact Assessment" && (
+                {selectedTab === "Impact Review" && (
                   <Box>
                     {isClassifying ? (
                       <Box className={styles.classifyingContainer}>
@@ -928,6 +864,14 @@ const SCNInternalReview: React.FC = () => {
                         isLoading={impactReviewLoading}
                         emailId={selectedEmailId ?? undefined}
                         onRefresh={loadImpactData}
+                        onReviewScnClick={() => handleTabSelect("Review SCN")}
+                        scnDetail={scnDetail}
+                        onApproveClick={() => setOpenApprove(true)}
+                        onRejectClick={() => setOpenReject(true)}
+                        onOutputClick={() => setOpenPreview(true)}
+                        onPreviewClick={() => setOpen(true)}
+                        changeControlRequired={changeControlRequired}
+                        recordId={recordId}
                       />
                     )}
                   </Box>
@@ -954,11 +898,57 @@ const SCNInternalReview: React.FC = () => {
                   | "NON_SCN") || "SCN"
               }
             /> */}
+            {/* Modals moved to parent for shared access */}
+            <ChangeSCNOutputModal
+              open={openPreview}
+              onClose={() => setOpenPreview(false)}
+              emailId={selectedEmailId ?? undefined}
+              onDone={(newCls) => {
+                setOpenPreview(false);
+                loadImpactData();
+              }}
+              defaultValue={
+                (impactClassificationData?.final_classification as
+                  | "SCN"
+                  | "NON_SCN") || "SCN"
+              }
+            />
+
+            <ApproveModal
+              open={openApprove}
+              onClose={() => setOpenApprove(false)}
+              emailId={selectedEmailId ?? undefined}
+              onDone={(changeControl, ccRecordId) => {
+                setChangeControlRequired(changeControl);
+                setRecordId(ccRecordId);
+                setOpenApprove(false);
+                loadImpactData();
+              }}
+              defaultChangeControl={changeControlRequired}
+              defaultRecordId={recordId}
+            />
+
+            <RejectSCNModal
+              open={openReject}
+              onClose={() => setOpenReject(false)}
+              emailId={selectedEmailId ?? undefined}
+              onSubmit={(comment) => {
+                setOpenReject(false);
+                loadImpactData();
+              }}
+            />
+
             <RequestInfoModal
               open={openRequestInfo}
               onClose={() => setOpenRequestInfo(false)}
               emailId={selectedEmailId ?? undefined}
               onDone={() => setOpenRequestInfo(false)}
+            />
+
+            <SCNExtractedSourcesModal
+              open={openExtractedSourcesModal}
+              onClose={() => setOpenExtractedSourcesModal(false)}
+              sources={scnDetail?.extractedFieldSources}
             />
 
             <CommonModal
@@ -971,27 +961,6 @@ const SCNInternalReview: React.FC = () => {
                 scnId={scnDetail?.supplierRef ?? null}
               />
             </CommonModal>
-
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              {isEditing && selectedTab === "Review" && (
-                <>
-                  <AppButton
-                    variant="outlined"
-                    onClick={handleCancelClick}
-                    className={styles.actionButton}
-                  >
-                    Cancel
-                  </AppButton>
-                  <AppButton
-                    variant="primary"
-                    onClick={handleSaveClick}
-                    className={styles.actionButton}
-                  >
-                    Save
-                  </AppButton>
-                </>
-              )}
-            </Stack>
           </Box>
         </Box>
       </Stack>

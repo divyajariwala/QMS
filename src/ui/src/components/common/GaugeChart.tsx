@@ -15,9 +15,9 @@ const Gauge: React.FC<GaugeProps> = ({ value, size = 200 }) => {
   const progress = Math.max(0, normalizedValue * visualTotal - strokeWidth);
 
   const getColor = () => {
-    if (normalizedValue <= 0.35) return "#e0301e";
-    if (normalizedValue <= 0.7) return "#ffb600";
-    return "#068620";
+    if (normalizedValue <= 0.35) return "#DA291C";
+    if (normalizedValue <= 0.7) return "#BF8900";
+    return "#4EAD58";
   };
 
   return (

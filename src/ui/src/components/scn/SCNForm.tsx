@@ -7,12 +7,11 @@ import {
   CircularProgress,
 } from "@mui/material";
 import FormInput from "@components/common/FormInput";
-import editIcon from "../../assets/icons/editLight.svg";
+import editIcon from "../../assets/icons/editIcon.svg";
 import documentTextIcon from "../../assets/icons/documentext.svg";
 import styles from "./SCNForm.module.scss";
 import Frame from "../../assets/icons/Frame.svg";
 import RiskIcon from "../../assets/icons/Lead Icon.svg";
-import SCNExtractedSourcesModal from "./modal/SCNExtractedSourcesModal";
 
 interface SCNFormFieldsProps {
   formData: any;
@@ -42,7 +41,6 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
   // showUploadSection defaults to isUpload so existing callers are unaffected
   const shouldShowUpload = showUploadSection ?? isUpload;
   const [uploading, setUploading] = useState(false);
-  const [sourcesModalOpen, setSourcesModalOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -89,17 +87,6 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
             <h2 className={styles.sectionTitleforReview} style={{ margin: 0 }}>
               Extracted info
             </h2>
-            {formData?.extractedFieldSources &&
-              Object.keys(formData.extractedFieldSources).length > 0 && (
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={() => setSourcesModalOpen(true)}
-                  sx={{ textTransform: "none", fontWeight: 600 }}
-                >
-                  View Sources
-                </Button>
-              )}
           </Stack>
         )}
         {!isUpload && Object.keys(validationErrors).length > 0 && (
@@ -116,7 +103,6 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
           <h2 className={styles.sectionTitle}>SCN Identification</h2>
           {!isEditing && onEditClick && (
             <Button
-              variant="contained"
               size="small"
               className={styles.editButtonSmall}
               onClick={onEditClick}
@@ -534,14 +520,6 @@ const SCNFormFields: React.FC<SCNFormFieldsProps> = ({
           </div>
         </div>
       </Box>
-
-      {formData?.extractedFieldSources && (
-        <SCNExtractedSourcesModal
-          open={sourcesModalOpen}
-          onClose={() => setSourcesModalOpen(false)}
-          sources={formData.extractedFieldSources}
-        />
-      )}
     </Box>
   );
 };

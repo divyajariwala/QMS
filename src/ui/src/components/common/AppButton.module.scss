@@ -3,12 +3,12 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
   text-transform: none;
+  border-radius: 50px !important;
 }
 
 /* sizes */
@@ -32,11 +32,11 @@
 
 /* variants */
 .primary {
-  background: #437ef7;
+  background: #fd5108;
   color: #fff;
 
   &:hover {
-    background: #1d4ed8;
+    background: #fa6423;
   }
 }
 

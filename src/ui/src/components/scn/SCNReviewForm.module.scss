@@ -1,10 +1,13 @@
 @use "../../styles/mixins" as *;
 
-.section {
+.formContainer {
   background: white;
   padding: 24px;
   border-radius: 8px;
   border: 1px solid #e3e3e3;
+}
+
+.section {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -288,5 +291,91 @@
   img {
     width: 12px;
     height: 12px;
+  }
+}
+
+.tabHeaderContainer {
+  margin-bottom: 24px;
+}
+
+.mainTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 24px;
+  margin-top: 0;
+}
+
+.tabHeader {
+  display: flex;
+  width: 100%;
+  gap: 12px;
+}
+
+.tabItem {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: #94a3b8;
+  border-top: 3.5px solid #e2e8f0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+
+  img {
+    width: 20px;
+    height: 20px;
+    filter: grayscale(1) opacity(0.4);
+    transition: all 0.2s ease;
+  }
+
+  &:hover {
+    color: #64748b;
+    border-top-color: #cbd5e1;
+  }
+}
+
+.activeTab {
+  color: #474747 !important;
+  border-top: 3.5px solid #fd5108 !important;
+  img {
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
+.bottomActions {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 24px;
+}
+
+.rejectButton {
+  text-transform: none !important;
+  color: #e0301e !important;
+  border-color: #fecaca !important;
+  font-weight: 600 !important;
+
+  &:hover {
+    background-color: #fff2f0 !important;
+  }
+}
+
+.approveButton {
+  text-transform: none !important;
+  background-color: #437ef7 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+
+  &:hover {
+    background-color: #3b6ed9 !important;
   }
 }

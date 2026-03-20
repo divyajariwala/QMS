@@ -7,10 +7,10 @@
 }
 
 .impactContainer {
-  border: 2px solid #003dab;
+  border: 1px dashed #437ef7;
   border-radius: 12px;
   padding: 24px;
-  background-color: #fff;
+  background-color: #f3faff;
   margin-top: 16px;
 }
 
@@ -67,7 +67,7 @@
 }
 
 .chip {
-  background-color: #eff8ff;
+  background-color: #fff6ec;
   color: #252525;
   padding: 8px 10px;
   border-radius: 6px;
@@ -76,17 +76,17 @@
   gap: 4px;
 
   strong {
-    color: #0060d7;
+    color: #ff7219;
     font-weight: 700;
   }
 }
 
 .toggleGroup {
   display: flex;
-  background-color: #f3f4f6;
   border-radius: 8px;
   padding: 4px;
-  width: 325px;
+  width: 330px;
+  border: 1px solid #d1d1d1;
 }
 
 .toggleBtn {
@@ -95,13 +95,13 @@
   border-radius: 6px !important;
   text-transform: none !important;
   font-weight: 600 !important;
-  color: #6b7280 !important;
+  color: #5f6d7e !important;
   background-color: transparent !important;
 }
 
 .active {
-  background-color: #ffffff !important;
-  color: #2563eb !important;
+  background-color: #fd5108 !important;
+  color: #ffffff !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -196,7 +196,7 @@
 .editButton {
   display: flex;
   gap: 6px;
-  border-radius: 6px !important;
+  border-radius: 50px !important;
   width: 86px !important;
   height: 36px !important;
 }
@@ -249,7 +249,7 @@
   cursor: pointer;
 
   input[type="radio"] {
-    accent-color: #3b82f6;
+    accent-color: #fd5108;
     width: 16px;
     height: 16px;
   }
@@ -315,7 +315,6 @@
 }
 
 .saveBtn {
-  background-color: #3b82f6 !important;
   text-transform: none !important;
   padding: 8px 32px !important;
   font-weight: 600 !important;
@@ -330,5 +329,43 @@
   &:hover {
     background-color: #f9fafb !important;
     border-color: #ccc !important;
+  }
+}
+
+.attachmentsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.attachmentCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  background-color: #f5f7f8;
+}
+
+.fileName {
+  font-weight: 600 !important;
+  color: #252525 !important;
+  font-size: 16px !important;
+}
+
+.previewLink {
+  color: #fd5108;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  img {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    text-decoration: underline;
   }
 }
