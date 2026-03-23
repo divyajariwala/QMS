@@ -688,3 +688,47 @@
   color: #e0301e;
   background-color: #fff2f0;
 }
+
+.filterTagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: 12px;
+  align-items: center;
+}
+
+.filterTag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0f7ff;
+  border: 1px solid #cce3ff;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: #0061d6;
+  font-weight: 500;
+
+  span {
+    font-weight: 600;
+  }
+}
+
+.clearFilterIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  color: #0061d6;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #cce3ff;
+    color: #004699;
+  }
+}

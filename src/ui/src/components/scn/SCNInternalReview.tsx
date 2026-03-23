@@ -446,6 +446,13 @@ const SCNInternalReview: React.FC = () => {
     handleFilterClose();
   };
 
+  const removeFilter = (key: keyof FilterState) => {
+    const newFilters = { ...appliedFilters, [key]: defaultFilters[key] };
+    setFilters(newFilters);
+    setAppliedFilters(newFilters);
+    resetDetailPanel();
+  };
+
   useEffect(() => {
     if (scns.length > 0 && !selectedEmailId) {
       setSelected(0);
@@ -483,6 +490,14 @@ const SCNInternalReview: React.FC = () => {
           setFilters((prev) => ({ ...prev, riskLevel: level }));
           setAppliedFilters((prev) => ({ ...prev, riskLevel: level }));
         }}
+        onClassificationClick={(classification) => {
+          resetDetailPanel();
+          setFilters((prev) => ({ ...prev, classification: classification }));
+          setAppliedFilters((prev) => ({
+            ...prev,
+            classification: classification,
+          }));
+        }}
       />
 
       <Stack gap={2}>
@@ -496,7 +511,44 @@ const SCNInternalReview: React.FC = () => {
               alignItems="center"
               className={styles.mailHeader}
             >
-              <span className={styles.mailHeaderTitle}>Queue ({total})</span>
+              <Stack direction="column" alignItems="flex-start" gap={1}>
+                <span className={styles.mailHeaderTitle}>Queue ({total})</span>
+                <div className={styles.filterTagContainer}>
+                  {appliedFilters.riskLevel && (
+                    <div className={styles.filterTag}>
+                      Risk: <span>{appliedFilters.riskLevel}</span>
+                      <div
+                        className={styles.clearFilterIcon}
+                        onClick={() => removeFilter("riskLevel")}
+                      >
+                        ×
+                      </div>
+                    </div>
+                  )}
+                  {appliedFilters.supplier && (
+                    <div className={styles.filterTag}>
+                      Supplier: <span>{appliedFilters.supplier}</span>
+                      <div
+                        className={styles.clearFilterIcon}
+                        onClick={() => removeFilter("supplier")}
+                      >
+                        ×
+                      </div>
+                    </div>
+                  )}
+                  {appliedFilters.classification && (
+                    <div className={styles.filterTag}>
+                      Class: <span>{appliedFilters.classification}</span>
+                      <div
+                        className={styles.clearFilterIcon}
+                        onClick={() => removeFilter("classification")}
+                      >
+                        ×
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Stack>
             </Stack>
 
             <Box className={styles.mailListSub}>

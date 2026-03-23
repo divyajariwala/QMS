@@ -30,6 +30,7 @@ export interface InternalReviewStatsComponentsProps {
     human_readable: string;
   };
   onRiskLevelClick?: (level: string) => void;
+  onClassificationClick?: (classification: string) => void;
 }
 
 const InternalReviewStatsComponents: React.FC<
@@ -41,6 +42,7 @@ const InternalReviewStatsComponents: React.FC<
   scnVolumeTrend,
   avgProcessingTime,
   onRiskLevelClick,
+  onClassificationClick,
 }) => {
   // Card 1 Data
   const riskData = riskLevelSummary || { major: 0, moderate: 0, minor: 0 };
@@ -171,6 +173,7 @@ const InternalReviewStatsComponents: React.FC<
         }
         legendItems={card2Legend}
         icon={<img src={DialIcon} alt="Dial" />}
+        onLegendItemClick={(item) => onClassificationClick?.(item.label)}
       />
 
       {/* Card 3 */}
