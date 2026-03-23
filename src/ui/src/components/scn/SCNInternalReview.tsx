@@ -121,6 +121,7 @@ const SCNInternalReview: React.FC = () => {
   const [avgProcessingTime, setAvgProcessingTime] = useState<any>(null);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [lastFetchDate, setLastFetchDate] = useState(new Date().toDateString());
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Filter options from API
@@ -141,12 +142,14 @@ const SCNInternalReview: React.FC = () => {
   const [recordId, setRecordId] = useState("");
 
   // Fetch SCN list with filters + search
-  useEffect(() => {
-    const loadList = async () => {
-      setLoading(true);
-      setError(null);
-      setScns([]);
-      setHasMore(true);
+  const loadList = useCallback(
+    async (isSilent = false) => {
+      if (!isSilent) {
+        setLoading(true);
+        setError(null);
+        setScns([]);
+        setHasMore(true);
+      }
       try {
         const params = new URLSearchParams();
         params.append("limit", String(LIMIT));
@@ -179,6 +182,10 @@ const SCNInternalReview: React.FC = () => {
         setScnVolumeTrend(res?.data?.scn_volume_trend || null);
         setAvgProcessingTime(res?.data?.avg_processing_time || null);
         setHasMore(items.length >= LIMIT && items.length < count);
+
+        // Update the last fetch date to catch midnight transitions
+        setLastFetchDate(new Date().toDateString());
+
         // Populate filter dropdown options from the response
         if (res?.data?.supplier_names) {
           setSupplierNames(res.data.supplier_names);
@@ -190,14 +197,46 @@ const SCNInternalReview: React.FC = () => {
           setIsFirstLoad(false);
         }
       } catch (err: any) {
-        setError(err.message || "Failed to fetch SCN list");
+        if (!isSilent) {
+          setError(err.message || "Failed to fetch SCN list");
+        }
         setIsFirstLoad(false);
       } finally {
-        setLoading(false);
+        if (!isSilent) {
+          setLoading(false);
+        }
+      }
+    },
+    [appliedFilters, appliedSearch],
+  );
+
+  useEffect(() => {
+    loadList();
+  }, [loadList]);
+
+  // Handle periodic refresh (every hour) and window focus
+  useEffect(() => {
+    const checkAndRefresh = () => {
+      const currentDate = new Date().toDateString();
+      if (currentDate !== lastFetchDate) {
+        loadList(true); // Silent refresh
+        if (selectedEmailId) {
+          handleSelectScn({ email_id: selectedEmailId });
+        }
       }
     };
-    loadList();
-  }, [appliedFilters, appliedSearch]);
+
+    // Check every hour
+    const intervalId = setInterval(checkAndRefresh, 60 * 60 * 1000);
+
+    // Also check on window focus
+    window.addEventListener("focus", checkAndRefresh);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener("focus", checkAndRefresh);
+    };
+  }, [lastFetchDate, loadList, selectedEmailId, isEditing]);
 
   const loadMore = useCallback(async () => {
     if (isFetchingMore || !hasMore) return;
@@ -256,46 +295,52 @@ const SCNInternalReview: React.FC = () => {
     return () => observer.disconnect();
   }, [loadMore]);
 
-  const handleSelectScn = async (item: any) => {
-    if (!item?.email_id) return;
-    setSelectedEmailId(item.email_id);
-    try {
-      setDetailLoading(true);
-      // Call both APIs in parallel
-      const [resDetail, resImpact]: any = await Promise.all([
-        fetchScnDetails(item.email_id),
-        scnClassificationResults(item.email_id),
-      ]);
+  const handleSelectScn = useCallback(
+    async (item: any) => {
+      if (!item?.email_id) return;
+      setSelectedEmailId(item.email_id);
+      try {
+        setDetailLoading(true);
+        // Call both APIs in parallel
+        const [resDetail, resImpact]: any = await Promise.all([
+          fetchScnDetails(item.email_id),
+          scnClassificationResults(item.email_id),
+        ]);
 
-      if (resDetail?.data) {
-        const mapped = mapScnDetailsToForm(resDetail.data);
-        setScnDetail(mapped);
+        if (resDetail?.data) {
+          const mapped = mapScnDetailsToForm(resDetail.data);
+          setScnDetail(mapped);
 
-        const attachments: any[] = resDetail.data.attachments || [];
-        const doneWithUrl = attachments.filter(
-          (a) => a.status === "DONE" && !!a.download_url,
-        );
-        const latestAttachment = doneWithUrl.sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-        )[0];
-        setLatestPdfUrl(latestAttachment?.download_url ?? null);
+          const attachments: any[] = resDetail.data.attachments || [];
+          const doneWithUrl = attachments.filter(
+            (a) => a.status === "DONE" && !!a.download_url,
+          );
+          const latestAttachment = doneWithUrl.sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime(),
+          )[0];
+          setLatestPdfUrl(latestAttachment?.download_url ?? null);
+        }
+
+        if (resImpact?.success !== false) {
+          const data: ImpactClassificationData =
+            resImpact?.data ?? resImpact ?? {};
+          setImpactClassificationData(data);
+        } else {
+          setImpactClassificationData(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch SCN details or impact results", error);
+      } finally {
+        setDetailLoading(false);
+        setIsFirstLoad(false);
       }
-
-      if (resImpact?.success !== false) {
-        const data: ImpactClassificationData =
-          resImpact?.data ?? resImpact ?? {};
-        setImpactClassificationData(data);
-      } else {
-        setImpactClassificationData(null);
-      }
-    } catch (error) {
-      console.error("Failed to fetch SCN details or impact results", error);
-    } finally {
-      setDetailLoading(false);
-      setIsFirstLoad(false);
-    }
-  };
+    },
+    [
+      /* No direct dependencies needed from state, but let's be safe */
+    ],
+  );
   const [validationErrors, setValidationErrors] = useState<
     Record<string, boolean>
   >({});
