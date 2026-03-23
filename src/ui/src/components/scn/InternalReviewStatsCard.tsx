@@ -13,6 +13,7 @@ export interface InternalReviewStatsCardProps {
   chartComponent: React.ReactNode;
   legendItems?: DashboardLegendItem[];
   icon?: React.ReactNode;
+  onLegendItemClick?: (item: DashboardLegendItem) => void;
 }
 
 const InternalReviewStatsCard: React.FC<InternalReviewStatsCardProps> = ({
@@ -21,6 +22,7 @@ const InternalReviewStatsCard: React.FC<InternalReviewStatsCardProps> = ({
   chartComponent,
   legendItems,
   icon,
+  onLegendItemClick,
 }) => {
   return (
     <div className={styles.card}>
@@ -40,7 +42,12 @@ const InternalReviewStatsCard: React.FC<InternalReviewStatsCardProps> = ({
         {legendItems && legendItems.length > 0 && (
           <div className={styles.legendContainer}>
             {legendItems.map((item, index) => (
-              <div key={index} className={styles.legendItem}>
+              <div
+                key={index}
+                className={styles.legendItem}
+                onClick={() => onLegendItemClick?.(item)}
+                style={{ cursor: onLegendItemClick ? "pointer" : "default" }}
+              >
                 <div className={styles.legendDotGroup}>
                   <div
                     className={styles.dot}

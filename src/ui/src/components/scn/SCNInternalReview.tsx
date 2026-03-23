@@ -54,6 +54,7 @@ type FilterState = {
   plannedDate: string | null;
   daysRange: string;
   classification: string;
+  riskLevel: string;
 };
 
 const LIMIT = 10;
@@ -99,6 +100,7 @@ const SCNInternalReview: React.FC = () => {
     plannedDate: null,
     daysRange: "",
     classification: "",
+    riskLevel: "",
   };
 
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
@@ -156,6 +158,11 @@ const SCNInternalReview: React.FC = () => {
             "change_classification_supplier",
             appliedFilters.classification,
           );
+        if (appliedFilters.riskLevel)
+          params.append(
+            "final_risk_level",
+            appliedFilters.riskLevel.toLowerCase(),
+          );
         if (appliedFilters.plannedDate)
           params.append(
             "planned_implementation_date",
@@ -206,6 +213,11 @@ const SCNInternalReview: React.FC = () => {
         params.append(
           "change_classification_supplier",
           appliedFilters.classification,
+        );
+      if (appliedFilters.riskLevel)
+        params.append(
+          "final_risk_level",
+          appliedFilters.riskLevel.toLowerCase(),
         );
       if (appliedFilters.plannedDate)
         params.append(
@@ -406,6 +418,7 @@ const SCNInternalReview: React.FC = () => {
       email_id: item.email_id,
       notification_date: item.notification_date,
       planned_implementation_date: item.planned_implementation_date,
+      final_risk_level: item.final_risk_level,
     }));
   }, [scns]);
 
@@ -465,6 +478,11 @@ const SCNInternalReview: React.FC = () => {
         classificationSummary={classificationSummary}
         scnVolumeTrend={scnVolumeTrend}
         avgProcessingTime={avgProcessingTime}
+        onRiskLevelClick={(level) => {
+          resetDetailPanel();
+          setFilters((prev) => ({ ...prev, riskLevel: level }));
+          setAppliedFilters((prev) => ({ ...prev, riskLevel: level }));
+        }}
       />
 
       <Stack gap={2}>
@@ -690,11 +708,11 @@ const SCNInternalReview: React.FC = () => {
                           {item.scn_reference_number}
                         </span>
 
-                        {/* <span
-                          className={`${styles.classificationStatus} ${getClassificationClass(item.status)}`}
+                        <span
+                          className={`${styles.classificationStatus} ${getClassificationClass(item.final_risk_level)}`}
                         >
-                          {item.status}
-                        </span> */}
+                          {item.final_risk_level}
+                        </span>
                       </Stack>
 
                       <p className={styles.supplier}>{item.supplier_name}</p>
