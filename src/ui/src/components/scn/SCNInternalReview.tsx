@@ -121,7 +121,6 @@ const SCNInternalReview: React.FC = () => {
   const [avgProcessingTime, setAvgProcessingTime] = useState<any>(null);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
-  const [lastFetchDate, setLastFetchDate] = useState(new Date().toDateString());
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Filter options from API
@@ -183,9 +182,6 @@ const SCNInternalReview: React.FC = () => {
         setAvgProcessingTime(res?.data?.avg_processing_time || null);
         setHasMore(items.length >= LIMIT && items.length < count);
 
-        // Update the last fetch date to catch midnight transitions
-        setLastFetchDate(new Date().toDateString());
-
         // Populate filter dropdown options from the response
         if (res?.data?.supplier_names) {
           setSupplierNames(res.data.supplier_names);
@@ -213,30 +209,6 @@ const SCNInternalReview: React.FC = () => {
   useEffect(() => {
     loadList();
   }, [loadList]);
-
-  // Handle periodic refresh (every hour) and window focus
-  useEffect(() => {
-    const checkAndRefresh = () => {
-      const currentDate = new Date().toDateString();
-      if (currentDate !== lastFetchDate) {
-        loadList(true); // Silent refresh
-        if (selectedEmailId) {
-          handleSelectScn({ email_id: selectedEmailId });
-        }
-      }
-    };
-
-    // Check every hour
-    const intervalId = setInterval(checkAndRefresh, 60 * 60 * 1000);
-
-    // Also check on window focus
-    window.addEventListener("focus", checkAndRefresh);
-
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener("focus", checkAndRefresh);
-    };
-  }, [lastFetchDate, loadList, selectedEmailId, isEditing]);
 
   const loadMore = useCallback(async () => {
     if (isFetchingMore || !hasMore) return;
