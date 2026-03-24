@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Box, Stack } from "@mui/material";
+import { Box, CircularProgress, Stack } from "@mui/material";
 import FormInput from "@components/common/FormInput";
 import editIcon from "../../assets/icons/editIcon.svg";
 import documentTextIcon from "../../assets/icons/documentext.svg";
@@ -23,6 +23,7 @@ interface SCNReviewFormProps {
   onReject?: () => void;
   onSave?: () => void;
   onCancel?: () => void;
+  isSaving?: boolean;
 }
 
 const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
@@ -39,6 +40,7 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
   onReject,
   onSave,
   onCancel,
+  isSaving = false,
 }) => {
   const [activeTab, setActiveTab] = useState<
     "SCN Identification" | "Materials / Products Impacted"
@@ -48,6 +50,28 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Which tabs have validation errors — so we can show a red badge
+  const TAB1_FIELDS = ["proposedState", "supplierContactInfo"];
+  const TAB2_FIELDS = [
+    "changeTimingPlannedDate",
+    "firstAffectedLotBatch",
+    "materialNumber",
+    "componentNumber",
+  ];
+  const FIELD_LABELS: Record<string, string> = {
+    proposedState: "Proposed State",
+    supplierContactInfo: "Supplier Contact Information",
+    changeTimingPlannedDate: "Planned Implementation Date",
+    firstAffectedLotBatch: "First Affected Lot / Batch",
+    materialNumber: "Material Numbers",
+    componentNumber: "Component Numbers",
+  };
+  const tab1HasError = TAB1_FIELDS.some((f) => validationErrors[f]);
+  const tab2HasError = TAB2_FIELDS.some((f) => validationErrors[f]);
+  const errorFields = Object.keys(validationErrors).filter(
+    (f) => validationErrors[f],
+  );
 
   const addFiles = (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -95,6 +119,9 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
             >
               <img src={documentTextIcon} alt="" />
               SCN Identification
+              {tab1HasError && (
+                <span className={styles.tabErrorDot}>●</span>
+              )}
             </button>
             <button
               className={`${styles.tabItem} ${activeTab === "Materials / Products Impacted" ? styles.activeTab : ""}`}
@@ -102,6 +129,9 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
             >
               <img src={documentAlertIcon} alt="" />
               Materials / Products Impacted
+              {tab2HasError && (
+                <span className={styles.tabErrorDot}>●</span>
+              )}
             </button>
           </div>
         </Box>
@@ -292,13 +322,34 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
       {!isUpload && (
         <Box className={styles.bottomActions} marginTop={4}>
           {isEditing ? (
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <AppButton variant="outlined" onClick={onCancel}>
-                Cancel
-              </AppButton>
-              <AppButton variant="primary" onClick={onSave}>
-                Save
-              </AppButton>
+            <Stack direction="column" spacing={1.5}>
+              {errorFields.length > 0 && (
+                <Box className={styles.validationErrorBanner}>
+                  <p className={styles.validationErrorTitle}>
+                    Please fill in the required fields:
+                  </p>
+                  <ul className={styles.validationErrorList}>
+                    {errorFields.map((f) => (
+                      <li key={f}>{FIELD_LABELS[f] ?? f}</li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
+              <Stack direction="row" spacing={2} justifyContent="flex-end">
+                <AppButton variant="outlined" onClick={onCancel} disabled={isSaving}>
+                  Cancel
+                </AppButton>
+                <AppButton variant="primary" onClick={onSave} disabled={isSaving}>
+                  {isSaving ? (
+                    <span className={styles.savingText}>
+                      <CircularProgress size={14} sx={{ color: "inherit" }} />
+                      Saving…
+                    </span>
+                  ) : (
+                    "Save"
+                  )}
+                </AppButton>
+              </Stack>
             </Stack>
           ) : (
             <Stack

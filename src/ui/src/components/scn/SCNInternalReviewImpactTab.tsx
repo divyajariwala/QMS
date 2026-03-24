@@ -6,7 +6,7 @@ import CircleDeleteIcon from "../../assets/icons/circle-delete.svg";
 import AISummaryIcon from "../../assets/icons/aiSummary.svg";
 import EditIcon from "../../assets/icons/editIcon.svg";
 import SelectedFields from "@components/common/SelectedFields";
-import { scnEditClassify } from "src/services/scn";
+import { scnEditClassify, toggleClassification } from "src/services/scn";
 import SCNImpactTabSkeleton from "./skeleton/SCNImpactTabSkeleton";
 import pdfIcon from "../../assets/icons/pdfIcon.svg";
 import ArrowRightOrange from "../../assets/icons/arrowRightOrange.svg";
@@ -66,6 +66,8 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
   const [predictedOutput, setPredictedOutput] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isToggling, setIsToggling] = useState(false);
+  const [toggleError, setToggleError] = useState<string | null>(null);
 
   // Populate from API data whenever classificationData changes
   useEffect(() => {
@@ -176,6 +178,26 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
     setEditMode(false);
   };
 
+  const handleDone = async (value: "SCN" | "NON_SCN") => {
+    if (!emailId) return;
+    setIsToggling(true);
+    setToggleError(null);
+    try {
+      const res = await toggleClassification(emailId, value);
+      const newClassification: "SCN" | "NON_SCN" =
+        res?.new_classification === "SCN" ? "SCN" : "NON_SCN";
+      setSelected(newClassification);
+      setEditMode(false);
+      onRefresh?.();
+    } catch (err: any) {
+      setToggleError(
+        err?.message || "Failed to change SCN output. Please try again.",
+      );
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
   return (
     <>
       {isLoading ? (
@@ -281,24 +303,31 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
               <AppButton
                 className={`${styles.toggleBtn} ${selected === "SCN" ? styles.active : ""}`}
                 variant="ghost"
-                onClick={() => {
-                  setSelected("SCN");
-                  setEditMode(false);
-                }}
+                onClick={() => handleDone("SCN")}
               >
-                SCN
+                {isToggling && selected !== "SCN" ? (
+                  <CircularProgress size={12} sx={{ color: "inherit" }} />
+                ) : (
+                  "SCN"
+                )}
               </AppButton>
               <AppButton
                 className={`${styles.toggleBtn} ${selected === "NON_SCN" ? styles.active : ""}`}
                 variant="ghost"
-                onClick={() => {
-                  setSelected("NON_SCN");
-                  setEditMode(false);
-                }}
+                onClick={() => handleDone("NON_SCN")}
               >
-                Non SCN
+                {isToggling && selected !== "NON_SCN" ? (
+                  <CircularProgress size={12} sx={{ color: "inherit" }} />
+                ) : (
+                  "Non SCN"
+                )}
               </AppButton>
             </Box>
+            {toggleError && (
+              <Typography sx={{ color: "#d32f2f", fontSize: 12, mt: 0.5 }}>
+                {toggleError}
+              </Typography>
+            )}
           </Box>
 
           <Box marginTop={4}>
@@ -381,7 +410,17 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                           name="scnClassification"
                           value={option}
                           checked={scnClassification === option}
-                          onChange={(e) => setScnClassification(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setScnClassification(val);
+                            setRiskLevel(
+                              val === "Minor"
+                                ? "minor"
+                                : val === "Major"
+                                  ? "major"
+                                  : "moderate",
+                            );
+                          }}
                           disabled={isFieldsDisabled}
                         />
                         {option}

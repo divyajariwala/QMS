@@ -29,13 +29,13 @@ interface SCNFilterProps {
 }
 
 const DEFAULT_FILTERS: FilterOptions = {
-  all: false,
-  approved: false,
-  rejected: false,
-  pendingReview: false,
-  supplierActionRequired: false,
-  inReview: false,
-  openScns: false,
+  all: true,
+  approved: true,
+  rejected: true,
+  pendingReview: true,
+  supplierActionRequired: true,
+  inReview: true,
+  openScns: true,
 };
 
 // The 4 filter options the API actually supports
@@ -193,6 +193,7 @@ const SCNFilter = ({
                   !FILTER_OPTIONS.every(({ key }) => tempFilters[key])
                 }
                 onChange={() => handleFilterChange("all")}
+                sx={{ color: "#fd5108" }}
               />
             }
           />
@@ -206,6 +207,7 @@ const SCNFilter = ({
                   size="small"
                   checked={tempFilters[key]}
                   onChange={() => handleFilterChange(key)}
+                  sx={{ color: "#fd5108" }}
                 />
               }
             />

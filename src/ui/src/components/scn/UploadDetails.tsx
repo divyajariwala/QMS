@@ -9,7 +9,11 @@ import { mapScnFormToApi } from "src/utils/mapScnFormToApi";
 
 interface SCNItem {
   id: string;
-  status: "SUPPLIER ACTION REQUIRED" | "PENDING REVIEW" | "IN REVIEW";
+  status:
+    | "SUPPLIER ACTION REQUIRED"
+    | "PENDING REVIEW"
+    | "IN REVIEW"
+    | "SUPPLIER INFO REQUESTED";
   scnNumber: string;
   changeClassification: string;
   supplierRef: string;

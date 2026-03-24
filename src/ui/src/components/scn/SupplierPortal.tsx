@@ -33,7 +33,6 @@ const PAGE_SIZE = 50;
 const AUTO_REFRESH_MS = 5 * 60 * 1000; // 5 minutes
 
 function filtersToApiParam(f: FilterOptions): string | undefined {
-  if (f.all) return undefined;
   const mapping: { key: keyof FilterOptions; apiVal: string }[] = [
     { key: "approved", apiVal: "approved" },
     { key: "rejected", apiVal: "rejected" },
@@ -41,13 +40,14 @@ function filtersToApiParam(f: FilterOptions): string | undefined {
     { key: "pendingReview", apiVal: "pending_review" },
   ];
 
+  const allChecked = f.all || mapping.every(({ key }) => f[key]);
+  if (allChecked) return "all";
+
   const selected = mapping
     .filter(({ key }) => f[key])
     .map(({ apiVal }) => apiVal);
 
-  if (selected.length === 0 || selected.length === mapping.length)
-    return undefined;
-
+  if (selected.length === 0) return undefined;
   return selected.join(",");
 }
 
@@ -65,11 +65,12 @@ function toCardItem(item: ScnFinalItem) {
     | "PENDING REVIEW"
     | "IN REVIEW"
     | "APPROVED"
-    | "REJECTED";
+    | "REJECTED"
+    | "SUPPLIER INFO REQUESTED";
 
   let status: CardStatus = "PENDING REVIEW";
-  if (rawStatus === "IN REVIEW" || rawStatus === "IN_REVIEW") {
-    status = "IN REVIEW";
+  if (rawStatus === "IN_REVIEW" || rawStatus === "SUPPLIER_INFO_REQUESTED") {
+    status = "SUPPLIER INFO REQUESTED";
   } else if (rawStatus === "APPROVED") {
     status = "APPROVED";
   } else if (rawStatus === "REJECTED") {
@@ -125,13 +126,13 @@ const SupplierPortal: React.FC = () => {
   const [scnNumber, setSCNNumber] = useState("");
   const [searchActive, setSearchActive] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
-    all: false,
-    approved: false,
-    rejected: false,
-    pendingReview: false,
-    supplierActionRequired: false,
-    inReview: false,
-    openScns: false,
+    all: true,
+    approved: true,
+    rejected: true,
+    pendingReview: true,
+    supplierActionRequired: true,
+    inReview: true,
+    openScns: true,
   });
 
   // Derived pagination object for PaginationComponent

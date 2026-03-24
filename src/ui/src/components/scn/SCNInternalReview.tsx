@@ -322,6 +322,7 @@ const SCNInternalReview: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, boolean>
   >({});
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSaveClick = async () => {
     if (!selectedEmailId || !scnDetail) return;
@@ -353,6 +354,7 @@ const SCNInternalReview: React.FC = () => {
 
     setValidationErrors({});
 
+    setIsSaving(true);
     try {
       const apiFields = mapScnFormToApi(scnDetail);
       const res = await editScn(selectedEmailId, apiFields);
@@ -362,6 +364,8 @@ const SCNInternalReview: React.FC = () => {
       }
     } catch (error) {
       console.error("Edit failed:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -488,6 +492,8 @@ const SCNInternalReview: React.FC = () => {
       case "PENDING REVIEW":
         return styles.statusYellow;
       case "IN_REVIEW":
+        return styles.statusGreen;
+      case "SUPPLIER_INFO_REQUESTED":
         return styles.statusGreen;
       case "APPROVED":
         return styles.statusApproved;
@@ -926,6 +932,7 @@ const SCNInternalReview: React.FC = () => {
                         onInputChange={handleInputChange}
                         isUpload={false}
                         validationErrors={validationErrors}
+                        isSaving={isSaving}
                         onBackToSummary={() => handleTabSelect("Impact Review")}
                         onApprove={() => setOpenApprove(true)}
                         onReject={() => setOpenReject(true)}

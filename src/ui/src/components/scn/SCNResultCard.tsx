@@ -15,7 +15,8 @@ interface SCNItem {
     | "PENDING REVIEW"
     | "IN REVIEW"
     | "APPROVED"
-    | "REJECTED";
+    | "REJECTED"
+    | "SUPPLIER INFO REQUESTED";
   scnNumber: string;
   changeClassification: string;
   supplierRef: string;
@@ -51,6 +52,8 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
         return styles.cardBorderYellow;
       case "IN REVIEW":
         return styles.cardBorderGreen;
+      case "SUPPLIER INFO REQUESTED":
+        return styles.cardBorderGreen;
       case "APPROVED":
         return styles.cardBorderApproved;
       case "REJECTED":
@@ -66,6 +69,8 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
       case "PENDING REVIEW":
         return styles.statusYellow;
       case "IN REVIEW":
+        return styles.statusGreen;
+      case "SUPPLIER INFO REQUESTED":
         return styles.statusGreen;
       case "APPROVED":
         return styles.statusApproved;
@@ -85,6 +90,8 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
         return "Pending Review";
       case "IN REVIEW":
         return "In Review";
+      case "SUPPLIER INFO REQUESTED":
+        return "Supplier Info Requested";
       case "APPROVED":
         return "Approved";
       case "REJECTED":
