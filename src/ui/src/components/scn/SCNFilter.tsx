@@ -18,6 +18,7 @@ interface FilterOptions {
   supplierActionRequired: boolean;
   inReview: boolean;
   openScns: boolean;
+  supplierInfoRequested: boolean;
 }
 
 interface SCNFilterProps {
@@ -29,13 +30,14 @@ interface SCNFilterProps {
 }
 
 const DEFAULT_FILTERS: FilterOptions = {
-  all: true,
-  approved: true,
-  rejected: true,
-  pendingReview: true,
-  supplierActionRequired: true,
-  inReview: true,
-  openScns: true,
+  all: false,
+  approved: false,
+  rejected: false,
+  pendingReview: false,
+  supplierActionRequired: false,
+  inReview: false,
+  openScns: false,
+  supplierInfoRequested: false,
 };
 
 // The 4 filter options the API actually supports
@@ -44,6 +46,7 @@ const FILTER_OPTIONS: { key: keyof FilterOptions; label: string }[] = [
   { key: "rejected", label: "Rejected" },
   { key: "inReview", label: "In Review" },
   { key: "pendingReview", label: "Pending Review" },
+  { key: "supplierInfoRequested", label: "Supplier Info Requested" },
 ];
 
 const SCNFilter = ({
@@ -110,6 +113,7 @@ const SCNFilter = ({
           supplierActionRequired: next,
           inReview: next,
           openScns: next,
+          supplierInfoRequested: next,
         };
       });
       return;

@@ -38,6 +38,7 @@ function filtersToApiParam(f: FilterOptions): string | undefined {
     { key: "rejected", apiVal: "rejected" },
     { key: "inReview", apiVal: "in_review" },
     { key: "pendingReview", apiVal: "pending_review" },
+    { key: "supplierInfoRequested", apiVal: "supplier_info_requested" },
   ];
 
   const allChecked = f.all || mapping.every(({ key }) => f[key]);
@@ -69,7 +70,9 @@ function toCardItem(item: ScnFinalItem) {
     | "SUPPLIER INFO REQUESTED";
 
   let status: CardStatus = "PENDING REVIEW";
-  if (rawStatus === "IN_REVIEW" || rawStatus === "SUPPLIER_INFO_REQUESTED") {
+  if (rawStatus === "IN REVIEW") {
+    status = "IN REVIEW";
+  } else if (rawStatus === "SUPPLIER INFO REQUESTED") {
     status = "SUPPLIER INFO REQUESTED";
   } else if (rawStatus === "APPROVED") {
     status = "APPROVED";
@@ -126,13 +129,14 @@ const SupplierPortal: React.FC = () => {
   const [scnNumber, setSCNNumber] = useState("");
   const [searchActive, setSearchActive] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>({
-    all: true,
-    approved: true,
-    rejected: true,
-    pendingReview: true,
-    supplierActionRequired: true,
-    inReview: true,
-    openScns: true,
+    all: false,
+    approved: false,
+    rejected: false,
+    pendingReview: false,
+    supplierActionRequired: false,
+    inReview: false,
+    openScns: false,
+    supplierInfoRequested: false,
   });
 
   // Derived pagination object for PaginationComponent
