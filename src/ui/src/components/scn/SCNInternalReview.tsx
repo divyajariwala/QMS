@@ -58,9 +58,9 @@ type FilterState = {
 };
 
 const LIMIT = 10;
+const AUTO_REFRESH_MS = 5 * 60 * 1000; // 5 minutes
 
 const SCNInternalReview: React.FC = () => {
-  const [selected, setSelected] = useState<number>(0);
   const [selectedTab, setSelectedTab] = useState("Impact Review");
   const [isEditing, setIsEditing] = useState(false);
   const [open, setOpen] = useState(false);
@@ -189,9 +189,8 @@ const SCNInternalReview: React.FC = () => {
         if (res?.data?.change_classification_supplier_list) {
           setClassificationList(res.data.change_classification_supplier_list);
         }
-        if (!items.length) {
-          setIsFirstLoad(false);
-        }
+        // Always clear the first-load skeleton once the list fetch completes
+        setIsFirstLoad(false);
       } catch (err: any) {
         if (!isSilent) {
           setError(err.message || "Failed to fetch SCN list");
@@ -208,6 +207,13 @@ const SCNInternalReview: React.FC = () => {
 
   useEffect(() => {
     loadList();
+  }, [loadList]);
+
+  // Auto-refresh every AUTO_REFRESH_MS (5 minutes) (silent — no spinner, no flicker)
+
+  useEffect(() => {
+    const id = setInterval(() => loadList(true), AUTO_REFRESH_MS);
+    return () => clearInterval(id);
   }, [loadList]);
 
   const loadMore = useCallback(async () => {
@@ -443,7 +449,6 @@ const SCNInternalReview: React.FC = () => {
     setSelectedEmailId(null);
     setScnDetail(null);
     setImpactClassificationData(null);
-    setSelected(0);
     setSelectedTab("Impact Review");
     setScnVolumeTrend(null);
     setAvgProcessingTime(null);
@@ -472,7 +477,6 @@ const SCNInternalReview: React.FC = () => {
 
   useEffect(() => {
     if (scns.length > 0 && !selectedEmailId) {
-      setSelected(0);
       handleSelectScn(scns[0]);
     }
   }, [scns]);
@@ -751,13 +755,11 @@ const SCNInternalReview: React.FC = () => {
                 </div>
               ) : (
                 <Stack className={styles.queueList}>
-                  {queueItems.map((item, index) => (
+                  {queueItems.map((item) => (
                     <Box
                       key={item.scn_reference_number}
-                      className={`${styles.queueCard} ${selected === index ? styles.active : ""}`}
+                      className={`${styles.queueCard} ${selectedEmailId === item.email_id ? styles.active : ""}`}
                       onClick={() => {
-                        setSelected(index);
-                        setSelected(index);
                         handleSelectScn(item);
                         setSelectedTab("Impact Review");
                       }}

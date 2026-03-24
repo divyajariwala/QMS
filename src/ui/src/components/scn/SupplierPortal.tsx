@@ -30,6 +30,7 @@ export interface SCNStats {
 type SCNTab = "supplier_portal" | "internal_review";
 
 const PAGE_SIZE = 50;
+const AUTO_REFRESH_MS = 5 * 60 * 1000; // 5 minutes
 
 function filtersToApiParam(f: FilterOptions): string | undefined {
   if (f.all) return undefined;
@@ -160,9 +161,16 @@ const SupplierPortal: React.FC = () => {
   // API fetch
 
   const loadData = useCallback(
-    async (page: number, q: string, filters?: FilterOptions) => {
-      setLoading(true);
-      setError(null);
+    async (
+      page: number,
+      q: string,
+      filters?: FilterOptions,
+      isSilent = false,
+    ) => {
+      if (!isSilent) {
+        setLoading(true);
+        setError(null);
+      }
       const offset = (page - 1) * PAGE_SIZE;
       const filterParam = filters ? filtersToApiParam(filters) : undefined;
       try {
@@ -177,18 +185,22 @@ const SupplierPortal: React.FC = () => {
           setTotalCount(res.data.count ?? 0);
           setSummary(res.data.summary ?? null);
         } else {
-          setError(res.message || "Failed to fetch SCN list.");
+          if (!isSilent) {
+            setError(res.message || "Failed to fetch SCN list.");
+            setItems([]);
+            setTotalCount(0);
+          }
+        }
+      } catch (err: any) {
+        if (!isSilent) {
+          setError(
+            err?.message || "An unexpected error occurred. Please try again.",
+          );
           setItems([]);
           setTotalCount(0);
         }
-      } catch (err: any) {
-        setError(
-          err?.message || "An unexpected error occurred. Please try again.",
-        );
-        setItems([]);
-        setTotalCount(0);
       } finally {
-        setLoading(false);
+        if (!isSilent) setLoading(false);
       }
     },
     [],
@@ -200,6 +212,16 @@ const SupplierPortal: React.FC = () => {
       loadData(currentPage, scnNumber, currentFilters);
     }
   }, [currentPage, activeSCNTab, currentFilters]);
+
+  // Auto-refresh every AUTO_REFRESH_MS (5 minutes) (silent — no spinner, no flicker)
+  useEffect(() => {
+    if (activeSCNTab !== "supplier_portal") return;
+    const id = setInterval(
+      () => loadData(currentPage, scnNumber, currentFilters, true),
+      AUTO_REFRESH_MS,
+    );
+    return () => clearInterval(id);
+  }, [activeSCNTab, currentPage, scnNumber, currentFilters, loadData]);
 
   // Handlers
   const handleUploadSCN = () => setUploadModalOpen(true);
