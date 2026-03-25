@@ -490,6 +490,15 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                         className={`${styles.pdfIframe} ${iframeLoading ? styles.hidden : ""}`}
                         onLoad={() => setIframeLoading(false)}
                       />
+                      {primaryPdf?.download_url && (
+                        <AppButton
+                          variant="primary"
+                          className={styles.previewButton}
+                          onClick={onPreviewClick}
+                        >
+                          Preview PDF
+                        </AppButton>
+                      )}
                     </>
                   ) : (
                     <Box className={styles.noPdfMessage}>

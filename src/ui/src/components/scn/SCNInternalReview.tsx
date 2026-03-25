@@ -410,8 +410,12 @@ const SCNInternalReview: React.FC = () => {
 
   /** Refreshes both the impact data and the global SCN list */
   const handleRefreshAll = useCallback(async () => {
-    await Promise.all([loadImpactData(), loadList(true)]);
-  }, [loadImpactData, loadList]);
+    const tasks: Promise<any>[] = [loadList(true)];
+    if (selectedEmailId) {
+      tasks.push(handleSelectScn({ email_id: selectedEmailId }));
+    }
+    await Promise.all(tasks);
+  }, [loadList, selectedEmailId, handleSelectScn]);
 
   const handleInputChange = (field: string, value: any) => {
     setScnDetail((prev: any) => ({
@@ -1014,7 +1018,8 @@ const SCNInternalReview: React.FC = () => {
                 setChangeControlRequired(changeControl);
                 setRecordId(ccRecordId);
                 setOpenApprove(false);
-                loadImpactData();
+                handleRefreshAll();
+                setSelectedTab("Impact Review");
               }}
               defaultChangeControl={changeControlRequired}
               defaultRecordId={recordId}
@@ -1026,7 +1031,8 @@ const SCNInternalReview: React.FC = () => {
               emailId={selectedEmailId ?? undefined}
               onSubmit={(comment) => {
                 setOpenReject(false);
-                loadImpactData();
+                handleRefreshAll();
+                setSelectedTab("Impact Review");
               }}
             />
 

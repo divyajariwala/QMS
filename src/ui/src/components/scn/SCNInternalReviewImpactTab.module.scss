@@ -385,6 +385,7 @@
   border-radius: 12px;
   background-color: #f8fafc;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
@@ -392,7 +393,7 @@
 
 .pdfIframe {
   width: 100%;
-  height: 100%;
+  flex: 1;
   border: none;
 }
 
@@ -412,5 +413,19 @@
   p {
     margin: 0;
     font-size: 14px;
+  }
+}
+
+.previewButton {
+  width: 100% !important;
+  border-radius: 0 !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  background-color: #fd5108 !important;
+  gap: 8px;
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: #fa733a !important;
   }
 }
