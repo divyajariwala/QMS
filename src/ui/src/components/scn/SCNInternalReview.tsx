@@ -505,7 +505,7 @@ const SCNInternalReview: React.FC = () => {
         return styles.statusGray;
       case "SUPPLIER INFO REQUESTED":
       case "SUPPLIER_INFO_REQUESTED":
-        return styles.statusGray;
+        return styles.statusYellow;
       case "APPROVED":
         return styles.statusApproved;
       case "REJECTED":

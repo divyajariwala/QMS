@@ -76,10 +76,11 @@
 }
 
 .error {
-  border-color: #c52a1a !important;
+  border: 1px solid #c52a1a !important;
+  background-color: #fff2f0 !important;
 
   &:focus {
-    border-color: #c52a1a !important;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+    border: 1px solid #c52a1a !important;
+    box-shadow: 0 0 0 3px rgba(197, 42, 26, 0.1) !important;
   }
 }

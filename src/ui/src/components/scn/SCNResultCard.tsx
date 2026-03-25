@@ -53,7 +53,7 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
       case "IN REVIEW":
         return styles.cardBorderGray;
       case "SUPPLIER INFO REQUESTED":
-        return styles.cardBorderGray;
+        return styles.cardBorderYellow;
       case "APPROVED":
         return styles.cardBorderApproved;
       case "REJECTED":
@@ -71,7 +71,7 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
       case "IN REVIEW":
         return styles.statusGray;
       case "SUPPLIER INFO REQUESTED":
-        return styles.statusGray;
+        return styles.statusYellow;
       case "APPROVED":
         return styles.statusApproved;
       case "REJECTED":
