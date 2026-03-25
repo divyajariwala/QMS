@@ -76,27 +76,27 @@
 }
 
 .blueDot {
-  background-color: #3b82f6;
+  background-color: #574efa; // Pending Review
 }
 
 .orangeDot {
-  background-color: #f97316;
+  background-color: #272d37; // In Review (Gray)
 }
 
 .redDot {
-  background-color: #ef4444;
+  background-color: #eea23e; // Supplier Action Required (Yellow)
 }
 
 .yellowDot {
-  background-color: #eab308;
+  background-color: #0065f4; // Open SCNs - keeping blue for "Open" if it's a general category
 }
 
 .greenDot {
-  background-color: #22c55e;
+  background-color: #2d8a39; // Approved
 }
 
 .grayDot {
-  background-color: #6b7280;
+  background-color: #e2341d; // Rejected (Red)
 }
 
 .statLabel {

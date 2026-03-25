@@ -136,7 +136,6 @@ const SCNInternalReview: React.FC = () => {
   const [latestPdfUrl, setLatestPdfUrl] = useState<string | null>(null);
   const [openApprove, setOpenApprove] = useState(false);
   const [openReject, setOpenReject] = useState(false);
-  const [openPreview, setOpenPreview] = useState(false);
   const [changeControlRequired, setChangeControlRequired] = useState("");
   const [recordId, setRecordId] = useState("");
 
@@ -360,7 +359,11 @@ const SCNInternalReview: React.FC = () => {
       const res = await editScn(selectedEmailId, apiFields);
       if (res?.success) {
         setIsEditing(false);
-        await handleSelectScn({ email_id: selectedEmailId });
+        // Refresh both the selected detail/impact and the main list
+        await Promise.all([
+          handleSelectScn({ email_id: selectedEmailId }),
+          loadList(true),
+        ]);
       }
     } catch (error) {
       console.error("Edit failed:", error);
@@ -404,6 +407,11 @@ const SCNInternalReview: React.FC = () => {
       await loadImpactData();
     }
   };
+
+  /** Refreshes both the impact data and the global SCN list */
+  const handleRefreshAll = useCallback(async () => {
+    await Promise.all([loadImpactData(), loadList(true)]);
+  }, [loadImpactData, loadList]);
 
   const handleInputChange = (field: string, value: any) => {
     setScnDetail((prev: any) => ({
@@ -488,13 +496,16 @@ const SCNInternalReview: React.FC = () => {
   const getStatusClass = (status: string) => {
     switch (status) {
       case "SUPPLIER ACTION REQUIRED":
-        return styles.statusRed;
-      case "PENDING REVIEW":
         return styles.statusYellow;
+      case "PENDING REVIEW":
+      case "PENDING_REVIEW":
+        return styles.statusPurple;
+      case "IN REVIEW":
       case "IN_REVIEW":
-        return styles.statusGreen;
+        return styles.statusGray;
+      case "SUPPLIER INFO REQUESTED":
       case "SUPPLIER_INFO_REQUESTED":
-        return styles.statusGreen;
+        return styles.statusGray;
       case "APPROVED":
         return styles.statusApproved;
       case "REJECTED":
@@ -898,6 +909,7 @@ const SCNInternalReview: React.FC = () => {
                         scnDetail?.extractedFieldSources?.confidence_score ?? 0
                       }
                       size={100}
+                      label="Confidence Score"
                     />
                   </Box>
                 </Stack>
@@ -959,12 +971,11 @@ const SCNInternalReview: React.FC = () => {
                         classificationData={impactClassificationData}
                         isLoading={impactReviewLoading}
                         emailId={selectedEmailId ?? undefined}
-                        onRefresh={loadImpactData}
+                        onRefresh={handleRefreshAll}
                         onReviewScnClick={() => handleTabSelect("Review SCN")}
                         scnDetail={scnDetail}
                         onApproveClick={() => setOpenApprove(true)}
                         onRejectClick={() => setOpenReject(true)}
-                        onOutputClick={() => setOpenPreview(true)}
                         onPreviewClick={() => setOpen(true)}
                         changeControlRequired={changeControlRequired}
                         recordId={recordId}
@@ -994,21 +1005,6 @@ const SCNInternalReview: React.FC = () => {
                   | "NON_SCN") || "SCN"
               }
             /> */}
-            {/* Modals moved to parent for shared access */}
-            <ChangeSCNOutputModal
-              open={openPreview}
-              onClose={() => setOpenPreview(false)}
-              emailId={selectedEmailId ?? undefined}
-              onDone={(newCls) => {
-                setOpenPreview(false);
-                loadImpactData();
-              }}
-              defaultValue={
-                (impactClassificationData?.final_classification as
-                  | "SCN"
-                  | "NON_SCN") || "SCN"
-              }
-            />
 
             <ApproveModal
               open={openApprove}

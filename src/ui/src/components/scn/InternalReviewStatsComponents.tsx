@@ -144,7 +144,7 @@ const InternalReviewStatsComponents: React.FC<
     >
       {/* Card 1 */}
       <DashboardStatsCard
-        title="Total"
+        title="Total SCN"
         value={card1Total}
         chartComponent={
           <DonutChart

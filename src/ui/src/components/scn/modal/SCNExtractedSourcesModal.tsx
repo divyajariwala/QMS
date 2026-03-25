@@ -162,7 +162,7 @@ const SCNExtractedSourcesModal: React.FC<Props> = ({
         <div className={styles.title}>Extracted Field Sources</div>
 
         <Box className={styles.gaugeContainer}>
-          <Gauge value={overallConfidence} />
+          <Gauge value={overallConfidence} label="Confidence Score" />
           <Box className={styles.statContainer}>
             <Box className={styles.statRow}>
               <Stack direction="row" spacing={1} alignItems="center">

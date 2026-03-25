@@ -134,34 +134,6 @@
   margin-top: 4px !important;
 }
 
-.statusBadgeActive {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background-color: #f0fdf4;
-  color: #16a34a;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid #bbf7d0;
-  letter-spacing: 0.2px;
-}
-
-.statusBadgeLocked {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background-color: #fafafa;
-  color: #9ca3af;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  letter-spacing: 0.2px;
-}
-
 .lockedBanner {
   display: flex;
   align-items: center;
@@ -367,5 +339,78 @@
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+.savingContent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.pdfPlaceholderIcon {
+  opacity: 0.2;
+  margin-bottom: 12px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.layoutContainer {
+  display: flex;
+  gap: 32px;
+  width: 100%;
+}
+
+.formColumn {
+  flex: 1;
+  min-width: 0; // Prevent overflow in flex items
+}
+
+.previewColumn {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdfPreviewContainer {
+  position: sticky;
+  top: 24px;
+  width: 100%;
+  height: 600px;
+  border: 1px dashed #d1d1d1;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pdfIframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.pdfLoader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #64748b;
+}
+
+.noPdfMessage {
+  text-align: center;
+  padding: 24px;
+  color: #94a3b8;
+
+  p {
+    margin: 0;
+    font-size: 14px;
   }
 }

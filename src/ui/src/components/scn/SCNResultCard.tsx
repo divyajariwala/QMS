@@ -47,13 +47,13 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
   const getCardTopBorderClass = () => {
     switch (scn.status) {
       case "SUPPLIER ACTION REQUIRED":
-        return styles.cardBorderRed;
-      case "PENDING REVIEW":
         return styles.cardBorderYellow;
+      case "PENDING REVIEW":
+        return styles.cardBorderPurple;
       case "IN REVIEW":
-        return styles.cardBorderGreen;
+        return styles.cardBorderGray;
       case "SUPPLIER INFO REQUESTED":
-        return styles.cardBorderGreen;
+        return styles.cardBorderGray;
       case "APPROVED":
         return styles.cardBorderApproved;
       case "REJECTED":
@@ -65,13 +65,13 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
   const getStatusClass = () => {
     switch (scn.status) {
       case "SUPPLIER ACTION REQUIRED":
-        return styles.statusRed;
-      case "PENDING REVIEW":
         return styles.statusYellow;
+      case "PENDING REVIEW":
+        return styles.statusPurple;
       case "IN REVIEW":
-        return styles.statusGreen;
+        return styles.statusGray;
       case "SUPPLIER INFO REQUESTED":
-        return styles.statusGreen;
+        return styles.statusGray;
       case "APPROVED":
         return styles.statusApproved;
       case "REJECTED":

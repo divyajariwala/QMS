@@ -17,10 +17,13 @@
   border-top-color: #e2341d;
 }
 .cardBorderYellow {
-  border-top-color: #ffb600;
+  border-top-color: #eea23e;
 }
-.cardBorderGreen {
-  border-top-color: #4eb523;
+.cardBorderPurple {
+  border-top-color: #574efa;
+}
+.cardBorderGray {
+  border-top-color: #272d37;
 }
 .cardBorderApproved {
   border-top-color: #2d8a39;
@@ -53,9 +56,14 @@
   background-color: #fff8eb;
 }
 
-.statusGreen {
-  color: #2d8a39;
-  background-color: #f0faf0;
+.statusPurple {
+  color: #574efa;
+  background-color: #ecebff;
+}
+
+.statusGray {
+  color: #272d37;
+  background-color: #f7f7f8;
 }
 
 .statusApproved {
@@ -64,7 +72,7 @@
 }
 
 .statusRejected {
-  color: #e0301e;
+  color: #e2341d;
   background-color: #fff2f0;
 }
 

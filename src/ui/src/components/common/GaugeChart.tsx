@@ -4,9 +4,10 @@ import styles from "./GaugeChart.module.scss";
 interface GaugeProps {
   value: number; // 0 - 1
   size?: number;
+  label?: string;
 }
 
-const Gauge: React.FC<GaugeProps> = ({ value, size = 200 }) => {
+const Gauge: React.FC<GaugeProps> = ({ value, size = 200, label }) => {
   const radius = 80;
   const circumference = Math.PI * radius;
   const strokeWidth = 28;
@@ -55,6 +56,7 @@ const Gauge: React.FC<GaugeProps> = ({ value, size = 200 }) => {
 
       <div className={styles.gaugeLabels}>
         <span className={styles.labelPoor}>Poor</span>
+        <span className={styles.labelPoor}>{label}</span>
         <span className={styles.labelGood}>Good</span>
       </div>
     </div>

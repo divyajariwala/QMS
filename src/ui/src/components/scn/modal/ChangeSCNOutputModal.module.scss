@@ -1,55 +1,43 @@
-.wrapper {
+.confirmationWrapper {
   display: flex;
-  flex-direction: column;
-  gap: 24px;
+  align-items: center;
 }
 
-.note {
-  font-size: 14px;
-  color: #29323a;
-  line-height: 1.6;
+.confirmationText {
+  font-size: 16px !important;
+  color: #272d37 !important;
+  line-height: 1.5 !important;
+  text-align: center;
+
   strong {
-    font-weight: 600;
+    font-weight: 700;
   }
 }
 
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.label {
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  color: #5f6d7e;
-}
-
-.toggleGroup {
-  display: flex;
-  background-color: #f3f4f6;
-  border-radius: 8px;
-  padding: 4px;
-  width: 325px;
-}
-
-.toggleBtn {
-  min-width: 160px !important;
-  height: 40px !important;
-  border-radius: 6px !important;
+.actionButton {
+  border-radius: 100px !important;
+  height: 48px !important;
+  min-width: 140px !important;
   text-transform: none !important;
   font-weight: 600 !important;
-  color: #6b7280 !important;
-  background-color: transparent !important;
+  font-size: 15px !important;
+  border: 1px solid #d0d5dd !important;
+  color: #272d37 !important;
+  margin-bottom: 16px !important;
 }
 
-.active {
-  background-color: #ffffff !important;
-  color: #2563eb !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
+.proceedButton {
+  border-radius: 100px !important;
+  height: 48px !important;
+  min-width: 140px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  background-color: #fd5108 !important;
+  color: #fff !important;
+  margin-bottom: 16px !important;
 
-.actionButton {
-  width: 137px;
-  height: 46px;
+  &:hover {
+    background-color: #e95d2a !important;
+  }
 }

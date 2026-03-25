@@ -11,6 +11,7 @@ import SCNImpactTabSkeleton from "./skeleton/SCNImpactTabSkeleton";
 import pdfIcon from "../../assets/icons/pdfIcon.svg";
 import ArrowRightOrange from "../../assets/icons/arrowRightOrange.svg";
 import AcceptIcon from "../../assets/icons/accept.svg";
+import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
 
 export interface ImpactClassificationData {
   change_control_required?: string | null;
@@ -68,6 +69,22 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isToggling, setIsToggling] = useState(false);
   const [toggleError, setToggleError] = useState<string | null>(null);
+  const [showOutputModal, setShowOutputModal] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<"SCN" | "NON_SCN">("SCN");
+  const [iframeLoading, setIframeLoading] = useState(true);
+  const [isCCRequired, setIsCCRequired] = useState<string>("No");
+  const [ccRecordId, setCcRecordId] = useState<string>("");
+
+  const isFieldsDisabled = !editMode || selected === "NON_SCN" || isSaving;
+
+  const attachments = scnDetail?.attachments || [];
+  const allPdfs = attachments.filter((file: any) =>
+    file.filename.toLowerCase().endsWith(".pdf"),
+  );
+  const primaryPdf = allPdfs[0];
+  const remainingAttachments = attachments.filter(
+    (file: any) => file !== primaryPdf,
+  );
 
   // Populate from API data whenever classificationData changes
   useEffect(() => {
@@ -109,12 +126,17 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
   }, [classificationData]);
 
   const allTeams = [
-    "Quality Team",
-    "Manufacturing Team",
-    "Supply Chain Team",
-    "Regulatory Team",
-    "Team 4",
-    "Team 5",
+    "Supplier Quality",
+    "Manufacturing Engineering",
+    "Operations",
+    "Regulatory Affairs",
+    "Technical Writing",
+    "R&D",
+    "Quality Engineering",
+    "Quality Control",
+    "Validation",
+    "Software QA",
+    "Supply Chain",
   ];
 
   const AISuggestedBadge = () => (
@@ -133,9 +155,6 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
     setAssignedTo((prev) => prev.filter((f) => f !== field));
   };
 
-  const isFieldsDisabled =
-    selected === "NON_SCN" || (selected === "SCN" && !editMode);
-
   const handleEdit = () => {
     setSaveError(null);
     setEditMode(true);
@@ -151,9 +170,8 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
     try {
       const payload = {
         change_classification_supplier: changeType || undefined,
-        change_control_required: changeControlRequired
-          ? (changeControlRequired.toLowerCase() as "yes" | "no")
-          : undefined,
+        change_control_required: isCCRequired.toLowerCase() as "yes" | "no",
+        cc_record_id: ccRecordId || undefined,
         action_required: actionsRequired || undefined,
         final_risk_level: riskLevel || undefined,
         final_assigned_team:
@@ -178,16 +196,23 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
     setEditMode(false);
   };
 
-  const handleDone = async (value: "SCN" | "NON_SCN") => {
-    if (!emailId) return;
+  const handleToggleClick = (value: "SCN" | "NON_SCN") => {
+    if (value === selected) return;
+    setPendingStatus(value);
+    setShowOutputModal(true);
+  };
+
+  const handleConfirmToggle = async () => {
+    if (!emailId || !pendingStatus) return;
     setIsToggling(true);
     setToggleError(null);
     try {
-      const res = await toggleClassification(emailId, value);
+      const res = await toggleClassification(emailId, pendingStatus);
       const newClassification: "SCN" | "NON_SCN" =
         res?.new_classification === "SCN" ? "SCN" : "NON_SCN";
       setSelected(newClassification);
       setEditMode(false);
+      setShowOutputModal(false);
       onRefresh?.();
     } catch (err: any) {
       setToggleError(
@@ -303,7 +328,7 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
               <AppButton
                 className={`${styles.toggleBtn} ${selected === "SCN" ? styles.active : ""}`}
                 variant="ghost"
-                onClick={() => handleDone("SCN")}
+                onClick={() => handleToggleClick("SCN")}
               >
                 {isToggling && selected !== "SCN" ? (
                   <CircularProgress size={12} sx={{ color: "inherit" }} />
@@ -314,7 +339,7 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
               <AppButton
                 className={`${styles.toggleBtn} ${selected === "NON_SCN" ? styles.active : ""}`}
                 variant="ghost"
-                onClick={() => handleDone("NON_SCN")}
+                onClick={() => handleToggleClick("NON_SCN")}
               >
                 {isToggling && selected !== "NON_SCN" ? (
                   <CircularProgress size={12} sx={{ color: "inherit" }} />
@@ -340,11 +365,6 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                 <Typography variant="h6" className={styles.sectionTitle}>
                   Assessment Summary
                 </Typography>
-                {selected === "SCN" ? (
-                  <span className={styles.statusBadgeActive}>● Active</span>
-                ) : (
-                  <span className={styles.statusBadgeLocked}>● Locked</span>
-                )}
               </Stack>
               {!editMode && selected === "SCN" && (
                 <AppButton
@@ -371,81 +391,121 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
               </Typography>
             )}
 
-            <Box marginTop={4}>
-              <Typography variant="h6" className={styles.sectionTitle}>
-                SCN Summary
-              </Typography>
+            <Typography
+              marginTop={4}
+              variant="h6"
+              className={styles.sectionTitle}
+            >
+              SCN Summary
+            </Typography>
+            <Stack direction="row" spacing={6} marginTop={2}>
+              <Box sx={{ flex: 1 }}>
+                <Stack direction="column" spacing={8} marginTop={2}>
+                  <Box flex={1}>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography className={styles.inputLabel}>
+                        Change Type
+                      </Typography>
+                      <AISuggestedBadge />
+                    </Stack>
 
-              <Stack direction="row" spacing={8} marginTop={2}>
-                <Box flex={1}>
+                    <input
+                      type="text"
+                      className={styles.textInput}
+                      value={changeType}
+                      onChange={(e) => setChangeType(e.target.value)}
+                      disabled={isFieldsDisabled}
+                    />
+                  </Box>
+
+                  <Box flex={1}>
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography className={styles.inputLabel}>
+                        SCN Classification
+                      </Typography>
+                      <AISuggestedBadge />
+                    </Stack>
+
+                    <Stack direction="row" spacing={3} marginTop={1}>
+                      {["Minor", "Moderate", "Major"].map((option) => (
+                        <label key={option} className={styles.radioLabel}>
+                          <input
+                            type="radio"
+                            name="scnClassification"
+                            value={option}
+                            checked={scnClassification === option}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setScnClassification(val);
+                              setRiskLevel(
+                                val === "Minor"
+                                  ? "minor"
+                                  : val === "Major"
+                                    ? "major"
+                                    : "moderate",
+                              );
+                            }}
+                            disabled={isFieldsDisabled}
+                          />
+                          {option}
+                        </label>
+                      ))}
+                    </Stack>
+                  </Box>
+                </Stack>
+
+                <Box marginTop={3}>
                   <Stack direction="row" justifyContent="space-between">
                     <Typography className={styles.inputLabel}>
-                      Change Type
+                      Action(s) Required
                     </Typography>
-                    <AISuggestedBadge />
                   </Stack>
-
-                  <input
-                    type="text"
-                    className={styles.textInput}
-                    value={changeType}
-                    onChange={(e) => setChangeType(e.target.value)}
+                  <textarea
+                    className={styles.textArea}
+                    rows={4}
+                    value={actionsRequired}
+                    onChange={(e) => setActionsRequired(e.target.value)}
                     disabled={isFieldsDisabled}
                   />
                 </Box>
-
-                <Box flex={1}>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Typography className={styles.inputLabel}>
-                      SCN Classification
-                    </Typography>
-                    <AISuggestedBadge />
-                  </Stack>
-
-                  <Stack direction="row" spacing={3} marginTop={1}>
-                    {["Minor", "Moderate", "Major"].map((option) => (
-                      <label key={option} className={styles.radioLabel}>
-                        <input
-                          type="radio"
-                          name="scnClassification"
-                          value={option}
-                          checked={scnClassification === option}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setScnClassification(val);
-                            setRiskLevel(
-                              val === "Minor"
-                                ? "minor"
-                                : val === "Major"
-                                  ? "major"
-                                  : "moderate",
-                            );
-                          }}
-                          disabled={isFieldsDisabled}
-                        />
-                        {option}
-                      </label>
-                    ))}
-                  </Stack>
-                </Box>
-              </Stack>
-
-              <Box marginTop={3}>
-                <Stack direction="row" justifyContent="space-between">
-                  <Typography className={styles.inputLabel}>
-                    Action(s) Required
-                  </Typography>
-                </Stack>
-                <textarea
-                  className={styles.textArea}
-                  rows={4}
-                  value={actionsRequired}
-                  onChange={(e) => setActionsRequired(e.target.value)}
-                  disabled={isFieldsDisabled}
-                />
               </Box>
-            </Box>
-
+              <Box className={styles.previewColumn} sx={{ flex: 1 }}>
+                <Box className={styles.pdfPreviewContainer}>
+                  {primaryPdf?.download_url ? (
+                    <>
+                      {iframeLoading && (
+                        <Box className={styles.pdfLoader}>
+                          <CircularProgress
+                            size={32}
+                            sx={{ color: "#fd5108" }}
+                          />
+                          <Typography variant="body2">
+                            Loading preview...
+                          </Typography>
+                        </Box>
+                      )}
+                      <iframe
+                        src={primaryPdf.download_url}
+                        title="PDF Preview"
+                        className={`${styles.pdfIframe} ${iframeLoading ? styles.hidden : ""}`}
+                        onLoad={() => setIframeLoading(false)}
+                      />
+                    </>
+                  ) : (
+                    <Box className={styles.noPdfMessage}>
+                      <img
+                        src={pdfIcon}
+                        alt=""
+                        className={styles.pdfPlaceholderIcon}
+                      />
+                      <Typography variant="body2">
+                        No PDF available for preview.
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            </Stack>
             <Box marginTop={4}>
               <Typography variant="h6" className={styles.sectionTitle}>
                 Assign
@@ -518,45 +578,47 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
             )}
           </Box>
 
-          <Box marginTop={6}>
-            <Typography variant="h6" className={styles.sectionTitle}>
-              Documentation & Attachments
-            </Typography>
+          {/* 7. Documentation & Attachments (Only if more than primary PDF) */}
+          {remainingAttachments.length > 0 && (
+            <Box marginTop={6}>
+              <Typography variant="h6" className={styles.sectionTitle}>
+                Documentation & Attachments
+              </Typography>
 
-            <Box className={styles.attachmentsContainer} marginTop={2}>
-              {scnDetail?.attachments?.map((file: any, index: number) => (
-                <Box key={index} className={styles.attachmentCard}>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
-                    <Stack direction="row" alignItems="center" gap={1.5}>
-                      <img src={pdfIcon} alt="pdf" />
-                      <Typography className={styles.fileName}>
-                        {file.filename}
-                      </Typography>
+              <Box className={styles.attachmentsContainer} marginTop={2}>
+                {remainingAttachments.map((file: any, index: number) => (
+                  <Box key={index} className={styles.attachmentCard}>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      <Stack direction="row" alignItems="center" gap={1.5}>
+                        <img src={pdfIcon} alt="pdf" />
+                        <Typography className={styles.fileName}>
+                          {file.filename}
+                        </Typography>
+                      </Stack>
+                      {file.download_url && (
+                        <a
+                          href={file.download_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.previewLink}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onPreviewClick?.();
+                          }}
+                        >
+                          Preview <img src={ArrowRightOrange} alt="" />
+                        </a>
+                      )}
                     </Stack>
-                    {file.download_url && (
-                      <a
-                        href={file.download_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.previewLink}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          onPreviewClick?.();
-                        }}
-                        style={{ cursor: "pointer" }}
-                      >
-                        Preview <img src={ArrowRightOrange} alt="" />
-                      </a>
-                    )}
-                  </Stack>
-                </Box>
-              ))}
+                  </Box>
+                ))}
+              </Box>
             </Box>
-          </Box>
+          )}
 
           <Stack
             direction="row"
@@ -587,6 +649,14 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
           </Stack>
         </>
       )}
+      <ChangeSCNOutputModal
+        open={showOutputModal}
+        onClose={() => setShowOutputModal(false)}
+        onConfirm={handleConfirmToggle}
+        currentStatus={selected}
+        targetStatus={pendingStatus}
+        isSubmitting={isToggling}
+      />
     </>
   );
 };
