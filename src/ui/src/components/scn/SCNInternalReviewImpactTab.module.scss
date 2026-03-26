@@ -474,12 +474,20 @@
   border-radius: 0 !important;
   text-transform: none !important;
   font-weight: 600 !important;
-  background-color: #fd5108 !important;
+  background-color: #f5f7f8 !important;
   gap: 8px;
-  flex-shrink: 0;
+  color: #fd5108 !important;
+  border: 1px solid #eeeff1 !important;
+
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
 
   &:hover {
-    background-color: #fa733a !important;
+    background-color: #e3f3fc !important;
   }
 }
 

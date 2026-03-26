@@ -21,56 +21,38 @@ const SelectedFields: React.FC<SelectedFieldsProps> = ({
   label = "Selected fields",
   disabled = false,
 }) => {
-  // Split fields for two columns
-  const mid = Math.ceil(fields.length / 2);
-  const leftFields = fields.slice(0, mid);
-  const rightFields = fields.slice(mid);
-
   return (
     <div className={className}>
-      <div className={styles.label}>{label}</div>
-      <div className={styles.selectedBox}>
-        {selected.map((field) => (
-          <span key={field} className={styles.tag}>
-            {field}
-            <button
-              className={styles.removeBtn}
-              onClick={() => onRemove && onRemove(field)}
-              aria-label={`Remove ${field}`}
-              disabled={disabled}
-            >
-              <img src={closeIcon} alt="X" className={styles.closeIcon} />
-            </button>
-          </span>
-        ))}
-      </div>
+      {label && <div className={styles.label}>{label}</div>}
+      {selected.length > 0 && (
+        <div className={styles.selectedBox}>
+          {selected.map((field) => (
+            <span key={field} className={styles.tag}>
+              {field}
+              <button
+                className={styles.removeBtn}
+                onClick={() => onRemove && onRemove(field)}
+                aria-label={`Remove ${field}`}
+                disabled={disabled}
+              >
+                <img src={closeIcon} alt="X" className={styles.closeIcon} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
       <div className={styles.fieldsGrid}>
-        <div className={styles.column}>
-          {leftFields.map((field) => (
-            <label key={field} className={styles.fieldLabel}>
-              <input
-                type="checkbox"
-                checked={selected.includes(field)}
-                onChange={() => onSelect && onSelect(field)}
-                disabled={disabled}
-              />
-              {field}
-            </label>
-          ))}
-        </div>
-        <div className={styles.column}>
-          {rightFields.map((field) => (
-            <label key={field} className={styles.fieldLabel}>
-              <input
-                type="checkbox"
-                checked={selected.includes(field)}
-                onChange={() => onSelect && onSelect(field)}
-                disabled={disabled}
-              />
-              {field}
-            </label>
-          ))}
-        </div>
+        {fields.map((field) => (
+          <label key={field} className={styles.fieldLabel}>
+            <input
+              type="checkbox"
+              checked={selected.includes(field)}
+              onChange={() => onSelect && onSelect(field)}
+              disabled={disabled}
+            />
+            {field}
+          </label>
+        ))}
       </div>
     </div>
   );

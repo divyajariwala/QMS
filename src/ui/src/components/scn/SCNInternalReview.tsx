@@ -310,8 +310,14 @@ const SCNInternalReview: React.FC = () => {
           const data: ImpactClassificationData =
             resImpact?.data ?? resImpact ?? {};
           setImpactClassificationData(data);
+          setChangeControlRequired(
+            data?.change_control_required?.toLowerCase() === "yes"
+              ? "Yes"
+              : "No",
+          );
         } else {
           setImpactClassificationData(null);
+          setChangeControlRequired("");
         }
       } catch (error) {
         console.error("Failed to fetch SCN details or impact results", error);

@@ -12,6 +12,7 @@ import pdfIcon from "../../assets/icons/pdfIcon.svg";
 import ArrowRightOrange from "../../assets/icons/arrowRightOrange.svg";
 import AcceptIcon from "../../assets/icons/accept.svg";
 import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
+import RightIcon from "../../assets/icons/rightOrange.svg";
 
 export interface ImpactClassificationData {
   change_control_required?: string | null;
@@ -456,7 +457,7 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                           </Stack>
                           <Box marginTop={2}>
                             <Typography className={styles.inputLabel}>
-                              Record ID Number
+                              Change Control Record ID Number
                             </Typography>
                             <input
                               type="text"
@@ -578,11 +579,12 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                       />
                       {primaryPdf?.download_url && (
                         <AppButton
-                          variant="primary"
+                          variant="secondary"
                           className={styles.previewButton}
                           onClick={onPreviewClick}
                         >
                           Preview PDF
+                          <img src={RightIcon} alt=">" />
                         </AppButton>
                       )}
                     </>

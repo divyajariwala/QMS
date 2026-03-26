@@ -17,6 +17,13 @@ interface Props {
   sources?: any;
 }
 
+const METADATA_KEYS = [
+  "confidence_score",
+  "field_confidence_map",
+  "created_at",
+  "updated_at",
+];
+
 const formatKey = (key: string) => {
   return key.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 };
@@ -190,24 +197,22 @@ const SCNExtractedSourcesModal: React.FC<Props> = ({
 
         <Box className={styles.sourcesList}>
           {hasSources ? (
-            Object.entries(sources).map(([key, value]) => {
-              if (
-                !value ||
-                typeof value !== "string" ||
-                key === "confidence_score" ||
-                key === "field_confidence_map" ||
-                key === "created_at" ||
-                key === "updated_at"
-              ) {
-                return null;
-              }
-              const fieldConfidence = confidenceMap[key];
-              return (
-                <Box key={key} className={styles.sourceItem}>
-                  {renderExtractedValue(value, key, fieldConfidence)}
-                </Box>
-              );
-            })
+            Object.keys(sources)
+              .filter((key) => !METADATA_KEYS.includes(key))
+              .map((key) => {
+                const value = sources[key];
+                const fieldConfidence = confidenceMap[key];
+                const displayValue =
+                  value && typeof value === "string" && value.trim()
+                    ? value
+                    : "No data available";
+
+                return (
+                  <Box key={key} className={styles.sourceItem}>
+                    {renderExtractedValue(displayValue, key, fieldConfidence)}
+                  </Box>
+                );
+              })
           ) : (
             <Box className={styles.emptyState}>
               No extracted sources available.

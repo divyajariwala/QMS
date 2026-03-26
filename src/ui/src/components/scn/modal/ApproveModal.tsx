@@ -25,10 +25,13 @@ const ApproveModal: React.FC<ApproveModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset error when modal opens/closes
+  // Sync internal state with prop when modal opens
   useEffect(() => {
-    if (open) setError(null);
-  }, [open]);
+    if (open) {
+      setChangeControlRequired(defaultChangeControl || "No");
+      setError(null);
+    }
+  }, [open, defaultChangeControl]);
 
   const handleDone = async () => {
     if (!emailId) {
