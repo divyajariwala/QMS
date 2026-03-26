@@ -39,7 +39,6 @@ export interface Props {
   onOutputClick?: () => void;
   onPreviewClick?: () => void;
   changeControlRequired?: string;
-  recordId?: string;
 }
 
 const SCNInternalReviewImpactTab: React.FC<Props> = ({
@@ -54,7 +53,6 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
   onOutputClick,
   onPreviewClick,
   changeControlRequired,
-  recordId,
 }) => {
   const [selected, setSelected] = useState<"SCN" | "NON_SCN">("SCN");
   const [changeType, setChangeType] = useState("");
@@ -117,6 +115,13 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
         .filter(Boolean);
       setAssignedTo(teams);
     }
+    if (classificationData.change_control_required) {
+      const ccReq = classificationData.change_control_required.toLowerCase();
+      setIsCCRequired(ccReq === "yes" ? "Yes" : "No");
+    }
+    if (classificationData.cc_record_id) {
+      setCcRecordId(classificationData.cc_record_id);
+    }
     if (classificationData.action_required != null) {
       setActionsRequired(classificationData.action_required || "");
     }
@@ -137,6 +142,23 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
     "Validation",
     "Software QA",
     "Supply Chain",
+  ];
+  
+  const changeTypeOptions = [
+    "Manufacturing Process Changes",
+    "Manufacturing Site / Facility Changes",
+    "Raw Material Changes",
+    "Component or Part Design Changes",
+    "Specification Changes",
+    "Testing / Analytical Method Changes",
+    "Supplier Sub-tier Changes",
+    "Quality System Changes",
+    "Regulatory Status Changes",
+    "Packaging and Labeling Changes",
+    "Storage and Distribution Changes",
+    "Organizational / Ownership Changes",
+    "Documentation Changes (Administrative)",
+    "Discontinuation / Obsolescence",
   ];
 
   const AISuggestedBadge = () => (
@@ -173,7 +195,12 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
         change_control_required: isCCRequired.toLowerCase() as "yes" | "no",
         cc_record_id: ccRecordId || undefined,
         action_required: actionsRequired || undefined,
-        final_risk_level: riskLevel || undefined,
+        final_risk_level:
+          scnClassification.toLowerCase() === "minor"
+            ? "minor"
+            : scnClassification.toLowerCase() === "major"
+              ? "major"
+              : "moderate",
         final_assigned_team:
           assignedTo.length > 0 ? assignedTo.join(", ") : undefined,
       };
@@ -317,13 +344,14 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
               justifyContent="space-between"
               marginBottom={1}
             >
-              <Stack direction="row" alignItems="center" gap={2}>
-                <Typography className={styles.inputLabel}>
+              <Stack direction="row" gap={2}>
+                <Typography className={styles.scnPredictedOutputLabel}>
                   SCN Predicted Output
                 </Typography>
                 <AISuggestedBadge />
               </Stack>
             </Stack>
+
             <Box className={styles.toggleGroup}>
               <AppButton
                 className={`${styles.toggleBtn} ${selected === "SCN" ? styles.active : ""}`}
@@ -354,8 +382,8 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
               </Typography>
             )}
           </Box>
-
-          <Box marginTop={4}>
+          <Box className={styles.divider} />
+          <Box marginTop={3}>
             <Stack
               direction="row"
               justifyContent="space-between"
@@ -392,68 +420,126 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
             )}
 
             <Typography
-              marginTop={4}
               variant="h6"
-              className={styles.sectionTitle}
+              className={styles.subSectionTitle}
+              marginTop={3}
             >
-              SCN Summary
+              Change Control Summary
             </Typography>
-            <Stack direction="row" spacing={6} marginTop={2}>
+
+            <Stack direction="row" spacing={6}>
               <Box sx={{ flex: 1 }}>
-                <Stack direction="column" spacing={8} marginTop={2}>
+                <Stack direction="column" spacing={8}>
                   <Box flex={1}>
-                    <Stack direction="row" justifyContent="space-between">
+                    <Box sx={{ flex: 1 }}>
+                      <Stack direction="column" spacing={8} marginTop={2}>
+                        <Box flex={1}>
+                          <Typography className={styles.inputLabel}>
+                            Change Control Required?
+                          </Typography>
+                          <Stack direction="row" spacing={3}>
+                            {["No", "Yes"].map((option) => (
+                              <label key={option} className={styles.radioLabel}>
+                                <input
+                                  type="radio"
+                                  name="ccRequired"
+                                  value={option}
+                                  checked={isCCRequired === option}
+                                  onChange={(e) =>
+                                    setIsCCRequired(e.target.value)
+                                  }
+                                  disabled={isFieldsDisabled}
+                                />
+                                {option}
+                              </label>
+                            ))}
+                          </Stack>
+                          <Box marginTop={2}>
+                            <Typography className={styles.inputLabel}>
+                              Record ID Number
+                            </Typography>
+                            <input
+                              type="text"
+                              className={styles.textInput}
+                              value={ccRecordId}
+                              onChange={(e) => setCcRecordId(e.target.value)}
+                              disabled={isFieldsDisabled}
+                              placeholder="CC-XXXXX"
+                            />
+                          </Box>
+                        </Box>
+                      </Stack>
+                    </Box>
+                    <Stack
+                      direction="row"
+                      justifyContent="space-between"
+                      marginTop={2}
+                    >
                       <Typography className={styles.inputLabel}>
                         Change Type
                       </Typography>
                       <AISuggestedBadge />
                     </Stack>
 
-                    <input
-                      type="text"
-                      className={styles.textInput}
-                      value={changeType}
-                      onChange={(e) => setChangeType(e.target.value)}
-                      disabled={isFieldsDisabled}
-                    />
-                  </Box>
-
-                  <Box flex={1}>
-                    <Stack direction="row" justifyContent="space-between">
-                      <Typography className={styles.inputLabel}>
-                        SCN Classification
+                    {!isFieldsDisabled ? (
+                      <div className={styles.selectWrapper}>
+                        <select
+                          className={styles.selectInput}
+                          value={changeType}
+                          onChange={(e) => setChangeType(e.target.value)}
+                        >
+                          <option value="">Select Change Type</option>
+                          {changeTypeOptions.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                        <div className={styles.selectArrow} />
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        className={styles.textInput}
+                        value={changeType}
+                        disabled
+                      />
+                    )}
+                    <Box className={styles.divider} />
+                    <Box flex={1}>
+                      <Typography
+                        variant="h6"
+                        className={styles.subSectionTitle}
+                      >
+                        SCN Summary
                       </Typography>
-                      <AISuggestedBadge />
-                    </Stack>
+                      <Stack direction="row" justifyContent="space-between">
+                        <Typography className={styles.inputLabel}>
+                          SCN Classification
+                        </Typography>
+                        <AISuggestedBadge />
+                      </Stack>
 
-                    <Stack direction="row" spacing={3} marginTop={1}>
-                      {["Minor", "Moderate", "Major"].map((option) => (
-                        <label key={option} className={styles.radioLabel}>
-                          <input
-                            type="radio"
-                            name="scnClassification"
-                            value={option}
-                            checked={scnClassification === option}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setScnClassification(val);
-                              setRiskLevel(
-                                val === "Minor"
-                                  ? "minor"
-                                  : val === "Major"
-                                    ? "major"
-                                    : "moderate",
-                              );
-                            }}
-                            disabled={isFieldsDisabled}
-                          />
-                          {option}
-                        </label>
-                      ))}
-                    </Stack>
+                      <Stack direction="row" spacing={3}>
+                        {["Minor", "Moderate", "Major"].map((option) => (
+                          <label key={option} className={styles.radioLabel}>
+                            <input
+                              type="radio"
+                              name="scnClassification"
+                              value={option}
+                              checked={scnClassification === option}
+                              onChange={(e) =>
+                                setScnClassification(e.target.value)
+                              }
+                              disabled={isFieldsDisabled}
+                            />
+                            {option}
+                          </label>
+                        ))}
+                      </Stack>
+                    </Box>
                   </Box>
                 </Stack>
-
                 <Box marginTop={3}>
                   <Stack direction="row" justifyContent="space-between">
                     <Typography className={styles.inputLabel}>
@@ -515,7 +601,8 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                 </Box>
               </Box>
             </Stack>
-            <Box marginTop={4}>
+            <Box className={styles.divider} marginTop={4} />
+            <Box>
               <Typography variant="h6" className={styles.sectionTitle}>
                 Assign
               </Typography>

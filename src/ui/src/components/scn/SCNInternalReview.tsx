@@ -140,7 +140,6 @@ const SCNInternalReview: React.FC = () => {
   const [openApprove, setOpenApprove] = useState(false);
   const [openReject, setOpenReject] = useState(false);
   const [changeControlRequired, setChangeControlRequired] = useState("");
-  const [recordId, setRecordId] = useState("");
 
   // Fetch SCN list with filters + search
   const loadList = useCallback(
@@ -1005,7 +1004,6 @@ const SCNInternalReview: React.FC = () => {
                         onRejectClick={() => setOpenReject(true)}
                         onPreviewClick={() => setOpen(true)}
                         changeControlRequired={changeControlRequired}
-                        recordId={recordId}
                       />
                     )}
                   </Box>
@@ -1037,15 +1035,13 @@ const SCNInternalReview: React.FC = () => {
               open={openApprove}
               onClose={() => setOpenApprove(false)}
               emailId={selectedEmailId ?? undefined}
-              onDone={(changeControl, ccRecordId) => {
+              onDone={(changeControl) => {
                 setChangeControlRequired(changeControl);
-                setRecordId(ccRecordId);
                 setOpenApprove(false);
                 handleRefreshAll();
                 setSelectedTab("Impact Review");
               }}
               defaultChangeControl={changeControlRequired}
-              defaultRecordId={recordId}
             />
 
             <RejectSCNModal

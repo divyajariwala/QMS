@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import DashboardStatsCard from "./InternalReviewStatsCard";
 import DonutChart from "../charts/DonutChart";
 import GaugeChart from "../charts/GaugeChart";
@@ -75,6 +75,7 @@ const InternalReviewStatsComponents: React.FC<
   }));
   const card1Total = card1RawData.reduce((a, b) => a + b.value, 0);
   // Card 2 Data
+  const [selectedClassification, setSelectedClassification] = useState("SCN");
   const classData = classificationSummary || { scn: 0, non_scn: 0 };
   const card2RawData = [
     { name: "SCN", value: classData.scn || 0 },
@@ -103,6 +104,15 @@ const InternalReviewStatsComponents: React.FC<
   const card2Total = (classData.scn || 0) + (classData.non_scn || 0);
 
   // Card 4 Data
+
+  const trendDataForNonSCN = [
+    {
+      date: "0",
+      count: 0,
+      displayDate: "",
+    },
+  ];
+
   const getDayWithSuffix = (dateStr: string) => {
     const date = new Date(dateStr);
     const day = date.getDate();
@@ -175,7 +185,10 @@ const InternalReviewStatsComponents: React.FC<
         }
         legendItems={card2Legend}
         icon={<img src={DialIcon} alt="Dial" />}
-        onLegendItemClick={(item) => onClassificationClick?.(item.label)}
+        onLegendItemClick={(item) => {
+          onClassificationClick?.(item.label);
+          setSelectedClassification(item.label);
+        }}
       />
 
       {/* Card 3 */}
@@ -201,7 +214,16 @@ const InternalReviewStatsComponents: React.FC<
       <DashboardStatsCard
         title="SCN Volumes In Last 5 Days"
         value={trendTotal}
-        chartComponent={<TrendChart data={trendData} onDateClick={onDateClick} />}
+        chartComponent={
+          <TrendChart
+            data={
+              selectedClassification === "Non SCN"
+                ? trendDataForNonSCN
+                : trendData
+            }
+            onDateClick={onDateClick}
+          />
+        }
         icon={<img src={BarChartIcon} alt="Trend Icon" />}
       />
     </div>

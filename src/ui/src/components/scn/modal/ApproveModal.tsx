@@ -8,10 +8,8 @@ import { ScnApproveRejectResponse } from "src/types";
 interface ApproveModalProps {
   open: boolean;
   onClose: () => void;
-  onDone: (changeControlRequired: string, recordId: string) => void;
+  onDone: (changeControlRequired: string) => void;
   defaultChangeControl?: string;
-  defaultRecordId?: string;
-  recordIdOptions?: string[];
   emailId?: string;
 }
 
@@ -20,29 +18,12 @@ const ApproveModal: React.FC<ApproveModalProps> = ({
   onClose,
   onDone,
   defaultChangeControl = "Yes",
-  defaultRecordId = "",
-  recordIdOptions = [
-    "CC-23451",
-    "CC-23452",
-    "CC-23453",
-    "CC-23454",
-    "CC-23455",
-  ],
   emailId,
 }) => {
   const [changeControlRequired, setChangeControlRequired] =
     useState<string>(defaultChangeControl);
-  const [recordId, setRecordId] = useState<string>(
-    defaultRecordId || recordIdOptions[0],
-  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (changeControlRequired === "No") {
-      setRecordId("");
-    }
-  }, [changeControlRequired]);
 
   // Reset error when modal opens/closes
   useEffect(() => {
@@ -68,7 +49,7 @@ const ApproveModal: React.FC<ApproveModalProps> = ({
         payload,
       );
       if (res?.success) {
-        onDone(changeControlRequired, res.data?.cc_record_id ?? recordId);
+        onDone(changeControlRequired);
         onClose();
       } else {
         setError(res?.message || "Failed to approve.");
@@ -123,26 +104,6 @@ const ApproveModal: React.FC<ApproveModalProps> = ({
               </label>
             ))}
           </Box>
-        </Box>
-        <Box>
-          <Box mb={1}>
-            <span className={styles.radioLabel}>Select Record ID Number</span>
-          </Box>
-          <div className={styles.selectWrapper}>
-            <select
-              value={recordId}
-              onChange={(e) => setRecordId(e.target.value)}
-              disabled={changeControlRequired === "No" || isSubmitting}
-              className={styles.selectInput}
-            >
-              {recordIdOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-            <span className={styles.selectArrow} />
-          </div>
         </Box>
 
         {isSubmitting && (

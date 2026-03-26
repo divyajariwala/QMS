@@ -181,6 +181,14 @@
   display: block;
 }
 
+.scnPredictedOutputLabel {
+  font-size: 13px !important;
+  color: #303030;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+  display: block;
+}
+
 .textInput {
   width: 100%;
   padding: 10px 12px;
@@ -195,6 +203,51 @@
     border-color: #3b82f6;
     background-color: #fff;
   }
+}
+
+.selectWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.selectInput {
+  width: 100%;
+  height: 42px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  background-color: #ffffff;
+  color: #272d37;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+
+  &:focus {
+    border-color: #3b82f6;
+  }
+
+  &:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+}
+
+.selectArrow {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  transform: translateY(-50%);
+  background: url("data:image/svg+xml;utf8,<svg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M5 7.5L10 12.5L15 7.5' stroke='%23667085' stroke-width='1.66667' stroke-linecap='round' stroke-linejoin='round'/></svg>")
+    no-repeat center/contain;
 }
 
 .textArea {
@@ -428,4 +481,11 @@
   &:hover {
     background-color: #fa733a !important;
   }
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 16px 0;
 }
