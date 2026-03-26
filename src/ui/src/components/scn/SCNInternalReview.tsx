@@ -23,6 +23,7 @@ import InfoIcon from "../../assets/icons/information.svg";
 import ChangeNotificationModal from "./modal/ChangeNotificationModal";
 import SCNExtractedSourcesModal from "./modal/SCNExtractedSourcesModal";
 import RightIcon from "../../assets/icons/rightBlue.svg";
+import CalendarIcon from "../../assets/icons/calendar.svg";
 import {
   fetchScnDetails,
   fetchScnList,
@@ -52,6 +53,7 @@ import Gauge from "@components/common/GaugeChart";
 type FilterState = {
   supplier: string;
   plannedDate: string | null;
+  receivedDate: string | null;
   daysRange: string;
   classification: string;
   riskLevel: string;
@@ -98,6 +100,7 @@ const SCNInternalReview: React.FC = () => {
   const defaultFilters: FilterState = {
     supplier: "",
     plannedDate: null,
+    receivedDate: null,
     daysRange: "",
     classification: "",
     riskLevel: "",
@@ -169,6 +172,8 @@ const SCNInternalReview: React.FC = () => {
             "planned_implementation_date",
             appliedFilters.plannedDate,
           );
+        if (appliedFilters.receivedDate)
+          params.append("received_date", appliedFilters.receivedDate);
         if (appliedSearch) params.append("q", appliedSearch);
         const res = await fetchScnList(LIMIT, 0, params);
         const items = res?.data?.items || [];
@@ -240,6 +245,8 @@ const SCNInternalReview: React.FC = () => {
           "planned_implementation_date",
           appliedFilters.plannedDate,
         );
+      if (appliedFilters.receivedDate)
+        params.append("received_date", appliedFilters.receivedDate);
       if (appliedSearch) params.append("q", appliedSearch);
       const res = await fetchScnList(LIMIT, newOffset, params);
       const items = res?.data?.items || [];
@@ -540,6 +547,11 @@ const SCNInternalReview: React.FC = () => {
             classification: classification,
           }));
         }}
+        onDateClick={(date) => {
+          resetDetailPanel();
+          setFilters((prev) => ({ ...prev, receivedDate: date }));
+          setAppliedFilters((prev) => ({ ...prev, receivedDate: date }));
+        }}
       />
 
       <Stack gap={2}>
@@ -584,6 +596,17 @@ const SCNInternalReview: React.FC = () => {
                       <div
                         className={styles.clearFilterIcon}
                         onClick={() => removeFilter("classification")}
+                      >
+                        ×
+                      </div>
+                    </div>
+                  )}
+                  {appliedFilters.receivedDate && (
+                    <div className={styles.filterTag}>
+                      Date: <span>{appliedFilters.receivedDate}</span>
+                      <div
+                        className={styles.clearFilterIcon}
+                        onClick={() => removeFilter("receivedDate")}
                       >
                         ×
                       </div>
@@ -665,33 +688,33 @@ const SCNInternalReview: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Planned Date */}
-                        {/* <div className={styles.fieldGroup}>
-                    <label className={styles.label}>
-                      Planned Implementation Date
-                    </label>
-                    <div className={styles.dateWrapper}>
-                      <input
-                        type={filters.plannedDate ? "date" : "text"}
-                        value={filters.plannedDate || ""}
-                        onChange={(e) =>
-                          handleFilterChange("plannedDate", e.target.value)
-                        }
-                        onFocus={(e) => (e.target.type = "date")}
-                        onBlur={(e) => {
-                          if (!e.target.value) e.target.type = "text";
-                        }}
-                        className={`${styles.inputField} ${styles.dateInput}`}
-                        placeholder="Jan 04 2026"
-                      />
-                      <img
-                        src={CalendarIcon}
-                        alt="calendar"
-                        className={styles.calendarIcon}
-                      />
-                    </div>
-                  </div> */}
-
+                        {/* Received Date */}
+                        <div className={styles.fieldGroup}>
+                          <label className={styles.label}>Received Date</label>
+                          <div className={styles.dateWrapper}>
+                            <input
+                              type={filters.receivedDate ? "date" : "text"}
+                              value={filters.receivedDate || ""}
+                              onChange={(e) =>
+                                handleFilterChange(
+                                  "receivedDate",
+                                  e.target.value,
+                                )
+                              }
+                              onFocus={(e) => (e.target.type = "date")}
+                              onBlur={(e) => {
+                                if (!e.target.value) e.target.type = "text";
+                              }}
+                              className={`${styles.inputField} ${styles.dateInput}`}
+                              placeholder="YYYY-MM-DD"
+                            />
+                            <img
+                              src={CalendarIcon}
+                              alt="calendar"
+                              className={styles.calendarIcon}
+                            />
+                          </div>
+                        </div>
                         {/* Days Since Notification */}
                         {/* <div className={styles.fieldGroup}>
                     <label className={styles.label}>

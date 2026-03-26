@@ -31,6 +31,7 @@ export interface InternalReviewStatsComponentsProps {
   };
   onRiskLevelClick?: (level: string) => void;
   onClassificationClick?: (classification: string) => void;
+  onDateClick?: (date: string) => void;
 }
 
 const InternalReviewStatsComponents: React.FC<
@@ -43,6 +44,7 @@ const InternalReviewStatsComponents: React.FC<
   avgProcessingTime,
   onRiskLevelClick,
   onClassificationClick,
+  onDateClick,
 }) => {
   // Card 1 Data
   const riskData = riskLevelSummary || { major: 0, moderate: 0, minor: 0 };
@@ -199,7 +201,7 @@ const InternalReviewStatsComponents: React.FC<
       <DashboardStatsCard
         title="SCN Volumes In Last 5 Days"
         value={trendTotal}
-        chartComponent={<TrendChart data={trendData} />}
+        chartComponent={<TrendChart data={trendData} onDateClick={onDateClick} />}
         icon={<img src={BarChartIcon} alt="Trend Icon" />}
       />
     </div>

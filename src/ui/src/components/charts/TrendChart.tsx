@@ -19,6 +19,7 @@ export interface TrendChartData {
 
 export interface TrendChartProps {
   data: TrendChartData[];
+  onDateClick?: (date: string) => void;
 }
 
 const CustomLabel = (props: any) => {
@@ -38,13 +39,30 @@ const CustomLabel = (props: any) => {
   );
 };
 
-const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
+const TrendChart: React.FC<TrendChartProps> = ({ data, onDateClick }) => {
+  const handleChartClick = (nextState: any) => {
+    if (nextState && nextState.activePayload && nextState.activePayload.length > 0) {
+      const clickedDate = nextState.activePayload[0].payload.date;
+      if (clickedDate) {
+        onDateClick?.(clickedDate);
+      }
+    } else if (nextState && nextState.activeLabel) {
+      // Fallback: match by displayDate if activePayload is not available
+      const foundItem = data.find((item) => item.displayDate === nextState.activeLabel);
+      if (foundItem) {
+        onDateClick?.(foundItem.date);
+      }
+    }
+  };
+
   return (
     <div className={styles.chartContainer}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={data}
           margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
+          onClick={handleChartClick}
+          style={{ cursor: onDateClick ? "pointer" : "default" }}
         >
           <defs>
             <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
