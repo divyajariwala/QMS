@@ -32,6 +32,7 @@ export interface InternalReviewStatsComponentsProps {
   onRiskLevelClick?: (level: string) => void;
   onClassificationClick?: (classification: string) => void;
   onDateClick?: (date: string) => void;
+  filters: any;
 }
 
 const InternalReviewStatsComponents: React.FC<
@@ -45,6 +46,7 @@ const InternalReviewStatsComponents: React.FC<
   onRiskLevelClick,
   onClassificationClick,
   onDateClick,
+  filters,
 }) => {
   // Card 1 Data
   const riskData = riskLevelSummary || { major: 0, moderate: 0, minor: 0 };
@@ -75,7 +77,6 @@ const InternalReviewStatsComponents: React.FC<
   }));
   const card1Total = card1RawData.reduce((a, b) => a + b.value, 0);
   // Card 2 Data
-  const [selectedClassification, setSelectedClassification] = useState("SCN");
   const classData = classificationSummary || { scn: 0, non_scn: 0 };
   const card2RawData = [
     { name: "SCN", value: classData.scn || 0 },
@@ -105,13 +106,7 @@ const InternalReviewStatsComponents: React.FC<
 
   // Card 4 Data
 
-  const trendDataForNonSCN = [
-    {
-      date: "0",
-      count: 0,
-      displayDate: "",
-    },
-  ];
+  const isNonSCN = filters?.classification === "Non SCN";
 
   const getDayWithSuffix = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -144,6 +139,11 @@ const InternalReviewStatsComponents: React.FC<
   const trendTotal = scnVolumeTrend
     ? scnVolumeTrend.counts.reduce((a, b) => a + b, 0)
     : 0;
+
+  const displayTrendData = isNonSCN
+    ? [{ date: "0", count: 0, displayDate: "" }]
+    : trendData;
+  const displayTrendTotal = isNonSCN ? 0 : trendTotal;
 
   return (
     <div
@@ -187,7 +187,6 @@ const InternalReviewStatsComponents: React.FC<
         icon={<img src={DialIcon} alt="Dial" />}
         onLegendItemClick={(item) => {
           onClassificationClick?.(item.label);
-          setSelectedClassification(item.label);
         }}
       />
 
@@ -213,16 +212,9 @@ const InternalReviewStatsComponents: React.FC<
       {/* Card 4 */}
       <DashboardStatsCard
         title="SCN Volumes In Last 5 Days"
-        value={trendTotal}
+        value={displayTrendTotal}
         chartComponent={
-          <TrendChart
-            data={
-              selectedClassification === "Non SCN"
-                ? trendDataForNonSCN
-                : trendData
-            }
-            onDateClick={onDateClick}
-          />
+          <TrendChart data={displayTrendData} onDateClick={onDateClick} />
         }
         icon={<img src={BarChartIcon} alt="Trend Icon" />}
       />

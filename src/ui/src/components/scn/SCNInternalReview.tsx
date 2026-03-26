@@ -533,6 +533,7 @@ const SCNInternalReview: React.FC = () => {
         classificationSummary={classificationSummary}
         scnVolumeTrend={scnVolumeTrend}
         avgProcessingTime={avgProcessingTime}
+        filters={filters}
         onRiskLevelClick={(level) => {
           resetDetailPanel();
           setFilters((prev) => ({ ...prev, riskLevel: level }));
