@@ -90,7 +90,7 @@ const RequestInfoModal: React.FC<RequestInfoModalProps> = ({
       open={open}
       onClose={onClose}
       title="Request info"
-      width={686}
+      width={800}
       actions={[
         {
           label: "Cancel",

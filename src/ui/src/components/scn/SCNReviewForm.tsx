@@ -119,9 +119,7 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
             >
               <img src={documentTextIcon} alt="" />
               SCN Identification
-              {tab1HasError && (
-                <span className={styles.tabErrorDot}>●</span>
-              )}
+              {tab1HasError && <span className={styles.tabErrorDot}>●</span>}
             </button>
             <button
               className={`${styles.tabItem} ${activeTab === "Materials / Products Impacted" ? styles.activeTab : ""}`}
@@ -129,9 +127,7 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
             >
               <img src={documentAlertIcon} alt="" />
               Materials / Products Impacted
-              {tab2HasError && (
-                <span className={styles.tabErrorDot}>●</span>
-              )}
+              {tab2HasError && <span className={styles.tabErrorDot}>●</span>}
             </button>
           </div>
         </Box>
@@ -336,10 +332,18 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
                 </Box>
               )}
               <Stack direction="row" spacing={2} justifyContent="flex-end">
-                <AppButton variant="outlined" onClick={onCancel} disabled={isSaving}>
+                <AppButton
+                  variant="outlined"
+                  onClick={onCancel}
+                  disabled={isSaving}
+                >
                   Cancel
                 </AppButton>
-                <AppButton variant="primary" onClick={onSave} disabled={isSaving}>
+                <AppButton
+                  variant="primary"
+                  onClick={onSave}
+                  disabled={isSaving}
+                >
                   {isSaving ? (
                     <span className={styles.savingText}>
                       <CircularProgress size={14} sx={{ color: "inherit" }} />
@@ -369,7 +373,7 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
                   onClick={onReject}
                 >
                   <Stack direction="row" alignItems="center" gap={1}>
-                    <img src={CircleDeleteIcon} alt="" /> Reject
+                    <img src={CircleDeleteIcon} alt="" /> Reject22
                   </Stack>
                 </AppButton>
                 <AppButton

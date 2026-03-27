@@ -721,28 +721,6 @@ const SCNInternalReview: React.FC = () => {
                             />
                           </div>
                         </div>
-                        {/* Days Since Notification */}
-                        {/* <div className={styles.fieldGroup}>
-                    <label className={styles.label}>
-                      Days Since Notification
-                    </label>
-                    <div className={styles.selectWrapper}>
-                      <select
-                        value={filters.daysRange}
-                        onChange={(e) =>
-                          handleFilterChange("daysRange", e.target.value)
-                        }
-                        className={styles.selectInput}
-                      >
-                        <option value="">Input text</option>
-                        <option value="0-30">0–30</option>
-                        <option value="31-60">31–60</option>
-                        <option value="61-90">61–90</option>
-                        <option value="90">90+</option>
-                      </select>
-                      <span className={styles.selectArrow} />
-                    </div>
-                  </div> */}
 
                         {/* Classification */}
                         <div className={styles.fieldGroup}>
@@ -897,8 +875,6 @@ const SCNInternalReview: React.FC = () => {
                   justifyContent="space-between"
                 >
                   <Stack direction="column" gap={2}>
-                    {/* <span className={styles.scnStatus}>{scnDetail?.status}</span> */}
-
                     <Box className={styles.mailContentHader}>
                       <Stack
                         direction="row"
@@ -917,11 +893,6 @@ const SCNInternalReview: React.FC = () => {
                           <img src={AuditHistoryIcon} alt="" />
                           Audit History
                         </button>
-                        {/* <span
-                        className={`${styles.classificationStatus} ${getClassificationClass("Minor")}`}
-                      >
-                        Minor
-                      </span> */}
                       </Stack>
                     </Box>
                     <Box className={styles.detailText}>
@@ -952,23 +923,6 @@ const SCNInternalReview: React.FC = () => {
                 /> */}
                 {selectedTab === "Review SCN" && (
                   <Box>
-                    {/* <Stack
-                      direction="row"
-                      gap={1.5}
-                      justifyContent="flex-end"
-                      marginBottom={3}
-                      marginTop={1}
-                    >
-                      <AppButton
-                        variant="outlined"
-                        onClick={() => setOpenRequestInfo(true)}
-                      >
-                        <span className={styles.appButton}>
-                          <img src={InfoIcon} alt="" />
-                          Request info
-                        </span>
-                      </AppButton>
-                    </Stack> */}
                     {scnDetail && (
                       <SCNReviewForm
                         formData={scnDetail}
@@ -1007,8 +961,7 @@ const SCNInternalReview: React.FC = () => {
                         onRefresh={handleRefreshAll}
                         onReviewScnClick={() => handleTabSelect("Review SCN")}
                         scnDetail={scnDetail}
-                        onApproveClick={() => setOpenApprove(true)}
-                        onRejectClick={() => setOpenReject(true)}
+                        onRequestInfoClick={() => setOpenRequestInfo(true)}
                         onPreviewClick={() => setOpen(true)}
                         changeControlRequired={changeControlRequired}
                       />

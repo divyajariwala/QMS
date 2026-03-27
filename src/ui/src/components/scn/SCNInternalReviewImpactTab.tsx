@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import styles from "./SCNInternalReviewImpactTab.module.scss";
 import { Box, CircularProgress, Stack, Typography } from "@mui/material";
 import AppButton from "@components/common/AppButton";
-import CircleDeleteIcon from "../../assets/icons/circle-delete.svg";
 import AISummaryIcon from "../../assets/icons/aiSummary.svg";
 import EditIcon from "../../assets/icons/editIcon.svg";
 import SelectedFields from "@components/common/SelectedFields";
@@ -13,6 +12,7 @@ import ArrowRightOrange from "../../assets/icons/arrowRightOrange.svg";
 import AcceptIcon from "../../assets/icons/accept.svg";
 import ChangeSCNOutputModal from "./modal/ChangeSCNOutputModal";
 import RightIcon from "../../assets/icons/rightOrange.svg";
+import InfoIcon from "../../assets/icons/information.svg";
 
 export interface ImpactClassificationData {
   change_control_required?: string | null;
@@ -35,11 +35,10 @@ export interface Props {
   onReviewScnClick?: () => void;
   /** Complete SCN detail for things like Affected Items and Attachments */
   scnDetail?: any;
-  onApproveClick?: () => void;
-  onRejectClick?: () => void;
   onOutputClick?: () => void;
   onPreviewClick?: () => void;
   changeControlRequired?: string;
+  onRequestInfoClick?: () => void;
 }
 
 const SCNInternalReviewImpactTab: React.FC<Props> = ({
@@ -49,11 +48,10 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
   onRefresh,
   onReviewScnClick,
   scnDetail,
-  onApproveClick,
-  onRejectClick,
   onOutputClick,
   onPreviewClick,
   changeControlRequired,
+  onRequestInfoClick,
 }) => {
   const [selected, setSelected] = useState<"SCN" | "NON_SCN">("SCN");
   const [changeType, setChangeType] = useState("");
@@ -144,7 +142,7 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
     "Software QA",
     "Supply Chain",
   ];
-  
+
   const changeTypeOptions = [
     "Manufacturing Process Changes",
     "Manufacturing Site / Facility Changes",
@@ -726,12 +724,12 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
           >
             <AppButton
               variant="outlined"
-              onClick={onRejectClick}
+              onClick={onRequestInfoClick}
               className={styles.rejectButton}
             >
               <span className={styles.appButton}>
-                <img src={CircleDeleteIcon} alt="" />
-                Reject
+                <img src={InfoIcon} alt="" />
+                Request Info
               </span>
             </AppButton>
 
