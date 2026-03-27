@@ -373,7 +373,7 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
                   onClick={onReject}
                 >
                   <Stack direction="row" alignItems="center" gap={1}>
-                    <img src={CircleDeleteIcon} alt="" /> Reject22
+                    <img src={CircleDeleteIcon} alt="" /> Reject
                   </Stack>
                 </AppButton>
                 <AppButton
