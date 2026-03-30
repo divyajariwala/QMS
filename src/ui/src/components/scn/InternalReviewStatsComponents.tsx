@@ -106,7 +106,7 @@ const InternalReviewStatsComponents: React.FC<
 
   // Card 4 Data
 
-  const isNonSCN = filters?.classification === "Non SCN";
+  const isNonSCN = filters?.finalClassification === "Non SCN";
 
   const getDayWithSuffix = (dateStr: string) => {
     const date = new Date(dateStr);

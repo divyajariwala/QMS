@@ -56,6 +56,7 @@ type FilterState = {
   receivedDate: string | null;
   daysRange: string;
   classification: string;
+  finalClassification: string;
   riskLevel: string;
 };
 
@@ -103,6 +104,7 @@ const SCNInternalReview: React.FC = () => {
     receivedDate: null,
     daysRange: "",
     classification: "",
+    finalClassification: "",
     riskLevel: "",
   };
 
@@ -160,6 +162,11 @@ const SCNInternalReview: React.FC = () => {
           params.append(
             "change_classification_supplier",
             appliedFilters.classification,
+          );
+        if (appliedFilters.finalClassification)
+          params.append(
+            "final_classification",
+            appliedFilters.finalClassification.toUpperCase().replace(" ", "_"),
           );
         if (appliedFilters.riskLevel)
           params.append(
@@ -233,6 +240,11 @@ const SCNInternalReview: React.FC = () => {
         params.append(
           "change_classification_supplier",
           appliedFilters.classification,
+        );
+      if (appliedFilters.finalClassification)
+        params.append(
+          "final_classification",
+          appliedFilters.finalClassification.toUpperCase().replace(" ", "_"),
         );
       if (appliedFilters.riskLevel)
         params.append(
@@ -547,10 +559,13 @@ const SCNInternalReview: React.FC = () => {
         }}
         onClassificationClick={(classification) => {
           resetDetailPanel();
-          setFilters((prev) => ({ ...prev, classification: classification }));
+          setFilters((prev) => ({
+            ...prev,
+            finalClassification: classification,
+          }));
           setAppliedFilters((prev) => ({
             ...prev,
-            classification: classification,
+            finalClassification: classification,
           }));
         }}
         onDateClick={(date) => {
@@ -602,6 +617,17 @@ const SCNInternalReview: React.FC = () => {
                       <div
                         className={styles.clearFilterIcon}
                         onClick={() => removeFilter("classification")}
+                      >
+                        ×
+                      </div>
+                    </div>
+                  )}
+                  {appliedFilters.finalClassification && (
+                    <div className={styles.filterTag}>
+                      Output: <span>{appliedFilters.finalClassification}</span>
+                      <div
+                        className={styles.clearFilterIcon}
+                        onClick={() => removeFilter("finalClassification")}
                       >
                         ×
                       </div>
