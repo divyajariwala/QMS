@@ -21,20 +21,15 @@
 }
 
 .editButtonSmall {
-  color: #272d37 !important;
-  padding: 4px 18px !important;
-  font-size: 14px !important;
-  text-transform: none !important;
-  font-weight: 500 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  border-radius: 50px !important;
-  background-color: transparent !important;
-  border: 1px solid #a1a8b3 !important;
   &:hover {
     background-color: #f5f3f1 !important;
   }
+}
+
+.editButtonContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .editIcon {
@@ -127,7 +122,6 @@
 }
 
 .sectionTiming {
-  border-top: 1px solid #e5e7eb !important;
   border-bottom: 1px solid #e5e7eb !important;
 }
 

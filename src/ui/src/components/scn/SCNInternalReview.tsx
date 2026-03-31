@@ -472,17 +472,32 @@ const SCNInternalReview: React.FC = () => {
   };
 
   const queueItems = useMemo(() => {
-    return scns.map((item) => ({
-      scn_reference_number: item.scn_reference_number,
-      supplier_name: item.supplier_name,
-      change_classification_supplier: item.change_classification_supplier,
-      completion_score: item.completion_score || 0,
-      status: item.status,
-      email_id: item.email_id,
-      notification_date: item.notification_date,
-      planned_implementation_date: item.planned_implementation_date,
-      final_risk_level: item.final_risk_level,
-    }));
+    return scns.map((item) => {
+      // Normalize status to camelCase for consistency
+      const raw = (item.status || "").toUpperCase().replace(/ /g, "_");
+      let normalizedStatus = item.status;
+      if (raw === "SUPPLIER_ACTION_REQUIRED")
+        normalizedStatus = "supplierActionRequired";
+      else if (raw === "PENDING_REVIEW") normalizedStatus = "pendingReview";
+      else if (raw === "IN_REVIEW") normalizedStatus = "inReview";
+      else if (raw === "SUPPLIER_INFO_REQUESTED")
+        normalizedStatus = "supplierInfoRequested";
+      else if (raw === "APPROVED") normalizedStatus = "approved";
+      else if (raw === "REJECTED") normalizedStatus = "rejected";
+
+      return {
+        scn_reference_number: item.scn_reference_number,
+        supplier_name: item.supplier_name,
+        change_classification_supplier: item.change_classification_supplier,
+        planned_implementation_date: item.planned_implementation_date,
+        notification_date: item.notification_date,
+        completion_score: item.completion_score,
+        status: normalizedStatus,
+        email_id: item.email_id,
+        final_risk_level: item.final_risk_level,
+        updated_at: item.updated_at,
+      };
+    });
   }, [scns]);
 
   const resetDetailPanel = () => {
@@ -522,29 +537,65 @@ const SCNInternalReview: React.FC = () => {
   }, [scns]);
 
   const getStatusClass = (status: string) => {
+    // Normalize incoming status to match our camelCase keys
+    const s = status.replace(/ /g, "_").toUpperCase();
+    if (s === "SUPPLIER_ACTION_REQUIRED") return styles.statusYellow;
+    if (s === "PENDING_REVIEW") return styles.statusPurple;
+    if (s === "IN_REVIEW") return styles.statusGray;
+    if (s === "SUPPLIER_INFO_REQUESTED") return styles.statusYellow;
+    if (s === "APPROVED") return styles.statusApproved;
+    if (s === "REJECTED") return styles.statusRejected;
+
+    // Direct match for camelCase
     switch (status) {
-      case "SUPPLIER ACTION REQUIRED":
+      case "supplierActionRequired":
         return styles.statusYellow;
-      case "PENDING REVIEW":
-      case "PENDING_REVIEW":
+      case "pendingReview":
         return styles.statusPurple;
-      case "IN REVIEW":
-      case "IN_REVIEW":
+      case "inReview":
         return styles.statusGray;
-      case "SUPPLIER INFO REQUESTED":
-      case "SUPPLIER_INFO_REQUESTED":
+      case "supplierInfoRequested":
         return styles.statusYellow;
-      case "APPROVED":
+      case "approved":
         return styles.statusApproved;
-      case "REJECTED":
+      case "rejected":
         return styles.statusRejected;
       default:
         return "";
     }
   };
 
+
+  const getStatusLabel = (status: string) => {
+    const s = status.replace(/ /g, "_").toUpperCase();
+    if (s === "SUPPLIER_ACTION_REQUIRED") return "Supplier Action Required";
+    if (s === "PENDING_REVIEW") return "Pending Review";
+    if (s === "IN_REVIEW") return "In Review";
+    if (s === "SUPPLIER_INFO_REQUESTED") return "Supplier Info Requested";
+    if (s === "APPROVED") return "Approved";
+    if (s === "REJECTED") return "Rejected";
+
+    switch (status) {
+      case "supplierActionRequired":
+        return "Supplier Action Required";
+      case "pendingReview":
+        return "Pending Review";
+      case "inReview":
+        return "In Review";
+      case "supplierInfoRequested":
+        return "Supplier Info Requested";
+      case "approved":
+        return "Approved";
+      case "rejected":
+        return "Rejected";
+      default:
+        return status;
+    }
+  };
+
   return (
     <Box component="main" className={styles.container}>
+
       <DashboardExample
         total={total}
         riskLevelSummary={riskLevelSummary}
@@ -821,8 +872,9 @@ const SCNInternalReview: React.FC = () => {
                       <span
                         className={`${styles.status} ${getStatusClass(item.status)}`}
                       >
-                        {item.status}
+                        {getStatusLabel(item.status)}
                       </span>
+
                       <Stack
                         direction="row"
                         justifyContent="space-between"

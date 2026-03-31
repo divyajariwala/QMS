@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {
-  Box,
-  Stack,
-  Button,
-  CircularProgress,
-  Typography,
-} from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import CommonBreadcrumbs from "@components/commonBreadCrumbs/CommonBreadcrumbs";
 import styles from "./SCNEditDetails.module.scss";
 import SCNResultCard from "./SCNResultCard";
@@ -16,6 +10,7 @@ import { fetchScnDetails, editScn } from "src/services/scn";
 import { mapScnDetailsToForm } from "src/utils/mapScnDetails";
 import { mapScnFormToApi } from "src/utils/mapScnFormToApi";
 import SCNFormSkeleton from "./skeleton/SCNFormSkeleton";
+import AppButton from "@components/common/AppButton";
 
 const SCNEditDetails: React.FC = () => {
   const { scnId } = useParams<{ scnId: string }>();
@@ -215,27 +210,21 @@ const SCNEditDetails: React.FC = () => {
         <Stack direction="row" spacing={2} className={styles.actionButtons}>
           {isEditing && (
             <>
-              <Button
+              <AppButton
                 variant="outlined"
                 onClick={handleCancelClick}
                 disabled={isSubmitting}
-                className={styles.cancelButton}
               >
                 Cancel
-              </Button>
-              <Button
-                variant="contained"
+              </AppButton>
+              <AppButton
+                variant="primary"
                 onClick={handleSaveClick}
                 disabled={isSubmitting}
-                className={styles.submitButton}
-                startIcon={
-                  isSubmitting ? (
-                    <CircularProgress size={16} sx={{ color: "white" }} />
-                  ) : undefined
-                }
+                loading={isSubmitting}
               >
-                {isSubmitting ? "Submitting…" : "Submit"}
-              </Button>
+                Submit
+              </AppButton>
             </>
           )}
         </Stack>

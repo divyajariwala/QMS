@@ -160,6 +160,8 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
     "Discontinuation / Obsolescence",
   ];
 
+  const scnClassificationOptions = ["Minor", "Moderate", "Major"];
+
   const AISuggestedBadge = () => (
     <span className={styles.aiBadge}>
       <img src={AISummaryIcon} alt="" /> AI Suggested
@@ -343,7 +345,7 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
               justifyContent="space-between"
               marginBottom={1}
             >
-              <Stack direction="row" gap={2}>
+              <Stack direction="row" gap={13}>
                 <Typography className={styles.scnPredictedOutputLabel}>
                   SCN Predicted Output
                 </Typography>
@@ -512,30 +514,42 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
                       >
                         SCN Summary
                       </Typography>
-                      <Stack direction="row" justifyContent="space-between">
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        marginTop={2}
+                      >
                         <Typography className={styles.inputLabel}>
                           SCN Classification
                         </Typography>
                         <AISuggestedBadge />
                       </Stack>
 
-                      <Stack direction="row" spacing={3}>
-                        {["Minor", "Moderate", "Major"].map((option) => (
-                          <label key={option} className={styles.radioLabel}>
-                            <input
-                              type="radio"
-                              name="scnClassification"
-                              value={option}
-                              checked={scnClassification === option}
-                              onChange={(e) =>
-                                setScnClassification(e.target.value)
-                              }
-                              disabled={isFieldsDisabled}
-                            />
-                            {option}
-                          </label>
-                        ))}
-                      </Stack>
+                      {!isFieldsDisabled ? (
+                        <div className={styles.selectWrapper}>
+                          <select
+                            className={styles.selectInput}
+                            value={scnClassification}
+                            onChange={(e) =>
+                              setScnClassification(e.target.value)
+                            }
+                          >
+                            {scnClassificationOptions.map((option) => (
+                              <option key={option} value={option}>
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                          <div className={styles.selectArrow} />
+                        </div>
+                      ) : (
+                        <input
+                          type="text"
+                          className={styles.textInput}
+                          value={scnClassification}
+                          disabled
+                        />
+                      )}
                     </Box>
                   </Box>
                 </Stack>
@@ -716,11 +730,13 @@ const SCNInternalReviewImpactTab: React.FC<Props> = ({
             </Box>
           )}
 
+          <Box className={styles.divider} marginTop={4} />
           <Stack
             direction="row"
             justifyContent="flex-end"
             marginTop={4}
             gap={2}
+            marginBottom={4}
           >
             <AppButton
               variant="outlined"

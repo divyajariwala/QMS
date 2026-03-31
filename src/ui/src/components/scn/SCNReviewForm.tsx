@@ -147,8 +147,10 @@ const SCNReviewForm: React.FC<SCNReviewFormProps> = ({
                 className={styles.editButtonSmall}
                 onClick={onEditClick}
               >
-                <img src={editIcon} alt="edit" className={styles.editIcon} />
-                Edit
+                <span className={styles.editButtonContent}>
+                  <img src={editIcon} alt="edit" className={styles.editIcon} />
+                  Edit
+                </span>
               </AppButton>
             )}
           </Stack>

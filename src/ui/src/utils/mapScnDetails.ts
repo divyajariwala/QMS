@@ -2,7 +2,16 @@ export const mapScnDetailsToForm = (apiData: any) => {
   const fields = apiData?.scn_extracted_fields || {};
 
   return {
-    status: fields?.status || "",
+    status: (() => {
+      const s = (fields?.status || "").toUpperCase().replace(/ /g, "_");
+      if (s === "SUPPLIER_ACTION_REQUIRED") return "supplierActionRequired";
+      if (s === "PENDING_REVIEW") return "pendingReview";
+      if (s === "IN_REVIEW") return "inReview";
+      if (s === "SUPPLIER_INFO_REQUESTED") return "supplierInfoRequested";
+      if (s === "APPROVED") return "approved";
+      if (s === "REJECTED") return "rejected";
+      return fields?.status || "";
+    })(),
     supplierRef: fields.scn_reference_number || "",
     changeTitle: fields.scn_title_summary || "",
     supplierName: fields.supplier_name || "",

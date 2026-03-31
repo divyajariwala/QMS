@@ -58,29 +58,31 @@ function filtersToApiParam(f: FilterOptions): string | undefined {
 // changeTitleSummary, changeTitle, overdueDays
 
 function toCardItem(item: ScnFinalItem) {
-  // Normalize status: replace underscores with spaces, uppercase
-  const rawStatus = (item.status || "").replace(/_/g, " ").toUpperCase();
+  // Normalize status for internal matching: replace spaces with underscores, uppercase
+  const rawStatus = (item.status || "").replace(/ /g, "_").toUpperCase();
 
   type CardStatus =
-    | "SUPPLIER ACTION REQUIRED"
-    | "PENDING REVIEW"
-    | "IN REVIEW"
-    | "APPROVED"
-    | "REJECTED"
-    | "SUPPLIER INFO REQUESTED";
+    | "supplierActionRequired"
+    | "pendingReview"
+    | "inReview"
+    | "approved"
+    | "rejected"
+    | "supplierInfoRequested";
 
-  let status: CardStatus = "PENDING REVIEW";
-  if (rawStatus === "IN REVIEW") {
-    status = "IN REVIEW";
-  } else if (rawStatus === "SUPPLIER INFO REQUESTED") {
-    status = "SUPPLIER INFO REQUESTED";
+  let status: CardStatus = "pendingReview";
+
+  if (rawStatus === "IN_REVIEW") {
+    status = "inReview";
+  } else if (rawStatus === "SUPPLIER_INFO_REQUESTED") {
+    status = "supplierInfoRequested";
   } else if (rawStatus === "APPROVED") {
-    status = "APPROVED";
+    status = "approved";
   } else if (rawStatus === "REJECTED") {
-    status = "REJECTED";
-  } else if (rawStatus === "SUPPLIER ACTION REQUIRED") {
-    status = "SUPPLIER ACTION REQUIRED";
+    status = "rejected";
+  } else if (rawStatus === "SUPPLIER_ACTION_REQUIRED") {
+    status = "supplierActionRequired";
   }
+
 
   return {
     id: item.email_id,

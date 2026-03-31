@@ -11,12 +11,13 @@ import RightIcon from "../../assets/icons/rightDark.svg";
 interface SCNItem {
   id: string;
   status:
-    | "SUPPLIER ACTION REQUIRED"
-    | "PENDING REVIEW"
-    | "IN REVIEW"
-    | "APPROVED"
-    | "REJECTED"
-    | "SUPPLIER INFO REQUESTED";
+    | "supplierActionRequired"
+    | "pendingReview"
+    | "inReview"
+    | "approved"
+    | "rejected"
+    | "supplierInfoRequested";
+
   scnNumber: string;
   changeClassification: string;
   supplierRef: string;
@@ -34,47 +35,60 @@ interface SCNResultCardProps {
   isEditingCard?: boolean;
 }
 
+const getNormalizedStatus = (status: string) => {
+  const s = (status || "").replace(/ /g, "_").toUpperCase();
+  if (s === "SUPPLIER_ACTION_REQUIRED") return "supplierActionRequired";
+  if (s === "PENDING_REVIEW") return "pendingReview";
+  if (s === "IN_REVIEW") return "inReview";
+  if (s === "SUPPLIER_INFO_REQUESTED") return "supplierInfoRequested";
+  if (s === "APPROVED") return "approved";
+  if (s === "REJECTED") return "rejected";
+  return status;
+};
+
 const SCNResultCard: React.FC<SCNResultCardProps> = ({
   scn,
   onSeeDetails,
   isEditingCard,
 }) => {
   const navigate = useNavigate();
+  const normalizedStatus = getNormalizedStatus(scn.status);
 
   const handleSeeDetailsClick = () => {
     navigate(`/scn/supplier/${scn.id}`);
   };
   const getCardTopBorderClass = () => {
-    switch (scn.status) {
-      case "SUPPLIER ACTION REQUIRED":
+    switch (normalizedStatus) {
+      case "supplierActionRequired":
         return styles.cardBorderYellow;
-      case "PENDING REVIEW":
+      case "pendingReview":
         return styles.cardBorderPurple;
-      case "IN REVIEW":
+      case "inReview":
         return styles.cardBorderGray;
-      case "SUPPLIER INFO REQUESTED":
+      case "supplierInfoRequested":
         return styles.cardBorderYellow;
-      case "APPROVED":
+      case "approved":
         return styles.cardBorderApproved;
-      case "REJECTED":
+      case "rejected":
         return styles.cardBorderRejected;
       default:
         return "";
     }
   };
+
   const getStatusClass = () => {
-    switch (scn.status) {
-      case "SUPPLIER ACTION REQUIRED":
+    switch (normalizedStatus) {
+      case "supplierActionRequired":
         return styles.statusYellow;
-      case "PENDING REVIEW":
+      case "pendingReview":
         return styles.statusPurple;
-      case "IN REVIEW":
+      case "inReview":
         return styles.statusGray;
-      case "SUPPLIER INFO REQUESTED":
+      case "supplierInfoRequested":
         return styles.statusYellow;
-      case "APPROVED":
+      case "approved":
         return styles.statusApproved;
-      case "REJECTED":
+      case "rejected":
         return styles.statusRejected;
       default:
         return "";
@@ -83,18 +97,18 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
 
   // Returns a human-friendly label for the status badge
   const getStatusLabel = () => {
-    switch (scn.status) {
-      case "SUPPLIER ACTION REQUIRED":
+    switch (normalizedStatus) {
+      case "supplierActionRequired":
         return "Supplier Action Required";
-      case "PENDING REVIEW":
+      case "pendingReview":
         return "Pending Review";
-      case "IN REVIEW":
+      case "inReview":
         return "In Review";
-      case "SUPPLIER INFO REQUESTED":
+      case "supplierInfoRequested":
         return "Supplier Info Requested";
-      case "APPROVED":
+      case "approved":
         return "Approved";
-      case "REJECTED":
+      case "rejected":
         return "Rejected";
       default:
         return scn.status;
@@ -102,12 +116,12 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
   };
 
   const getClassificationClass = () => {
-    switch (scn.changeClassification) {
-      case "Minor":
+    switch (scn.changeClassification.toUpperCase()) {
+      case "MINOR":
         return styles.statusLow;
-      case "Moderate":
+      case "MODERATE":
         return styles.statusMedium;
-      case "Major":
+      case "MAJOR":
         return styles.statusHigh;
       default:
         return "";
@@ -132,7 +146,11 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
 
   return (
     <Box
-      className={`${styles.card} ${getCardTopBorderClass()}`}
+      className={
+        !isEditingCard
+          ? `${styles.card} ${getCardTopBorderClass()}`
+          : `${styles.detailsPageCard} ${getCardTopBorderClass()}`
+      }
       onClick={handleSeeDetailsClick}
     >
       {/* Header Row */}
@@ -179,14 +197,14 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
           <span className={styles.infoLabel}>Notification Date</span>
           <Box className={styles.dateValue}>
             <img src={CalendarIcon} alt="Calendar" />
-            <span className={styles.infoValue}>{scn.notificationDate}</span>
+            <span className={styles.dateInfoValue}>{scn.notificationDate}</span>
           </Box>
         </Box>
         <Box className={styles.infoItem}>
           <span className={styles.infoLabel}>Planned Implementation Date</span>
           <Box className={styles.dateValue}>
             <img src={CalendarIcon} alt="Calendar" />
-            <span className={styles.infoValue}>
+            <span className={styles.dateInfoValue}>
               {scn.plannedImplementationDate}
             </span>
           </Box>
@@ -206,6 +224,11 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
             <span className={styles.infoValue}>{scn.changeTitle}</span>
           </Box>
         )}
+        <Box paddingTop={3}>
+          <p className={`${styles.summaryText} ${styles.mobileSummary}`}>
+            {scn.changeTitleSummary}
+          </p>
+        </Box>
       </Box>
       {/* Summary Row */}
       {!isEditingCard && (
@@ -222,7 +245,9 @@ const SCNResultCard: React.FC<SCNResultCardProps> = ({
               Edit <ExternalLinkIcon />
             </a>
           </Box> */}
-            <p className={styles.summaryText}>{scn.changeTitleSummary}</p>
+            <p className={`${styles.summaryText} ${styles.desktopSummary}`}>
+              {scn.changeTitleSummary}
+            </p>
           </Box>
           <a
             href="#"
